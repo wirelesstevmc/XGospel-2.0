@@ -1,0 +1,75 @@
+XCOMM
+XCOMM myxlib
+XCOMM by Ton Hospel
+XCOMM
+
+#include "Imake.options"
+
+LEX             = flex
+YACC            = bison
+LFLAGS          = -I -i -8 
+YFLAGS          = -d -y
+DEFINES         = -I. $(MORE_DEFINES)
+
+DEPENDFLAGS = -o ".o)" -p $(FLIB)"("
+XCOMM EXTRA_INCLUDES = -I/aix370p/tmp/miep
+
+   SRCS = except.c mymalloc.c actions.c showwidgets.c myxlib.c myxinternals.c mytext.c TMyprint.c mycontext.c myconverters.c myclass.c YShell.c $(PARSESRCS) Canvas.c Tree.c SmeToggle.c SmeLabel.c Popup.c TearofMenu.c
+   LIB  = my
+   FLIB = Concat(lib,$(LIB).a)
+   OBJS = $(FLIB)(except.o) $(FLIB)(mymalloc.o) $(FLIB)(actions.o) $(FLIB)(showwidgets.o) $(FLIB)(myxlib.o) $(FLIB)(myxinternals.o) $(FLIB)(mytext.o) $(FLIB)(TMyprint.o) $(FLIB)(mycontext.o) $(FLIB)(myconverters.o) $(FLIB)(myclass.o) $(FLIB)(yreslang.o) $(FLIB)(lreslang.o) $(FLIB)(ywidgettree.o) $(FLIB)(lwidgettree.o) $(FLIB)(YShell.o) $(FLIB)(Canvas.o) $(FLIB)(Tree.o) $(FLIB)(SmeToggle.o) $(FLIB)(SmeLabel.o) $(FLIB)(Popup.o) $(FLIB)(TearofMenu.o)
+
+AR = ar
+
+AllTarget($(FLIB))
+
+DependTarget()
+
+$(FLIB): $(OBJS)
+	RanLibrary($(FLIB))
+
+includes:: yreslang.tab.h ywidgettree.tab.h
+
+#ifdef FLEXBISON
+
+PARSESRCS = lreslang.l yreslang.y lwidgettree.l ywidgettree.y
+
+lreslang.c: lreslang.l
+	$(LEX) $(LFLAGS) lreslang.l
+	sed 's/yy/ResYY/g' lex.yy.c > lreslang.c
+	RemoveFile(lex.yy.c)
+
+yreslang.tab.h yreslang.c: yreslang.y
+	$(YACC) $(YFLAGS) yreslang.y
+	sed 's/YYOVERFLOW/yyoverflow(x1, x2, x3, x4, x5, x8)/g; s/yy/ResYY/g' y.tab.c > yreslang.c
+	sed 's/yy/ResYY/g' y.tab.h > yreslang.tab.h
+	RemoveFiles(y.tab.c y.tab.h)
+
+lwidgettree.c: lwidgettree.l
+	$(LEX) $(LFLAGS) lwidgettree.l
+	sed 's/yy/TreeYY/g' lex.yy.c > lwidgettree.c
+	RemoveFile(lex.yy.c)
+
+ywidgettree.tab.h ywidgettree.c: ywidgettree.y
+	$(YACC) $(YFLAGS) ywidgettree.y
+	sed 's/YYOVERFLOW/yyoverflow(x1, x2, x3, x4, x5, x8)/g; s/yy/TreeYY/g' y.tab.c > ywidgettree.c
+	sed 's/yy/TreeYY/g' y.tab.h > ywidgettree.tab.h
+	RemoveFiles(y.tab.c y.tab.h)
+
+clean::
+	RemoveFiles(ywidgettree.tab.h ywidgettree.c lwidgettree.c yreslang.tab.h yreslang.c yreslang.c)
+#else /* FLEXBISON */
+
+PARSESRCS = lreslang.c yreslang.c lwidgettree.c ywidgettree.c
+lreslang.c: lreslang.l
+	touch lreslang.c
+
+yreslang.tab.h yreslang.c: yreslang.y
+	touch yreslang.tab.h yreslang.c
+
+lwidgettree.c: lwidgettree.l
+	touch lwidgettree.c
+
+ywidgettree.tab.h ywidgettree.c: ywidgettree.y
+	touch ywidgettree.tab.h ywidgettree.c
+#endif /* FLEXBISON */

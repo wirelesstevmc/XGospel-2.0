@@ -1,0 +1,193 @@
+srcdir  = @srcdir@
+VPATH   = @srcdir@
+@SET_MAKE@
+RM      = @MAKE_RM@
+ARFLAGS = @MAKE_ARFLAGS@
+
+CC   = @CC@
+LEX  = @LEX@
+YACC = @YACC@
+
+SHELL       = /bin/sh
+DEPEND      = @MAKEDEPEND@
+DEPENDP     = @MAKEDEPENDP@
+DEPENDFLAGS = @DEPENDFLAGS@
+ETAGS       = @ETAGS@
+USE_AR      = @USE_AR@
+
+LFLAGS      = -I -i -8
+YFLAGS      = -d
+
+DEFS         = @DEFS@
+FUNCPROTO    = @FUNCPROTO@
+EDEFS        = $(DEFS) $(FUNCPROTO)
+LIBS         = @LIBS@
+X_CFLAGS     = @X_CFLAGS@
+X_LIBS       = @X_LIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+USE_X        = @USE_X@
+
+CFLAGS   = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+
+XGINCS  = -I$(srcdir) $(X_CFLAGS)
+
+# Makefile substitutions (like $a$(b)) ) would simplify this a lot,
+# but they are not portable
+SRCS_X_no  = except.c mymalloc.c
+SRCS_X_yes = $(SRCS_X_no) actions.c showwidgets.c myxlib.c \
+	myxinternals.c mytext.c TMyprint.c mycontext.c myconverters.c \
+	myclass.c YShell.c Canvas.c Tree.c SmeToggle.c SmeLabel.c Popup.c \
+	TearofMenu.c
+SRCS = $(SRCS_X_@USE_X@)
+LIB  = my
+FLIB = lib$(LIB).a
+implicit_OBJS_X_no = $(FLIB)(except.o) $(FLIB)(mymalloc.o)
+implicit_OBJS_X_yes = $(implicit_OBJS_X_no) \
+	$(FLIB)(yreslang.o) $(FLIB)(lreslang.o) $(FLIB)(ywidgettree.o) \
+	$(FLIB)(lwidgettree.o) \
+	$(FLIB)(actions.o) $(FLIB)(showwidgets.o) $(FLIB)(myxlib.o) \
+	$(FLIB)(myxinternals.o) $(FLIB)(mytext.o) $(FLIB)(TMyprint.o) \
+	$(FLIB)(mycontext.o) $(FLIB)(myconverters.o) $(FLIB)(myclass.o) \
+	$(FLIB)(YShell.o) $(FLIB)(Canvas.o) $(FLIB)(Tree.o) \
+	$(FLIB)(SmeToggle.o) $(FLIB)(SmeLabel.o) $(FLIB)(Popup.o) \
+	$(FLIB)(TearofMenu.o)
+explicit_OBJS_X_no = except.o mymalloc.o
+explicit_OBJS_X_yes = $(explicit_OBJS_X_no) \
+	yreslang.o lreslang.o ywidgettree.o \
+	lwidgettree.o \
+	actions.o showwidgets.o myxlib.o \
+	myxinternals.o mytext.o TMyprint.o \
+	mycontext.o myconverters.o myclass.o \
+	YShell.o Canvas.o Tree.o \
+	SmeToggle.o SmeLabel.o Popup.o \
+	TearofMenu.o
+implicit_OBJS = $(implicit_OBJS_X_@USE_X@)
+explicit_OBJS = $(explicit_OBJS_X_@USE_X@)
+
+AR = ar
+RANLIB=@RANLIB@
+
+all: localdepend $(FLIB)
+
+# The -I. is for the bison/flex generated files if you're not in $(srcdir)
+.c.o:
+	$(CC) -c $(CPPFLAGS) $(EDEFS) -I. $(CFLAGS) $(XGINCS) $<
+
+.c.a:
+	$(CC) -c $(CPPFLAGS) $(EDEFS) -I. $(CFLAGS) $(XGINCS) $<
+	$(AR) $(ARFLAGS) $(FLIB) $%
+	$(RM) $%
+
+EXTRADPNDS_X_no  =
+EXTRADPNDS_X_yes = lreslang.c yreslang.c lwidgettree.c ywidgettree.c \
+	yreslang.tab.h ywidgettree.tab.h
+EXTRADPNDS = $(EXTRADPNDS_X_@USE_X@)
+
+localdepend: $(EXTRADPNDS) $(SRCS) $(srcdir)/*.h Makefile
+	pwd=`pwd`; cd $(srcdir); \
+	idpnds="$(EXTRADPNDS)"; odpnds=""; for i in $$idpnds; do \
+	case $$i in *.c) odpnds="$$odpnds $$pwd/$$i";; esac; done; \
+	if [ $(USE_AR) = explicit ]; then \
+	  $(DEPEND) -f$$pwd/Makefile -s "# DO NOT DELETE" -- \
+	  -I$$pwd $(XGINCS) $(DEPENDFLAGS) $(CPPFLAGS) $(EDEFS) $(CFLAGS) -- \
+	  $$odpnds $(SRCS); \
+	else \
+	  $(DEPENDP) -o ".o)" -p $(FLIB)"(" -f$$pwd/Makefile \
+	  -s "# DO NOT DELETE" -- \
+	  -I$$pwd $(XGINCS) $(DEPENDFLAGS) $(CPPFLAGS) $(EDEFS) $(CFLAGS) -- \
+	  $$odpnds $(SRCS); \
+	fi
+	@sleep 1; echo "Time stamp" > localdepend
+
+depend: localdepend
+
+$(FLIB): $(@USE_AR@_OBJS)
+	if [ $(USE_AR) = explicit ]; then eval "$(AR) $(ARFLAGS) $(FLIB) $?"; fi
+	$(RANLIB) $(FLIB)
+	touch $(FLIB)
+
+PARSESRCS = lreslang.l yreslang.y lwidgettree.l ywidgettree.y
+
+lreslang.c: lreslang.l
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(LEX)" in \
+	  *flex*) echo $(LEX) $(LFLAGS) $$srcdir/lreslang.l && \
+	          $(LEX) $(LFLAGS) $$srcdir/lreslang.l && \
+	          sed 's/yy/ResYY/g' lex.yy.c > lreslang.c && \
+	          $(RM) lex.yy.c;; \
+	  *) if [ $$srcdir != . ]; then \
+	       cp $$srcdir/lreslang.c . ; \
+	     fi;; \
+	esac
+
+yreslang.tab.h yreslang.c: yreslang.y
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(YACC)" in \
+	  *bison*) echo $(YACC) $(YFLAGS) $$srcdir/yreslang.y && \
+	           $(YACC) $(YFLAGS) $$srcdir/yreslang.y && \
+	           sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/ResYY/g' y.tab.c > yreslang.c && \
+	           sed 's/yy/ResYY/g' y.tab.h > yreslang.tab.h && \
+	           $(RM) y.tab.c y.tab.h;; \
+	  *) if [ $$srcdir != . ]; then \
+	       cp $$srcdir/yreslang.c . ; \
+	       cp $$srcdir/yreslang.tab.h . ; \
+	     fi;; \
+	esac
+
+lwidgettree.c: lwidgettree.l
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(LEX)" in \
+	  *flex*) echo $(LEX) $(LFLAGS) $$srcdir/lwidgettree.l && \
+	          $(LEX) $(LFLAGS) $$srcdir/lwidgettree.l && \
+	          sed 's/yy/TreeYY/g' lex.yy.c > lwidgettree.c && \
+	          $(RM) lex.yy.c;; \
+	  *) if [ $$srcdir != . ]; then \
+	       cp $$srcdir/lwidgettree.c . ; \
+	     fi;; \
+	esac
+
+ywidgettree.tab.h ywidgettree.c: ywidgettree.y
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(YACC)" in \
+	  *bison*) echo $(YACC) $(YFLAGS) $$srcdir/ywidgettree.y && \
+	           $(YACC) $(YFLAGS) $$srcdir/ywidgettree.y && \
+	           sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/TreeYY/g' y.tab.c > ywidgettree.c && \
+	           sed 's/yy/TreeYY/g' y.tab.h > ywidgettree.tab.h && \
+	           $(RM) y.tab.c y.tab.h;; \
+	  *) if [ $$srcdir != . ]; then \
+	       cp $$srcdir/ywidgettree.c . && \
+	       cp $$srcdir/ywidgettree.tab.h . ; \
+	     fi;; \
+	esac
+
+###############################################################################
+# cleanup
+###############################################################################
+
+localparserclean:
+	$(RM) $(EXTRADPNDS_X_yes)
+
+parserclean: localparserclean
+	
+mostlyclean:
+	$(RM) *.o core y.output
+
+clean: mostlyclean
+	$(RM) $(FLIB) TAGS localdepend
+
+distclean: clean
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	if [ $$srcdir != . ]; then $(RM) $(EXTRADPNDS_X_yes); fi
+	$(RM) Makefile Makefile.bak
+
+maintainer-clean: distclean
+	$(RM) lreslang.c yreslang.c yreslang.tab.h \
+	      lwidgettree.c ywidgettree.c ywidgettree.tab.h
+	$(RM) patch* *~* *\#* *.orig *.rej *.bak a.out
+
+TAGS: yreslang.tab.h ywidgettree.tab.h $(PARSESRCS) $(SRCS) $(srcdir)/*.h
+	pwd=`pwd`; cd $(srcdir); echo "Placeholder" > TAGS; $(ETAGS) $(PARSESRCS) $(SRCS) *.h
+
+# DO NOT DELETE
+

@@ -1,0 +1,117 @@
+# Makefile for regex.
+#
+# Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+version = 0.12
+
+# You can define CPPFLAGS on the command line.  Aside from system-specific
+# flags, you can define:
+#   -DREGEX_MALLOC to use malloc/realloc/free instead of alloca.
+#   -DDEBUG to enable the compiled pattern disassembler and execution
+#           tracing; code runs substantially slower.
+#   -DEXTRACT_MACROS to use the macros EXTRACT_* (as opposed to
+#           the corresponding C procedures).  If not -DDEBUG, the macros
+#           are used.
+# Likewise, you can override CFLAGS to optimize, use -Wall, etc.
+CFLAGS   = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+
+srcdir  = @srcdir@
+VPATH   = @srcdir@
+@SET_MAKE@
+RM      = @MAKE_RM@
+ARFLAGS = @MAKE_ARFLAGS@
+
+CC   = @CC@
+DEFS = @DEFS@
+
+SHELL       = /bin/sh
+DEPEND      = @MAKEDEPEND@
+DEPENDP     = @MAKEDEPENDP@
+DEPENDFLAGS = @DEPENDFLAGS@
+ETAGS       = @ETAGS@
+USE_AR      = @USE_AR@
+
+subdirs = doc test
+
+SRCS = regex.c
+LIB  = regex
+FLIB = lib$(LIB).a
+implicit_OBJS = $(FLIB)(regex.o)
+explicit_OBJS = regex.o
+
+AR = ar
+RANLIB=@RANLIB@
+
+all: localdepend $(FLIB)
+
+.c.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -c $<
+
+.c.a:
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -c $<
+	$(AR) $(ARFLAGS) $(FLIB) $%
+	$(RM) $%
+
+localdepend: $(SRCS) $(srcdir)/*.h Makefile
+	pwd=`pwd`; cd $(srcdir); \
+	if [ $(USE_AR) = explicit ]; then \
+	  $(DEPEND) -f$$pwd/Makefile -s "# DO NOT DELETE" -- \
+	  $(DEPENDFLAGS) $(CPPFLAGS) $(DEFS) -I$$pwd $(CFLAGS) -I$(srcdir) -- \
+	  $(SRCS); \
+	else \
+	  $(DEPENDP) -o ".o)" -p $(FLIB)"(" -f$$pwd/Makefile \
+	  -s "# DO NOT DELETE" -- \
+	  $(DEPENDFLAGS) $(CPPFLAGS) $(DEFS) -I$$pwd $(CFLAGS) -I$(srcdir) -- \
+	  $(SRCS); \
+	fi
+	@sleep 1; echo "Time stamp" > localdepend
+
+depend: localdepend
+
+$(FLIB): $(@USE_AR@_OBJS)
+	if [ $(USE_AR) = explicit ]; then eval "$(AR) $(ARFLAGS) $(FLIB) $?"; fi
+	$(RANLIB) $(FLIB)
+	touch $(FLIB)
+
+###############################################################################
+# cleanup
+###############################################################################
+
+parserclean:
+
+mostlyclean::
+	$(RM) *.o core
+
+clean:: mostlyclean
+	$(RM) $(FLIB) TAGS localdepend
+
+distclean:: clean
+	$(RM) Makefile Makefile.bak
+
+maintainer-clean:: distclean
+	$(RM) patch* *~* *\#* *.orig *.rej *.bak a.out
+
+# Prevent GNU make 3 from overflowing arg limit on system V.
+.NOEXPORT:
+
+TAGS: $(SRCS) $(srcdir)/*.h
+	pwd=`pwd`; cd $(srcdir); echo "Placeholder" > TAGS; $(ETAGS) $(SRCS) *.h
+
+dist:
+
+# DO NOT DELETE
