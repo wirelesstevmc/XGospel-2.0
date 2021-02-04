@@ -1,0 +1,8 @@
+#! /bin/sh -
+set +e
+OLDCONFIG="`stty -g`"
+stty -echo
+stty raw
+relay
+stty "$OLDCONFIG"
+echo ""
