@@ -1,0 +1,9 @@
+All files used in myxlib fall under the Gnu copyleft except:
+ Tree.c, TreeP.h, Tree.h, TMprint.c : These are adapted versions of files from
+                                      the X distribution
+ Canvas.c, CanvasP.h, Canvas.h      : These are adapted versions of files from
+                                      the FWF (Free Widget Foundation)
+ XgospelIcon                        : The go.xbm bitmap from Anthony Icons.
+ Several of the X files duplicate parts of functions found in the MIT X
+ distribution (mainly: the colorconverter, MyNameToWidget, vararg to NestedList
+ functions, PopupMenu function)

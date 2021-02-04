@@ -1,0 +1,108 @@
+XCOMM Change these to fit your system
+
+XCOMM The next line is not used, but makes it easier to find out what your
+XCOMM system defaults are. Look at what gets generated after xmkmf in the 
+XCOMM Makefile and compare with Imake.tmpl (usually in /lib/X11/config)
+
+MACROFILE = MacroFile
+
+#ifdef LinuxArchitecture
+XCOMM In an ideal world (e.g. Linux) just the next line would work:
+# define FLEXBISON
+  MORE_DEFINES    =
+XCOMM Since many linux distributions set DEPEND to gccmakedepend, which sucks..
+  DEPEND          = makedepend
+# define ArchitectureFound "Linux"
+#endif /* LinuxArchitecture */
+
+#ifdef RsArchitecture
+XCOMM This is what I used on RS6000
+XCOMM (you might have to compile actions.c without the -O flag)
+XCOMM MORE_DEFINES = -D_POSIX_SOURCE -D_ALL_SOURCE
+XCOMM However, nowadays the following seems to work:
+  MORE_DEFINES = -DHAVE_SYS_SELECT_H=1
+# define ArchitectureFound "RS6000"
+#endif /* RsArchitecture */
+
+#ifdef AlphaArchitecture
+XCOMM This is what I use on Alpha OSF1:
+  MORE_DEFINES   =
+# define ArchitectureFound "Alpha"
+#endif /* AlphaArchitecture */
+
+#ifdef PS2Architecture
+XCOMM This is what I use on AixPS2:
+  MORE_DEFINES   = -D_MBCS -D_I386 -DNOQUARKTRANSLATIONS -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_MEMMOVE -ansi -pedantic -Wall -Wshadow -Wpointer-arith -Dscanf=DONT_USE_SCANF -Dgets=DONT_USE_GETS -g # -O2
+  CC             = gcc -fpcc-struct-return
+# define ArchitectureFound "PS2"
+#endif /* PS2Architecture */
+
+#ifdef SunArchitecture
+XCOMM This is what I use on sun4 with sparc and gcc
+XCOMM (you might have to compile gospel.c without the -O2 flag):
+  CDEBUGFLAGS    = -O2
+  CC             = gcc -fpcc-struct-return
+# if OSMajorVersion >= 5
+  MORE_DEFINES   = -ansi 
+#  define ArchitectureFound "Solaris"
+# else
+  MORE_DEFINES   = -ansi -DHAVE_NO_MEMMOVE -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_DIFFTIME -DHAVE_NO_MEMCHR_PROTO
+#  define ArchitectureFound "SunOs"
+# endif
+#endif /* SunArchitecture */
+
+#ifdef UltrixArchitecture
+XCOMM This is what I use on Ultrix 4.3 with gcc:
+XCOMM #define FLEXBISON
+XCOMM  CC             = gcc -fpcc-struct-return
+XCOMM  MORE_DEFINES   = -ansi -DHAVE_NO_MEMMOVE -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_DIFFTIME -DHAVE_NO_MEMCHR_PROTO
+  MORE_DEFINES   = -DHAVE_NO_MEMMOVE -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_DIFFTIME -DHAVE_NO_MEMCHR_PROTO
+XCOMM  CDEBUGFLAGS    = -O2
+# define ArchitectureFound "Ultrix"
+#endif /* UltrixArchitecture */
+
+#ifdef SGIArchitecture
+XCOMM For the IRIX 5.1 with a default cc:
+XCOMM #define FLEXBISON
+  MORE_DEFINES   = -ansi -DHAVE_NO_MEMMOVE -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_DIFFTIME -DHAVE_NO_MEMCHR_PROTO -DFLEXBISON -D_BSD -D_BSD_COMPATS -D_BSD_TYPES
+  CDEBUGFLAGS    = -O
+  SYS_LIBRARIES  = -lbsd
+# define ArchitectureFound "SGI"
+#endif /* SGIArchitecture */
+
+XCOMM This is what I use on Aix370:
+XCOMM #define FLEXBISON
+XCOMM MORE_DEFINES = -DXA370 -DNOQUARKTRANSLATIONS -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DXAW3D -DHAVE_NO_MEMMOVE -Hxa -H+w -O -Hansi # -Hnocpp
+XCOMM LOCAL_LDFLAGS  = -xa # -s
+
+#ifdef IBMESAArchitecture
+XCOMM This is what I use on AixEsa:
+# define FLEXBISON
+  MORE_DEFINES   = -DHAVE_NO_STRERROR -DHAVE_NO_STRERROR_PROTO -DHAVE_NO_MEMMOVE -Hxa -H+w -Hansi # -Hnocpp
+  LOCAL_LDFLAGS  = -xa # -s
+  CDEBUGFLAGS    = -O
+  TMP            = /tmp
+# define ArchitectureFound "IBMESA"
+#else  /* IBMESAArchitecture */
+  TMP            = .
+#endif /* IBMESAArchitecture */
+
+#ifndef ArchitectureFound
+XCOMM This should at least help you to reduce the possibilities
+all:: fail
+
+Makefiles:: fail
+
+fail::
+	@echo "********************************************************************************"
+	@echo "Unknown system. Please take a look in $(CONFIGDIR)/"MacroFile "for what your system could be"
+	@echo "********************************************************************************"
+	false
+#else
+  ARCHITECTURE   = ArchitectureFound
+#endif /* ArchitectureFound */
+
+XCOMM XAWLIB=-lXaw3d
+XCOMM SYS_LIBRARIES   = -lbsd
+XCOMM MORE_LIBRARIES  = -lXtGeo
+XCOMM SYS_LIBRARIES   = -lbsd -lXpm

@@ -1,0 +1,21 @@
+
+#define STDC_HEADERS 1
+#define HAVE_STRING_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_MEMORY_H 1
+#define HAVE_UNISTD_H 1
+#define HAVE_STDARG_H 1
+#define HAVE_SYS_SELECT_H 1
+#define RETSIGTYPE void
+#define HAVE_STRFTIME 1
+#define HAVE_MEMCHR 1
+#define HAVE_MEMMOVE 1
+#define HAVE_STRERROR 1
+#define HAVE_DIFFTIME 1
+#define HAVE_UNAME 1
+#define HAVE_CUSERID 1
+#define HAVE_MEMCHR 1
+#define HAVE_STRERROR 1
+#define HAVE_H_ERRLIST 1
+#define HAVE_ALLOCA_H 1
+#define HAVE_ALLOCA 1

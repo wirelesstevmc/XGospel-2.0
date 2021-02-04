@@ -1,0 +1,31 @@
+XCOMM
+XCOMM regex 0.12
+XCOMM by GNU
+XCOMM
+
+#include "../my/Imake.options"
+
+XCOMM You can add these to DEFINES:
+XCOMM   -DREGEX_MALLOC to use malloc/realloc/free instead of alloca.
+XCOMM   -DDEBUG to enable the compiled pattern disassembler and execution
+XCOMM           tracing; code runs substantially slower.
+XCOMM   -DEXTRACT_MACROS to use the macros EXTRACT_* (as opposed to
+XCOMM           the corresponding C procedures).  If not -DDEBUG, the macros
+XCOMM           are used.
+
+DEFINES         = -DSTDC_HEADERS $(MORE_DEFINES)
+DEPENDFLAGS = -o ".o)" -p $(FLIB)"("
+
+SRCS = regex.c
+LIB  = regex
+FLIB = lib$(LIB).a
+OBJS = $(FLIB)(regex.o)
+
+AR = ar
+
+AllTarget($(FLIB))
+
+DependTarget()
+
+$(FLIB): $(OBJS)
+	RanLibrary($(FLIB))

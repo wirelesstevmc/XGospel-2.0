@@ -1,0 +1,927 @@
+Version 1.12c1  (Jean-loup Gailly, 22 Jan 1999)
+- take into account new prisonners for the Copy command in analyse boards
+  (glukichipote)
+- enable the Score command for analyse boards only for boards copied from
+  the most recent position (to get correct count of prisonners)
+- raise a tell window on beep by default (Minh Quy)
+- support undo of multiple moves in teach games
+- conform to the SGF FF[4] specification when writing SGF files
+  http://www.sbox.tu-graz.ac.at/home/h/hollosi/sgf/
+- deal with an undocumented change in IGS protocol which caused a parse
+  error for bets (Jan Ramon)
+- deal with change in IGS protocol for adjourned games (display adjourn
+  in game window only, not in main)
+- work around an IGS 'feature' (impossible to use teach on a 'request' game)
+- for automatic replay of teach game, send "forward" commands only for
+  "teach sgfname" not "teach 19".
+- require the Enter key to change a game title or channel title
+- avoid compilation warnings on SGI
+
+Version 1.12c  (Jean-loup Gailly, 10 Jan 1999)
+- click control-left on entry in games window to get the stats of both
+  players, alt-left to get the stats in the main window.
+- if autoReply is set, do not popup a game status board when the game
+  terminates
+- add keyboard shortcut alt-a to toggle autoreply (Minh Quy)
+- add keyboard shortcuts alt-o to toggle open and alt-l to toggle looking.
+  Note that these two can also be changed with the mouse in the stats
+  window for yourself (obtained with the Commands menu of the main window).
+- move "quit" shortcut to alt-q for uniformity (was control-c)
+- add menus to set handicap and komi when I'm playing (Steve Cahill)
+- fix handling of komi management protocol
+
+Version 1.12b3  (Jean-loup Gailly, 7 Jan 1999)
+- use 210.134.78.91 as default site (igs.joyjoy.net deconnects too often)
+- avoid segmentation fault after quit (glukimet3lunes%apercevoir)
+- remove debug output for stats, left by mistake
+
+Version 1.12b2  (Jean-loup Gailly, 4 Jan 1999)
+- add the time for messages received while auto-reply is set (Minh Quy)
+- do not duplicate the results lines for repeated stats (Mark Vytlacil)
+- nicer xgospel icon (Gabriel de Dietrich)
+- support the "name" IGS command
+- adapt to documented change in the IGS protocol for illegal moves
+- avoid a parse error for future extensions of the IGS protocol
+
+Version 1.12b1  (Jean-loup Gailly, 16 Dec 1998)
+- allow automatic replay of "teach sgfname" games with the replay option,
+  without having to click on the "Forw" button for each move.
+- avoid a parse error for the "time" command if extra info provided.
+- avoid parse error after an illegal move (documented change in IGS protocol)
+  (Cyril Banderier)
+- do not popup a challenge window when autoReply is set. (Minh Quy)
+- add resource *minButtonTime to avoid clickos: the button up event must be
+  at the same intersection as the button down event and separated by at least
+  minButtonTime milliseconds (default 50 ms) to be sent as a move. If you are
+  subject to frequent clickos, increase this to 200 or 300. If you want to
+  force yourself to think at least one second before a move, set it to 1000.
+- shorten the icon name for tells. You can change it with the resource
+  *tell.iconName (default %N[%n]%A to get name, strength and *).
+ (glukenveutoujoursplus)
+- better documentation of the IGS protocol in goserver.l
+- support the cmatch (capture match) command
+- support hidden channels (which can be created by pros for teaching games)
+
+Version 1.12b  (Jean-loup Gailly, 23 Nov 1998)
+- deal with an undocumented change in IGS protocol which caused "say" messages
+  to appear in the main window.
+- deal with an undocumented change in IGS protocol which caused a parse error
+  for an adjourn request made by the opponent
+- Activates tell button on stats window. Restores toggle action of tell
+  button on challenge window (Mark Vytlacil)
+- set "raise" default to be false everywhere except for tell windows.
+- explain how to mark players permanently in XGospel.res and the online help
+ (see the resource *playerToWidget).
+- in analyse boards, the Copy button did not reset the prisonners count (glue)
+- in the online help for my stats, warn that Quiet and Verbose should Off,
+  and Client should be On.
+- add help for shift+left button on my info in my stats window.
+- avoid warnings for redeclaration of _StringList and for static functions.
+- suppress duplicate "on" in "Logging into IGS on on"
+
+Version 1.12a  (Jean-loup Gailly, 21 Oct 1998)
+- add the Help button (Cyril Banderier)
+- add help on the changeable fields in my own stats (info and all toggles)
+- click with control-left button on a player in the players window to
+  mark this player, changing its widget color. Marking a player can be
+  used to remember a player who declined a game request, or who escaped, etc...
+  Use the resources *players*set*playerEntryMarked.background and
+  foreground to change the default marking colors. (Challenging a
+  player has been moved to control-right button.)
+- Ctrl-C quits the server and xgospel (Minh Quy)
+- to avoid retyping an old command, click somewhere in the line of the old
+  command in the main window then press Enter (glulaflemmarde)
+- Echo a command in ~/.xgospelrc if it starts with >
+  Force a prompt after execution of ~/.xgospelrc (User button).
+- Display the 4 names in the board title for team games
+- avoid "assumed adjourned" when observing team games
+- avoid parse error for undo in team games. However igs still has a bug
+  undo in team games (does not notify all players of the undo).
+- bug fix (correction de cafard) in exact rating display
+- avoid sending duplicate "observe" commands which sometimes result in
+  unobserve. (observe shouldn't be a toggle since the unobserve command exists)
+- ignore resource *useSay when playing in a team game (tell not allowed).
+- At the end of a teach game, display "There are no more moves" in game
+  window instead of main window.
+- update the default window sizes to take into account the new buttons
+- use more reasonable defaults for many resources (beep off, etc...)
+- use the nice board.xpm as default background. If you get a message
+  "Cannot convert string "board.xpm" to type Pixmap" then move the file
+  board.xpm to your current directory before starting xgospel, or add the
+  following resource in your resource file (update "full_directory_here"):
+xgospel*board.backgroundPixmap: pixmap(/full_directory_here/board.xpm)
+- add some variety in the cursors for the buttons of the main window
+- do not keep the Update button highlighted in Games and Players windows
+
+Version 1.12  (Jean-loup Gailly, 8 Oct 1998)
+- Add a Score button to analyze boards. To score, click on the Score button,
+  then click on dead stones. The current score is displayed in the board
+  title. If you clicked on a wrong point, click on Undo; to start scoring
+  again from the current game position, click on Copy. (Minh Quy &
+  glukidicasraibiensi)
+- Add resources *markTerritories and *markDame (default true), used when
+  scoring. To change the dame color use *board*dameColor (default green).
+- Enter scoring mode after 3 passes in my own game. Check all dames (shown
+  in green by default) and the score (displayed in the window title) before
+  clicking on Done. To avoid entering in scoring mode after 3 passes, set
+  *autoScore to false (default true). If you want to score your own game
+  before the 3 passes, use the "analyze" command and click on the Score
+  button of the Analyze board.
+     To switch between scoring mode and normal mode in your game window,
+  toggle "score" in the Options menu. The old "score" button has been
+  renamed "server score". (The server score and the local score should be
+  identical so you should no longer have to check the server score.)
+- In the analyze board, the left button now removes a single stone if there
+  is one, or a stone group in scoring mode. The middle button adds a black
+  stone, the right button adds a white stone.
+- display the game result in the analyze board of finished games.
+- Set default site to igs.joyjoy.net. To use igs.nuri.net until the server
+  moves, start xgospel with "xgospel -site igs.nuri.net &" or add the
+  line "xgospel*site: igs.nuri.net" (wihout the quotes) in your resource file.
+- Pop up the players window if an important person connects to IGS and if
+  *players*raise.state is true. A person is important if its importance is
+  >= minImportantRank. (See resource *playerImportance).
+- display exact rating even when using an alias for "stats" (glukisuggere)
+- display move number for pass, undo, etc... (glukidemandencore)
+- add resource *useSay. Set it to false if you do not want your conversation
+  with your opponent to be saved in the game record. (glukinaretpas)
+- pop up the stats window earlier, update exact rating and number of stored
+  games when the IGS answers come back.
+- avoid parse errors for illegal move and done message (Cyril Banderier)
+- avoid parse error for "teach invalid-game" (Minh Quy)
+- define RAND_MAX for SunOS 4.x (Cyril Banderier)
+- comment out resources with correct default values in XGospel.res
+- fix creation/update of stones_gc in GoBoard.c
+- fix DownFromBottom error when reloading a game containing multiple passes.
+
+Version 1.11c7  (Jean-loup Gailly, 17 Sept 1998)
+- For important games, the game window pops up if *games*raise.state is true.
+  A game is important if the importance of either player >= minImportantRank
+  The importance of players (friends in particular) can be set with the
+  resource *playerImportance. (Yet another request by Minh Quy Nguyen).
+- fix parse error for stats on non-existing player
+- do not display an error message on "stats" if my rating is not yet computed
+  (Minh Quy Nguyen).
+- fix placement of uptime command (bad in 1.11c6 only)
+
+Version 1.11c6  (Jean-loup Gailly, 16 Sept 1998)
+- exact rating is now displayed for other players too (Minh Quy Nguyen).
+  This works only if you have yourself a rank other than NR.
+- display "player has been idle for 5s" in tell window if one exists
+  (Gabriel de Dietrich)
+- include results and exact rating when typing "stats player" manually.
+- for non-* players, display the rating instead of the rank after "Rating:".
+- add number of stored games in the stats window
+- display the output of uptime only if option Verbose is on.
+- allow changing your info from the stats window even if it starts with
+  a newline. (You can still set your toggles from the stats window too.)
+- avoid warnings for accept (Minh Quy Nguyen)
+- avoid warning for infinite loop in rport.c
+- fix the importance mapping for 1p to 9p.
+
+Version 1.11c5  (Jean-loup Gailly, 14 Sept 1998)
+- fix a parse error for proba (Minh Quy Nguyen)
+- initialise maintainerRating to get exact rating more quickly
+- avoid warnings for getsockname (length int* on Solaris, ulong* on AIX)
+  (Minh Quy Nguyen)
+
+Version 1.11c4  (Jean-loup Gailly, 13 Sept 1998)
+- add the exact rating in my stats window (Minh Quy Nguyen)
+- fix the "results -name" feature (results were not displayed in stats window)
+- fix the "resume" button which had never worked before :)
+- fix the "fmc" bug (user line with more than 999 games caused parse error)
+
+Version 1.11c3  (Jean-loup Gailly, 11 Sept 1998)
+- add "Observe" button in Tell window (Minh Quy Nguyen)
+  This button doesn't work on replayed games (player name with a *).
+- add "Tell" and "Observe" buttons in Stats window.
+  These buttons don't work on dummy players (player name with a *).
+- in the players window, middle button now observes the game this
+  player is currently playing. You can still challenge this player with
+  control-left button, but this is not recommened: use tell first.
+  The middle button doesn't work on a dummy player (player name with a *)
+- send "results -name" to void multiple matches with name1, etc...
+- fix fprintf -> printf in CallNoCouple() (Jan van der Steen)
+
+Version 1.11c2  (Jean-loup Gailly, 6 Sept 1998)
+- when I'm playing and my time is low, color also the kibitz input area in red
+  to make sure that I see it.
+
+Version 1.11c1  (Jean-loup Gailly, 5 Sept 1998)
+- added auto reply for tell and beep. Use the resource *autoReplyMessage
+  to change the reply message. If the tell window does not exist yet, the
+  message sent by the other person is shown in the main window to avoid
+  blocking xgospel for a window creation. The message is shown with a '#'
+  character to indicate that an auto-reply was sent.
+
+Version 1.11c  (Jean-loup Gailly, 3 Sept 1998)
+- added optional %G (game number) for titles
+- add move number in kibitzes (Charlie Wine). To disable this, set resource
+  *numberKibitzes or option "number kibitzes" to false.
+- in the players and games sorts, consider 3d < 3d* < 4d < 4d* etc...
+- by default, players 5d and above are now highlighted as pros. You can change
+  this limit to 4d or 1p for example with the resource *minProRank.
+- document the resource gameToWidget in XGospel.res
+
+Version 1.11b2  (Jean-loup Gailly, 9 July 1998)
+- avoid bad tell window after a challenge (Minh Quy Nguyen)
+- keep same white stone version when redrawing (Barry Friedman)
+- increase number of different white stones from 5 to 10 (Barry Friedman)
+- allow zero timeout for games and players windows in "programm settings"
+- document problems with zero games timeout in XGospel.res
+- work around IGS bug which reports a negative number of bets (still use
+  the right mouse button to bet)
+
+Version 1.11b1  (Jean-loup Gailly, 18 May 1998)
+- Quit after 20 write errors on a bad connexion to avoid an endless loop in
+  some cases.
+- avoid warning "Actions not found: scrollmove" when starting observation.
+
+Version 1.11b  (Jean-loup Gailly, 15 May 1998)
+- Use the Up or Down key to go one move up or down in the game,
+  shift+Up to go to the beginning, shift+Down to go to the end.
+- Work around a nasty bug in Xaw, which doesn't show the insertion point
+  when a long line is wrapped. So the end of the line could be hidden.
+  The workaround forces scrolling until all the text is displayed.
+
+Version 1.11a1  (Jean-loup Gailly, 13 May 1998)
+- fix alignment in game window for 1 or 2 digit move number (Charlie Wine)
+
+Version 1.11a  (Jean-loup Gailly, 12 May 1998)
+- suppress the debug output (such as "off 6, 13, col 2") left by mistake
+- fix the version message (ftp in Go/igs_clients/Unix instead of Go/clients)
+
+Version 1.11  (Jean-loup Gailly, 10 May 1998)
+- display very nice stones, with many thanks to Bill Shubert, author of cgoban.
+  (The stones drawing code is adapted from that of cgoban 1.9.2). cgoban
+  is available in http://www.hevanet.com/wms/comp/cgoban/
+  Set resource *board.simpleStones to true to keep the old black&white stones.
+- the resource *blink.state is now false by default (no blinking).
+- support the automatch command. When an automatch request is received,
+  a challenge window pops up with color and rules dimmed (not selectable).
+  (The IGS protocol does not allow changing the parameters. You must first
+   decline the automatch, then make a normal challenge.)
+- if the resource *gamesTimeout is zero, xgospel will not automatically
+  ask for the games list; click on the Update button to refresh the list.
+  Same for *whoTimeout and the player window. This can be useful for people
+  with important netlag. If you want to reduce traffic with IGS even further,
+  then type "toggle quiet on" or put this command in your ~/.xgospelrc
+- if either *gamesTimeout or *whoTimeout is zero, xgospel will not send the
+  "uptime" command initially; then type "uptime" explicitly to initialize
+  the IGS local time in the main window.
+- fix a parse error after the "translate" command if IGS complains about
+  too many matches.
+- accept xshout (IGS message) with names liked by some IGS administrators,
+  such as "*8^)*".
+- send the xgospel version to IGS with the new "id" command.
+
+Version 1.10g1  (Jean-loup Gailly, 21 April 1998)
+- fix reload of handicap games (handicap stones were not displayed; bug
+  introduced in 1.10f3).
+
+Version 1.10g  (Jean-loup Gailly, 17 April 1998)
+- Include '*' for rated players in game window
+- fix alignment in game window for 3 digit game numbers
+
+Version 1.10f4  (Jean-loup Gailly, 8 April 1998)
+- Do not send "refresh" when the time in a "request" game goes negative.
+- Add exemple of "enemy" list in XGospel.res (useful to avoid escapers)
+- You can now create a tell window by typing "tell player ..." (without
+  having to find the player in the Players window).
+- display warning if user closes the board while playing
+- send also "moves" if user types "refresh", to make sure board pops up
+  if user has closed board while playing.
+- avoid parse error when reloading game with open toggled off
+- remove shift/reduce conflict in gointer.y for illegal moves
+
+Version 1.10f3  (Jean-loup Gailly, 5 April 1998)
+- add resource *playerImportance. Players and games are now by default sorted
+  by importance instead of strength. The importance of a player is the strength
+  by default. The importance of a set of players can be changed by defining
+  the set in *playerToWidget (such as all players with a Friend entry), and
+  by defining the importance of this set in *playerImportance. An importance
+  above 10p ensures that the set always appears first, but you can also assign
+  an importance equal to your own strength to let all your IGS friends
+  appear close to you in the players window.
+  Alternatively, you can sort players by status: if you want to put all
+  "looking" players first, define the set "Looking" and set its importance
+  above 10p. When sorting by status, the players window is not constantly
+  sorted to avoid too much overhead; click on "Update" to refresh the window.
+  Note that updating by status uses much more CPU time.
+- for games higlighting with *simpleNames false, check also playerToWidget
+  before using the player strength; this puts games of friends first in the
+  game list.
+- allow changing resouce *simpleNames in the "Program Settings" panel
+- add resource *playersUpdateTimeout in sample file XGospel.res
+- force displaying board when my game is resumed and board was gone.
+- force updating player times when game is resumed
+- the refresh button now sends both "refresh" (to win on time) and "moves"
+  (if board is wrong for some reason)
+- do not compile unused function MyPrintEventSeq which causes problems on AIX
+- use reasonable defaults for *viewport.preferredPaneSize for people who
+  forget to set those resources.
+- reduce default values of some timeouts
+
+Version 1.10f2  (Jean-loup Gailly, 31 March 1998)
+- if minSecPerMove is too large for the chosen game speed, it is reduced
+  to the average time per move (byoyomi minutes * 60 / 25 stones). Thus
+  setting *minSecPerMove: 60 effectively gives an optimal minSecPerMove for
+  each game regardless of the game speed.
+- send refresh when time first gets negative and no byoyomi, to force
+  byoyomi mode.
+- add message in game window when opponent has typed "done".
+- fix parse error in case of illegal move
+- fix parse error in case of empty line after "done" message.
+- do not send "time" for teach games.
+- do not drop the last character for illegal move message.
+
+Version 1.10f1  (Jean-loup Gailly, 30 March 1998)
+- xgospel can warn when the time per move of a player is getting low.
+  See the resources *myLowTimeBackground, *minSecPerMove and related
+  resources towards the end of the sample resource file XGospel.res
+  The parameters minSecPerMove and minLagMargin can also be set
+  dynamically with the "program settings" panel.
+- display negative times too
+- add resources *defaultTime and *defaultByoYomi (10 10 instead of 75 10)
+- speed up redisplay of players window even with *simpleNames: False
+- fix the support of the trail command. However do not start a game with a
+  person you have trailed: IGS sends everything twice (once as observer,
+  once as player). Waiting for IGS fix instead of making awful kludges in
+  xgospel to deal with this.
+- update remaining time when time has been increased, and add a comment
+  in the game window.
+- send "refresh" instead of "moves" for the refresh button; this terminates
+  the game if your opponent has run out of time. Send "time" only if
+  it's my turn to play, to update the remaining time.
+- fix parse error for channels when IGS sends empty lines
+- do not assume that all games are deleted if race condition between
+  "games" and "games id".
+- do not popup warning for interim versions such as 1.10f1.
+- do not set allowResize to false in XGospel.res (caused wrong size for help)
+
+Version 1.10f  (Jean-loup Gailly, 26 March 1998)
+- fix race condition which gave "Invalid moves for game ..." when observing
+  multiple games
+- fix parse error with "Game saved" when bell toggle is true
+- support team games (4 players only)
+- show game title in "request" games
+- add "verbose" option in main menu. Warnings are displayed only if verbose.
+- add *simpleNames resources. Set *simpleNames to True if playerToWidget
+  contains complete user names and no regular expression. In this case
+  xgospel is *much* faster and highlights games using player name matching
+  instead of game name matching. The default is True.
+- pop up Tell window when a notified player logs on (if resource
+  *tells*raise.state is True)
+- support the trail command
+- change default colors for the Friend resources in XGospel.res
+- Made sure the lex c-files depend on the corresponding yacc .tab.h files (Ton)
+- Fixed an alignment bug in MyScrollbarSetThumb (Ton)
+
+Version 1.10e  (Jean-loup Gailly, 17 March 1998)
+- add client-side time control (cancels the effect of netlag)
+- make games and players windows scrollable
+- add sample resource file XGospel.res
+- add support for ~/.xgospelrc [Colin Paul Adams <colin@colina.demon.co.uk> ]
+  If this file exists, xgospel reads each line as an igs command, and issues
+  the command.
+- add User button to execute .xgospelrc at any time. (For example
+  you can put the command "user fr" in this file and click on the User
+  button to get a list of all French users.)
+- do not emit the obsolete "review" command regularly
+- suppress the review button
+- adapt to new formats for undo in teaching games
+  (with bell toggle either on or off)
+- in teaching games, add the 'Forw' button to go quickly forward through
+  the game. Use the 'Undo' button to go quickly backward.
+- do not complain for new format of "users" command.
+- accept kibitzes even when the bell toggle is off [Barry Friedman
+  <friedman@nortel.ca> ]
+- accept the beep command even when the bell toggle is off
+- do not emit warnings for player names starting with '*'
+- allow "stats" on player names starting with '*'
+- filter repeated shouts (append + only at the end) [Charlie Wine
+  <cwine@sgate.sarnoff.com> ]
+- adapt to new format of 'uptime' output to get correct IGS time
+- adapt to new format of 'adjourn' output
+- adapt to new format of 'sgf' output
+- display explicitly who is black and who is white in observe title
+
+Version 1.10d
+- Improved messages in config.log: the attempted action is also logged
+  This should ease the debugging of configure problems.
+- Updated to autoconf 2.7.
+- Don't push LIB anymore. After several compiles the libraries kept on
+  accumulating
+- Removed attempt to link with libraries we don't necessarily have.
+  On some machines it's an error to try to link with a non-existing library,
+  even if all symbols get resolved.
+- rport: Added SO_REUSEADDR option to sockets in case you want to force a bind.
+         Added throughput measurement.
+         Rewrote command parsing as to easily add options.
+         Removed a small bug in "host not found" error.
+         Fix for changed exception semantics.
+         Started with the start of some rudimentary UDP support :-)
+- Captured stone now lists prisoners: change added.
+  Fix previous fix for handicap.
+Version 1.10c
+- New default font turned out to give typical linux setups too much freedom.
+  Now also specify more font properties. Hope this still works on other
+  machines (at least ok for sun, linux and sgi).
+- The output of the score command must have been changed some time ago (it even
+  improved). Support it again.
+- Give more verbose results if configure fails. Doesn't help though. If
+  configure says `Can't compile xgospel because you don't have X-windows',
+  people still send mail asking `why can't I compile xgospel ?'
+- Some extra NNGS changes.
+- Support for chatter.
+- Work around an X bug on Solaris causing unrealizes on a popup widget to be
+  illegal.
+- Don't try to use -lfl in case it's in a weird place.
+- Only check for gethostbyname() after checking for -lsocket
+- Entry message can now mention something else than IGS.
+- Unknown answers now get their preceding numbers stripped.
+- Name of log file can now depend on hostname, remote server and remote port.
+- rport now knows who it is in case of an exception.
+- If make sets RM to `rm', reset it to `rm -f'
+- Detect existence of socks library.
+- Also add extra libraries (socket, nsl) for non X programs that use sockets
+  (Are we portable yet ?)
+- In case the compiler itself fails, print the contents of config.log since
+  it often indicates what went wrong. Maybe now I will get bug reports more
+  intelligent then "It doesn't work".
+- Upgraded to flex 2.5.2. Removed some spurious warnings from the .l files.
+Version 1.10b
+- Fixed an extremely silly bug in regex/Makefile.in where the 
+  makedepends with and without the -p option got exchanged.
+- Fixed a few lines in configure for machines that can't redirect the result of
+  eval.
+Version 1.10a
+- If we send out the "toggle client on" command, make sure we are already
+  registered as `Passed', so when we get a stats result, there will be a `Me' 
+  person (needed for guest, and people who use xgospel for the first time).
+- You can now set a log on the rport master connection, which gets transferred
+  to the first client.
+  Also close sooner if we know the read error from a connect to be fatal.
+Version 1.10
+- support the `configure' method of compiling on machines without X (using the
+  --without-x option). This is mainly for people who want to compile just 
+  `rport'. You can't compile xgospel with such a setup of course.
+- Further (mainly cosmetic) changes to Makefiles, INSTALL, FAQ and README.
+  Are we ready for prime time yet ?
+- Fix a few Imakefile problems.
+- Revert to the xgospel 1.9 colors. They give better results on mono servers.
+  They are a bit less nice to the color map since they use hex codes instead
+  of color names.
+- If `configure' discovers that your system has standard header files, don't
+  repeat the specific test for these header files.
+- If xmkmf is run on a completely new system, improve the error message
+- If one of the Makefiles got recreated by configure, call the real target
+  using a new make so changes do get applied.
+- Now that I found at least one system with inconsistent Xlib and Xt versions,
+  check for that too.
+- Made sure configure and xmkmf work on SP2, RS6000, alpha, solaris, hpux, and
+  sunos.
+- Shut up some RS6000 compiler warnings. Include <sys/select.h> if available,
+  since RS6000 needs these for fd_set.
+- Don't use variables named `Time': solaris compiler doesn't like the fact 
+  that it also exists as a typedef.
+- Many `configure' changes:
+   +added a dummy localdepend target, with a sleep 1 for those stupid makes
+      that don't resolve file dates precisely (down with HP)..
+   +detect values for ARFLAGS and RM makeflags and set them if make doesn't
+   +Don't depend on make being able to do double variable substitution: $($a))
+      many a make can't.
+   +also use X_CFLAGS when just running the preprocessor: make it possible
+    to run the normal CPP tests using X include files.
+   +Added a general rule to detect prototypes.
+   +When checking for a variable/function, really use it or the compiler
+    might not generate a reference, and the check will always succeed.
+   +Remove the double nsl/socket library tests.
+- Added a movedist make target for transporting the files that really matter.
+- Activate error and kibitz settings in review.
+- We don't need to determine the system type anymore. Get extra defines and
+  include files from gcc itself.
+- distinguish between old style sun and solaris in Imakefile
+- Check X release in configure (and complain if before 5)
+- removed a bug in `look': it would try to get the AllowSuicide property of a
+  non existing game.
+- upgraded to autoconf 2.3
+- prepared configure for machines whose make has problems with library rules
+  These will now leave the .o files when building libraries
+- End of review messages have changed on the server. Fixed.
+- Adjourn exchange had changed on the server. Fixed.
+- Gave the box widgets in reviews, players and games the general name `set',
+  so it's easy to set resources that control all of them (or their children).
+- updated the documentation a bit (README and INSTALL), still no man page
+- split out local autoconf macros to aclocal.m4
+- use getlogin on systems that don't have cuserid
+- added a menu option to toggle shell resize on players, games and reviews
+- upgraded to autoconf 2.2
+- rport can now also log what passes through its connections.
+- By default use the real version (not the one from the X resources) for the
+  main widget title bar. You can also put the compile time in there.
+- check whether makedepend supports the -p option and don't use it in the
+  subdirectory rules if not.
+- You can now set your info from the stats widget.
+- The toggle-able parts of your own stats widget are now toggle widgets that
+  you can use to change the setting.
+- On request by tweet added an automatic disconnect after 45 minutes of 
+  inactivity.
+- class in widgettree is now also a settable resource.
+- Now also analyze the observed/played part of the who command, and keep it up
+  to date using the verbose server output. This will give a more accurate idea
+  of whether someone is observing/playing a game.
+- recognize the output of the users command
+- Finally found a way to force a text widget to resize to it's natural size.
+  This should allow results/info to appear more natural.
+- stats (results) could overflow string buffer. Buffer is now output in safe
+  chunks (I hate the fact that you can't easily predict the length of the
+  result of an sprintf).
+- You could do a move with the wrong color on an analyzeboard if you were
+  scrolled back to a point were the other person was to move. Fixed.
+- Changed gospel.c such that suicide is optionally allowed. This lead to some
+  streamlining of the code there (and even one small bug fix). Needed since IGS
+  seems to allow suicide nowadays.
+- Added the extra files (relay, relog, rport) for etags and depend processing.
+- Added the ability to add kill/pass patterns for tell, broadcast, yell and
+  kibitz.
+- regex functions got a different prefix (Linux changed to elf libraries, and
+  with these even the regex functions in libc would be replaced by mine. Since
+  that is overdoing things a bit, I tried to remove all name clashes)
+- Added support for the bet command
+- Replaced quite a few functions that referred to a player name to refer to a
+  player structure: less string operations, less malloc/free
+- MyNameToWidget() will now also work on class components (needed in the
+  challenge popup resources so the text widgets can have general names)
+- rewrote the parsing of a match dispute.
+- in "new settings" popup you can now use left/right mouse buttons on the
+  command widgets to increase/decrease the values
+- New debugging command for viewing the internal clocks: "showcounters".
+- You can now set the startup name of a witchet in myxlib using a resource.
+  This makes it possible to have different properties using one template.
+  Directly used this for stats, should also use it in players, games and
+  reviews
+- Removed a rather old bug in directly destroying a game: observe data
+  structure got freed twice
+- Added tearof menus to myxlib (and of course replaced all menus by tearof
+  menus if you use the right mouse button).
+- Stats now become a centrally managed piece of data instead of something
+  that pops up after which the program promptly forgets it exists.
+- Changed exceptions such that unless you clear an exception it gets raised
+  again (this turned out to be much more common than the previous default of
+  always clearing the exception)
+  Also provided some initial declarations for exception types.
+- In GOE match exchange the IGS message "Match" was replaced by "match".
+  xgospel will now accept both.
+- Match exchange is now done with a popup (still rather primitive though)
+- Added general routines for coupling a toggle widget with a popup widget
+- "make depend" and "make TAGS" refered to the wrong directory if
+  $(srcdir) != . Fixed.
+- Try to force passing of some variables when rechecking the configuration
+  This way you don't have to reset these extra CFLAGS and LDFLAGS each time
+- Closing a game you are playing will not result in an unobserve anymore
+- Sorting method of games/players is now determined by a radio group. Also
+  means the resource name changed. Sort booleans in the program settings
+  removed.
+- removed a few buggy commas in resources.c
+- default SmeToggle radio_data now comes from XtName(). The old method does
+  not work for objects. (Did it work under R5, or was it always wrong ??)
+- SmeToggle radiogroup is now by default one (not zero) of many
+- recognize "server full" message.
+Version 1.9
+- Bug/beep conversion gave a widget name clash. Fixed.
+- Removed an alignment problem for alpha in gospel.c
+- More casts to avoid warnings on very picky compilers
+- added install and uninstall targets to the makefile
+- Replaced bug by beep everywhere (changed IGS command)
+- Fixed scrollbar in reviews widget.
+- When determining own host, prefer fully resolved names
+- Don't crash if someone uses broadcast or channels before login
+- Made the program work with Xaw3d again (menus broke it).
+- Added quit and update buttons to the games, players and reviews widget
+- made GNU autoconf the default installation procedure
+- added caching for the private autoconf tests
+- upgraded to autoconf 2.1
+- no more auto reconnect for guests (they cannot be properly shaken down)
+- added a replay option in analyze
+- added support for systems where you can't set sockets to nonblocking
+- added rudimentary builtin TERM support
+- fixed problem with pass in review of non 19x19 boards.
+- Moved the glint for black stones to the upper left
+- Added the ability to "click" or "beep" to the analyze board
+  (mainly to make it easier to test the audio device, but who knows, 
+   maybe you like all this noise).
+- Add support for new "change channel title" message.
+- NodeName is now correctly a local sgf property.
+- also added builtin pixmaps.
+- added "builtin" bitmaps to the String to bitmap converter. This allowed me
+  to remove the kludgey bitmap manager from SmeToggle.
+- Made a real resource converter from the old String to Pixmap converter
+- Fixed the fact that a reviewed game which you are not observed anymore
+  would have it's moves forgotten.
+- reviews will now generate a new node even if no move is made in the sent
+  node.
+- Added a string to bitmap converter in myxlib that will also accept pixmaps.
+  This makes color icons possible if compiled with Xpm (also makes it
+  possible to cause X errors by loading pixmaps in real bitmap fields, but
+  fixing that would require a change to the resourcetype of iconPixmap, which
+  would require a change too deep in the X libraries).
+- update rate of the visible clocks (local, universal, server) is now a
+  resource.
+- Added a kind of macro-expansion to the widgettree resource. So now:
+   - it's easier to change a part of the widget structure from a resource file
+   - all resources are less than 1024 bytes in length (The X11 resource
+     functions will silently trash memory for resources bigger than BUFSIZ)
+  Startup time seems slower though :-(
+- Removed a bug in my/showwidgets handling of colormaps
+- Made changes to be able to compile on X11R6
+- Eat the spurious ^M generated by the % prefix (fixed on the server by now).
+- showwidgets.c displayed the value of the Text widget wrap resource
+  incorrectly. Fixed.
+- preceding a command by "literal " on the command line will turn off all
+  xgospel processing of the answer
+- Setting resource DumpOnXError to true will now also dump core on an Xt error.
+- Replaced stats entries with text widgets so users can use the mouse on them
+  for selection.
+- Added some support for the score command.
+- Review should not have a refresh entry in commands. Removed.
+- Only one big comment block per node in an sgf file. Many viewers seem to have
+  problems with multiple comments on a node.
+- Add support for reviewing games saved in sgf format
+- Fixed the GameMessage calls in reviews.c that had spurious newlines
+- If a reviewed game does not exist, don't go into a loop.
+- Fixed problem with SMT extension on alpha OSF1
+- Doing an sgf command now adds the resulting games to the reviewlist
+- Fixed the fact that you couldn't start a review from the command line anymore
+- goserver.l ECHO rule needs break if YYBREAK is empty !!
+  (an invalid char in the parse caused flex to go into YYTERMINATE, so bison
+   got an EOF, and xgospel thought the connection was lost. So bison started to
+  look for the new login sequence, and never got it. This at last (I hope) 
+  explains the very bad error recovery of the xgospel parser).
+- Regular expression matching of player entry to decide its widget name 
+- Solaris compiler gave some more relevant warnings (why are all these other
+  compilers so silent (some glaring type clashes) ?). Fixed.
+Version 1.8h
+- unobserve game when you quit the last observe widget.
+- Fixed CommentFun Free declaration in gospel.h (how is it possible that no
+  compiler noticed this before ?)
+- parser can now handle an empty player list
+- Added improved cast for the XtPointer <-> int conversion. This should reduce
+  the warnings on alpha (where sizeof(int) != sizeof(long) == sizeof(void *))
+  (I hope it removes all warnings, but the only alpha I have access to only
+  has a compiler that doesn't give these warnings)
+- CHANGESTRING macro will now also handle NULL strings
+- Sparcaudio is now always compiled in. If you want it, you will have to set
+  the audiofile resource though (useful now that more machines provide a
+  sparc-like /dev/audio, and even sparc users don't always sit behind the 
+  console. Also one less thing to understand for somebody who compiles xgospel)
+- Fixed the fact that commands from the command line still did printf %.
+  substitution from garbage on the stack
+- Added alternate setup procedure using GNU configure
+   for this also renamed several of the configuration DEFINES
+- parse of review command added (only principal variation though)
+- error rules in gointer.y improved
+- Made scrolling of text in tell/broadcast/channel a bit smoother
+- removed bug were it would send a moves command if some game resumed
+- use say (not tell) when talking to opponent during scoring
+- Some patches for the fact that alpha long is 8 bytes. This causes problems
+  with the name server lookup functions. I hope the changes are portable to
+  other 8 byte long machines (should still be ok on 4 byte long machines)
+- Removed some dependency of internal format of X Callback structures. Makes
+  the thing more portable (in particular to alpha OSF1)
+- if you get out of client mode you should now be able to give some commands 
+  (like toggle client on)
+- Removed errors for systems that define const to nothing in the bison files
+- Add a panel that allows you to change some login options interactively
+- Remove malloc redefines in .y files on systems that have include files
+  redefining
+ malloc, free and/or calloc.
+- Slow down players list update to at most once every n seconds (default 20)
+- Ignore tell sent conform.
+- removed bug in SetGameTitle
+- Imake.options now gets its default settings from the imake Architecture flag
+Version 1.8g
+- very primitive filtering of commands in the main window for xgospel commands
+- connect.c will be more aggressive in eating carriage returns.
+  This should help with buggy telnets (mainly AIX).
+- On bad telnets it was possible to get stuck in the goserver.l STATUS state.
+  This is fixed.
+- pointer error causing crash when looking at game fixed.
+- Don't send a moves command if we can deduce that no moves have been played
+  (improves game startup time)
+- when trying to find a reference to a previous game, search for most recent
+  first
+- If a game log is found to be inconsistent, the game is replaced by an
+  equivalent one (this should halt the most common assert exception)
+- kludged away the last flex and bison warnings for unused static functions
+- title of teaching game is now mentioned on each move. Support added.
+- removed the forcenewgame kludge.
+- adding to observation list now considered an atomic message
+  (in case a game disappears just as you start observing).
+- resume directly adds game back to list (without causing a games command)
+- remove all alloca() use from the bison generated files
+- support for kibitz messages that start at 2 spaces after the 11 (how the heck
+  do people send that ?)
+- Support for title in teaching game
+- Handle the case you get a file that is not a game mailed
+- When a move is done, never wait for more then 2 seconds before sending or
+  forcing a resync
+Version 1.8f
+- Changed to newer flex version. My old one could give infinite loops on sun4
+- If the connection is lost, your own games now get the adjourned flag
+- bug in handling of pass in games by xgospel user solved
+- Allow replay (default 1 move/second) of game up to current position
+- Fix bug where a game could appear twice in the list
+- suppress games/players database warnings when login sequence was not
+  finished yet.
+- Now show both movenumber of current board, and number of moves played
+- Fixed logging on to a user with client mode with the wrong password
+- In AixEsa the quark translations bug has now been fixed
+  (seems like it was a bug in older X11R5 libraries)
+- Analyzeboard left and right mouse buttons now toggle between putting black
+  and white stones.
+- All things that beeped to announce an event can now also raise their
+  corresponding window.
+- you can now play a teaching game.
+- fix for changes in GOE match dead group dispute
+- Support for tgmatch and tmatch
+- Fixed for new game flags
+- Fixed stats, the command now includes whose stats it are
+- Made -site and -port behavior like the other options. It should have worked
+  like it was, but on some systems it seems not to.
+- Fix for changed "mailed" message
+- If xgospel notices the start of a new game, it does not directly add an
+  entry, but first asks info about that new game. Now this asking has some
+  added context so that when the info arrives, it is forced to be a new game,
+  and can never be matched with an adjourned game.
+- Added just enough functionality to allow a guest to log in and to register
+- Removed "unreachable code" warnings from goserver.c
+- Changed parsing of byo yomi to allow GOE style "penalty" stones
+- Also changed parsing of game resumption to allow for byo yomi message at the
+  moment a game gets resumed.
+Version 1.8e
+  Bug fix version made by obh@ifi.uio.no
+Version 1.8d
+- Fix bug where players list sorting got really confused (ChangeStrength()
+  fix in 1.8c was too aggressive)
+- Remove confusing double message about adjourned game
+- Error messages for problems with files always used 0 as errno. Fixed.
+Version 1.8c
+- Fix bug in displaying of players. ChangeStrength() was still using the old
+  method.
+- Show handicap on observation window
+- Really fix bug in undo in analyze.
+Version 1.8b
+- Remove all '= where possibly == was intended' warnings. Too many compilers
+  do this nowadays (Never understood why, since it's a question of programming
+  style. The next generation of compilers will probably start checking my
+  indentation style :-) ).
+- Added code for adjourn exchange
+- removed spurious newline from illegal move message
+- Added code to estimate IGS server round trip times
+- Built in support for GOE match.
+- The message you get when your version is out of date is now a resource
+  (VersionMessage). This allows language customization.
+- Fix bug in undo in analyze
+- Fix for change in channel messages format
+- Partly fix for upcoming change in who
+- Fix for changed numbers in automatch
+- Fix for game saved messages with different number, and that they can now
+  also happen when the opponent move arrives
+Version 1.8a
+- Allow copying of new situation into analyze board
+- Games started/stopped is batched now -> some speed improvement
+- Player connect/disconnect is batched now -> serious speed improvement
+- Login sequence turned out to be fooled by the terminal setting commands.
+  (only happened when you didn't have client mode at the moment of first login)
+Version 1.8
+- added support for goe rules
+- newmatch message changed (game id added).
+- Used xpaint to draw a good wood like backgroundpixmap (board.xpm)
+  (It was inspired by (but is different from) the pixmap in xgo)
+- Added a bit of code to measure X server round trip times without stopping I/O
+  (not used yet, but meant to implement back off when things get slow)
+- Colors for the games determined from the strongest player.
+- rewrote stone positioning for better results on (correct) X11R5 servers
+- arc width/height could become smaller than 0 sending XP12 X server into a
+  veeeeeery slooooow update. Fixed.
+- erase stones by drawing the background over them. Is faster.
+- don't directly close connection when an error occurs on a socket. Sometimes
+  we can recover.
+- Komi is shown on observe and play board
+- displayed results (clicking "stats" on some player) are now filtered
+  for entries where the name was just a prefix
+- If you played outside the board, it would detect the invalid move, but not
+  recover. Now it will just ring the error bell.
+- If you do a move, and it is not yet handled by the server, already put the
+  position marks. This way the user is sure the mouse click came through.
+- improved parsing in pixmap converter (for people using xpm). Now the spaces
+  get parsed from the colors.
+- Added multi line tell, broadcast, yell and kibitz ability (allows paste of
+  multi line text)
+- removed pseudo tty from relay.c . Turned out to be too non portable
+  (can still be enabled with -DPSEUDOBSD)
+- make main widget the real applicationshell. I used to get the same effect
+  using groupwindows, but some windowmanagers (gwm) were not fooled (according
+  to the specs they should have been though). Success is doubtful, since gwm
+  can still not be completely convinced not to put all xgospel windows in one
+  icon
+- Generalized board wedges to work with backgroundpixmaps (ParentRelative
+  and CopyFromParent are still unsupported)
+- Added relay.c, allowing connections with an arbitrary amount of connection
+  methods in between. Will only work on BSD4.3 alike systems though.
+- Improved resynchronization, also because of terrible net. Only send commands
+  when the pending responses buffer is empty, so if we send a command we will
+  never consider the already received stuff an answer.
+- The local flaky net got on my nerves so much that I added an automatic 
+  reconnect after 15 seconds of no connection.
+- Also give cleanconnection messages if write fails
+  Partial writes are still unhandled (exceptions)
+- Added wedges to board to indicate the last move
+- changed letter positioning in goboard slightly (better centering)
+- changed all =* to = * for these compilers that remember the ancient times
+  where =* meant `multiply by'
+- Fixed elusive redraw bug in GoBoard.c (sometimes it would redraw the outer
+  edge of the board without redrawing the stone), resulting in a white stone 
+  with a line through it.
+- Fixed invalid call to convert move description to coordinates. Would cause
+  problems if you started observing at an abnormal move (Pass, Handicap)
+- Added option to save in postscript format
+- In case of connection problems, we now try to resync by sending newlines
+  until connection is reestablished. Then the old command is resent. Before,
+  the command was resent again and again, and if response time was extremely
+  bad, the pending responses only made things worse (this method fails badly
+  if a response does not end with a prompt, which unfortunately happens when
+  IGS tries to send too long a response)
+- Now sends me real version information, instead of the thing set with *version
+- added RS/6000 support. xlc caught some non-ANSI-isms that even gcc -Wall
+  didn't complain about (mainly types in WidgetClass declarations). These were
+  `fixed' (xlc is probably too precise on its types).
+
+Version 1.7
+- Added closure information to SendCommand()
+- Added autorated to possible observe window titles
+- Connection now uses direct TCP/IP. This means some loss of flexibility with
+  the way of connecting, but finally allows full control over the connection
+  itself. Now that disconnect can be detected, reconnect has become possible.
+- Fixed bug that your own say was saved under the name of the opponent.
+- Fix for suddenly appearing "you must PASS" message
+- Removed -DYY_USE_PROTOS again. Some ANSI-like compilers have non ANSI
+  preprocessors. For non gnu c this means incorrect declarations in the
+  lex files.
+- Replaced all parsers by 8-bit parsers. Old version could get stuck on an 
+  extended character
+
+Version 1.6e
+
+- use `all', `observe' and `unobserve' responses for a better count of the 
+  number of observers.
+- improved error messages in the .l files in my/
+- Added -DYY_USE_PROTOS to the default flags. I'm assuming ANSI C prototypes
+  anyways, and it helps for non gcc compilers that don't set __STDC__ .
+- Fixed a few va_end's with a wrong variable (some compilers DO care)
+- Behave intelligently on `games nr', and use it instead of games when
+  possible.
+- Renamed all duplicate identifiers in my/TMyprint.c and removed _XtBoolean.
+  This should help porting.
+- Add CHANGES file to the distribution
+- Add FILES file to the distribution
+- Improved moves sharing
+- Fixed bug in reporting free games
+- kept on introducing kludges for automatch until it worked
+- Fix for changed byo yomi message
+- ChangeStrength passed on to Tell and Game
+- Ctrl left mouse on player entry gives debug info on player
+- games can be sorted by other criteria than id on server
+  (currently by strength of strongest player, if equal by weakest player, and
+   if equal by number on the server)
+- Version message now gives full ftp instructions
+- Do word wrap for very long stats info line
+- Sort result of observers query
+- Sort result of channels query
+- Add "observers" to command menu
+- Fixed problem with undo pass and undo handicap
+- Fixed bug in resource allocation in my/myxlib.c
+- Fixed bug in test code of my/mymalloc.c (some machines are very strict about
+  the alignment of longs)
+- remove reference to X libraries for link of relog
+  
+Previous version: 1.6d
+
+The rest of this file exists to make emacs (ispell) happy.
+
+ LocalWords:  Imakefile xgospel Xlib Xt SP fd localdepend ARFLAGS RM makeflags
+ LocalWords:  CPP nsl movedist AllowSuicide aclocal rport makedepend tweet GOE
+ LocalWords:  widgettree analyzeboard relog etags MyNameToWidget popup witchet
+ LocalWords:  showcounters myxlib tearof tearof unobserve SmeToggle XtName SMT
+ LocalWords:  radiogroup uninstall NodeName resourcetype iconPixmap BUFSIZ ok
+ LocalWords:  showwidgets colormaps DumpOnXError GameMessage reviewlist YYBREAK
+ LocalWords:  goserver YYTERMINATE CommentFun CHANGESTRING Sparcaudio audiofile
+ LocalWords:  gointer Callback const SetGameTitle forcenewgame resync AixEsa XP
+ LocalWords:  movenumber tgmatch tmatch byo yomi obh ifi uio ChangeStrength goe
+ LocalWords:  VersionMessage automatch newmatch xpaint backgroundpixmap xgo gwm
+ LocalWords:  veeeeeery slooooow Komi DPSEUDOBSD applicationshell groupwindows
+ LocalWords:  windowmanagers backgroundpixmaps ParentRelative CopyFromParent va
+ LocalWords:  cleanconnection goboard GoBoard isms WidgetClass SendCommand DYY
+ LocalWords:  autorated PROTOS end's TMyprint XtBoolean Ctrl mymalloc
+ LocalWords:  LocalWords
