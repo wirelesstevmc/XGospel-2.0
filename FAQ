@@ -1,0 +1,93 @@
+Q) The games and players windows don't display properly. They
+   draw a graph instead of listing the games or users.
+
+Read again the above paragraph about XGospel.res and the resources
+*preferredPaneSize
+
+Q) The Broadcast or Tell windows do not scroll properly
+
+Read again the xgospel README file and in particular:
+
+   All text  widgets in the  program will scroll automatically  as long as the
+   caret is at  the end of all text  (and it will  keep it at  the end).
+
+So click at the end of all text to get correct scrolling. Create empty
+lines if necessary by scrolling the text with the scrollbar, then click
+somewhere in the empty lines.
+
+Q) I get full boards displayed in ASCII in the main window instead of
+   a nice board window.
+
+You have incorrectly typed "toggle verbose on" or "toggle client off".
+Type "toggle client on" in the main window.
+
+Q) I have too much netlag. How can I reduce the traffic with IGS to the
+   strict minimum?
+
+Set the resources *gamesTimeout and *whoTimeout to 0, and add the command
+  toggle quiet on
+in your file ~/.xgospelrc. You will then have to click expliclitly on
+the Update button to refresh the games list or the players list.
+
+Q) I get "Warning: Cannot convert string "#FFA54F" to type Pixel"
+
+You do not have enough color cells available. If possible start X in
+16 or 24 bit mode to avoid this. On Linux, use "startx -- -bpp 16". If
+you have to stay in 8-bit mode, exit Netscape or other color-greedy
+programs before starting xgospel. (You can also start netscape with
+the -install option to force a private color map in netscape and thus
+avoid eating colors in the shared color map.)
+
+Q) I don't get xgospel compiled.
+
+A) Xgospel is  certainly not one of  the easiest programs  to get compiled. In
+fact, it's a  rather good  torture test of  your operating  system.  The first
+thing to realize   is that  the old  xmkmf   method of  compiling  is  not the
+preferred method anymore. It  just exists to give  you a second chance. Please
+use the configure method. Look in the INSTALL file for more info on how to use
+`configure'.
+   If it still doesn't  compile, please send  the author a mail (address  near
+the end  of the README file) with  at least operating  system name and version
+and machine  type  (see the end  of  the  INSTALL  file  on how   to determine
+them). Also send a  log of the make process  (see the `Which shell' section of
+the INSTALL file if you don't know how to collect the output of a command in a
+file). There is a good chance  that this is  enough information for the author
+to help you solve your  problem and maybe allows  him to change the  configure
+process so that the problem will never happen again.
+
+Q) Will  the program work on X11R3 or X11R4 ?
+
+A) No. R3 is  so different from the later  X11 releases that  it would be very
+hard to  get xgospel to work there.  The problem with R4  is  mainly that some
+widgets have  subtly different semantics.  Currently xgospel won't support R4,
+but that is mainly because I don't have  access to any R4  system that has the
+Athena widget set. So if you have such a system, and would like xgospel there,
+you might consider giving me access for a day or something....
+
+Q) How do I report bugs ?
+
+A) Send a mail to the  author (address near the end  of the README file), with
+all relevant information. At least give your operating system name and version
+and machine  type   (see the  end  of  the  INSTALL file on   how to determine
+them).   Give a good    description  of what  you   were  doing when the   bug
+occurred. Even better, if the bug  is repeatable, give  a description of how to
+make the bug happen.  A log of the communication with IGS might also be of use
+(see the README file for the *debugFILE resource)
+
+Q) Can I use xgospel over a modem ?
+
+A) Yes you can. Have a look in the README file  for the notes about `term' and
+'relay' (if possible  you definitely should prefer  term). Maybe  you can even
+use `rport'. Notice that  term is a  general solution and  you can use  it for
+other programs (and in particular, other IGS clients).
+
+Q) Can I use xgospel through a gateway ?
+
+A) Yes you can. Have a look in the README file for the notes about `rport' and
+'relay' (if  possible you definitely should prefer  rport). Maybe you can even
+use  term. Notice that  rport is a rather general  solution and you can use it
+for other programs (and in particular, other IGS clients).
+
+The rest of this file exists to make emacs (ispell) happy.
+
+ LocalWords:  xgospel debugFILE LocalWords rport
