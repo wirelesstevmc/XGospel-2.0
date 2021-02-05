@@ -1,0 +1,338 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+@SET_MAKE@
+RM   = @MAKE_RM@
+
+CC   = @CC@
+LEX  = @LEX@
+YACC = @YACC@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+transform=@program_transform_name@
+
+DEFS         = @DEFS@
+FUNCPROTO    = @FUNCPROTO@
+EDEFS        = $(DEFS) $(FUNCPROTO)
+LIBS         = @X_EXTRA_LIBS@ @LIBS@
+TERM_LIBS    = @TERM_LIBS@
+TERM_DIR     = @TERM_DIR@
+X_CFLAGS     = @X_CFLAGS@
+X_LIBS       = @X_LIBS@
+X_PRE_LIBS   = @X_PRE_LIBS@
+XAW_LIB      = @XAW_LIB@
+USE_X        = @USE_X@
+
+CFLAGS   = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS  = @LDFLAGS@
+
+# poor mans VPATH. You could for example set TMP to /tmp/ , so at least the
+# executable will not eat space in your source directory
+
+TMP     = 
+
+MY_LIBRARIES    = -lmy -lregex
+MY_LIBRARIESPATH= -Lmy -Lregex
+XGINCS          = -I$(srcdir)/my -I$(srcdir)/regex $(X_CFLAGS)
+RXINCS		= -Imy -Iregex $(X_CFLAGS)
+XGLIBS          = $(MY_LIBRARIESPATH) $(X_LIBS) $(MY_LIBRARIES) -lm\
+                  $(XAW_LIB) -lXmu -lXt -lXext $(X_PRE_LIBS) -lX11\
+                  $(TERM_LIBS) @RESOLVLIB@
+
+subdirs        = my regex
+compilesubdirs = $(subdirs)
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+binprefix =
+manprefix =
+
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+mandir = $(prefix)/man/man1
+manext = l
+
+SHELL       = /bin/sh
+DEPEND      = @MAKEDEPEND@
+DEPENDFLAGS = @DEPENDFLAGS@
+ETAGS       = @ETAGS@
+
+LFLAGS          = -I -8 -d
+YFLAGS          = -d
+
+# double make substitutions (like $a$(b)) ) would simplify this stuff a lot,
+# but they are not portable. I'm constantly amazed by what cruft vendors dare
+# to put in their distrubitions (long live GNU).
+
+PROGS_BASE    = $(TMP)relog $(TMP)relay
+PROGS_X_no    = $(INSTALL_PROGS_BASE) $(PROGS_BASE)
+PROGS_X_yes   = $(INSTALL_PROGS_X_yes) $(PROGS_BASE)
+PROGS         = $(PROGS_X_@USE_X@)
+
+# The subset of programs that matter for the install/uninstall targets
+INSTALL_PROGS_BASE  = $(TMP)rport
+INSTALL_PROGS_X_no  = $(INSTALL_PROGS_BASE)
+INSTALL_PROGS_X_yes = $(TMP)xgospel $(INSTALL_PROGS_BASE)
+INSTALL_PROGS = $(INSTALL_PROGS_X_@USE_X@)
+
+SRCS_X_no  =
+SRCS_X_yes = xgospel.c gospel.c resources.c GoBoard.c connect.c \
+       observe.c analyze.c stats.c reviews.c games.c players.c \
+       broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c
+EXTRASRCS = relog.c relay.c rport.c
+OBJS_X_no  =
+OBJS_X_yes = gointer.o goserver.o xgospel.o gospel.o resources.o GoBoard.o \
+       connect.o observe.o analyze.o stats.o reviews.o games.o players.o \
+       broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o
+SRCS = $(SRCS_X_@USE_X@)
+OBJS = $(OBJS_X_@USE_X@)
+
+# Do the real work by running a new make in case the Makefiles changed.
+# (otherwise we won't use the new make variables)
+
+all: localdepend my/Makefile regex/Makefile
+	$(MAKE) $(MKFLAGS) dummylibs $(PROGS)
+
+# The -I. is for the bison/flex generated files if you're not in $(srcdir)
+.c.o:
+	$(CC) -c $(CPPFLAGS) $(EDEFS) -I. -I$(srcdir) $(CFLAGS) $(XGINCS) $<
+
+PARSESRCS = goserver.l gointer.y
+
+goserver.c: goserver.l
+	@if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(LEX)" in \
+	  *flex*) echo $(LEX) $(LFLAGS) $$srcdir/goserver.l && \
+	          $(LEX) $(LFLAGS) $$srcdir/goserver.l && \
+	          echo "sed 's/yy/IgsYY/g' lex.yy.c > goserver.c" && \
+	          sed 's/yy/IgsYY/g' lex.yy.c > goserver.c && \
+	          $(RM) lex.yy.c;; \
+	  *) if [ $$srcdir != . ]; then \
+	       cp $$srcdir/goserver.c . ; \
+	     fi;; \
+	esac
+
+goserver.o: gointer.tab.h
+
+gointer.tab.h gointer.c: gointer.y
+	@if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	case "$(YACC)" in \
+	  *bison*) echo $(YACC) $(YFLAGS) $$srcdir/gointer.y && \
+	           $(YACC) $(YFLAGS) $$srcdir/gointer.y && \
+	           echo "sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/IgsYY/g' y.tab.c > gointer.c" && \
+	           sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/IgsYY/g' y.tab.c > gointer.c && \
+	           echo "sed 's/yy/IgsYY/g' y.tab.h > gointer.tab.h"; \
+	           sed 's/yy/IgsYY/g' y.tab.h > gointer.tab.h; \
+	           $(RM) y.tab.c y.tab.h;; \
+	  *) if [ $$srcdir != . ]; then \
+	       echo cp $$srcdir/gointer.c . && \
+	       cp $$srcdir/gointer.c . && \
+	       echo cp $$srcdir/gointer.tab.h . && \
+	       cp $$srcdir/gointer.tab.h . ; \
+	     fi;; \
+	esac
+
+$(TMP)xgospel: $(OBJS) my/libmy.a regex/libregex.a # dummylibs
+	$(RM) $@
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(XGLIBS) $(LIBS)
+
+$(TMP)relog: relog.o my/libmy.a # dummylibs
+	$(RM) $@
+	$(CC) $(LDFLAGS) -o $@ relog.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(LIBS)
+
+$(TMP)relay: relay.o my/libmy.a # dummylibs
+	$(RM) $@
+	$(CC) $(LDFLAGS) -o $@ relay.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) @RESOLVLIB@ $(LIBS)
+
+$(TMP)rport: rport.o my/libmy.a # dummylibs
+	$(RM) $@
+	$(CC) $(LDFLAGS) -o $@ rport.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) @RESOLVLIB@ $(LIBS)
+
+dummylibs:
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(compilesubdirs); do \
+	cd $$pwd/$$d; echo "making lib$$d.a in $$d..."; \
+	$(MAKE) $(MFLAGS); done
+
+###############################################################################
+# Install
+###############################################################################
+
+installdirs:
+	$(INSTALL_PROGRAM) -d $(bindir)
+
+install: all installdirs
+	case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	for p in $(INSTALL_PROGS); do \
+	  $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p | sed 's,.*/,,; $(transform)'`; \
+	done
+
+uninstall:
+	case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	for p in $(INSTALL_PROGS); do \
+	  $(RM) $(bindir)/`echo $$p | sed 's,.*/,,; $(transform)'`; \
+	done
+
+###############################################################################
+# Makefiles
+###############################################################################
+
+Makefile my/Makefile regex/Makefile: \
+	          Makefile.in my/Makefile.in regex/Makefile.in config.status
+	CPPFLAGS="$(CPPFLAGS)"; \
+	CFLAGS="$(CFLAGS)"; \
+	LDFLAGS="$(LDFLAGS)"; \
+	TERMDIR="$(TERMDIR)"; \
+	FUNCPROTO="$(FUNCPROTO)"; \
+	export CPPFLAGS CFLAGS LDFLAGS LIBS TERMDIR FUNCPROTO; \
+	$(SHELL) config.status
+	$(MAKE) $(MFLAGS) depend
+
+config.cache:
+
+config.status: configure config.cache
+	CPPFLAGS="$(CPPFLAGS)"; \
+	CFLAGS="$(CFLAGS)"; \
+	LDFLAGS="$(LDFLAGS)"; \
+	TERMDIR="$(TERMDIR)"; \
+	FUNCPROTO="$(FUNCPROTO)"; \
+	export CPPFLAGS CFLAGS LDFLAGS LIBS TERMDIR FUNCPROTO; \
+	if test -x config.status; then \
+	   $(SHELL) config.status --recheck; \
+	else \
+	   $(SHELL) $(srcdir)/configure --no-create; \
+	fi
+
+$(srcdir)/configure: configure.in aclocal.m4
+	cd $(srcdir) && autoconf
+
+###############################################################################
+# cleanup
+###############################################################################
+
+# parserclean is meant for the maintainer. You certainly don't want to use
+# it if you are working in the source directory (not using VPATH) and don't
+# have yacc and lex on your system
+
+localparserclean:
+	$(RM) $(EXTRADPNDS_X_yes)
+
+parserclean: localparserclean
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+localmostlyclean:
+	$(RM) *.o core y.output $(PROGS)
+
+mostlyclean: localmostlyclean
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+localclean: localmostlyclean
+	$(RM) TAGS localdepend
+
+clean: localclean
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+localdistclean: localclean
+	if [ $(srcdir) = `pwd` ]; then srcdir=. ; else srcdir=$(srcdir); fi;\
+	if [ $$srcdir != . ]; then $(RM) $(EXTRADPNDS_X_yes); fi
+	$(RM) Makefile Makefile.bak config.status config.log config.cache
+
+distclean: localdistclean
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+localmaintainer-clean: localdistclean
+	$(RM) gointer.c gointer.tab.h goserver.c
+	$(RM) patch* *~* *\#* *.orig *.rej *.bak a.out
+
+maintainer-clean: localmaintainer-clean
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; cd $$pwd; (rmdir $$d 2>/dev/null); done
+
+###############################################################################
+# programmation/compilation
+###############################################################################
+
+EXTRADPNDS_X_no  =
+EXTRADPNDS_X_yes = goserver.c gointer.c gointer.tab.h
+EXTRADPNDS = $(EXTRADPNDS_X_@USE_X@)
+
+localdepend: $(EXTRADPNDS) $(SRCS) $(EXTRASRCS) $(srcdir)/*.h Makefile
+	pwd=`pwd`; cd $(srcdir); \
+	idpnds="$(EXTRADPNDS)"; odpnds=""; for i in $$idpnds; do \
+	case $$i in *.c) odpnds="$$odpnds $$pwd/$$i";; esac; done; \
+	$(DEPEND) -f$$pwd/Makefile -s "# DO NOT DELETE" -- \
+	$(DEPENDFLAGS) $(CPPFLAGS) $(EDEFS) -I$$pwd -I. $(CFLAGS) $(RXINCS) --\
+	$$odpnds $(SRCS) $(EXTRASRCS)
+	@sleep 1; echo "Time stamp" > localdepend
+
+depend: localdepend
+	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	pwd=`pwd`; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+# This is the only rule that assumes the source directory to be writable when
+# using VPATH . But the source directory IS the logical place to put TAGS files
+
+TAGS: gointer.tab.h $(PARSESRCS) $(SRCS) $(EXTRASRCS) $(srcdir)/*.h
+	pwd=`pwd`; cd $(srcdir); echo "Placeholder" > TAGS; \
+	$(ETAGS) -i my/TAGS -i regex/TAGS $(PARSESRCS) $(SRCS) $(EXTRASRCS) *.h; cd $$pwd; \
+	case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
+	for d in $(subdirs); do \
+	cd $$pwd/$$d; echo "making $@ in $$d..."; \
+	$(MAKE) $(MFLAGS) $@; done
+
+# The above rule for TAGS creates an invalid TAGS file on Linux, so:
+tags:
+	$(ETAGS) *.[chyl] */*.[ch]
+
+# This rule expects gnu tar (using gzip) and assumes xgospel was made locally
+# before this. The depend rule is in order to get flex/bison to be run
+# In short this rules is meant for me. If you can do something with it, fine,
+# if not, tough luck.
+
+dist: depend version.h
+	eval version=`head -1 < $(srcdir)/version.h | cut -f 2`; \
+	(cd $(srcdir); pwd=`pwd`; cd ..; \
+	GZIP=-9 tar -czvf - `sed "s,^xgospel/,xgospel-$$version/," < $$pwd/FILES`) > xgospel-$$version.tar.gz
+
+movedist: depend version.h
+	eval version=`head -1 < $(srcdir)/version.h | cut -f 2`; \
+	(cd $(srcdir); pwd=`pwd`; cd ..; tar -czvf - `cat $$pwd/MOVEFILES`) > xgospel-move-$$version.tar.gz
+
+# A monument to a hack of long ago and far away...
+love:
+	@echo 'not war?'
+
+# targets that do not really exist (yet ?), but should be there (thinks GNU).
+info:
+dvi:
+check:
+installcheck:
+
+# Here we will add the dependencies
+# DO NOT DELETE

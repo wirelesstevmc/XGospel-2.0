@@ -1,0 +1,79 @@
+XCOMM
+XCOMM xgospel
+XCOMM by Ton Hospel
+XCOMM
+
+all:: comment
+
+
+Makefiles:: comment
+
+#include "my/Imake.options"
+
+LEX             = flex
+YACC            = bison
+LFLAGS          = -I -8 -d
+YFLAGS          = -d -y
+XCOMM DEPXAWLIB=/aix370p/tmp/t/lib/Xaw3d/libXaw3d.a
+XCOMM DEPXAWLIB=/usr/local/X11R5/lib/libXaw3d.a
+LOCAL_LIBRARIES = XawClientLibs
+        DEPLIBS = XawClientDepLibs
+MY_LIBRARIES    = -Lmy -Lregex -lmy -lregex
+DEFINES         = -Imy -Iregex $(MORE_DEFINES)
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+   SRCS = xgospel.c gospel.c resources.c GoBoard.c $(PARSESRCS) connect.c observe.c analyze.c stats.c reviews.c games.c players.c broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c
+   OBJS = xgospel.o gospel.o resources.o GoBoard.o gointer.o goserver.o connect.o observe.o analyze.o stats.o reviews.o games.o players.o broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o
+   PROGRAMS = $(TMP)/xgospel $(TMP)/relog $(TMP)/relay $(TMP)/rport
+   SUBDIRS = regex my
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+AllTarget($(PROGRAMS))
+DependTarget()
+
+NormalProgramTarget($(TMP)/xgospel,$(OBJS),my/libmy.a regex/libregex.a,$(MY_LIBRARIES) $(LOCAL_LIBRARIES),/**/)
+NormalProgramTarget($(TMP)/relog,relog.o,my/libmy.a,$(MY_LIBRARIES),/**/)
+NormalProgramTarget($(TMP)/relay,relay.o,my/libmy.a,$(MY_LIBRARIES),/**/)
+NormalProgramTarget($(TMP)/rport,rport.o,my/libmy.a,$(MY_LIBRARIES),/**/)
+
+depend:: comment
+
+comment:
+	@echo
+	@echo "***********************************************************"
+	@echo "* xmkmf -a is not the preferred way of compiling xgospel. *"
+	@echo "* See the INSTALL file on how to use configure.           *"
+	@echo "***********************************************************"
+
+XCOMM A monument to a hack of long ago and far away...
+love:
+	@echo 'not war?'
+
+#ifdef FLEXBISON
+PARSESRCS = goserver.l gointer.y
+
+goserver.c: goserver.l
+	$(LEX) $(LFLAGS) goserver.l
+	sed 's/yy/IgsYY/g' lex.yy.c > goserver.c
+	RemoveFile(lex.yy.c)
+
+gointer.tab.h gointer.c: gointer.y
+	$(YACC) $(YFLAGS) gointer.y
+	sed 's/YYOVERFLOW/yyoverflow(x1, x2, x3, x4, x5, x8)/g; s/yy/IgsYY/g' y.tab.c > gointer.c
+	sed 's/yy/IgsYY/g' y.tab.h > gointer.tab.h
+	RemoveFiles(y.tab.c y.tab.h)
+
+clean::
+	RemoveFiles(gointer.tab.h gointer.c goserver.c)
+
+#else /* FLEXBISON */
+PARSESRCS = goserver.c gointer.c
+goserver.c: goserver.l
+	touch goserver.c
+
+gointer.tab.h gointer.c: gointer.y
+	touch gointer.tab.h gointer.c
+#endif /* FLEXBISON */
