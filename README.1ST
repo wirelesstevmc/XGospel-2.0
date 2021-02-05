@@ -1,0 +1,339 @@
+This file describes the binary distributions of xgospel 1.12c1, an IGS
+client for Unix.
+
+The author of xgospel, Ton Hospel, does not have time to maintain
+xgospel currently, so with his permission I made changes to
+xgospel 1.10d and released this as 1.12c1. The changes are
+documented below.
+
+To install xgospel from a binary distribution, you should just have to:
+
+- extract the tar.gz file with:
+     gunzip < xgospel-1.12c1.xxx.tar.gz | tar xvf -
+  where xxx is the name of your system.
+  gzip binaries are available from my site http://www.gzip.org
+
+- upate the resource file XGospel.res, changing at least user and
+  password, and probably the window sizes too. If you are updating
+  from a previous version of xgospel, you may prefer adapting your
+  old resource file; look at least at the resources *preferredPaneSize
+  to get the scrollable windows with correct default sizes, and the resource
+  *playerToWidget to highlight your friends in the players and games window.
+
+- if you have never used xgospel before, you may have to load the resource file
+  from your .xinitrc or your .xsession. If you don't know what a resource file
+  is, try:
+     cd $HOME; grep xrdb .xinitrc .xsession .Xclient
+  If this shows something, your resource file is the parameter of xrdb;
+  add the contents of XGospel.res at the end. Otherwise just add the line
+      xrdb XGospel.res
+  in your file .xinitrc, .xsession or .Xclient (whichever is used).
+
+  For recent versions of X, it may be sufficient to copy XGospel.res to
+  the directory $XAPPLRESDIR (usually ~/app-defaults) and rename it as XGospel
+
+
+For HP-UX, the library libXaw.sl may be missing from /usr/lib/X11R5.
+In this case, you must do:
+   ln -s /usr/lib/X11R4/libX[am]?.sl .
+before running xgospel. You may also get the warning
+"Cannot convert string "builtin(CheckMark)" to type Pixmap" but you
+can ignore it, for example using "xgospel 2> /dev/null &"  (ksh, bash)
+or "xgospel >& /dev/null" (csh, tcsh).
+
+
+xgospel sources and binaries for Linux, Solaris, SGI IRIX, HPUX and AIX are
+available on my go page http://www.teaser.fr/~jlgailly/go.html
+
+The XPM library (available in all Linux repositories and in
+ftp://ftp.x.org/contrib/libraries/xpm-3.4i.tar.gz) allows the nice
+board with a wooden aspect (xboard.xpm). I provide it for Solaris
+and AIX on http://www.teaser.fr/~jlgailly/go.html
+Put the library (libXpm.so.4.10 or libXpm.a) in a directory somewhere
+in your LD_LIBRARY_PATH. If you don't have an environment $LD_LIBRARY_PATH
+yet, set one with:
+  setenv LD_LIBRARY_PATH /full_dir_containing_libXpm_so     (for csh, tcsh)
+  export LD_LIBRARY_PATH=/full_dir_containing_libXpm_so     (for ksh, bash)
+
+
+Because of increasing incompatibilities between IGS and NNGS, xgospel 1.12c1
+only works with IGS. If someone manages to make an xgospel version compatible
+with both servers, please send me the necessary patches.
+
+
+Frequently Asked Questions:
+
+1) The games and players windows don't display properly. They
+   draw a graph instead of listing the games or users.
+
+Read again the above paragraph about XGospel.res and the resources
+*preferredPaneSize
+
+2) The Broadcast or Tell windows do not scroll properly
+
+Read again the xgospel README file and in particular:
+
+   All text  widgets in the  program will scroll automatically  as long as the
+   caret is at  the end of all text  (and it will  keep it at  the end).
+
+So click at the end of all text to get correct scrolling. Create empty
+lines if necessary by scrolling the text with the scrollbar, then click
+somewhere in the empty lines.
+
+3) I get full boards displayed in ASCII in the main window instead of
+   a nice board window.
+
+You have incorrectly typed "toggle verbose on" or "toggle client off".
+Type "toggle client on" in the main window.
+
+4) I have too much netlag. How can I reduce the traffic with IGS to the
+   strict minimum?
+
+Set the resources *gamesTimeout and *whoTimeout to 0. If you really want
+to reduce traffic even further, add the command
+  toggle quiet on
+in your file ~/.xgospelrc. You will then have to click expliclitly on
+the Update button to refresh the games list or the players list, or
+whenever xgospel hast lost sync with the server. (In particular
+if you are playing and your game is adjourned, xgospel can get in a bad
+state if quiet is on, so don't complain about xgospel if you have set
+quiet on.)
+
+5) I get "Warning: Cannot convert string "#FFA54F" to type Pixel"
+
+You do not have enough color cells available. If possible start X in
+16 or 24 bit mode to avoid this. On Linux, use "startx -- -bpp 16". If
+you have to stay in 8-bit mode, exit Netscape or other color-greedy
+programs before starting xgospel. (You can also start netscape with
+the -install option to force a private color map in netscape and thus
+avoid eating colors in the shared color map.)
+
+Jean-loup Gailly
+jloup@mail.dotcom.fr
+jl and xgospel on IGS
+
+Version 1.12c1  (Jean-loup Gailly, 22 Jan 1999)
+- take into account new prisonners for the Copy command in analyse boards
+  (glukichipote)
+- enable the Score command for analyse boards only for boards copied from
+  the most recent position (to get correct count of prisonners)
+- raise a tell window on beep by default (Minh Quy)
+- support undo of multiple moves in teach games
+- conform to the SGF FF[4] specification when writing SGF files
+  http://www.sbox.tu-graz.ac.at/home/h/hollosi/sgf/
+- deal with an undocumented change in IGS protocol which caused a parse
+  error for bets (Jan Ramon)
+- deal with change in IGS protocol for adjourned games (display adjourn
+  in game window only, not in main)
+- work around an IGS 'feature' (impossible to use teach on a 'request' game)
+- for automatic replay of teach game, send "forward" commands only for
+  "teach sgfname" not "teach 19".
+- require the Enter key to change a game title or channel title
+- avoid compilation warnings on SGI
+
+Version 1.12c  (Jean-loup Gailly, 10 Jan 1999)
+- click control-left on entry in games window to get the stats of both
+  players, alt-left to get the stats in the main window.
+- if autoReply is set, do not popup a game status board when the game
+  terminates
+- add keyboard shortcut alt-a to toggle autoreply (Minh Quy)
+- add keyboard shortcuts alt-o to toggle open and alt-l to toggle looking.
+  Note that these two can also be changed with the mouse in the stats
+  window for yourself (obtained with the Commands menu of the main window).
+- move "quit" shortcut to alt-q for uniformity (was control-c)
+- add menus to set handicap and komi when I'm playing (Steve Cahill)
+- fix handling of komi management protocol
+
+Version 1.12b3  (Jean-loup Gailly, 7 Jan 1999)
+- use 210.134.78.91 as default site (igs.joyjoy.net deconnects too often)
+- avoid segmentation fault after quit (glukimet3lunes%apercevoir)
+- remove debug output for stats, left by mistake
+
+Version 1.12b2  (Jean-loup Gailly, 4 Jan 1999)
+- add the time for messages received while auto-reply is set (Minh Quy)
+- do not duplicate the results lines for repeated stats (Mark Vytlacil)
+- nicer xgospel icon (Gabriel de Dietrich)
+- support the "name" IGS command
+- adapt to documented change in the IGS protocol for illegal moves
+- avoid a parse error for future extensions of the IGS protocol
+
+Version 1.12b1  (Jean-loup Gailly, 16 Dec 1998)
+- allow automatic replay of "teach sgfname" games with the replay option,
+  without having to click on the "Forw" button for each move.
+- deal with an undocumented change in the IGS protocol which caused a parse
+  error for the "time" command.
+- avoid parse error after an illegal move (documented change in IGS protocol)
+  (Cyril Banderier)
+- do not popup a challenge window when autoReply is set. (Minh Quy)
+- add resource *minButtonTime to avoid clickos: the button up event must be
+  at the same intersection as the button down event and separated by at least
+  minButtonTime milliseconds (default 50 ms) to be sent as a move. If you are
+  subject to frequent clickos, increase this to 200 or 300. If you want to
+  force yourself to think at least one second before a move, set it to 1000.
+- shorten the icon name for tells. You can change it with the resource
+  *tell.iconName (default %N[%n]%A to get name, strength and *).
+ (glukenveutoujoursplus)
+- better documentation of the IGS protocol in goserver.l
+- support the cmatch (capture match) command
+- support hidden channels (which can be created by pros for teaching games)
+
+Version 1.12b  (Jean-loup Gailly, 23 Nov 1998)
+- deal with an undocumented change in IGS protocol which caused "say" messages
+  to appear in the main window.
+- deal with an undocumented change in IGS protocol which caused a parse error
+  for an adjourn request made by the opponent
+- Activates tell button on stats window. Restores toggle action of tell
+  button on challenge window (Mark Vytlacil)
+- set "raise" default to be false everywhere except for tell windows.
+- explain how to mark players permanently in XGospel.res and the online help
+ (see the resource *playerToWidget).
+- in analyse boards, the Copy button did not reset the prisonners count (glue)
+- in the online help for my stats, warn that Quiet and Verbose should Off,
+  and Client should be On.
+- add help for shift+left button on my info in my stats window.
+- avoid warnings for redeclaration of _StringList and for static functions.
+- suppress duplicate "on" in "Logging into IGS on on"
+
+Version 1.12a  (Jean-loup Gailly, 21 Oct 1998)
+- add the Help button (Cyril Banderier)
+- add help on the changeable fields in my own stats (info and all toggles)
+- click with control-left button on a player in the players window to
+  mark this player, changing its widget color. Marking a player can be
+  used to remember a player who declined a game request, or who escaped, etc...
+  Use the resources *players*set*playerEntryMarked.background and
+  foreground to change the default marking colors. (Challenging a
+  player has been moved to control-right button.)
+- Ctrl-C quits the server and xgospel (Minh Quy)
+- to avoid retyping an old command, click somewhere in the line of the old
+  command in the main window then press Enter (glulaflemmarde)
+- Echo a command in ~/.xgospelrc if it starts with >
+  Force a prompt after execution of ~/.xgospelrc (User button).
+- Display the 4 names in the board title for team games
+- avoid "assumed adjourned" when observing team games
+- avoid parse error for undo in team games. However igs still has a bug
+  undo in team games (does not notify all players of the undo).
+- bug fix (correction de cafard) in exact rating display
+- avoid sending duplicate "observe" commands which sometimes result in
+  unobserve. (observe shouldn't be a toggle since the unobserve command exists)
+- ignore resource *useSay when playing in a team game (tell not allowed).
+- At the end of a teach game, display "There are no more moves" in game
+  window instead of main window.
+- update the default window sizes to take into account the new buttons
+- use more reasonable defaults for many resources (beep off, etc...)
+- use the nice board.xpm as default background. If you get a message
+  "Cannot convert string "board.xpm" to type Pixmap" then move the file
+  board.xpm to your current directory before starting xgospel, or add the
+  following resource in your resource file (update "full_directory_here"):
+xgospel*board.backgroundPixmap: pixmap(/full_directory_here/board.xpm)
+- add some variety in the cursors for the buttons of the main window
+- do not keep the Update button highlighted in Games and Players windows
+
+Version 1.12  (Jean-loup Gailly, 8 Oct 1998)
+- Add a Score button to analyze boards. To score, click on the Score button,
+  then click on dead stones. The current score is displayed in the board
+  title. If you clicked on a wrong point, click on Undo; to start scoring
+  again from the current game position, click on Copy. (Minh Quy &
+  glukidicasraibiensi)
+- Add resources *markTerritories and *markDame (default true), used when
+  scoring. To change the dame color use *board*dameColor (default green).
+- Enter scoring mode after 3 passes in my own game. Check all dames (shown
+  in green by default) and the score (displayed in the window title) before
+  clicking on Done. To avoid entering in scoring mode after 3 passes, set
+  *autoScore to false (default true). If you want to score your own game
+  before the 3 passes, use the "analyze" command and click on the Score
+  button of the Analyze board.
+     To switch between scoring mode and normal mode in your game window,
+  toggle "score" in the Options menu. The old "score" button has been
+  renamed "server score". (The server score and the local score should be
+  identical so you should no longer have to check the server score.)
+- In the analyze board, the left button now removes a single stone if there
+  is one, or a stone group in scoring mode. The middle button adds a black
+  stone, the right button adds a white stone.
+- display the game result in the analyze board of finished games.
+- Set default site to igs.joyjoy.net. To use igs.nuri.net until the server
+  moves, start xgospel with "xgospel -site igs.nuri.net &" or add the
+  line "xgospel*site: igs.nuri.net" (wihout the quotes) in your resource file.
+- Pop up the players window if an important person connects to IGS and if
+  *players*raise.state is true. A person is important if its importance is
+  >= minImportantRank. (See resource *playerImportance).
+- display exact rating even when using an alias for "stats" (glukisuggere)
+- display move number for pass, undo, etc... (glukidemandencore)
+- add resource *useSay. Set it to false if you do not want your conversation
+  with your opponent to be saved in the game record. (glukinaretpas)
+- pop up the stats window earlier, update exact rating and number of stored
+  games when the IGS answers come back.
+- avoid parse errors for illegal move and done message (Cyril Banderier)
+- avoid parse error for "teach invalid-game" (Minh Quy)
+- define RAND_MAX for SunOS 4.x (Cyril Banderier)
+- comment out resources with correct default values in XGospel.res
+- fix creation/update of stones_gc in GoBoard.c
+- fix DownFromBottom error when reloading a game containing multiple passes.
+
+Version 1.11c7  (Jean-loup Gailly, 17 Sept 1998)
+- For important games, the game window pops up if *games*raise.state is true.
+  A game is important if the importance of either player >= minImportantRank
+  The importance of players (friends in particular) can be set with the
+  resource *playerImportance. (Yet another request by Minh Quy Nguyen).
+- fix parse error for stats on non-existing player
+- do not display an error message on "stats" if my rating is not yet computed
+  (Minh Quy Nguyen).
+- fix placement of uptime command (bad in 1.11c6 only)
+
+Version 1.11c6  (Jean-loup Gailly, 16 Sept 1998)
+- exact rating is now displayed for other players too (Minh Quy Nguyen).
+  This works only if you have yourself a rank other than NR.
+- display "player has been idle for 5s" in tell window if one exists
+  (Gabriel de Dietrich)
+- include results and exact rating when typing "stats player" manually
+- for non-* players, display the rating instead of the rank after "Rating:".
+- add number of stored games in the stats window
+- display the output of uptime only if option Verbose is on.
+- allow changing your info from the stats window even if it starts with
+  a newline. (You can still set your toggles from the stats window too.)
+- avoid warnings for accept (Minh Quy Nguyen)
+- avoid warning for infinite loop in rport.c
+- fix the importance mapping for 1p to 9p.
+
+Version 1.11c5  (Jean-loup Gailly, 14 Sept 1998)
+- fix a parse error for proba (Minh Quy Nguyen)
+- initialise maintainerRating to get exact rating more quickly
+- avoid warnings for getsockname (length int* on Solaris, ulong* on AIX)
+  (Minh Quy Nguyen)
+
+Version 1.11c4  (Jean-loup Gailly, 13 Sept 1998)
+- add the exact rating in my stats window (Minh Quy Nguyen)
+- fix the "results -name" feature (results were not displayed in stats window)
+- fix the "resume" button which had never worked before :)
+- fix the "fmc" bug (user line with more than 999 games caused parse error)
+
+Version 1.11c3  (Jean-loup Gailly, 11 Sept 1998)
+- add "Observe" button in Tell window (Minh Quy Nguyen)
+  This button doesn't work on replayed games (player name with a *).
+- add "Tell" and "Observe" buttons in Stats window.
+  These buttons don't work on dummy players (player name with a *).
+- in the players window, middle button now observes the game this
+  player is currently playing. You can still challenge this player with
+  control-left button, but this is not recommened: use tell first.
+  The middle button doesn't work on a dummy player (player name with a *)
+- send "results -name" to void multiple matches with name1, etc...
+- fix fprintf -> printf in CallNoCouple() (Jan van der Steen)
+
+Version 1.11c2  (Jean-loup Gailly, 6 Sept 1998)
+- when I'm playing and my time is low, color also the kibitz input area in red
+  to make sure that I see it.
+
+Version 1.11c1  (Jean-loup Gailly, 5 Sept 1998)
+- added auto reply for tell and beep. Use the resource *autoReplyMessage
+  to change the reply message. If the tell window does not exist yet, the
+  message sent by the other person is shown in the main window to avoid
+  blocking xgospel for a window creation. The message is shown with a '#'
+  character to indicate that an auto-reply was sent.
+
+Version 1.11c  (Jean-loup Gailly, 3 Sept 1998)
+- added optional %G (game number) for titles
+- add move number in kibitzes (Charlie Wine). To disable this, set resource
+  *numberKibitzes or option "number kibitzes" to false.
+- in the players and games sorts, consider 3d < 3d* < 4d < 4d* etc...
+- by default, players 5d and above are now highlighted as pros. You can change
+  this limit to 4d or 1p for example with the resource *minProRank.
+- document the resource gameToWidget in XGospel.res

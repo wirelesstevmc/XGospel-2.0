@@ -1,0 +1,169 @@
+To be fixed: 
+- Saving in postscript format does not create a valid .ps file. Until I find
+  how to fix this, save in .sgf format and use sgf2misc to convert to
+  postscript:  http://www.cwi.nl/~jansteen/sgf2misc/sgf2misc.html
+
+Jean-loup
+------------------------------------------------------------------------------
+Old TODO file by Ton Hospel:
+
+These are mainly meant as notes to myself, so they tend to be rather cryptic.
+But you might like to browse through it to get an impression of ideas being
+ considered.
+
+Client changes:
+- notice addtime [Done -- Jean-loup]
+- write documentation (yeah, sure)
+- known bugs:
+    - moves command
+- widget non-existence. Done are:
+    - serverTime, localTime, universalTime
+- make it work under quiet ?  [Done -- Jean-loup]
+- handle who with options gracefully
+- internal data in games/players, and introduce in widgetname (partly done)
+- make initial commands a resource [Done with .xgospelrc -- Jean-loup]
+- stonesound: get length from SmeBell, better, make stonesound a widget. Maybe
+  add rplay support.
+- gospel coordinate system, and mixed tree/scrollbar widget to display it
+- send and compose mode on input widgets
+- too many messages go through vsprintf too often. maybe use more varargs
+  interfaces ?
+- batch update games/players, use (but first develop) a "RaggedBox" ?
+  (maybe chack if the FWF has some nice new widgets)
+- width of players/games/reviews should not be a resource. Use dummy element ?
+- friends list, notify list.  [Done for friends -- Jean-loup]
+- external program interface
+- bug in reset/1x1 board
+- catch if say in tell fails (send tell ?)
+- command history
+- player strength changes => filenames change, but what if new name was set ?
+- scoring mode in analyze [Done -- Jean-loup]
+- help for observe is also given while playing
+- when filtering output of "results", maybe keep the failed ones
+- saveable defaults ?
+- confirm on multiline messages ?
+- forward/backward key [Done -- Jean-loup]
+- find alternate ids with find
+- make default setting changable at run time
+- make datastructure for board/log combination, observe and analyze are
+    diverging too much
+- make finding burrowed tell window easier
+- player/game widget get destroyed/recreated all the time -> optimize that
+  (this tends to tickle X server bugs, and certainly tickles a Xaw 3d bug)
+- quitting while popup entry with errors -> generate emty popup error
+- review change: less jumpy
+- starting an observe just as a move and undo occur will trigger the
+  invalid moves switch
+- event programming, e.g. on arrival on channel send message.
+- Extension of stats -> widget does not get resized
+- players/games/reviews should use MyName
+- can you bet on your own game ?
+              on pass ?
+              on set handicap ?
+              on resign ?
+- suicide in sgf/ps is confusing. Not clear what should be done.
+- regex patterns on igs messages ? on events ?
+- help seems to suggest you can put a movenumber on bet.
+- data (info, lost, won) from users is saved, from stats not
+- info change should be sent only if really changed !
+- check if there is a problem if the program tries to get the list of reviews
+  while reviewing (unconfirmed bug)
+- messages while entering/leaving a channel (probably based on events
+   mechanism. Or maybe throw out that whole approach and use slang (?) )
+- Just rewrite the whole mess with a networking alike layered approach
+- in doc explain:
+   need of xaw3d
+   setting includes/libs to get xpm/term
+
+myxlib:
+  - Job control for work procedures
+  - quarkify witchet code
+  - use hash tables in witchet code
+  - reslanguage. Change X parsing ? Idea doesn't seem to work out anyways.
+    maybe replace by slang ?
+  - check rumor of memory leak in AsciiText
+  - XtPopped() and XtPopChildren() (partly done)
+  - Easy panner-porthole creation
+  - Exceptions using printf
+  - time services
+  - paste text into a different widget
+  - InstallAccelerators is a mess.
+  - save window in xpm format
+  - improved popup interface (based on askString in xgospel)
+  - control child position myself
+  - MySetValues (resource distribution over witchet)
+  - change witchet details:
+     - named subtrees
+     - get initial resources without widget
+  - multiple display support
+  - chained converters ?
+  - try to understand resource behaviour: why can userrresources override the
+    more specific myxlib resources ?
+  - current checkmark code is not screen correct (wrong hashing)
+  - second (and higher) level widgettree have wrong groupwindow
+  - implement My.Class and My.Realized
+  - MyAllocContext should automatically destroy if widget gets destroyed.
+    Problem is that we should save both context and name.
+  - The whole AskString thing is a disaster. Should be rewritten with a clear
+    goal in mind.
+
+Server suggestions:
+  -info when player flags change
+  -named who
+  -site command
+  -initial board bug
+  -remove state: stat with name, best
+  -stat: line playing and observing are without :
+         give full number of observes
+
+Server bugs: (some of these have not been checked on for some time)
+  - done/done in empty game
+  - results person is realy results person*
+  - gmt on server does daylight saving time !!!!
+  - undo handicap gives wrong number of stones (0)
+  - who 4d -> too few people
+  - channels of no persons -> just prompt
+  - channels leaving/entering not context free parse with message
+  - info does not accept `:'
+  - ^M problems in: 
+      logon message
+      no tell in tgmatch
+  - no message if someone starts a teaching game (also causes match with
+         adjourned teach)
+  - first automatch gamedescription is not terminated be a prompt
+  - restart of a teaching game does nothing
+
+Gnu bugs:
+  -bison: uses strcpy/strcat but does not include <string.h>
+          uses malloc but does not include        <stdlib.h>
+
+X bugs
+  - core widget : depth is a Cardinal, but Int in resourcedef
+  - widgets : redraw with backgroundbitmap
+  - intrinsics:
+      - TMprint.c : convert to atom while it can still be a quark
+                    bad handling of \n " and \ 
+                    %d should be %ld
+  - XtUnmanageChildren : test for RectObj is wrong
+      (why Widget pw, is equal to parent !?)
+  - XtPopup() does not map the window if it thinks the widget is popped up
+    (after setting iconic to true and to false again)
+  - tree:
+      Change property in elements that causes different layout: old lines are
+      not redrawn
+  -Text:
+    Mouse text into widget with String in place -> Bufferoverflow !!!!
+    Cursor/current position after word wrap is inconsistent
+    area move while scrolling (xman) ?
+    no real reason why some combinations of resize and scroll should not work
+    cursorpos en wrap
+    name exchange
+    impossible to select last character in a full textwidget
+    setvalues(.. string ...) does not cause resize
+    lots of text added, scrollbar appears -> scrollbar on top of text
+    (doc) XawTextSourceRead returns new pos, not length read
+
+  - Xaw3D:
+    - stripchart redraw (fixed in 2.0 ?)
+    - 3D shadows draw ignores region
+    - R6 version: Label name gets destroyed twice
