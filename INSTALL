@@ -1,0 +1,579 @@
+Installation procedure
+======================
+
+There are essentially 2 ways of installing xgospel:
+  - the newer method using configure
+      The idea here is that the whole package gets installed with:
+        ./configure
+        make
+  - the old method using xmkmf -a
+      The idea here is that the whole package gets installed with:
+        xmkmf -a
+        make
+
+   The configure method is  the preferred  one, and  will be explained  first.
+The xmkmf method is only there  to give you  an extra chance in case configure
+fails, and is explained near the end of this file.
+
+Important files
+===============
+
+Once everything is compiled, you can in principle throw away everything except
+the executable xgospel itself. You might however want to keep:
+  - board.xpm       : A wood-like board for if you compiled with xpm support.
+  - pagoda.xpm      : another nice background for xpm
+  - my/Imake.options: for the next time you want to compile (if changed)
+                      (only if you used the `xmkmf' method of compiling)
+  - README          : for some suggestions about the package.
+  - relog           : is just for debugging. Allows you to replay a log
+                      file (produced with the *debugFile setting) using:
+                         relog <log name>
+                         xgospel -site <your site> -port <the port relog gives>
+  - relay           : allows you to connect through gateways. relnet and
+                      dorelay are scripts to ease this a bit.
+  - rport           : like relay allows you to connect through a gateway.
+                      It is a bit less general than relay (the gateway must be
+                      a machine with the normal unix socket interface where
+                      you will run the rport program), but if it can be used
+                      it is much more powerful and easier to use than rport.
+
+Basic Installation using configure
+==================================
+
+   The `configure' shell script  attempts to guess  correct values for various
+system-dependent  variables used during  compilation.  It uses those values to
+create a `Makefile' in each directory of the package.   It may also create one
+or  more `.h'   files containing  system-dependent definitions.   Finally,  it
+creates a  shell  script `config.status'  that you can  run in  the  future to
+recreate  the  current configuration, a  file   `config.cache' that saves  the
+results of  its tests  to  speed  up reconfiguring,  and a  file  `config.log'
+containing compiler output (mainly useful for debugging `configure').
+
+   If you need to do  unusual things to compile the  package, please mail  the
+author with some information  about what went  wrong and possibly a suggestion
+about how to fix it. See the `README' file for the  mail address and what kind
+of information you should send with a bug report.
+
+   If things go wrong during configuration, you might have to fiddle things by
+hand. Having a look at the file `config.log' will be very useful since this is
+where messages from programs run by `configure' are  collected.  Also send the
+author  a mail describing   what went wrong (see  the   FAQ section about  not
+getting the package compiled).
+
+   If something went wrong and you changed something to fix  it, it can happen
+that configure does  not check again for the  feature you have just  fixed and
+instead   uses the old  `cached'  (and incorrect)  values.  You can solve this
+problem by editing or removing the file `config.cache'.
+
+   The file `configure.in'  is used to create  `configure' by a program called
+`autoconf'.   You  only need  `configure.in'  if  you want   to change  it  or
+regenerate `configure' using a newer version of `autoconf'.
+
+The simplest way to compile this package is:
+
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself. (see the the end of this file if you don't know
+     which shell you are running and don't know how to find out).
+
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+  2. Type `make' to compile the package.
+
+  3. Optionally, type `make check' to run any self-tests that come with
+     the package. (none come with xgospel).
+
+  4. Type `make install' to install the programs and any data files and
+     documentation. (see the prefix variable in the Makefile to control
+     where the programs get installed. Also look up the --prefix option
+     to the configure program). Typing `make uninstall' will remove the
+     files that got installed (but leave any directory structure it was
+     forced to create).
+
+  5. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  There is
+     also a `make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate files that came
+     with the distribution.
+
+Compilers and Options
+=====================
+
+   Some systems require unusual  options for compilation  or linking  that the
+`configure' script does  not  know about.  You  can  give `configure'  initial
+values    for variables  by  setting  them    in  the   environment.  Using  a
+Bourne-compatible shell, you can do that on the command line like this (again,
+see the the end of this file if you don't know how to determine your shell):
+     CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+Or on systems that have the `env' program, you can do it like this:
+     env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+   Xgospel does in fact require you to use an ANSI C compiler. And even though
+it gets rarer and  rarer, sometimes you  will still  find a system  where `cc'
+(the name of the C compiler  on most systems) is an  old style (K&R) compiler.
+Don't worry if you don't know how to  distinguish them. Just start `configure'
+using your chosen compiler  (in the CC variable), and  it will be checked  for
+ANSI behavior.  If your compiler fails this test, you should first try to find
+out whether your system has another compiler  that knows ANSI  C (e.g.  `c89')
+or whether your standard compiler has an option to  make it an ANSI C compiler
+(the command `man cc' might point you  in the right  direction here).  If not,
+many systems   have  the GNU  C  compiler (called   `gcc').  Also notice  that
+`configure' will only find programs that are in your search path (the value of
+the `PATH' variable, use `echo $PATH' to see  what it contains).  So you might
+have to change  your  PATH variable.  As a last   resort you can  install  gcc
+yourself (or better, have your system administrators do it, since it is rather
+large and generally useful).  You  can get gcc  by anonymous ftp from the site
+`prep.ai.mit.edu' or one of its mirrors.
+
+   But even if gcc is available, it's  not necessarily a good  idea to use it.
+On at least one Alpha OSF system  gcc will not  correctly link with the shared
+Athena libraries and  will at  startup give a  message about  being unable  to
+initialize  the Xaw widget  set.   In such a  case  (where the  libraries were
+compiled  with  the  native  C  compiler and  the   native  C compiler is  not
+compatible with gcc),  you might have to force  the package to use  the native
+compiler (`configure' will use gcc if it can find it), e.g. with:
+     CC=cc  ./configure
+Don't forget    to erase config.cache  first in   case  some  of  the features
+configure discovered also depend on the C compiler.
+
+Compiling For Multiple Architectures
+====================================
+
+   You can compile the package for more than one kind of  computer at the same
+time, by   placing  the object  files   for each  architecture  in their   own
+directory.  To do this, you  must use a  version  of `make' that supports  the
+`VPATH' variable, such  as GNU `make'.  `cd'  to the directory where you  want
+the  object files and  executables  to  go  and run  the `configure'   script.
+`configure' automatically  checks for the  source code  in the directory  that
+`configure' is in and in `..'.
+
+   Even  if  are not  interested  in  multiple versions  of the  package, this
+feature can be useful since  it allows you to have  most of  the big files  in
+another place than the source files. So if you have  quota problems, you might
+do the compilation and installation from somewhere in  /tmp, while keeping the
+source files in a place where they won't erased after some time.
+
+   If you  have to use  a `make' that does not  supports the `VPATH' variable,
+you have to compile the package for one  architecture at a  time in the source
+code directory  (which is certainly no problem  if your only interested in one
+architecture, e.g. the one you are at that moment working on).  After you have
+installed  the package for   one  architecture, use  `make  distclean'  before
+reconfiguring for another architecture.
+
+Installation Names
+==================
+
+   By default,    `make   install'  will install    the  package's   files  in
+`/usr/local/games/bin', `/usr/local/games/man',  etc.    You can  specify   an
+installation prefix other than   `/usr/local/games' by giving  `configure' the
+option `--prefix=PATH'.
+
+   You can specify  separate  installation prefixes for  architecture-specific
+files and architecture-independent files.  If  you give `configure' the option
+`--exec-prefix=PATH', the  package will use PATH as  the prefix for installing
+programs and libraries.  Documentation and other data files will still use the
+regular prefix.
+
+   If the package supports it, you can cause programs  to be installed with an
+extra prefix or  suffix  on  their names   by  giving `configure'  the  option
+`--program-prefix=PREFIX' or  `--program-suffix=SUFFIX'. Xgospel supports name
+transformation.
+
+Optional Features
+=================
+
+   Some packages pay attention  to `--enable-FEATURE' options  to `configure',
+where  FEATURE indicates an  optional part of the package.   They may also pay
+attention   to `--with-PACKAGE'   options,  where PACKAGE    is something like
+`gnu-as' or `x' (for the X Window System). Xgospel supports the `xpm', `Xaw3d'
+and `term' packages.  `Xpm' and `term' are auto-detected (if  they are in your
+include and libraries search path), but Xaw3d  often has a  weird setup and is
+not always wanted.  You  can compile xgospel with  Xaw3d support by giving the
+`--with-xaw3d' option (it will complain if it can't find Xaw3d).
+
+   For packages that  use the X Window  System (e.g. xgospel), `configure' can
+usually find the X include and library files automatically, but if it doesn't,
+you can use the `configure' options `--x-includes=DIR' and `--x-libraries=DIR'
+to specify their locations.
+
+   On the other hand,  you might not want to  include any parts of the package
+that use X. xgospel allows you to create a Makefile good  enough for the parts
+that don't need X using the `--without-x'  option (don't confuse this with not
+giving the option and letting  the system conclude  it can't find the X Window
+system. That last one is a fatal error).
+
+Specifying the System Type
+==========================
+
+   ( Since version 1.10 you can ignore this section for xgospel)
+
+   There may  be some features `configure'  can not  figure out automatically,
+but needs to determine by  the type of host the  package will run on.  Usually
+`configure' can figure that out, but if it prints a  message saying it can not
+guess the host type, give  it the `--host=TYPE' option.  TYPE  can either be a
+short name for the system type, such as `sun4', or a canonical name with three
+fields:
+     CPU-COMPANY-SYSTEM
+
+See  the file    `config.sub' for  the possible   values  of each   field.  If
+`config.sub' isn't included in this package, then this package doesn't need to
+know the host type.
+
+   If you are  building compiler tools for cross-compiling,  you can  also use
+the `--target=TYPE' option to select the type of system they will produce code
+for and the `--build=TYPE'  option to select  the type of  system on which you
+are compiling the package.
+
+Sharing Defaults
+================
+
+   If you want to set default values for `configure' scripts to share, you can
+create a site shell script called `config.site' that  gives default values for
+variables like `CC',    `cache_file', and  `prefix'.   `configure' looks   for
+`PREFIX/share/config.site' if  it exists, then  `PREFIX/etc/config.site' if it
+exists.   Or, you   can set the  `CONFIG_SITE'   environment variable  to  the
+location of the site script.  A warning:  not all `configure' scripts look for
+a site script.
+
+Operation Controls
+==================
+
+   `configure' recognizes the following options to control how it operates.
+
+`--cache-file=FILE'
+     Use and save the results of the tests in FILE instead of `./config.cache'.
+     Set FILE to `/dev/null' to disable caching, for debugging `configure'.
+
+`--help'
+     Print a summary of the options to `configure', and exit.
+
+`--quiet'
+`--silent'
+`-q'
+     Do not print messages saying which checks are being made.
+
+`--srcdir=DIR'
+     Look for the package's source code in directory DIR.  Usually
+     `configure' can determine that directory automatically.
+
+`--version'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`configure' also accepts some other, not widely useful, options.
+
+
+Basic Installation using xmkmf
+==============================
+
+   The `xmkmf' program (a shell script  that invokes the `imake' program which
+does the real work) tries to get a description of  system features from a data
+base that comes with your X windows  system. It uses those  values to create a
+`Makefile'  in each directory  of the package. For  this package there is also
+system specific information in the file `my/Imake.options'.
+
+   In  case configure fails, and you  can't get it to work,   you get a second
+chance with the xmkmf method. But here you mighty have  to fiddle things a bit
+by hand. If configure at least got as far  as producing a Makefile, this might
+turn out to be very useful, so please back it up (with a command like
+`cp Makefile Makefile.configure').  After that you can try:
+     xmkmf -a
+     make
+
+If these work, you don't have to read on.
+
+xmkmf -a fails
+==============
+
+   This can essentially happen in one of two ways:
+
+     xmkmf is not found at all
+     xmkmf does not know the -a option
+
+   The last one is particularly tricky, since xmkmf will give no indication of
+failure whatsoever. :-( If you get only two (or  a low number like that) lines
+of   output from xmkmf,  it is  ignoring the  -a option.   Notice that you can
+ignore all errors you  get from the make  depend phase, since the dependencies
+are not really necessary to get the package compiled.
+
+   If xmkmf is not found, there can be two reasons:
+     you don't have xmkmf on your system
+     xmkmf is not in your search path.
+
+   If  your system has X  installed, you should  also have  xmkmf (or at least
+imake). Have a look in the binaries  directory of your X distribution. Finding
+your X   directory can sometimes  be a   problem.  If  the `configure'  method
+succeeded in at least producing a Makefile, look in that file (or your backup)
+for     X_CFLAGS   (could be:  Xdirectory/include)     and  X_LIBS   (could be
+Xdirectory/lib).  Otherwise try some   places like /usr/X386,  /usr/local/X11,
+/usr/local/X11R5, /usr/local/X11R6,  /usr/X11R6, /usr/X11R5,  /usr/XFree86  or
+/usr/openwin.  If your shell supports it, you can also try `which imake'. Also
+something like `which xterm' or looking at your path (see the shell section at
+the end of this file if you don't know how to  determine this) can give you an
+indication  of where your  X  binaries can be found.    If you do  find  the X
+directory (prefer the more recent ones), have a look in its bin directory. You
+should find xmkmf and imake there.  If this is not the  case, you can find the
+sources for anonymous ftp at ftp.x.org (or one of its mirrors) (or better, get
+your system administrator to  do this, since a good  xmkmf should be in your X
+distribution).
+
+   Having xmkmf and imake does you no good if they are not in your search path.
+Have a look in the `shell' section near the end of this file if you don't know
+how to view and change your path.
+
+   In case  the  -a option  does not work,  you should  probably get   a (new)
+version of xmkmf and  imake (again you should  probably try to get your system
+administrator to do  this.  Some vendors  deliver an amazingly old version  of
+imake in their X distribution).   You can still try  to get going with `xmkmf'
+and `make Makefiles', but be prepared to have to do a  few small things in the
+Makefiles  by  hand since  these  old imake versions  don't  have some  of the
+features used in the Imakefiles (Concat and Ranlib will probably fail).
+
+Make fails
+==========
+
+   The four most common reasons why `make' fails:
+
+     - The compiler selected by xmkmf is not an ANSI C compiler.
+     - Your system is not exactly posix compliant and you will have to tell
+       the package to use some replacement functionality (using `defines').
+     - You are the first user to try to make xgospel on your type of platform.
+     - Your make does not understand about implicit library rules.
+
+   The program is written for UNIX in ANSI C, so the least you need is an ANSI
+C compiler (e.g. gcc). It will NOT compile with a K&R compiler, and it assumes
+ANSI C behavior  in many ways, so just  changing the  function headers is  not
+enough.  So please make sure you  use the correct  compiler. Since most places
+use gcc as their ANSI C compiler, I made that the default.  If you want to use
+another   compiler,  change the  line   CC  = gcc  -fpcc-struct-return  in the
+my/Imake.options file to something appropriate (see the section `Compilers and
+options' for some other suggestions).
+
+   Since many a systems library has strange entries  for hysterical raisins, I
+offered some preprocessor symbols on the altar of incompatibility. All changes
+of this type should probably be made in  the file my/Imake.options.  Of almost
+all of the  following options you can find  a (commented out) example in  that
+file).  Notice  that if `configure'  method succeeds  in creating a  Makefile,
+there   (or in its  backup)  you will   find  the correct   value  for most of
+these. The  values used can be found  (and  changed) in the `my/Imake.options'
+file on a  system by system  basis.  They ought to  be correct,  but you might
+have to change one or more of them  (certainly if you compile  on a system not
+described in Imake.options).    It you  were  forced  to make  changes in  the
+Imake.options file, I would appreciate a mail  describing your system (see the
+end of this file) and the changes you had to make (and possibly why you had to
+make them if not clear).  You should find my address  at the end of the README
+file.
+
+  - Some machines have no memmove() function, but most of them have bcopy().
+    in that case define the symbol HAVE_NO_MEMMOVE. This does however assume
+    that your bcopy() can handle overlapping ranges !
+  - Some machines have no difftime() function, but in most cases you can
+    get the same results with a subtraction of the time_t values. If this is
+    the case, define HAVE_NO_DIFFTIME
+  - Some machines have no strerror() function (e.g. older AIX), but have a
+    table `sys_errlist' with error messages. In that case it is simple to make
+    a working strerror() function. If you want this, define HAVE_NO_STRERROR
+  - Some machines have no cuserid() function. Define HAVE_NO_CUSERID in that
+    case. The program will then use getlogin() as a replacement. If you
+    don't have that either, define HAVE_NO_GETLOGIN. (In that case any place
+    where you would expect a userid, will get ????????).
+  - Then there are some systems with missing prototypes though the
+    corresponding functions do exist. If you get an error about wrong types 
+    for memchr, define HAVE_NO_MEMCHR_PROTO, and define HAVE_NO_STRERROR_PROTO
+    for strerror.
+  - If you get complaints about alloca from regex, you might have to add
+    -DHAVE_NO_ALLOCA_H if your system does not have the alloca.h include file.
+    If your system does not have alloca() at all, you might have to add
+    -DREGEX_MALLOC (all of which is a bit silly, since the package does not
+    use alloca at all).
+  - On some sun's you can have a problem with the order of include-files and
+    the redefinition of some types. In this case you should really warn the
+    responsible person and have him solve the problem (E.g. by defining some
+    symbols, and not redoing the definition if the symbol is defined). But for
+    a temporary fix, you can take the files relay.c, goserver.c,
+    my/lwidgettree.c and my/lreslang.c and put #include <sys/stdtypes.h>
+    before the first included file.
+  - If your machine does not have stdarg.h, you might still get there
+    using varargs.h . If you want to try this, define VARARGS
+    By the way, if you get this problem your compiler is probably not
+    an ANSI C compiler (this is not supported anymore)
+    (Also, do not use this if you get errors during the make depend when
+    using gcc as compiler. The warnings you get in that case are normal).
+  - Some systems (RS6000) might need #include <sys/select.h> to get the type
+    fd_set (used by select). Other systems don't even have that file. If you
+    want it to get used, add -DHAVE_SYS_SELECT_H.
+  - If in your X in the translations data structures quarks get replaced by
+    atoms, add the option -DNOQUARKTRANSLATIONS. Just ignore this option
+    if you didn't understand the previous sentence (was probably a bug in X
+    anyways, I've only seen it in an old AIX distribution)
+  - If you compile with gcc and get complaints about conflicting types of
+    builtins, add the option -fno_builtin
+  - If you have a successful compile, but the resulting executable does
+    not recognize named hosts, add -lresolv to the load options
+  - And finally some info on specific machines and compilers
+     - some versions of gcc contain a bug in the optimizer that stops them
+       from compiling gospel.c . In that case, just let the compile run
+       until it reaches gospel.c, then type the last command (which was:
+       compile gospel.c with a lot of options giving gospel.o) by hand without
+       the -O option (no optimizing). When gospel.o has been made, just type
+       make again. Getting a newer gcc might also be a good idea (the bug has
+       been fixed).
+     - On SGI the file resources.c might exceed the static string table of
+       the compiler. The command to increase that table is -Wf,-XNl<n bytes>.
+       resources.c has been successfully compiled using -Wf,-XNl10000
+
+   The makefile  uses flex to  construct goserver.c from goserver.l,  and uses
+bison to generate gointer.c and y.tab.h from gointer.y (also some files in the
+`my' directory are produced using flex and bison). You might have two problems
+here:
+  - some makes are not intelligent enough to rename to the corresponding
+    .c files (not enough default rules)
+    (maybe you want to ftp GNU make from `prep.ai.mit.edu' or one of its
+     mirrors)
+  - you might not have flex and bison at all.
+    (maybe you want to ftp the GNU programs flex and bison from 
+    `prep.ai.mit.edu' or one of its mirrors).
+
+Both problems are  easily solved by  just not using flex  and bison, but using
+the prepared files that come with the distribution. Since  many places have at
+least one of the mentioned problems, that is in fact the  default. If you want
+to play with   the .y and  .l files  however, define  the  symbol FLEXBISON in
+Imake.options.
+
+   If you get a message like:
+
+*******************************************************************************
+Unknown system. Please take a look in /usr/X11/lib/X11/config/blub.cf for what
+your system could be
+*******************************************************************************
+
+(where `blub' will be  a word that you should  recognize as having to  do with
+your system) you might be the first person to try to compile  the package on a
+system of type `blub'.  If you understand a bit about `Makefiles' and C, it is
+generally not  so difficult to get the  thing working.  The  indicated file is
+where your `xmkmf' seems to fetch its default settings.  Look in that file for
+a line like
+
+   #define BlobArchitecture
+
+that seems appropriate  for your system. (Of course  `Blob' will be some other
+word, look for all cases of the word `Architecture'  in the given file). Add a
+new  entry for that type  of system to  your `my/Imake.options' file (use e.g.
+`AlphaArchitecture' as a  template).   Then just make  again  (If you  get the
+`unknown system' warning again you  chose the  wrong architecture).  From  the
+warnings you get (if any) you should be able (using the previous paragraph) to
+determine what   to  add  to  your   new  `MORE_DEFINES'  line  in    the file
+`my/Imake.options'. Then drop the  author a mail telling  what system you have
+and what you  had to  do  to get it  to  work.  If even  reading the  previous
+paragraph gave you  the shivers, send the author  a mail anyways.  He would be
+glad to  add your system  to Imake.options for you (you  will have to tell him
+what system you have of course,  see the end of this  file on how to determine
+this).
+
+   And at last, we have  the possibility that   your make does not  understand
+implicit library rules  (maybe saying something like `do  not know how to make
+libmy.a'). If you understand Makefiles a bit, it's  not so hard to work around
+this, but  the solution  that demands the  least thinking   is just getting  a
+sensible  make,   e.g.    GNU    make  (available   for   anonymous  ftp    at
+`prep.ai.mit.edu' or one of its mirrors). Again it might be interesting to get
+your system administrators  to do this, since  this program (like many of  the
+GNU programs) is generally useful.
+
+Extensions when using xmkmf
+===========================
+
+   Some extensions you could enable:
+  - if you have the 3d Xaw widgets (available at ftp.x.org), you can add the
+    option -DXAW3D (also set: XAWLIB=-lXaw3d). (The default settings in
+    xgospel give a shadowWidth of 3. If you find this too much, you'll have to
+    change some window widths (see resources.c, the pieces of code after
+    #ifdef XAW3D))
+  - if you have the xpm library (again available at ftp.x.org), you can add
+    -DHAVE_XPM (and add -lXpm to the SYS_LIBRARIES). This allows you to set
+    any picture as a background with a setting like:
+       xgospel*board.backgroundPixmap:      pixmap(board.xpm)
+    (this gives you a board with a wood-like look. Remember that xpm also
+     allows you to compress your picture files using gnu zip (`gzip') and/or
+     `compress')
+  - if you have term in the form of the file <termnet.h> and the termnet 
+    library, you can add -DHAVE_TERMNET (and add -ltermnet to the 
+    SYS_LIBRARIES). This will `termify' your program, and allow you to use
+    `term' to run the package over modem connections. If it works for your
+    system, you can of course also use the real `termify' package.
+
+APPENDICES
+==========
+
+Which shell ?
+=============
+   There are essentially 2 kinds of shell:
+  - bourne shell: the original unix shell
+  - C shell: an attempt to develop a shell resembling the C language.
+(Actually there are a few more (like rc, the  plan 9 shell), but they are rare
+and will be ignored here).
+
+   To find out what you  are running, type  `echo $SHELL' on the command line.
+It should return   something like:   /bin/sh.   From  the last  part  you  can
+determine what shell you have:
+  `sh', `zsh', `bash' and `ksh' are bourne shells.
+  `csh' and `tcsh' are C shells.
+
+   The `search  path'  is the list  of  directories the shell  will  search to
+resolve a command you type. You can determine your path with the command `echo
+$PATH' for bourne shells and `echo $path' for C shells. Changing the value can
+be done by `PATH=<new  value>' for bourne  shells (they use `:' as  separator)
+and `setenv path <new value>'  (they use ` '  as separator) (of course replace
+the <new value> by what you  want it to be).  So  supposing I work in a bourne
+shell and want to add /usr/X11R6/bin to the front of my path, I would type:
+
+   PATH=/usr/X11R6/bin:$PATH
+
+(the $PATH will be replaced by the current value of the PATH variable). If you
+set  a  variable in  a  bourne type shell,  you  might also  want  to `export'
+it. Only  variables that were  exported will be  known inside programs started
+from  your current shell.  So  after setting the  PATH  variable, you probably
+also want to type:
+   export PATH.
+(The `setenv' command in C shells already exports the variable).
+
+   How you can collect the output (normal and error) of a command also depends
+on the shell.  For example, making  a log (in a  file named blub) of your make
+process might work like this:
+   for bourne shells:
+      make 2>&1 | tee blub
+   for C shells:
+      make |& tee blub
+
+What system ?
+=============
+
+   Type `uname -a'
+
+On my system this gives:
+
+  Linux permafrost 1.2.5 #27 Sat Apr 15 04:01:46 MET DST 1995 i486
+    |       |       |    \__________________________________/   |
+    |       V       |     operating system compilation date     +-> hardware 
+    |   node name   |                                               type
+    V               +--> operating system version
+operating system name
+
+   Relevant for bug reports are operating system name and version and hardware
+type.
+
+The rest of this file exists to make emacs (ispell) happy.
+
+ LocalWords:  xgospel relog relnet dorelay rport config package's lposix Wf
+ LocalWords:  DIR Imakefiles Concat Ranlib fpcc DHAVE DREGEX fno lresolv XNl ai
+ LocalWords:  mit edu Xdirectory org errlist PROTO PROTO goserver lwidgettree
+ LocalWords:  lreslang DNOQUARKTRANSLATIONS DNOSTRIP builtins gointer gointer
+ LocalWords:  FLEXBISON DXAW XAWLIB lXaw shadowWidth lXpm backgroundPixmap Apr
+ LocalWords:  LocalWords blub fd cf BlobArchitecture AlphaArchitecture libmy
+ LocalWords:  uninstall termnet libtermnet ltermnet termify debugFile
