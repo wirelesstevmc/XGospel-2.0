@@ -1,0 +1,6 @@
+#! /bin/sh -
+OLDCONFIG="`stty -g`"
+stty -echo
+echo -n "^xgospel "
+cat | telnet "$*" 6969 | cat
+stty "$OLDCONFIG"
