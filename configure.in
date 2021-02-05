@@ -1,0 +1,160 @@
+  AC_INIT(xgospel.h)
+  AC_SAVE_CFLAGS
+  AC_SAVE_DEPEND
+ ac_cpp='$CPP $CFLAGS $CPPFLAGS $X_CFLAGS'
+ ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS $X_CFLAGS conftest.$ac_ext 1>&5 2>&5'
+ ac_link='echo ${CC-cc} -o conftest $CFLAGS $CPPFLAGS $X_CFLAGS $LDFLAGS conftest.$ac_ext $LIBS $XPM_LIBS $X_LIBS $USE_LIBS $TERM_LIBS $X_EXTRA_LIBS 1>&5; ${CC-cc} -o conftest $CFLAGS $CPPFLAGS $X_CFLAGS $LDFLAGS conftest.$ac_ext $LIBS $XPM_LIBS $X_LIBS $USE_LIBS $TERM_LIBS $X_EXTRA_LIBS 1>&5 2>&5'
+
+dnl Default installation place. Override with --prefix
+AC_PREFIX_DEFAULT(/usr/local/games)
+dnl AC_PREFIX_PROGRAM(xgospel) (gets confused by . in PATH)
+
+dnl checks for alternative programs
+  AC_PROG_CC
+  AC_PROG_GCC
+  AC_PROG_CC_CFLAGS
+
+dnl checks for UNIX variants that set C preprocessor variables
+  AC_ISC_POSIX
+  AC_MINIX
+
+  AC_PROG_CC_SANITY(, 
+    echo "------------Start of messages for this run-------------------"
+    cat config.log
+    echo "--------------End of messages for this run-------------------"
+    AC_MSG_ERROR([Configure just discovered (presumably incorrectly) that your
+C library contains a function named int \`goldfish_does_blub(void)'.
+Or else it was unable to compile a trivial program.
+This probably means that \`${CC-cc}' is not really a C compiler.
+Are you sure your system HAS a working C compiler ?
+Look up the notes about CC in the INSTALL file]))
+  AC_PROG_CC_PROTOTYPES(,
+    AC_MSG_ERROR([Your compiler does not seem to be an ANSI C compiler.
+At least it doesn't support prototypes.
+And the package really needs these.
+Look up the notes about CC in the INSTALL file]))
+
+  AC_PROG_RANLIB
+  AC_PROG_MAKE_SET
+  AC_PROG_MAKE_LIBRARY
+
+dnl more checks for alternative programs
+  AC_PROG_INSTALL
+  dnl if YACC is set to bison, change it to bison -y
+  ac_YUCC=`echo $YACC | sed -e "s/ //g"`
+  if test "$ac_YUCC" = "bison"; then YACC="bison -y"; fi
+  AC_PROG_YACC
+  AC_PROG_YACC_OVERFLOW(
+    [YYOVERFLOW="yyoverflow(x1, x2, x3, x4, x5, x8)"],
+    [YYOVERFLOW="yyoverflow(x1, x2, x3, x4, x5, x6, x7, x8)"],
+    ifelse([gointer.y my/yreslang.y my/ywidgettree.y]))
+  AC_SUBST(YYOVERFLOW)dnl
+
+  AC_PROG_LEX
+  AC_PROG_MAKEDEPEND
+  AC_PROG_MAKEDEPEND_OPTION_P
+  AC_PROG_MAKEDEPEND_DEFINES
+  AC_PROG_ETAGS
+
+dnl checks for header files
+  AC_HEADER_STDC
+  AC_POST_HEADER_STDC
+  AC_CHECK_NO_HEADERS(string.h stdlib.h memory.h unistd.h stdarg.h sys/select.h)
+
+dnl checks for typedefs
+  AC_TYPE_PID_T
+  AC_TYPE_SIGNAL
+dnl checks for library functions
+
+
+  AC_FUNC_NO_STRFTIME
+  AC_CHECK_NO_FUNCS(memchr memmove strerror difftime uname cuserid)
+  if test "$ac_cv_func_cuserid" != yes; then
+    AC_CHECK_NO_FUNCS(getlogin)
+  fi
+
+  AC_CHECK_NO_STRING_PROTO(memchr)
+  AC_CHECK_NO_STRING_PROTO(strerror)
+  AC_H_ERRLIST
+
+dnl checks for structures
+  AC_STRUCT_TM
+dnl checks for compiler characteristics
+  AC_C_CONST
+  AC_FUNC_ALLOCA
+dnl checks for system services
+  AC_FUNCPROTO
+  AC_PATH_XTRA
+
+  if test "x$with_x" = xno; then
+    USE_X=no
+    AC_PATH_XTRA_NO_X
+  else
+    if test "$no_x" = "yes"; then
+      AC_MSG_ERROR([Could not find the X windows files. Game over])
+    fi
+
+    AC_X_VERSION
+    if test "$ac_cv_header_x11_xlib_h" = no; then
+      AC_MSG_ERROR([It looked like I found your X, but now I can't find <X11/Xlib.h>.
+So there seems to be a problem with your X include path: \`$ac_x_includes'])
+    fi
+    if test "$X_VERSION" = ""; then
+      AC_MSG_ERROR([Could not determine your X11 version. This almost certainly
+means pre X11R5, so your X libraries are too old])
+    fi
+    if test "$X_VERSION" -lt 5; then
+      AC_MSG_ERROR([I found X11R$X_VERSION, but you need at least version X11R5])
+    fi
+
+    AC_XT_VERSION
+    if test "$ac_cv_header_x11_intrinsic_h" = no; then
+      AC_MSG_ERROR([It looked like I found your Xt, but now I can't find <X11/Intrinsic.h>.
+So there seems to be a problem with your X include path: \`$ac_x_includes'])
+    fi
+    if test "$XT_VERSION" = ""; then
+      AC_MSG_ERROR([Could not determine your Xt version. This almost certainly
+means pre X11R5, so your X libraries are too old])
+    fi
+    if test "$X_VERSION" != "$XT_VERSION"; then
+      AC_MSG_WARN([Your Xlib and Xt version numbers are different.
+You must have an absolutely fascinating X setup (probably wrong too).])
+    fi
+    if test "$XT_VERSION" -lt 5; then
+      AC_MSG_ERROR([I found the X11R$XT_VERSION of Xt, but you need at least version X11R5])
+    fi
+    AC_CHECK_LIB(IM, main, dnl
+      X_EXTRA_LIBS="$X_EXTRA_LIBS -lIM"
+      AC_CHECK_LIB(iconv, main, X_EXTRA_LIBS="$X_EXTRA_LIBS -liconv")
+      AC_CHECK_LIB(security, main, X_EXTRA_LIBS="$X_EXTRA_LIBS -lsecurity"))
+    AC_CHECK_LIB_XAW
+    AC_CHECK_LIB_XPM
+    USE_X=yes
+  fi
+  AC_SUBST(USE_X)
+
+dnl checks for some more libraries
+  if eval "test \"`echo '$''{'ac_cv_lib_nsl'+set}'`\" != set"; then
+    AC_CHECK_LIB(nsl, t_accept, [X_EXTRA_LIBS="$X_EXTRA_LIBS -lnsl"])
+  fi
+  if eval "test \"`echo '$''{'ac_cv_lib_socket'+set}'`\" != set"; then
+    AC_CHECK_LIB(socket, socket, [X_EXTRA_LIBS="$X_EXTRA_LIBS -lsocket"])
+  fi
+  AC_CHECK_NO_FUNCS(gethostname)
+  AC_CHECK_LIB(resolv, gethostbyname, RESOLVLIB="-lresolv", RESOLVLIB="")
+  AC_SUBST(RESOLVLIB)
+dnl  AC_NEED_RESOLV
+
+dnl check for extra packages we might want to use
+  AC_CHECK_LIB_TERM
+  if test "$ac_cv_lib_term" = no; then
+    AC_CHECK_LIB_TERMNET
+    if test "$ac_cv_lib_termnet" = no; then
+      AC_CHECK_LIB_SOCKS
+    fi
+  fi
+
+  dnl done
+  AC_ARG_PROGRAM
+  AC_OUTPUT(Makefile my/Makefile regex/Makefile)dnl
+  test -n "$no_create" || ${MAKE-make} depend
