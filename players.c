@@ -85,6 +85,7 @@ struct _Player {
 Widget  PlayersButton;
 int     nrplayers, maxplayers;
 int     minProRating;
+int     minHiDanRating;
 Player *Me;
 
 extern int nrgames;
@@ -99,7 +100,7 @@ static Player DummyPlayerBase = { &DummyPlayerBase,  &DummyPlayerBase };
 
 ConvertToWidget PlayerToWidget;
 static WidgetPlan      PlayersPlan;
-static const char      StrengthOrder[] = "p dkR?";
+static const char      StrengthOrder[] = "p DdkR?";
 static Widget          playerinfo, players, playerstats;
 static Widget          RaiseOnImportant, BeepOnImportant;
 static int             WantWho;
@@ -209,22 +210,23 @@ static const char *SetPlayerEntry(Cardinal *i, Arg *args, const Player *player)
 {
     static char Text[80];
 
-    sprintf(Text, "%16s %.2s%3d %3d", PlayerString(player), player->State,
+    sprintf(Text, "%16s %.2s%4d %4d", PlayerString(player), player->State,
             player->FirstObserving, player->Playing);
     switch(player->FirstObserving) {
       case -2:
-        Text[20] = Text[21] = '?';
+        Text[21] = Text[22] = Text[23] = '?';
         break;
       case -1:
-        Text[20] = Text[21] = '-';
+        Text[21] = Text[22] = Text[23] = '-';
         break;
     }
     switch(player->Playing) {
+        break;
       case -2:
-        Text[24] = Text[25] = '?';
+        Text[25] = Text[26] = Text[27] = '?';
         break;
       case -1:
-        Text[24] = Text[25] = '-';
+        Text[25] = Text[26] = Text[27] = '-';
         break;
     }
     if (args) {
@@ -243,6 +245,10 @@ const char *GetPlayerType(const Player *player, const char *Prefix)
     while (isdigit(*ptr)) ptr++;
     sprintf(Name, "%.*s%.*s",
             (int) sizeof(Name)/2, Prefix, (int) sizeof(Name)/2-1, ptr);
+    /* Convert 5 and 6 dans to HiDans */
+    if (player->Rating >= minHiDanRating && player->AutoRated == 1) {
+        Name[strlen(Name)-1] = 'D';
+    }
     /* Convert high dans to pros */
     if (player->Rating >= minProRating && player->AutoRated == 1) {
         Name[strlen(Name)-1] = 'p';
@@ -253,12 +259,13 @@ const char *GetPlayerType(const Player *player, const char *Prefix)
 }
 
 int StrengthToRating(const char *Strength)
-/* NR = 0, 30k = 2, 1k = 31, 1d = 32, 9d = 40, 1p = 41 */
+/* NR = 0, 30k = 2, 1k = 31, 1d = 32, 5d=36, 9d = 40, 1p = 41 */
 {
     int  level = atoi(Strength);
 
     switch (Strength[strlen(Strength)-1]) {
         case 'p': return 40 + level;
+        case 'D': return 35 + level;
         case 'd': return 31 + level;
         case 'k': return 32 - level;
         default:  return 0;
@@ -329,6 +336,7 @@ void InitPlayers(Widget Toplevel)
     const char *Error;
 
     minProRating = StrengthToRating(appdata.MinProRank);
+    minHiDanRating = StrengthToRating(appdata.MinHiDanRank);
 
     PlayerToWidget.Convert   = NULL;
     PlayerToWidget.NrConvert = -1;
@@ -993,7 +1001,7 @@ int PlayerCompare(const Player *player1, const Player *player2)
 
         if (ptr1 < ptr2) return -1;
         if (ptr1 > ptr2) return  1;
-        if (*ptr1 == 'p' || *ptr1 == 'd') {
+        if (*ptr1 == 'p' || *ptr1 == 'D'|| *ptr1 == 'd') {
             temp = atoi(Strength1) - atoi(Strength2);
             if (temp < 0) return  1;
             if (temp > 0) return -1;

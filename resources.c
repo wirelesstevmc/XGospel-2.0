@@ -46,10 +46,11 @@
 #define GREEN3 "#40B040"
 #define GREEN4 "DarkSeaGreen"
 */
-#define GREEN1 "Green"
+#define GREEN1 "#9AF602"
 #define GREEN2 "#32CD32"
 #define GREEN3 "#40B040"
 #define GREEN4 "#8FBC8F"
+#define GREEN "Green"
 
 String fallback_resources[] = {
 #include "helptext.h"
@@ -351,6 +352,7 @@ String fallback_resources[] = {
     (String) "*players*set*Command.background:     "GREEN4,
     (String) "*players*set*playerEntryk.background:"GREEN3,
     (String) "*players*set*playerEntryd.background:"GREEN2,
+    (String) "*players*set*playerEntryD.background:"GREEN,
     (String) "*players*set*playerEntryp.background:"GREEN1,
     (String) "*players*set*playerEntryMarked.background: #FDEDC8",
     (String) "*players*set*playerEntryMarked.foreground: cornflowerblue",
@@ -430,6 +432,7 @@ String fallback_resources[] = {
     (String) "*games*set*Toggle.background:        "GREEN4,
     (String) "*games*set*gameEntryk.background:    "GREEN3,
     (String) "*games*set*gameEntryd.background:    "GREEN2,
+    (String) "*games*set*gameEntryD.background:    "GREEN,
     (String) "*games*set*gameEntryp.background:    "GREEN1,
     (String) "*games*strip.translations:           #override\\n"
         "Shift<Btn1Down>: help(games_strip)\\n"
