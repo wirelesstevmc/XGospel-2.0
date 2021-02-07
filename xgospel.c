@@ -967,6 +967,8 @@ static const char *UseMessages[] = {
 #define XtNdateFormat            "dateFormat"
 #define XtNsgfDateFormat         "sgfDateFormat"
 #define XtCDateFormat            "DateFormat"
+#define XtNminHiDanRank          "minHiDanRank"
+#define XtCMinHiDanRank          "MinHiDanRank"
 #define XtNminProRank            "minProRank"
 #define XtCMinProRank            "MinProRank"
 #define XtNminImportantRank      "minImportantRank"
@@ -1099,10 +1101,12 @@ static XtResource resources[] = {
       /*  %H:%M:%S not allowed by FF[4]
        * http://www.sbox.tu-graz.ac.at/home/h/hollosi/sgf/properties.html#DT
        */
+    { (String) XtNminHiDanRank, (String) XtCMinHiDanRank, XtRString, sizeof(String),
+      offset(MinHiDanRank), XtRString, (XtPointer) "5d" },
     { (String) XtNminProRank, (String) XtCMinProRank, XtRString, sizeof(String),
-      offset(MinProRank), XtRString, (XtPointer) "5d" },
+      offset(MinProRank), XtRString, (XtPointer) "7d" },
     { (String) XtNminImportantRank, (String) XtCMinImportantRank, XtRString, sizeof(String),
-      offset(MinImportantRank), XtRString, (XtPointer) "5d" },
+      offset(MinImportantRank), XtRString, (XtPointer) "7d" },
     { (String) XtNbroadcastSize, (String) XtCBroadcastSize, XtRInt, sizeof(int),
       offset(BroadcastSize), XtRString, (XtPointer) "128" },
     { (String) XtNyellsize, (String) XtCYellsize, XtRInt, sizeof(int),
