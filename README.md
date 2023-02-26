@@ -1,5 +1,6 @@
 # XGospel-2.0
 =======History and notes about building and findings S.Cahill=================
+
 This is has been a hobby of mine since (~1991) after I got pretty excited
 about all the features and capabilites of the xgospel Go client. I first
 learned how to play Go sometime after I graduated with my BSEE back in 1981.
