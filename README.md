@@ -1,4 +1,26 @@
 # XGospel-2.0
+=======History and notes about building and findings S.Cahill=================
+This is has been a hobby of mine since (~1991) after I got pretty excited
+about all the features and capabilites of the xgospel Go client. I first
+learned how to play Go sometime after I graduated with my BSEE back in 1981.
+An elderly gentleman at who befriended me and showed me his array of puzzles
+and games taught me the game. We played at work over the lunch hour. When I
+really dug into all the features I was absolutely astonished. At the time the
+internet was just coming into it's own and my thoughts were "Wow! what a way
+to learn the game!". I was hooked.
+
+Today the client is not fully supported on the IGS server but it does work. It
+could really use a rewrite to conform to the newer server standards. Many
+features back then have since been deprecated as internet privacy is much more
+important. Back then you could see the email of anyone who was registered.
+
+The code has not been touched in quite some time and I can only get it
+to build/compile on a Linux OS that would not run on a modern PC!
+Case in point the last OS I could actually get to compile was Slackware 8.0.
+Slackware is my distribution of choice. That said the executable will run on
+a modern day 64-bit OS with the support for 32-bit binaries (like multilib).
+
+==============================================================================
 Base code for XGospel 2.0 - a project to revamp the old XGospel Go client
 This file describes version 1.12c1 of the xgospel program, an X11 (R5
 or higher) IGS client for UNIX systems.
