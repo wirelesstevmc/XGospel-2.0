@@ -80,12 +80,12 @@ INSTALL_PROGS = $(INSTALL_PROGS_X_@USE_X@)
 
 SRCS_X_no  =
 SRCS_X_yes = xgospel.c gospel.c resources.c GoBoard.c connect.c \
-       observe.c analyze.c stats.c reviews.c games.c players.c \
+       modern_connect.c modern_integration.c modern_parser.c modern_xgospel_patch.c observe.c analyze.c stats.c reviews.c games.c players.c \
        broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c
 EXTRASRCS = relog.c relay.c rport.c
 OBJS_X_no  =
 OBJS_X_yes = gointer.o goserver.o xgospel.o gospel.o resources.o GoBoard.o \
-       connect.o observe.o analyze.o stats.o reviews.o games.o players.o \
+       connect.o modern_connect.o modern_integration.o modern_parser.o modern_xgospel_patch.o observe.o analyze.o stats.o reviews.o games.o players.o \
        broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o
 SRCS = $(SRCS_X_@USE_X@)
 OBJS = $(OBJS_X_@USE_X@)
