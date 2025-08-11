@@ -42,7 +42,7 @@ typedef struct {
     Boolean WantStdout, WantVerbose, AllowSuicide, TersePlay, UseTerm;
     Boolean SimpleNames, NumberKibitzes, UseSay, MarkTerritories, MarkDame;
     Boolean AutoScore;
-    String  DateFormat, SgfDateFormat, MinProRank, MinImportantRank;
+    String  DateFormat, SgfDateFormat, MinProRank, MinHiDanRank, MinImportantRank;
     Pixel   MyLowTimeBackground, MyLowTimeForeground;
     Pixel   LowTimeBackground, LowTimeForeground;
     int     LowTimeSet, MinSecPerMove, MinLagMargin;

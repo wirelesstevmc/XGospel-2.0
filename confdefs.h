@@ -6,7 +6,7 @@
 #define HAVE_UNISTD_H 1
 #define HAVE_STDARG_H 1
 #define HAVE_SYS_SELECT_H 1
-#define RETSIGTYPE void
+#define RETSIGTYPE int
 #define HAVE_STRFTIME 1
 #define HAVE_MEMCHR 1
 #define HAVE_MEMMOVE 1

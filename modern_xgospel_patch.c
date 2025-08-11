@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 /* Function to initialize modern features - call from main() */
 void InitModernXGospel(void)
@@ -32,20 +33,29 @@ void InitModernXGospel(void)
 /* Enhanced connection function - replacement for original Connect() */
 Connection ModernConnect_Wrapper(const char *site, int port)
 {
+    const char *username;
+    const char *password; 
+    Connection conn;
+    ModernConnection modern_conn;
+    char stats[512];
+    
     printf("Attempting enhanced connection to %s:%d\n", site, port);
     
     /* Get credentials from application data */
-    const char *username = appdata.User ? appdata.User : "";
-    const char *password = appdata.Password ? appdata.Password : "";
+    username = appdata.User ? appdata.User : "";
+    password = appdata.Password ? appdata.Password : "";
     
     /* Try modern connection first */
-    Connection conn = ModernConnectWrapper(site, port, username, password);
+    modern_conn = ModernConnect(site, port, username, password);
     
-    if (conn) {
+    if (modern_conn && modern_conn->base_conn) {
+        conn = modern_conn->base_conn;
         printf("Enhanced connection established\n");
         
+        /* Set up the global modern connection for integration */
+        SetModernConnection(modern_conn);
+        
         /* Display connection info */
-        char stats[512];
         GetConnectionStats(stats, sizeof(stats));
         ServerMessage("Connection Details:\n%s\n", stats);
         
@@ -72,12 +82,12 @@ void ModernOutput(const char *text)
 /* Enhanced command sending with server detection */
 void ModernSendCommand(const char *command, ...)
 {
+    va_list args;
+    char buffer[1024];
+    
     if (!command) return;
     
-    va_list args;
     va_start(args, command);
-    
-    char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), command, args);
     
     /* Use enhanced command sending if available */
@@ -88,8 +98,8 @@ void ModernSendCommand(const char *command, ...)
         printf("Modern command sent: %s\n", buffer);
     } else {
         /* Fall back to original command sending */
-        Connection conn = Connections.Next;
-        if (conn != &Connections) {
+        Connection conn = Conn;
+        if (conn) {
             SendCommand(conn, NULL, "%s", buffer);
         }
     }

@@ -59,21 +59,24 @@ void CleanupModernParser(void)
 /* Main parsing function */
 MessageType ParseModernMessage(ModernConnection conn, const char *line)
 {
+    const char *trimmed;
+    int cmd_num, i, server_flag;
+    
     if (!conn || !line) return MSG_UNKNOWN;
     
     /* Skip empty lines */
-    const char *trimmed = line;
+    trimmed = line;
     while (*trimmed && isspace(*trimmed)) trimmed++;
     if (!*trimmed) return MSG_UNKNOWN;
     
     /* Extract command number if present */
-    int cmd_num = -1;
+    cmd_num = -1;
     if (sscanf(trimmed, "%d ", &cmd_num) == 1) {
         /* Find and execute command handler */
-        for (int i = 0; modern_commands[i].command_name; i++) {
+        for (i = 0; modern_commands[i].command_name; i++) {
             if (modern_commands[i].command_id == cmd_num) {
                 /* Check server compatibility */
-                int server_flag = 1 << conn->server_type;
+                server_flag = 1 << conn->server_type;
                 if (modern_commands[i].supported_servers & server_flag) {
                     if (modern_commands[i].handler(conn, line)) {
                         return (MessageType)cmd_num;
@@ -120,22 +123,28 @@ const char *GetMessageTypeName(MessageType type)
 /* Utility function to split lines */
 char **SplitLine(const char *line, const char *delim, int *count)
 {
+    int max_parts;
+    const char *p;
+    char **parts;
+    char *line_copy;
+    char *token;
+    
     if (!line || !delim || !count) return NULL;
     
     /* Count delimiters to estimate parts */
-    int max_parts = 1;
-    const char *p = line;
+    max_parts = 1;
+    p = line;
     while ((p = strstr(p, delim)) != NULL) {
         max_parts++;
         p += strlen(delim);
     }
     
     /* Allocate array for parts */
-    char **parts = malloc(max_parts * sizeof(char*));
+    parts = malloc(max_parts * sizeof(char*));
     if (!parts) return NULL;
     
     /* Copy line for tokenization */
-    char *line_copy = SafeStrdup(line);
+    line_copy = SafeStrdup(line);
     if (!line_copy) {
         free(parts);
         return NULL;
@@ -143,7 +152,7 @@ char **SplitLine(const char *line, const char *delim, int *count)
     
     /* Split the line */
     *count = 0;
-    char *token = strtok(line_copy, delim);
+    token = strtok(line_copy, delim);
     while (token && *count < max_parts) {
         parts[*count] = SafeStrdup(token);
         (*count)++;
@@ -157,9 +166,11 @@ char **SplitLine(const char *line, const char *delim, int *count)
 /* Free split line result */
 void FreeSplitLine(char **parts, int count)
 {
+    int i;
+    
     if (!parts) return;
     
-    for (int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         SafeFree((void**)&parts[i]);
     }
     free(parts);
@@ -182,10 +193,12 @@ int ExtractTime(const char *str, int *minutes, int *seconds)
 /* Extract rank from string */
 int ExtractRank(const char *str, char *rank, size_t rank_size)
 {
+    const char *p;
+    
     if (!str || !rank || rank_size == 0) return 0;
     
     /* Look for patterns like "5k", "2d", "NR" */
-    const char *p = str;
+    p = str;
     while (*p && !isdigit(*p) && *p != 'N') p++;
     
     if (*p) {

@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include <time.h>
 #include <errno.h>
 
@@ -31,7 +32,7 @@ static ModernConnection modern_conn = NULL;
 /* Server detection patterns - from q5Go parser.cpp */
 static const struct {
     const char *pattern;
-    ServerType type;
+    ModernServerType type;
 } server_patterns[] = {
     {"IGS entry on", SERVER_IGS},
     {"NNGS #", SERVER_NNGS}, 
@@ -45,9 +46,11 @@ static const struct {
 /* Utility Functions */
 char *SafeStrdup(const char *str)
 {
+    char *result;
+    
     if (!str) return NULL;
     
-    char *result = malloc(strlen(str) + 1);
+    result = malloc(strlen(str) + 1);
     if (!result) {
         fprintf(stderr, "Memory allocation failed in SafeStrdup\n");
         return NULL;
@@ -81,11 +84,13 @@ int IsValidUTF8(const char *str)
 }
 
 /* Server Type Detection */
-ServerType DetectServerType(const char *response)
+ModernServerType DetectModernServerType(const char *response)
 {
+    int i;
+    
     if (!response) return SERVER_UNKNOWN;
     
-    for (int i = 0; server_patterns[i].pattern; i++) {
+    for (i = 0; server_patterns[i].pattern; i++) {
         if (strstr(response, server_patterns[i].pattern)) {
             return server_patterns[i].type;
         }
@@ -98,10 +103,12 @@ ServerType DetectServerType(const char *response)
 ModernConnection ModernConnect(const char *site, int port, 
                               const char *username, const char *password)
 {
+    ModernConnection conn;
+    
     if (!site) return NULL;
     
     /* Allocate modern connection structure */
-    ModernConnection conn = calloc(1, sizeof(struct _ModernConnection));
+    conn = calloc(1, sizeof(struct _ModernConnection));
     if (!conn) {
         fprintf(stderr, "Failed to allocate ModernConnection\n");
         return NULL;
@@ -239,6 +246,9 @@ int HandleAuthenticationResponse(ModernConnection conn, const char *line)
 /* Modern Protocol Parser - based on q5Go parser structure */
 int ParseModernProtocol(ModernConnection conn, const char *line)
 {
+    ModernServerType detected;
+    int cmd_num;
+    
     if (!conn || !line) return 0;
     
     /* Skip empty lines */
@@ -246,7 +256,7 @@ int ParseModernProtocol(ModernConnection conn, const char *line)
     
     /* Detect server type if unknown */
     if (conn->server_type == SERVER_UNKNOWN) {
-        ServerType detected = DetectServerType(line);
+        detected = DetectModernServerType(line);
         if (detected != SERVER_UNKNOWN) {
             conn->server_type = detected;
             printf("Detected server type: %d\n", detected);
@@ -272,7 +282,7 @@ int ParseModernProtocol(ModernConnection conn, const char *line)
     }
     
     /* Parse numbered commands - extract command number */
-    int cmd_num = -1;
+    cmd_num = -1;
     if (sscanf(line, "%d ", &cmd_num) == 1) {
         switch (cmd_num) {
             case 1: return HandleServerCommand1(conn, line);
@@ -300,12 +310,12 @@ int ParseModernProtocol(ModernConnection conn, const char *line)
 /* Enhanced Command Sending */
 void SendModernCommand(ModernConnection conn, const char *command, ...)
 {
+    va_list args;
+    char buffer[1024];
+    
     if (!conn || !command || !conn->base_conn) return;
     
-    va_list args;
     va_start(args, command);
-    
-    char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), command, args);
     
     /* Update command tracking */

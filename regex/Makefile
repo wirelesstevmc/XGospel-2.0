@@ -1,0 +1,117 @@
+# Generated automatically from Makefile.in by configure.
+# Makefile for regex.
+#
+# Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+version = 0.12
+
+# You can define CPPFLAGS on the command line.  Aside from system-specific
+# flags, you can define:
+#   -DREGEX_MALLOC to use malloc/realloc/free instead of alloca.
+#   -DDEBUG to enable the compiled pattern disassembler and execution
+#           tracing; code runs substantially slower.
+#   -DEXTRACT_MACROS to use the macros EXTRACT_* (as opposed to
+#           the corresponding C procedures).  If not -DDEBUG, the macros
+#           are used.
+# Likewise, you can override CFLAGS to optimize, use -Wall, etc.
+CFLAGS   = -O6 -fomit-frame-pointer 
+CPPFLAGS = 
+
+srcdir  = .
+
+RM      = rm -f
+ARFLAGS = rv
+
+CC   = gcc
+DEFS =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DXAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
+
+SHELL       = /bin/sh
+DEPEND      = :
+DEPENDP     = :
+DEPENDFLAGS =  -D__GNUC__=2 -D__GNUC_MINOR__=95 -D__ELF__ -Dunix -D__i386__ -Dlinux -D__ELF__ -D__unix__ -D__i386__ -D__linux__ -D__unix -D__linux -Dsystem=posix -Dcpu=i386 -Dmachine=i386 -Di386 -D__i386 -D__i386__ -I/usr/local/include -I/usr/lib/gcc-lib/i386-slackware-linux/2.95.3/include -I/usr/include
+ETAGS       = :
+USE_AR      = implicit
+
+subdirs = doc test
+
+SRCS = regex.c
+LIB  = regex
+FLIB = lib$(LIB).a
+implicit_OBJS = $(FLIB)(regex.o)
+explicit_OBJS = regex.o
+
+AR = ar
+RANLIB=ranlib
+
+all: localdepend $(FLIB)
+
+.c.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -c $<
+
+.c.a:
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -c $<
+	$(AR) $(ARFLAGS) $(FLIB) $%
+	$(RM) $%
+
+localdepend: $(SRCS) $(srcdir)/*.h Makefile
+	pwd=`pwd`; cd $(srcdir); \
+	if [ $(USE_AR) = explicit ]; then \
+	  $(DEPEND) -f$$pwd/Makefile -s "# DO NOT DELETE" -- \
+	  $(DEPENDFLAGS) $(CPPFLAGS) $(DEFS) -I$$pwd $(CFLAGS) -I$(srcdir) -- \
+	  $(SRCS); \
+	else \
+	  $(DEPENDP) -o ".o)" -p $(FLIB)"(" -f$$pwd/Makefile \
+	  -s "# DO NOT DELETE" -- \
+	  $(DEPENDFLAGS) $(CPPFLAGS) $(DEFS) -I$$pwd $(CFLAGS) -I$(srcdir) -- \
+	  $(SRCS); \
+	fi
+	@sleep 1; echo "Time stamp" > localdepend
+
+depend: localdepend
+
+$(FLIB): $(implicit_OBJS)
+	if [ $(USE_AR) = explicit ]; then eval "$(AR) $(ARFLAGS) $(FLIB) $?"; fi
+	$(RANLIB) $(FLIB)
+	touch $(FLIB)
+
+###############################################################################
+# cleanup
+###############################################################################
+
+parserclean:
+
+mostlyclean::
+	$(RM) *.o core
+
+clean:: mostlyclean
+	$(RM) $(FLIB) TAGS localdepend
+
+distclean:: clean
+	$(RM) Makefile Makefile.bak
+
+maintainer-clean:: distclean
+	$(RM) patch* *~* *\#* *.orig *.rej *.bak a.out
+
+# Prevent GNU make 3 from overflowing arg limit on system V.
+.NOEXPORT:
+
+TAGS: $(SRCS) $(srcdir)/*.h
+	pwd=`pwd`; cd $(srcdir); echo "Placeholder" > TAGS; $(ETAGS) $(SRCS) *.h
+
+dist:
+
+# DO NOT DELETE
