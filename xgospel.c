@@ -33,6 +33,7 @@
 #include "utils.h"
 #include "version.h"
 #include "xgospel.h"
+#include "modern_integration.h"
 
 #define DEBUGFUN              1
 #define DEBUGPENDING          2
@@ -1261,6 +1262,9 @@ int main(int argc, char **argv)
    SOCKSinit(argv[0]);
 #endif /* HAVE_SOCKS */
 
+    /* Initialize modern protocol enhancements */
+    InitModernXGospel();
+
     Now = StringToTime(__DATE__, __TIME__);
     if (Now) {
         ptr = Name;
@@ -1472,7 +1476,7 @@ int main(int argc, char **argv)
     if (UserButton) XtAddCallback(UserButton,XtNcallback,User_Commands,NULL);
 
     WITH_UNWIND {
-        Conn = Connect(appdata.Site, appdata.Port);
+        Conn = ModernConnect_Wrapper(appdata.Site, appdata.Port);
         RealQuit = 0;
         Entered  = 0;
         do {

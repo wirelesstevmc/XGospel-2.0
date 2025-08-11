@@ -221,7 +221,7 @@
 #include "version.h"
 
 #define YYDEBUG		1
-#define YYERROR_VERBOSE
+/****#define YYERROR_VERBOSE****/
 #define IgsYYoverflow(x1, x2, x3, x4, x5, x8) MyOverflow(x1)
 #define	xmalloc	mymalloc
 /* Kludge to get rid of IgsYY_bcopy warnings --Ton */

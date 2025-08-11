@@ -21,7 +21,7 @@ typedef enum {
     SERVER_PANDANET,
     SERVER_WBG,
     SERVER_TYGEM
-} ServerType;
+} ModernServerType;
 
 /* Authentication states */
 typedef enum {
@@ -38,7 +38,7 @@ typedef struct _ModernConnection {
     Connection base_conn;
     
     /* Server information */
-    ServerType server_type;
+    ModernServerType server_type;
     char *server_host;
     int server_port;
     
@@ -75,7 +75,7 @@ extern ModernConnection ModernConnect(const char *site, int port,
                                      const char *username, const char *password);
 extern void ModernDisconnect(ModernConnection conn);
 extern int ModernIsConnected(ModernConnection conn);
-extern ServerType DetectServerType(const char *response);
+extern ModernServerType DetectServerType(const char *response);
 extern int HandleAuthenticationResponse(ModernConnection conn, const char *line);
 extern int ParseModernProtocol(ModernConnection conn, const char *line);
 extern void SendModernCommand(ModernConnection conn, const char *command, ...);

@@ -1,0 +1,98 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:720:10: fatal error: minix/config.h: No such file or directory
+  720 | #include <minix/config.h>
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+/usr/bin/ld: /tmp/cc7EgGpg.o: in function `t':
+conftest.c:(.text+0x5): undefined reference to `goldfish_does_blub'
+collect2: error: ld returned 1 exit status
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -lfl
+configure: In function 't':
+configure:1212:1: error: implicit declaration of function 'yywrap' [-Wimplicit-function-declaration]
+ 1212 | yywrap()
+      | ^~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+configure:1369:1: error: return type defaults to 'int' [-Wimplicit-int]
+ 1369 | main(){return(0);}
+      | ^~~~
+configure:1576:8: error: conflicting types for 'signal'; have 'void (*(void))(void)'
+ 1576 | void (*signal ()) ();
+      |        ^~~~~~
+In file included from configure:1569:
+/usr/include/signal.h:88:23: note: previous declaration of 'signal' with type 'void (*(int,  void (*)(int)))(int)'
+   88 | extern __sighandler_t signal (int __sig, __sighandler_t __handler)
+      |                       ^~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -lintl
+configure: In function 't':
+configure:1617:1: error: implicit declaration of function 'strftime' [-Wimplicit-function-declaration]
+ 1617 | strftime()
+      | ^~~~~~~~
+configure:1614:1: note: include '<time.h>' or provide a declaration of 'strftime'
+ 1613 | #include "confdefs.h"
+  +++ |+#include <time.h>
+ 1614 | 
+configure:1617:1: warning: incompatible implicit declaration of built-in function 'strftime' [-Wbuiltin-declaration-mismatch]
+ 1617 | strftime()
+      | ^~~~~~~~
+configure:1617:1: note: include '<time.h>' or provide a declaration of 'strftime'
+configure:1617:1: error: too few arguments to function 'strftime'; expected 4, have 0
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+configure:1654:6: warning: conflicting types for built-in function 'strftime'; expected 'long unsigned int(char *, long unsigned int,  const char *, const void *)' [-Wbuiltin-declaration-mismatch]
+ 1654 | char $ac_func();
+      |      ^~~~~~~~
+configure:1653:1: note: 'strftime' is declared in header '<time.h>'
+ 1652 | #include <assert.h>
+  +++ |+#include <time.h>
+ 1653 | /* Override any gcc2 internal prototype to avoid an error.  */
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+configure:1710:6: warning: conflicting types for built-in function 'memchr'; expected 'void *(const void *, int,  long unsigned int)' [-Wbuiltin-declaration-mismatch]
+ 1710 | char $ac_func();
+      |      ^~~~~~
+configure:1709:1: note: 'memchr' is declared in header '<string.h>'
+ 1708 | #include <assert.h>
+  +++ |+#include <string.h>
+ 1709 | /* Override any gcc2 internal prototype to avoid an error.  */
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+configure:1710:6: warning: conflicting types for built-in function 'memmove'; expected 'void *(void *, const void *, long unsigned int)' [-Wbuiltin-declaration-mismatch]
+ 1710 | char $ac_func();
+      |      ^~~~~~~
+configure:1709:1: note: 'memmove' is declared in header '<string.h>'
+ 1708 | #include <assert.h>
+  +++ |+#include <string.h>
+ 1709 | /* Override any gcc2 internal prototype to avoid an error.  */
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c
+gcc -o conftest -O6 -fomit-frame-pointer -L/usr/lib64 conftest.c -lICE -L/usr/lib64
+configure: In function 't':
+configure:2563:1: error: implicit declaration of function 'IceConnectionNumber' [-Wimplicit-function-declaration]
+ 2563 | IceConnectionNumber()
+      | ^~~~~~~~~~~~~~~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -ldnet -L/usr/lib64
+configure: In function 't':
+configure:2607:1: error: implicit declaration of function 'dnet_ntoa' [-Wimplicit-function-declaration]
+ 2607 | dnet_ntoa()
+      | ^~~~~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -ldnet_stub -L/usr/lib64
+configure: In function 't':
+configure:2642:1: error: implicit declaration of function 'dnet_ntoa' [-Wimplicit-function-declaration]
+ 2642 | dnet_ntoa()
+      | ^~~~~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -lnsl -L/usr/lib64
+configure: In function 't':
+configure:2682:1: error: implicit declaration of function 't_accept' [-Wimplicit-function-declaration]
+ 2682 | t_accept()
+      | ^~~~~~~~
+gcc -o conftest -O6 -fomit-frame-pointer conftest.c -lsocket -L/usr/lib64
+configure: In function 't':
+configure:2721:1: error: implicit declaration of function 'socket' [-Wimplicit-function-declaration]
+ 2721 | socket()
+      | ^~~~~~

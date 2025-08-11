@@ -28,6 +28,7 @@
 #include "messages.h"
 #include "reviews.h"
 #include "utils.h"
+#include "modern_integration.h"
 #include "xgospel.h"
 
 #ifdef HAVE_TERM
@@ -566,6 +567,12 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
         memcpy(conn->Buffer,  conn->Line, conn->Sent);
         memcpy(conn->Parsing, conn->Line, conn->Sent);
         conn->Parsing[conn->Sent] = 0;
+        
+        /* Hook for modern protocol processing */
+        if (IsModernConnectionActive()) {
+            ParseWithModernProtocol(conn->Parsing);
+        }
+        
         conn->Used -= conn->Sent;
         memmove(conn->Line, conn->Line+conn->Sent, conn->Used);
         conn->Request = -1;

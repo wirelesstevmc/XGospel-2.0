@@ -1,32 +1,32 @@
-srcdir = @srcdir@
-VPATH = @srcdir@
-@SET_MAKE@
-RM   = @MAKE_RM@
+# Generated automatically from Makefile.in by configure.
+srcdir = .
 
-CC   = @CC@
-LEX  = @LEX@
-YACC = @YACC@
+RM   = rm -f
 
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
-transform=@program_transform_name@
+CC   = gcc
+LEX  = flex
+YACC = bison -y
 
-DEFS         = @DEFS@
-FUNCPROTO    = @FUNCPROTO@
+INSTALL = /usr/bin/ginstall -c
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_DATA = ${INSTALL} -m 644
+transform=s,x,x,
+
+DEFS         =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DXAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
+FUNCPROTO    = -DFUNCPROTO=15
 EDEFS        = $(DEFS) $(FUNCPROTO)
-LIBS         = @X_EXTRA_LIBS@ @LIBS@
-TERM_LIBS    = @TERM_LIBS@
-TERM_DIR     = @TERM_DIR@
-X_CFLAGS     = @X_CFLAGS@
-X_LIBS       = @X_LIBS@
-X_PRE_LIBS   = @X_PRE_LIBS@
-XAW_LIB      = @XAW_LIB@
-USE_X        = @USE_X@
+LIBS         =  
+TERM_LIBS    = 
+TERM_DIR     = 
+X_CFLAGS     =  -I/usr/X11R6/include
+X_LIBS       =  -L/usr/X11R6/lib
+X_PRE_LIBS   = -lXpm  -lSM -lICE
+XAW_LIB      = -lXaw3d
+USE_X        = yes
 
-CFLAGS   = @CFLAGS@
-CPPFLAGS = @CPPFLAGS@
-LDFLAGS  = @LDFLAGS@
+CFLAGS   = -O6 -fomit-frame-pointer 
+CPPFLAGS = 
+LDFLAGS  = 
 
 # poor mans VPATH. You could for example set TMP to /tmp/ , so at least the
 # executable will not eat space in your source directory
@@ -39,13 +39,13 @@ XGINCS          = -I$(srcdir)/my -I$(srcdir)/regex $(X_CFLAGS)
 RXINCS		= -Imy -Iregex $(X_CFLAGS)
 XGLIBS          = $(MY_LIBRARIESPATH) $(X_LIBS) $(MY_LIBRARIES) -lm\
                   $(XAW_LIB) -lXmu -lXt -lXext $(X_PRE_LIBS) -lX11\
-                  $(TERM_LIBS) @RESOLVLIB@
+                  $(TERM_LIBS) -lresolv
 
 subdirs        = my regex
 compilesubdirs = $(subdirs)
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+prefix = /usr/local/games
+exec_prefix = ${prefix}
 
 binprefix =
 manprefix =
@@ -56,9 +56,9 @@ mandir = $(prefix)/man/man1
 manext = l
 
 SHELL       = /bin/sh
-DEPEND      = @MAKEDEPEND@
-DEPENDFLAGS = @DEPENDFLAGS@
-ETAGS       = @ETAGS@
+DEPEND      = makedepend
+DEPENDFLAGS =  -D__GNUC__=2 -D__GNUC_MINOR__=95 -D__ELF__ -Dunix -D__i386__ -Dlinux -D__ELF__ -D__unix__ -D__i386__ -D__linux__ -D__unix -D__linux -Dsystem=posix -Dcpu=i386 -Dmachine=i386 -Di386 -D__i386 -D__i386__ -I/usr/local/include -I/usr/lib/gcc-lib/i386-slackware-linux/2.95.3/include -I/usr/include
+ETAGS       = :
 
 LFLAGS          = -I -8 -d
 YFLAGS          = -d
@@ -70,27 +70,25 @@ YFLAGS          = -d
 PROGS_BASE    = $(TMP)relog $(TMP)relay
 PROGS_X_no    = $(INSTALL_PROGS_BASE) $(PROGS_BASE)
 PROGS_X_yes   = $(INSTALL_PROGS_X_yes) $(PROGS_BASE)
-PROGS         = $(PROGS_X_@USE_X@)
+PROGS         = $(PROGS_X_yes)
 
 # The subset of programs that matter for the install/uninstall targets
 INSTALL_PROGS_BASE  = $(TMP)rport
 INSTALL_PROGS_X_no  = $(INSTALL_PROGS_BASE)
 INSTALL_PROGS_X_yes = $(TMP)xgospel $(INSTALL_PROGS_BASE)
-INSTALL_PROGS = $(INSTALL_PROGS_X_@USE_X@)
+INSTALL_PROGS = $(INSTALL_PROGS_X_yes)
 
 SRCS_X_no  =
 SRCS_X_yes = xgospel.c gospel.c resources.c GoBoard.c connect.c \
        observe.c analyze.c stats.c reviews.c games.c players.c \
-       broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c \
-       modern_connect.c modern_parser.c modern_integration.c modern_xgospel_patch.c
+       broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c
 EXTRASRCS = relog.c relay.c rport.c
 OBJS_X_no  =
 OBJS_X_yes = gointer.o goserver.o xgospel.o gospel.o resources.o GoBoard.o \
        connect.o observe.o analyze.o stats.o reviews.o games.o players.o \
-       broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o \
-       modern_connect.o modern_parser.o modern_integration.o modern_xgospel_patch.o
-SRCS = $(SRCS_X_@USE_X@)
-OBJS = $(OBJS_X_@USE_X@)
+       broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o
+SRCS = $(SRCS_X_yes)
+OBJS = $(OBJS_X_yes)
 
 # Do the real work by running a new make in case the Makefiles changed.
 # (otherwise we won't use the new make variables)
@@ -124,8 +122,8 @@ gointer.tab.h gointer.c: gointer.y
 	case "$(YACC)" in \
 	  *bison*) echo $(YACC) $(YFLAGS) $$srcdir/gointer.y && \
 	           $(YACC) $(YFLAGS) $$srcdir/gointer.y && \
-	           echo "sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/IgsYY/g' y.tab.c > gointer.c" && \
-	           sed 's/YYOVERFLOW/@YYOVERFLOW@/g; s/yy/IgsYY/g' y.tab.c > gointer.c && \
+	           echo "sed 's/YYOVERFLOW/yyoverflow(x1, x2, x3, x4, x5, x8)/g; s/yy/IgsYY/g' y.tab.c > gointer.c" && \
+	           sed 's/YYOVERFLOW/yyoverflow(x1, x2, x3, x4, x5, x8)/g; s/yy/IgsYY/g' y.tab.c > gointer.c && \
 	           echo "sed 's/yy/IgsYY/g' y.tab.h > gointer.tab.h"; \
 	           sed 's/yy/IgsYY/g' y.tab.h > gointer.tab.h; \
 	           $(RM) y.tab.c y.tab.h;; \
@@ -147,11 +145,11 @@ $(TMP)relog: relog.o my/libmy.a # dummylibs
 
 $(TMP)relay: relay.o my/libmy.a # dummylibs
 	$(RM) $@
-	$(CC) $(LDFLAGS) -o $@ relay.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) @RESOLVLIB@ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ relay.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) -lresolv $(LIBS)
 
 $(TMP)rport: rport.o my/libmy.a # dummylibs
 	$(RM) $@
-	$(CC) $(LDFLAGS) -o $@ rport.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) @RESOLVLIB@ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ rport.o $(MY_LIBRARIESPATH) $(MY_LIBRARIES) $(TERM_LIBS) -lresolv $(LIBS)
 
 dummylibs:
 	@case '${MFLAGS}' in *[ik]*) set +e;; *) set -e;; esac; \
@@ -279,7 +277,7 @@ maintainer-clean: localmaintainer-clean
 
 EXTRADPNDS_X_no  =
 EXTRADPNDS_X_yes = goserver.c gointer.c gointer.tab.h
-EXTRADPNDS = $(EXTRADPNDS_X_@USE_X@)
+EXTRADPNDS = $(EXTRADPNDS_X_yes)
 
 localdepend: $(EXTRADPNDS) $(SRCS) $(EXTRASRCS) $(srcdir)/*.h Makefile
 	pwd=`pwd`; cd $(srcdir); \

@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <time.h>
 
 /* Global modern connection instance */
 static ModernConnection g_modern_conn = NULL;
@@ -110,12 +112,13 @@ const char *GetAuthStatusName(void)
 /* Enhanced command sending with modern features */
 void SendEnhancedCommand(const char *command, ...)
 {
+    va_list args;
+    char buffer[1024];
+    Connection conn;
+    
     if (!command) return;
     
-    va_list args;
     va_start(args, command);
-    
-    char buffer[1024];
     vsnprintf(buffer, sizeof(buffer), command, args);
     
     if (g_modern_conn && g_modern_conn->base_conn) {
@@ -123,8 +126,8 @@ void SendEnhancedCommand(const char *command, ...)
         SendModernCommand(g_modern_conn, "%s", buffer);
     } else {
         /* Fall back to original command sending */
-        Connection conn = Connections.Next;
-        if (conn != &Connections) {
+        conn = Conn;
+        if (conn) {
             SendCommand(conn, NULL, "%s", buffer);
         }
     }
@@ -136,6 +139,35 @@ void SendEnhancedCommand(const char *command, ...)
 int IsModernConnectionActive(void)
 {
     return (g_modern_conn && ModernIsConnected(g_modern_conn));
+}
+
+/* Modern protocol parsing hook */
+int ParseWithModernProtocol(const char *line)
+{
+    if (!g_modern_conn || !line) {
+        return 0; /* Not handled by modern parser */
+    }
+    
+    printf("Modern protocol parsing: %s\n", line);
+    
+    /* Try to process with modern protocol */
+    if (ParseModernProtocol(g_modern_conn, line)) {
+        return 1; /* Handled by modern parser */
+    }
+    
+    return 0; /* Not handled by modern parser */
+}
+
+/* Set global modern connection for integration */
+void SetModernConnection(ModernConnection conn)
+{
+    g_modern_conn = conn;
+}
+
+/* Get global modern connection */
+ModernConnection GetModernConnection(void)
+{
+    return g_modern_conn;
 }
 
 /* Clean shutdown of modern connection */
@@ -150,6 +182,9 @@ void CleanupModernConnection(void)
 /* Get connection statistics */
 void GetConnectionStats(char *buffer, size_t buffer_size)
 {
+    time_t current_time;
+    time_t uptime;
+    
     if (!buffer || buffer_size == 0) return;
     
     if (!g_modern_conn) {
@@ -157,8 +192,8 @@ void GetConnectionStats(char *buffer, size_t buffer_size)
         return;
     }
     
-    time_t current_time = time(NULL);
-    time_t uptime = current_time - g_modern_conn->login_time;
+    current_time = time(NULL);
+    uptime = current_time - g_modern_conn->login_time;
     
     snprintf(buffer, buffer_size,
         "Server: %s\n"
@@ -200,9 +235,11 @@ int TryModernParsing(const char *line)
 /* Server compatibility detection */
 int DetectServerCapabilities(void)
 {
+    int capabilities;
+    
     if (!g_modern_conn) return 0;
     
-    int capabilities = 0;
+    capabilities = 0;
     
     switch (g_modern_conn->server_type) {
         case SERVER_IGS:
