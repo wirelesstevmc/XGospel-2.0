@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <mymalloc.h>
 #include <except.h>
@@ -160,10 +161,13 @@ session     : session loginmessages pass inputs INVALIDPASSWORD
 
 pass        : PASSWORD
                 {
-                    if (MyPassword) ForceCommand(NULL, MyPassword);
-                    else AskString(toplevel, EnterString,
+                    if (MyPassword) {
+                        ForceCommand(NULL, MyPassword);
+                    } else {
+                        AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
+                    }
                 }
             | OLDPASSWORD
                 {
@@ -215,9 +219,12 @@ loginmessage: NAME
                 }
             | LUSER
                 {
-                    if (MyName) ForceCommand(NULL, MyName);
-                    else AskString(toplevel, EnterString, (XtPointer) &MyName,
+                    if (MyName) {
+                        ForceCommand(NULL, MyName);
+                    } else {
+                        AskString(toplevel, EnterString, (XtPointer) &MyName,
                                    "Enter user", "user", &MyName, NULL, NULL);
+                    }
                 }
             | SERVERFULL
                 {
@@ -462,7 +469,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
                 {
                     /* A Connect */
                     if (strcmp($6, "has") || strcmp($7, "connected."))
-                        YYFAIL;
+                        YYERROR;
                     PlayerConnect($2, $4);
                     myfree($2);
                     myfree($4);
@@ -473,7 +480,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
                 {
                     /* A disconnect */
                     if (strcmp($3, "has") || strcmp($4, "disconnected"))
-                        YYFAIL;
+                        YYERROR;
                     PlayerDisconnect($2);
                     myfree($2);
                     myfree($3);
@@ -482,7 +489,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
             | INFOMESSAGE NAME NAME ':' player NAME player '}' END
                 {
                     /* A new match, format with game number */
-                    if (strcmp($6, "vs.") || strcmp($2, "Match")) YYFAIL;
+                    if (strcmp($6, "vs.") || strcmp($2, "Match")) YYERROR;
                     NewMatch(atoi($3), $5, $7);
                     myfree($2);
                     myfree($3);
@@ -490,7 +497,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
                 }
             | INFOMESSAGE NAME NAME ':' NAME NAME NAME ':' names '}' END
                 {
-                    if (strcmp($6, "vs") || strcmp($2, "Game")) YYFAIL;
+                    if (strcmp($6, "vs") || strcmp($2, "Game")) YYERROR;
                     GameInfo(atoi($3), $7, $5, $9);
                     myfree($2);
                     myfree($3);
@@ -503,7 +510,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
                 {
                     /* Resume */
                     if (strcmp($2, "Game") || strcmp($6, "vs") ||
-                        strcmp($9, "Move")) YYFAIL;
+                        strcmp($9, "Move")) YYERROR;
                     Resume(atoi($3), $7, $5, atoi($10));
                     myfree($2);
                     myfree($3);
@@ -517,7 +524,7 @@ infomessage : INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END
                 {
                     /* Adjourn */
                     if (strcmp($8, "has") || strcmp($9, "adjourned.") ||
-                        strcmp($6, "vs")) YYFAIL;
+                        strcmp($6, "vs")) YYERROR;
                     Adjourn(atoi($3), $7, $5);
                     myfree($2);
                     myfree($3);
@@ -586,7 +593,7 @@ broadcast   : BROADCAST NAME
 kibitz      : OBSERVE SEMIPROMPT KIBITZ player ':' NAME NAME NAME NAME
               '[' NAME ']' END NAME
                 {
-                    if (strcmp($6, "Game") || strcmp($8, "vs")) YYFAIL;
+                    if (strcmp($6, "Game") || strcmp($8, "vs")) YYERROR;
                     ReceivedKibitz($4, atoi($11), $9, $7, $14, strlen($14));
                     myfree($6);
                     myfree($7);
@@ -598,7 +605,7 @@ kibitz      : OBSERVE SEMIPROMPT KIBITZ player ':' NAME NAME NAME NAME
             |  KIBITZ player ':' NAME NAME NAME NAME
                 '[' NAME ']' END NAME
                   {
-                    if (strcmp($4, "Game") || strcmp($6, "vs")) YYFAIL;
+                    if (strcmp($4, "Game") || strcmp($6, "vs")) YYERROR;
                     ReceivedKibitz($2, atoi($9), $7, $5, $12, strlen($12));
                     myfree($4);
                     myfree($5);
@@ -691,7 +698,7 @@ ruledmatchrequest:
 matchrequest: ruledmatchrequest names '>' NAME '<' names '>' names END
               optobserve
                 {
-                    if (strcmp($4, "or")) YYFAIL;
+                    if (strcmp($4, "or")) YYERROR;
                     MatchRequest($1, $2);
                     FreeNameList($2);
                     myfree($4);
@@ -957,7 +964,7 @@ observerentries: namesset { $$ = $1; }
 observers   : OBSERVERS NAME '(' NAME NAME NAME ')' ':' END
               observerentries
                 {
-                    if (strcmp($5, "vs.")) YYFAIL;
+                    if (strcmp($5, "vs.")) YYERROR;
                     ShowObservers(atoi($2), $6, $4, $10);
 
                     myfree($2);
@@ -1014,7 +1021,7 @@ gamesline   : GAMES player NAME player
                     if (ptr[1]) Mode = *ptr++;
                     else Mode = ' ';
                     Rules = *ptr++;
-                    if (*ptr) YYFAIL;
+                    if (*ptr) YYERROR;
 
                     size = atoi($7);
                     $$ = FindGame($1, $4, $2,
@@ -1091,7 +1098,7 @@ optgamesaved: gamesaved {}
 gamedesc    : GAME NAME '(' NAME NAME NAME ')' NAME
                    NAME '(' NAME NAME NAME ')' END
                 {
-                    if (strcmp($8, "vs")) YYFAIL;
+                    if (strcmp($8, "vs")) YYERROR;
 
                     $$ = mynew(GameDesc);
                     $$->Id            = $1;
@@ -1119,7 +1126,7 @@ gamedesc    : GAME NAME '(' NAME NAME NAME ')' NAME
                    TEAMGAME NAME NAME NAME NAME END
                 {
 		    Game *game;
-                    if (strcmp($8, "vs")) YYFAIL;
+                    if (strcmp($8, "vs")) YYERROR;
 
                     $$ = mynew(GameDesc);
                     $$->Id            = $1;
@@ -1380,7 +1387,7 @@ opponentundid: UNDID NAME OBSERVE
 
                     ptr = strchr($2, ')');
                     if (ptr) *ptr = 0;
-                    else YYFAIL;
+                    else YYERROR;
                     Undo(0, $4->Id, $4->BlackName, $4->WhiteName, $2);
                     myfree($2);
                     FreeGameDesc($4);
@@ -1393,7 +1400,7 @@ opponentundid: UNDID NAME OBSERVE
 
                     ptr = strchr($2, ')');
                     if (ptr) *ptr = 0;
-                    else YYFAIL;
+                    else YYERROR;
                     Undo(0, $4->Id, $4->BlackName, $4->WhiteName, $2);
                     myfree($2);
                     FreeGameDesc($4);
@@ -1674,7 +1681,7 @@ userline    : names END
 		    } else if (n == 0) { /* list header */
 		      $$ = NULL;
                     } else {
-                        /* Don't call YYFAIL. user command leads to easily
+                        /* Don't call YYERROR. user command leads to easily
                            to parse errors */
 		        Output("Got the expected parse error following a "
                                "\"user\" command:\n");
@@ -1766,7 +1773,7 @@ gametime    : GAMETIME NAME ':' NAME END
               GAMETIME NAME '(' NAME ')' ':' playertime optbyo END
                 {
                     if (strcmp($2, "Game") ||
-                        strcmp($7, "White") || strcmp($16, "Black")) YYFAIL;
+                        strcmp($7, "White") || strcmp($16, "Black")) YYERROR;
                     GameTime(atoi($4), $18, $21, $22, $9, $12, $13);
                     myfree($2);
                     myfree($4);
@@ -2683,17 +2690,18 @@ static void PlayerPasses(const char *Name)
     Name = PlayerToName(Me);
     RejoinChannel();
     /* FirstCommand(NULL, "review"); */
+    /* Temporarily disable immediate commands that may cause disconnection */
     if (appdata.GamesTimeout > 0) FirstCommand(NULL, "games");
     /* Will cause "games" due to nrgames inconsistency */
-    if (appdata.WhoTimeout > 0) FirstCommand(NULL, "who");
+    /* if (appdata.WhoTimeout > 0) FirstCommand(NULL, "who"); */
     /* So who comes BEFORE games (inversion made by FirstCommand) */
     /* FirstCommand(NULL, "toggle bell on"); */
-    FirstCommand(NULL, "toggle quiet off");
+    /* FirstCommand(NULL, "toggle quiet off"); */ /* Temporarily disabled */
     if (appdata.GamesTimeout > 0 && appdata.WhoTimeout > 0) {
 #if 0
 	LastCommand(NULL, "id xgospel %s", VERSION);
 #endif
-        LastCommand(NULL, "uptime");
+        /* LastCommand(NULL, "uptime"); */ /* Temporarily disabled */
 	/* uptime must come *after* to run Entering with Me defined */
     }
     EnterServer(Me);
