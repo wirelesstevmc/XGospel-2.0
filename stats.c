@@ -9,10 +9,12 @@
 #include <except.h>
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "events.h"
 #include "stats.h"
 #include "gointer.h"
+#include "tell.h"
 #include "xgospel.h"
 
 static void SetInfo(Widget w,  XEvent *event,String *string, Cardinal *n);

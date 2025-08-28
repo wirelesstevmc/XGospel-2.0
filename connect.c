@@ -28,8 +28,8 @@
 #include "messages.h"
 #include "reviews.h"
 #include "utils.h"
-#include "xgospel.h"
 #include "modern_integration.h"
+#include "xgospel.h"
 
 #ifdef HAVE_TERM
 # include <client.h>
@@ -84,7 +84,6 @@ typedef XrmQuark Quark;
 extern int _XGetHostname(char *buf, int maxlen);
 
 #ifndef HAVE_NO_CUSERID
-/* extern char *cuserid(); - conflicts with unistd.h */
 # define USERID()	getenv("LOGNAME")
 #else
 # ifndef HAVE_NO_GETLOGIN
@@ -99,7 +98,6 @@ extern char *getlogin(/* void */);
 extern int read( /* int fd,       char *buf, unsigned int n */);
 extern int write(/* int fd, const char *buf, unsigned int n */);
 #endif /* _POSIX_SOURCE */
-/* extern int close(); - conflicts with unistd.h */
 
 #ifdef    HAVE_NO_MEMMOVE
 void bcopy(/* char *source, char *target, int n */);
@@ -323,25 +321,14 @@ void UserActive(Connection conn)
 
 static void AutoReconnect(Connection conn)
 {
-    if (Me && GuestP(Me)) {
-        conn->ReconnectTimeOut = 0;
-        /* Guest user - immediate reconnect */
-    }
-    else {
-        conn->ReconnectTimeOut = appdata.ReconnectTimeout;
-        printf("RECONNECT: Will reconnect in %d seconds\n", appdata.ReconnectTimeout);
-        fflush(stdout);
-    }
+    if (Me && GuestP(Me)) conn->ReconnectTimeOut = 0;
+    else                  conn->ReconnectTimeOut = appdata.ReconnectTimeout;
 }
 
 static void CloseConnection(Connection conn)
 {
     CommandEntry *lastCommand;
 
-    /* Connection being closed - reset auth state */
-    extern void ResetAuthState(void);
-    ResetAuthState();
-    
     if (DebugFile) {
         fprintf(DebugFile, "Connection with %s %d closed\n",
                 conn->Name, conn->Port);
@@ -488,7 +475,6 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
     Connection  conn;
 
     conn = (Connection) ClientData;
-    
 
     From = conn->Line+conn->Used;
     rc = read(*fid, From, sizeof(conn->Line) - conn->Used);
@@ -513,7 +499,6 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
                 ServerMessage("Warning: bad read error on connection with "
 			      "%.200s %d: %s. Closing connection\n",
 			      conn->Name, conn->Port, strerrno());
-                /* Closing due to network error */
                 CloseConnection(conn);
 		break;
 	      default:
@@ -529,8 +514,6 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
         return;
     }
     NrBytes = rc;
-    
-    /* Data received from server */
 
     if (DebugFile) {
         fwrite(From, sizeof(char), NrBytes, DebugFile);
@@ -567,8 +550,6 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
 
     conn->Used += NrBytes;
     NrBytes = conn->Used;
-    
-    /* Commented out problematic close message detection that causes premature disconnection
     if (NrBytes >= CloseLength &&
         !memcmp(conn->Line+NrBytes-CloseLength, CloseMessage, CloseLength))
         if (NrBytes == CloseLength) {
@@ -577,7 +558,6 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
             CloseConnection(conn);
             return;
         } else NrBytes -= CloseLength;
-    */
 
     if (NrBytes && conn->Request >= 0) {
         if (NrBytes > conn->Request) conn->Sent = conn->Request;
@@ -585,57 +565,10 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
         memcpy(conn->Buffer,  conn->Line, conn->Sent);
         memcpy(conn->Parsing, conn->Line, conn->Sent);
         conn->Parsing[conn->Sent] = 0;
+        
         conn->Used -= conn->Sent;
         memmove(conn->Line, conn->Line+conn->Sent, conn->Used);
         conn->Request = -1;
-    } else {
-        
-        /* Process accumulated data line by line with modern parser */
-        if (conn->Used > 0) {
-            char *line_start = conn->Line;
-            char *line_end;
-            char saved_char;
-            int lines_processed = 0;
-            
-            
-            /* Process complete lines in the buffer */
-            while ((line_end = memchr(line_start, '\n', conn->Used - (line_start - conn->Line))) != NULL) {
-                /* Null-terminate the line temporarily */
-                saved_char = line_end[1];
-                line_end[1] = '\0';
-                
-                if (!ParseWithModernProtocol(line_start)) {
-                    /* Store the line in conn->Parsing for traditional parser */
-                    strncpy(conn->Parsing, line_start, sizeof(conn->Parsing) - 1);
-                    conn->Parsing[sizeof(conn->Parsing) - 1] = '\0';
-                    /* Call traditional yacc parser */
-                    extern int IgsYYparse(void);
-                    IgsYYparse();
-                }
-                lines_processed++;
-                
-                /* Restore the character and move to next line */
-                line_end[1] = saved_char;
-                line_start = line_end + 1;
-            }
-            
-            if (lines_processed > 0) {
-                /* Remove processed lines from buffer */
-                int remaining = conn->Used - (line_start - conn->Line);
-                if (remaining > 0) {
-                    memmove(conn->Line, line_start, remaining);
-                    /* Process remaining bytes if needed */
-                    
-                    /* q5Go-style partial data authentication handling */
-                    extern int HandlePartialAuthData(const char *data, int data_len);
-                    if (HandlePartialAuthData(conn->Line, remaining)) {
-                        /* Authentication handled, clear the buffer */
-                        conn->Used = 0;
-                    }
-                }
-                conn->Used = remaining;
-            }
-        }
     }
 }
 
@@ -718,9 +651,6 @@ static void IgsConnect(XtPointer ClientData, int *fid, XtInputId *Id)
     } else
 */
     Outputf("Connected to %.200s %d\n", conn->Name, conn->Port);
-    /* Reset authentication state for new connection */
-    extern void ResetAuthState(void);
-    ResetAuthState();
 }
 
 void ReConnect(Connection conn)

@@ -11,10 +11,6 @@
 #include "gointer.h"
 #include "utils.h"
 #include "xgospel.h"
-#include "messages.h"
-
-/* Include for HandleGamesList */
-extern int HandleGamesList(ModernConnection conn, const char *line);
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,101 +20,6 @@ extern int HandleGamesList(ModernConnection conn, const char *line);
 
 /* Global modern connection instance */
 static ModernConnection g_modern_conn = NULL;
-
-/* Authentication state machine like q5Go - use existing AuthState from header */
-static AuthState auth_state = AUTH_LOGIN;
-
-/* q5Go-style authentication buffer for partial data */
-static char *saved_auth_data = NULL;
-static int len_saved_auth_data = 0;
-
-/* Reset authentication state for new connection */
-void ResetAuthState(void)
-{
-    printf("AUTHENTICATION_DEBUG: ResetAuthState called - resetting to AUTH_LOGIN\n");
-    fflush(stdout);
-    auth_state = AUTH_LOGIN;
-    if (saved_auth_data) {
-        free(saved_auth_data);
-        saved_auth_data = NULL;
-    }
-    len_saved_auth_data = 0;
-}
-
-/* q5Go-style partial data authentication handler */
-int HandlePartialAuthData(const char *data, int data_len)
-{
-    printf("AUTHENTICATION_DEBUG: HandlePartialAuthData called - state=%d, data_len=%d\n", auth_state, data_len);
-    if (data_len > 0 && data_len < 50) {
-        printf("AUTHENTICATION_DEBUG: Data content: '");
-        for (int i = 0; i < data_len; i++) {
-            if (data[i] >= 32 && data[i] <= 126) {
-                printf("%c", data[i]);
-            } else {
-                printf("\\%d", data[i]);
-            }
-        }
-        printf("'\n");
-    }
-    fflush(stdout);
-    
-    if (auth_state == AUTH_LOGIN && data_len == 7) {
-        if (strncmp(data, "Login: ", 7) == 0) {
-            extern char *MyName;
-            extern char *MyPassword;
-            extern void ForceCommand(Connection conn, const char *Command, ...);
-            
-            printf("AUTHENTICATION_DEBUG: Login prompt detected!\n");
-            printf("AUTHENTICATION_DEBUG: MyName='%s', MyPassword=%s\n", 
-                   MyName ? MyName : "(null)", MyPassword ? "(set)" : "(null)");
-            fflush(stdout);
-            
-            /* Send username or default to guest */
-            if (MyName) {
-                printf("AUTHENTICATION: Sending username: %s\n", MyName);
-                fflush(stdout);
-                ForceCommand(NULL, "%s", MyName);
-                /* If we have a password, expect password prompt, otherwise expect direct session */
-                auth_state = MyPassword ? AUTH_PASSWORD : AUTH_SESSION;
-                printf("AUTHENTICATION_DEBUG: Transitioned to state %d\n", auth_state);
-                fflush(stdout);
-            } else {
-                printf("AUTHENTICATION: Sending guest login\n");
-                fflush(stdout);
-                ForceCommand(NULL, "guest");
-                /* Guest login goes directly to session - no password required */
-                auth_state = AUTH_SESSION;
-                printf("AUTHENTICATION_DEBUG: Transitioned to AUTH_SESSION\n");
-                fflush(stdout);
-            }
-            return 1; /* Handled */
-        }
-    } else if (auth_state == AUTH_PASSWORD && data_len == 10) {
-        if (strncmp(data, "Password: ", 10) == 0) {
-            extern char *MyPassword;
-            extern void ForceCommand(Connection conn, const char *Command, ...);
-            
-            printf("AUTHENTICATION_DEBUG: Password prompt detected!\n");
-            printf("AUTHENTICATION_DEBUG: MyPassword=%s\n", MyPassword ? "(set)" : "(null)");
-            fflush(stdout);
-            
-            if (MyPassword) {
-                printf("AUTHENTICATION: Sending password\n");
-                fflush(stdout);
-                ForceCommand(NULL, "%s", MyPassword);
-            } else {
-                printf("AUTHENTICATION_ERROR: No password available!\n");
-                fflush(stdout);
-            }
-            auth_state = AUTH_SESSION;
-            printf("AUTHENTICATION_DEBUG: Transitioned to AUTH_SESSION after password\n");
-            fflush(stdout);
-            return 1; /* Handled */
-        }
-    }
-    
-    return 0; /* Not handled */
-}
 
 /* Integration wrapper for enhanced parsing */
 static const char *ParseWithModernSupport(Connection conn, const char *input)
@@ -142,9 +43,6 @@ static const char *ParseWithModernSupport(Connection conn, const char *input)
 Connection ModernConnectWrapper(const char *site, int port, 
                                const char *username, const char *password)
 {
-    /* Reset authentication state for new connection */
-    ResetAuthState();
-    
     /* Create base connection using original method */
     Connection base_conn = Connect(site, port);
     if (!base_conn) {
@@ -246,55 +144,11 @@ int IsModernConnectionActive(void)
 /* Modern protocol parsing hook */
 int ParseWithModernProtocol(const char *line)
 {
-    static int test_games_sent = 0;
-    
-    if (!line) {
+    if (!g_modern_conn || !line) {
         return 0; /* Not handled by modern parser */
     }
     
-    
-    /* q5Go-style authentication - ONLY handle auth during partial data phase, ignore all complete lines during banner */
-    switch (auth_state) {
-        case AUTH_LOGIN:
-            /* During AUTH_LOGIN phase, completely ignore ALL complete lines like q5Go does */
-            /* Authentication is handled only via partial data buffering in connect.c */
-            return 1; /* HANDLED - completely block traditional parser during auth */
-            
-        case AUTH_PASSWORD:
-            /* During AUTH_PASSWORD phase, check for password prompts like q5Go */
-            if (strstr(line, "1 1") != NULL || strstr(line, "Password:") != NULL) {
-                extern char *MyPassword;
-                extern void ForceCommand(Connection conn, const char *Command, ...);
-                if (MyPassword) {
-                    ForceCommand(NULL, "%s", MyPassword);
-                }
-                auth_state = AUTH_SESSION;
-                return 1; /* HANDLED */
-            }
-            /* Block all other complete lines during password phase */
-            return 1; /* HANDLED - completely block traditional parser during auth */
-            
-        case AUTH_SESSION:
-            /* Already authenticated, let normal protocol handling proceed */
-            break;
-            
-        case AUTH_FAILED:
-            /* Authentication failed, reset on next connection */
-            break;
-    }
-    
-    /* Handle successful login messages */
-    if (strstr(line, "You have entered IGS") != NULL || 
-        strstr(line, "account name is") != NULL) {
-        printf("AUTHENTICATION: Login successful! Transitioning to session mode\n");
-        fflush(stdout);
-        auth_state = AUTH_SESSION;
-        return 0; /* Let this important message pass through to normal processing */
-    }
-    
-    if (!g_modern_conn) {
-        return 0; /* Not handled by modern parser */
-    }
+    printf("Modern protocol parsing: %s\n", line);
     
     /* Try to process with modern protocol */
     if (ParseModernProtocol(g_modern_conn, line)) {

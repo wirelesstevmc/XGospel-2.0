@@ -4,6 +4,7 @@
 #endif /* not STDC_HEADERS and HAVE_MEMORY_H */
 #include <stddef.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
@@ -21,6 +22,7 @@ extern unsigned long FMT8BIT;   /* Seems to be missing on CONVEX */
 #include "connect.h"
 #include "observe.h"
 #include "games.h"
+#include "gamesP.h"
 #include "gospel.h"
 #include "stats.h"
 #include "tell.h"
@@ -1297,7 +1299,7 @@ static int realGameMessage(const Game *game, const char *Text)
     Fail = 0;
     Mine = MyGameP(game);
     if (Mine && !GameToObservers(game)) {
-	ShowObserve(game);
+	ShowObserve((Game *)game);
     }
     for (observe = GameToObservers(game); observe; observe = observe->Next) {
         if (observe->InfoWidget)

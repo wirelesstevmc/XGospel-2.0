@@ -1263,7 +1263,7 @@ int main(int argc, char **argv)
 #endif /* HAVE_SOCKS */
 
     /* Initialize modern protocol enhancements */
-    InitModernXGospel();
+    /* InitModernXGospel(); */
 
     Now = StringToTime(__DATE__, __TIME__);
     if (Now) {

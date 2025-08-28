@@ -1,24 +1,24 @@
 # Generated automatically from Makefile.in by configure.
 srcdir  = .
 
-RM      = rm -f
+RM      = $rm -f
 ARFLAGS = rv
 
 CC   = gcc
 LEX  = flex
-YACC = bison -y
+YACC = $bison -y
 
 SHELL       = /bin/sh
 DEPEND      = :
 DEPENDP     = :
-DEPENDFLAGS =  -D__GNUC__=2 -D__GNUC_MINOR__=95 -D__ELF__ -Dunix -D__i386__ -Dlinux -D__ELF__ -D__unix__ -D__i386__ -D__linux__ -D__unix -D__linux -Dsystem=posix -Dcpu=i386 -Dmachine=i386 -Di386 -D__i386 -D__i386__ -I/usr/local/include -I/usr/lib/gcc-lib/i386-slackware-linux/2.95.3/include -I/usr/include
+DEPENDFLAGS =  -I/usr/lib64/gcc/x86_64-slackware-linux/15.1.0/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-slackware-linux/15.1.0/include-fixed -I/usr/include
 ETAGS       = :
 USE_AR      = implicit
 
 LFLAGS      = -I -i -8
 YFLAGS      = -d
 
-DEFS         =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DXAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
+DEFS         =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DNO_XAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
 FUNCPROTO    = -DFUNCPROTO=15
 EDEFS        = $(DEFS) $(FUNCPROTO)
 LIBS         = 
@@ -27,7 +27,7 @@ X_LIBS       =
 X_EXTRA_LIBS = 
 USE_X        = yes
 
-CFLAGS   = -O6 -fomit-frame-pointer 
+CFLAGS   = -m32 -O2
 CPPFLAGS = 
 
 XGINCS  = -I$(srcdir) $(X_CFLAGS)

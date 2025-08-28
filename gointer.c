@@ -1,202 +1,78 @@
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
-/*  A Bison parser, made from ./gointer.y
- by  GNU Bison version 1.25
-  */
+/* Bison implementation for Yacc-like parsers in C
 
-#define YYBISON 1  /* Identify Bison output.  */
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Inc.
 
-#define	NAME	258
-#define	SERVERMESSAGE	259
-#define	STATSENTRY	260
-#define	ILLEGALMOVE	261
-#define	ILLEGALUNDO	262
-#define	REQUESTINGMATCH	263
-#define	REMOVEGAMEFILE	264
-#define	MAILED	265
-#define	REMOVEGROUP	266
-#define	GIVEBYOYOMI	267
-#define	RESULTLINE	268
-#define	INVALID	269
-#define	AUTOMATCHDISPUTE	270
-#define	NEWCHANNEL	271
-#define	MUSTPASS	272
-#define	OPPMUSTPASS	273
-#define	GUEST	274
-#define	TELLDONE	275
-#define	REVIEWSTART	276
-#define	REVLITERAL	277
-#define	REVUNKNOWN	278
-#define	WELCOME	279
-#define	SERVERFULL	280
-#define	XSHOUT2	281
-#define	MYBET	282
-#define	YELL	283
-#define	TELL	284
-#define	RESIGN	285
-#define	KOMIREQUEST	286
-#define	DISPUTEMATCHTYPE	287
-#define	XSHOUT	288
-#define	DECLINE	289
-#define	JOIN	290
-#define	LEAVE	291
-#define	NEWTITLE	292
-#define	BROADCAST	293
-#define	ITBROADCAST	294
-#define	ENTERBYOYOMI	295
-#define	NOTIME	296
-#define	PERSON	297
-#define	BEEPING	298
-#define	PLAYERON	299
-#define	PROBA	300
-#define	STORED	301
-#define	IDLE	302
-#define	PROMPT	303
-#define	GAMES	304
-#define	REMOVE	305
-#define	MOVE	306
-#define	GAME	307
-#define	OVEROBSERVE	308
-#define	MESSAGES	309
-#define	NEWMATCH	310
-#define	STATUSLINE	311
-#define	CHANNEL	312
-#define	CHANGECHANNEL	313
-#define	FREE	314
-#define	TEXTFILE	315
-#define	FIRSTREMOVE	316
-#define	REVIEWTYPE	317
-#define	GAMECOLOR	318
-#define	GAMESECONDS	319
-#define	BYOYOMI	320
-#define	MATCHTYPE	321
-#define	NATURAL	322
-#define	BETRESULT	323
-#define	RATING	324
-#define	STOREDNUM	325
-#define	UNDO	326
-#define	END	327
-#define	FAIL	328
-#define	OLDPROMPT	329
-#define	SEMIPROMPT	330
-#define	INFOMESSAGE	331
-#define	LUSER	332
-#define	OLDPASSWORD	333
-#define	PASSWORD	334
-#define	INVALIDPASSWORD	335
-#define	IGSENTRY	336
-#define	TITLESET	337
-#define	TOGGLE	338
-#define	PLAYERS	339
-#define	UNKNOWNANSWER	340
-#define	MATCHCLOSED	341
-#define	MATCHOPEN	342
-#define	OBSERVE	343
-#define	WATCHING	344
-#define	EXTSTATSENTRY	345
-#define	ADD	346
-#define	KIBITZ	347
-#define	KOMISET	348
-#define	TRANSLATION	349
-#define	GAMETIME	350
-#define	LOSTCONNECTION	351
-#define	MYADJOURN	352
-#define	RESTORE	353
-#define	RESTART	354
-#define	NOTURN	355
-#define	GAMESAVED	356
-#define	UNDID	357
-#define	EMPTY	358
-#define	DONE	359
-#define	RESTORESCORING	360
-#define	STATUSHEADER	361
-#define	REMOVELIBERTY	362
-#define	OBSERVEWHILEPLAY	363
-#define	NOTELLTARGET	364
-#define	GMTTIME	365
-#define	LOCALTIME	366
-#define	SERVERUP	367
-#define	UPTIMEENTRY	368
-#define	THROWCOPY	369
-#define	SORRY	370
-#define	WRONGCHANNEL	371
-#define	AUTOMATCHREQUEST	372
-#define	DISPUTE	373
-#define	OPPONENTDISPUTE	374
-#define	LATEFREE	375
-#define	NOPLAY	376
-#define	CHANNELHEADER	377
-#define	OBSERVERS	378
-#define	GAMENOTFOUND	379
-#define	MATCHREQUEST	380
-#define	GOEMATCHREQUEST	381
-#define	TOURNAMENTMATCHREQUEST	382
-#define	TOURNAMENTGOEMATCHREQUEST	383
-#define	USERESIGN	384
-#define	GAMETITLE	385
-#define	ERASE	386
-#define	PLEASEREDONE	387
-#define	TELLTARGET	388
-#define	TELLOFF	389
-#define	NOREMOVETURN	390
-#define	ADJOURNSENTREQUEST	391
-#define	ADJOURNREQUEST	392
-#define	OPPONENTNOTON	393
-#define	NOLOAD	394
-#define	DISAGREEREMOVE	395
-#define	OPPDISAGREEREMOVE	396
-#define	DECLINEADJOURN	397
-#define	REVIEWLIST	398
-#define	REVIEWSTOP	399
-#define	REVNODE	400
-#define	REVCOMMENT	401
-#define	REVEVENT	402
-#define	REVRESULT	403
-#define	REVPLACE	404
-#define	REVUSER	405
-#define	REVDATE	406
-#define	REVKOMI	407
-#define	REVGAMENAME	408
-#define	REVWHITERANK	409
-#define	REVBLACKRANK	410
-#define	REVWHITENAME	411
-#define	REVBLACKNAME	412
-#define	REVSIZE	413
-#define	REVGAME	414
-#define	REVBLACK	415
-#define	REVWHITE	416
-#define	REVADDBLACK	417
-#define	REVADDWHITE	418
-#define	REVADDEMPTY	419
-#define	REVNODENAME	420
-#define	REVIEWEND	421
-#define	REVBLACKTIME	422
-#define	REVWHITETIME	423
-#define	REVCOPYRIGHT	424
-#define	REVHANDICAP	425
-#define	REVLETTERS	426
-#define	REVIEWVARIATIONS	427
-#define	NOREVIEW	428
-#define	SGFLIST	429
-#define	NOSGF	430
-#define	NOMOREMOVES	431
-#define	BETWINNERS	432
-#define	BETEVEN	433
-#define	BETLOSERS	434
-#define	USER	435
-#define	CURRENTSCORE	436
-#define	FINALSCORE	437
-#define	TEAMGAME	438
-#define	OBSERVETEAM	439
-#define	RESTARTTEAMGAME	440
-#define	SETPROBA	441
-#define	NOTREVIEWING	442
-#define	NOTREQUESTGAME	443
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-#line 1 "./gointer.y"
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+
+/* As a special exception, you may create a larger work that contains
+   part or all of the Bison parser skeleton and distribute that work
+   under terms of your choice, so long as that work isn't itself a
+   parser generator using the skeleton or a modified version thereof
+   as a parser skeleton.  Alternatively, if you modify or redistribute
+   the parser skeleton itself, you may (at your option) remove this
+   special exception, which will cause the skeleton and the resulting
+   Bison output files to be licensed under the GNU General Public
+   License without this special exception.
+
+   This special exception was added by the Free Software Foundation in
+   version 2.2 of Bison.  */
+
+/* C LALR(1) parser skeleton written by Richard Stallman, by
+   simplifying the original so-called "semantic" parser.  */
+
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or IgsYY_.  They are
+   private implementation details that can be changed or removed.  */
+
+/* All symbols defined below should begin with IgsYY or YY, to avoid
+   infringing on user name space.  This should be done even for local
+   variables, as they might otherwise be expanded by user macros.
+   There are some unavoidable exceptions within include files to
+   define necessary library symbols; they are noted "INFRINGES ON
+   USER NAME SPACE" below.  */
+
+/* Identify Bison output, and Bison version.  */
+#define YYBISON 30802
+
+/* Bison version string.  */
+#define YYBISON_VERSION "3.8.2"
+
+/* Skeleton name.  */
+#define YYSKELETON_NAME "yacc.c"
+
+/* Pure parsers.  */
+#define YYPURE 0
+
+/* Push parsers.  */
+#define YYPUSH 0
+
+/* Pull parsers.  */
+#define YYPULL 1
+
+
+
+
+/* First part of user prologue.  */
+#line 1 "gointer.y"
 
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <mymalloc.h>
 #include <except.h>
@@ -221,7 +97,7 @@
 #include "version.h"
 
 #define YYDEBUG		1
-/****#define YYERROR_VERBOSE****/
+#define YYERROR_VERBOSE
 #define IgsYYoverflow(x1, x2, x3, x4, x5, x8) MyOverflow(x1)
 #define	xmalloc	mymalloc
 /* Kludge to get rid of IgsYY_bcopy warnings --Ton */
@@ -259,8 +135,437 @@ extern const char *_FormatError(void);
 extern const char *Parsing(Connection conn);
 
 
-#line 67 "./gointer.y"
-typedef union {
+#line 139 "y.tab.c"
+
+# ifndef YY_CAST
+#  ifdef __cplusplus
+#   define YY_CAST(Type, Val) static_cast<Type> (Val)
+#   define YY_REINTERPRET_CAST(Type, Val) reinterpret_cast<Type> (Val)
+#  else
+#   define YY_CAST(Type, Val) ((Type) (Val))
+#   define YY_REINTERPRET_CAST(Type, Val) ((Type) (Val))
+#  endif
+# endif
+# ifndef YY_NULLPTR
+#  if defined __cplusplus
+#   if 201103L <= __cplusplus
+#    define YY_NULLPTR nullptr
+#   else
+#    define YY_NULLPTR 0
+#   endif
+#  else
+#   define YY_NULLPTR ((void*)0)
+#  endif
+# endif
+
+/* Use api.header.include to #include this header
+   instead of duplicating it here.  */
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
+/* Debug traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int IgsYYdebug;
+#endif
+
+/* Token kinds.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+  enum IgsYYtokentype
+  {
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    NAME = 258,                    /* NAME  */
+    SERVERMESSAGE = 259,           /* SERVERMESSAGE  */
+    STATSENTRY = 260,              /* STATSENTRY  */
+    ILLEGALMOVE = 261,             /* ILLEGALMOVE  */
+    ILLEGALUNDO = 262,             /* ILLEGALUNDO  */
+    REQUESTINGMATCH = 263,         /* REQUESTINGMATCH  */
+    REMOVEGAMEFILE = 264,          /* REMOVEGAMEFILE  */
+    MAILED = 265,                  /* MAILED  */
+    REMOVEGROUP = 266,             /* REMOVEGROUP  */
+    GIVEBYOYOMI = 267,             /* GIVEBYOYOMI  */
+    RESULTLINE = 268,              /* RESULTLINE  */
+    INVALID = 269,                 /* INVALID  */
+    AUTOMATCHDISPUTE = 270,        /* AUTOMATCHDISPUTE  */
+    NEWCHANNEL = 271,              /* NEWCHANNEL  */
+    MUSTPASS = 272,                /* MUSTPASS  */
+    OPPMUSTPASS = 273,             /* OPPMUSTPASS  */
+    GUEST = 274,                   /* GUEST  */
+    TELLDONE = 275,                /* TELLDONE  */
+    REVIEWSTART = 276,             /* REVIEWSTART  */
+    REVLITERAL = 277,              /* REVLITERAL  */
+    REVUNKNOWN = 278,              /* REVUNKNOWN  */
+    WELCOME = 279,                 /* WELCOME  */
+    SERVERFULL = 280,              /* SERVERFULL  */
+    XSHOUT2 = 281,                 /* XSHOUT2  */
+    MYBET = 282,                   /* MYBET  */
+    YELL = 283,                    /* YELL  */
+    TELL = 284,                    /* TELL  */
+    RESIGN = 285,                  /* RESIGN  */
+    KOMIREQUEST = 286,             /* KOMIREQUEST  */
+    DISPUTEMATCHTYPE = 287,        /* DISPUTEMATCHTYPE  */
+    XSHOUT = 288,                  /* XSHOUT  */
+    DECLINE = 289,                 /* DECLINE  */
+    JOIN = 290,                    /* JOIN  */
+    LEAVE = 291,                   /* LEAVE  */
+    NEWTITLE = 292,                /* NEWTITLE  */
+    BROADCAST = 293,               /* BROADCAST  */
+    ITBROADCAST = 294,             /* ITBROADCAST  */
+    ENTERBYOYOMI = 295,            /* ENTERBYOYOMI  */
+    NOTIME = 296,                  /* NOTIME  */
+    PERSON = 297,                  /* PERSON  */
+    BEEPING = 298,                 /* BEEPING  */
+    PLAYERON = 299,                /* PLAYERON  */
+    PROBA = 300,                   /* PROBA  */
+    STORED = 301,                  /* STORED  */
+    IDLE = 302,                    /* IDLE  */
+    PROMPT = 303,                  /* PROMPT  */
+    GAMES = 304,                   /* GAMES  */
+    REMOVE = 305,                  /* REMOVE  */
+    MOVE = 306,                    /* MOVE  */
+    GAME = 307,                    /* GAME  */
+    OVEROBSERVE = 308,             /* OVEROBSERVE  */
+    MESSAGES = 309,                /* MESSAGES  */
+    NEWMATCH = 310,                /* NEWMATCH  */
+    STATUSLINE = 311,              /* STATUSLINE  */
+    CHANNEL = 312,                 /* CHANNEL  */
+    CHANGECHANNEL = 313,           /* CHANGECHANNEL  */
+    FREE = 314,                    /* FREE  */
+    TEXTFILE = 315,                /* TEXTFILE  */
+    FIRSTREMOVE = 316,             /* FIRSTREMOVE  */
+    REVIEWTYPE = 317,              /* REVIEWTYPE  */
+    GAMECOLOR = 318,               /* GAMECOLOR  */
+    GAMESECONDS = 319,             /* GAMESECONDS  */
+    BYOYOMI = 320,                 /* BYOYOMI  */
+    MATCHTYPE = 321,               /* MATCHTYPE  */
+    NATURAL = 322,                 /* NATURAL  */
+    BETRESULT = 323,               /* BETRESULT  */
+    RATING = 324,                  /* RATING  */
+    STOREDNUM = 325,               /* STOREDNUM  */
+    UNDO = 326,                    /* UNDO  */
+    END = 327,                     /* END  */
+    FAIL = 328,                    /* FAIL  */
+    OLDPROMPT = 329,               /* OLDPROMPT  */
+    SEMIPROMPT = 330,              /* SEMIPROMPT  */
+    INFOMESSAGE = 331,             /* INFOMESSAGE  */
+    LUSER = 332,                   /* LUSER  */
+    OLDPASSWORD = 333,             /* OLDPASSWORD  */
+    PASSWORD = 334,                /* PASSWORD  */
+    INVALIDPASSWORD = 335,         /* INVALIDPASSWORD  */
+    IGSENTRY = 336,                /* IGSENTRY  */
+    TITLESET = 337,                /* TITLESET  */
+    TOGGLE = 338,                  /* TOGGLE  */
+    PLAYERS = 339,                 /* PLAYERS  */
+    UNKNOWNANSWER = 340,           /* UNKNOWNANSWER  */
+    MATCHCLOSED = 341,             /* MATCHCLOSED  */
+    MATCHOPEN = 342,               /* MATCHOPEN  */
+    OBSERVE = 343,                 /* OBSERVE  */
+    WATCHING = 344,                /* WATCHING  */
+    EXTSTATSENTRY = 345,           /* EXTSTATSENTRY  */
+    ADD = 346,                     /* ADD  */
+    KIBITZ = 347,                  /* KIBITZ  */
+    KOMISET = 348,                 /* KOMISET  */
+    TRANSLATION = 349,             /* TRANSLATION  */
+    GAMETIME = 350,                /* GAMETIME  */
+    LOSTCONNECTION = 351,          /* LOSTCONNECTION  */
+    MYADJOURN = 352,               /* MYADJOURN  */
+    RESTORE = 353,                 /* RESTORE  */
+    RESTART = 354,                 /* RESTART  */
+    NOTURN = 355,                  /* NOTURN  */
+    GAMESAVED = 356,               /* GAMESAVED  */
+    UNDID = 357,                   /* UNDID  */
+    EMPTY = 358,                   /* EMPTY  */
+    DONE = 359,                    /* DONE  */
+    RESTORESCORING = 360,          /* RESTORESCORING  */
+    STATUSHEADER = 361,            /* STATUSHEADER  */
+    REMOVELIBERTY = 362,           /* REMOVELIBERTY  */
+    OBSERVEWHILEPLAY = 363,        /* OBSERVEWHILEPLAY  */
+    NOTELLTARGET = 364,            /* NOTELLTARGET  */
+    GMTTIME = 365,                 /* GMTTIME  */
+    LOCALTIME = 366,               /* LOCALTIME  */
+    SERVERUP = 367,                /* SERVERUP  */
+    UPTIMEENTRY = 368,             /* UPTIMEENTRY  */
+    THROWCOPY = 369,               /* THROWCOPY  */
+    SORRY = 370,                   /* SORRY  */
+    WRONGCHANNEL = 371,            /* WRONGCHANNEL  */
+    AUTOMATCHREQUEST = 372,        /* AUTOMATCHREQUEST  */
+    DISPUTE = 373,                 /* DISPUTE  */
+    OPPONENTDISPUTE = 374,         /* OPPONENTDISPUTE  */
+    LATEFREE = 375,                /* LATEFREE  */
+    NOPLAY = 376,                  /* NOPLAY  */
+    CHANNELHEADER = 377,           /* CHANNELHEADER  */
+    OBSERVERS = 378,               /* OBSERVERS  */
+    GAMENOTFOUND = 379,            /* GAMENOTFOUND  */
+    MATCHREQUEST = 380,            /* MATCHREQUEST  */
+    GOEMATCHREQUEST = 381,         /* GOEMATCHREQUEST  */
+    TOURNAMENTMATCHREQUEST = 382,  /* TOURNAMENTMATCHREQUEST  */
+    TOURNAMENTGOEMATCHREQUEST = 383, /* TOURNAMENTGOEMATCHREQUEST  */
+    USERESIGN = 384,               /* USERESIGN  */
+    GAMETITLE = 385,               /* GAMETITLE  */
+    ERASE = 386,                   /* ERASE  */
+    PLEASEREDONE = 387,            /* PLEASEREDONE  */
+    TELLTARGET = 388,              /* TELLTARGET  */
+    TELLOFF = 389,                 /* TELLOFF  */
+    NOREMOVETURN = 390,            /* NOREMOVETURN  */
+    ADJOURNSENTREQUEST = 391,      /* ADJOURNSENTREQUEST  */
+    ADJOURNREQUEST = 392,          /* ADJOURNREQUEST  */
+    OPPONENTNOTON = 393,           /* OPPONENTNOTON  */
+    NOLOAD = 394,                  /* NOLOAD  */
+    DISAGREEREMOVE = 395,          /* DISAGREEREMOVE  */
+    OPPDISAGREEREMOVE = 396,       /* OPPDISAGREEREMOVE  */
+    DECLINEADJOURN = 397,          /* DECLINEADJOURN  */
+    REVIEWLIST = 398,              /* REVIEWLIST  */
+    REVIEWSTOP = 399,              /* REVIEWSTOP  */
+    REVNODE = 400,                 /* REVNODE  */
+    REVCOMMENT = 401,              /* REVCOMMENT  */
+    REVEVENT = 402,                /* REVEVENT  */
+    REVRESULT = 403,               /* REVRESULT  */
+    REVPLACE = 404,                /* REVPLACE  */
+    REVUSER = 405,                 /* REVUSER  */
+    REVDATE = 406,                 /* REVDATE  */
+    REVKOMI = 407,                 /* REVKOMI  */
+    REVGAMENAME = 408,             /* REVGAMENAME  */
+    REVWHITERANK = 409,            /* REVWHITERANK  */
+    REVBLACKRANK = 410,            /* REVBLACKRANK  */
+    REVWHITENAME = 411,            /* REVWHITENAME  */
+    REVBLACKNAME = 412,            /* REVBLACKNAME  */
+    REVSIZE = 413,                 /* REVSIZE  */
+    REVGAME = 414,                 /* REVGAME  */
+    REVBLACK = 415,                /* REVBLACK  */
+    REVWHITE = 416,                /* REVWHITE  */
+    REVADDBLACK = 417,             /* REVADDBLACK  */
+    REVADDWHITE = 418,             /* REVADDWHITE  */
+    REVADDEMPTY = 419,             /* REVADDEMPTY  */
+    REVNODENAME = 420,             /* REVNODENAME  */
+    REVIEWEND = 421,               /* REVIEWEND  */
+    REVBLACKTIME = 422,            /* REVBLACKTIME  */
+    REVWHITETIME = 423,            /* REVWHITETIME  */
+    REVCOPYRIGHT = 424,            /* REVCOPYRIGHT  */
+    REVHANDICAP = 425,             /* REVHANDICAP  */
+    REVLETTERS = 426,              /* REVLETTERS  */
+    REVIEWVARIATIONS = 427,        /* REVIEWVARIATIONS  */
+    NOREVIEW = 428,                /* NOREVIEW  */
+    SGFLIST = 429,                 /* SGFLIST  */
+    NOSGF = 430,                   /* NOSGF  */
+    NOMOREMOVES = 431,             /* NOMOREMOVES  */
+    BETWINNERS = 432,              /* BETWINNERS  */
+    BETEVEN = 433,                 /* BETEVEN  */
+    BETLOSERS = 434,               /* BETLOSERS  */
+    USER = 435,                    /* USER  */
+    CURRENTSCORE = 436,            /* CURRENTSCORE  */
+    FINALSCORE = 437,              /* FINALSCORE  */
+    TEAMGAME = 438,                /* TEAMGAME  */
+    OBSERVETEAM = 439,             /* OBSERVETEAM  */
+    RESTARTTEAMGAME = 440,         /* RESTARTTEAMGAME  */
+    SETPROBA = 441,                /* SETPROBA  */
+    NOTREVIEWING = 442,            /* NOTREVIEWING  */
+    NOTREQUESTGAME = 443           /* NOTREQUESTGAME  */
+  };
+  typedef enum IgsYYtokentype IgsYYtoken_kind_t;
+#endif
+/* Token kinds.  */
+#define YYEMPTY -2
+#define YYEOF 0
+#define YYerror 256
+#define YYUNDEF 257
+#define NAME 258
+#define SERVERMESSAGE 259
+#define STATSENTRY 260
+#define ILLEGALMOVE 261
+#define ILLEGALUNDO 262
+#define REQUESTINGMATCH 263
+#define REMOVEGAMEFILE 264
+#define MAILED 265
+#define REMOVEGROUP 266
+#define GIVEBYOYOMI 267
+#define RESULTLINE 268
+#define INVALID 269
+#define AUTOMATCHDISPUTE 270
+#define NEWCHANNEL 271
+#define MUSTPASS 272
+#define OPPMUSTPASS 273
+#define GUEST 274
+#define TELLDONE 275
+#define REVIEWSTART 276
+#define REVLITERAL 277
+#define REVUNKNOWN 278
+#define WELCOME 279
+#define SERVERFULL 280
+#define XSHOUT2 281
+#define MYBET 282
+#define YELL 283
+#define TELL 284
+#define RESIGN 285
+#define KOMIREQUEST 286
+#define DISPUTEMATCHTYPE 287
+#define XSHOUT 288
+#define DECLINE 289
+#define JOIN 290
+#define LEAVE 291
+#define NEWTITLE 292
+#define BROADCAST 293
+#define ITBROADCAST 294
+#define ENTERBYOYOMI 295
+#define NOTIME 296
+#define PERSON 297
+#define BEEPING 298
+#define PLAYERON 299
+#define PROBA 300
+#define STORED 301
+#define IDLE 302
+#define PROMPT 303
+#define GAMES 304
+#define REMOVE 305
+#define MOVE 306
+#define GAME 307
+#define OVEROBSERVE 308
+#define MESSAGES 309
+#define NEWMATCH 310
+#define STATUSLINE 311
+#define CHANNEL 312
+#define CHANGECHANNEL 313
+#define FREE 314
+#define TEXTFILE 315
+#define FIRSTREMOVE 316
+#define REVIEWTYPE 317
+#define GAMECOLOR 318
+#define GAMESECONDS 319
+#define BYOYOMI 320
+#define MATCHTYPE 321
+#define NATURAL 322
+#define BETRESULT 323
+#define RATING 324
+#define STOREDNUM 325
+#define UNDO 326
+#define END 327
+#define FAIL 328
+#define OLDPROMPT 329
+#define SEMIPROMPT 330
+#define INFOMESSAGE 331
+#define LUSER 332
+#define OLDPASSWORD 333
+#define PASSWORD 334
+#define INVALIDPASSWORD 335
+#define IGSENTRY 336
+#define TITLESET 337
+#define TOGGLE 338
+#define PLAYERS 339
+#define UNKNOWNANSWER 340
+#define MATCHCLOSED 341
+#define MATCHOPEN 342
+#define OBSERVE 343
+#define WATCHING 344
+#define EXTSTATSENTRY 345
+#define ADD 346
+#define KIBITZ 347
+#define KOMISET 348
+#define TRANSLATION 349
+#define GAMETIME 350
+#define LOSTCONNECTION 351
+#define MYADJOURN 352
+#define RESTORE 353
+#define RESTART 354
+#define NOTURN 355
+#define GAMESAVED 356
+#define UNDID 357
+#define EMPTY 358
+#define DONE 359
+#define RESTORESCORING 360
+#define STATUSHEADER 361
+#define REMOVELIBERTY 362
+#define OBSERVEWHILEPLAY 363
+#define NOTELLTARGET 364
+#define GMTTIME 365
+#define LOCALTIME 366
+#define SERVERUP 367
+#define UPTIMEENTRY 368
+#define THROWCOPY 369
+#define SORRY 370
+#define WRONGCHANNEL 371
+#define AUTOMATCHREQUEST 372
+#define DISPUTE 373
+#define OPPONENTDISPUTE 374
+#define LATEFREE 375
+#define NOPLAY 376
+#define CHANNELHEADER 377
+#define OBSERVERS 378
+#define GAMENOTFOUND 379
+#define MATCHREQUEST 380
+#define GOEMATCHREQUEST 381
+#define TOURNAMENTMATCHREQUEST 382
+#define TOURNAMENTGOEMATCHREQUEST 383
+#define USERESIGN 384
+#define GAMETITLE 385
+#define ERASE 386
+#define PLEASEREDONE 387
+#define TELLTARGET 388
+#define TELLOFF 389
+#define NOREMOVETURN 390
+#define ADJOURNSENTREQUEST 391
+#define ADJOURNREQUEST 392
+#define OPPONENTNOTON 393
+#define NOLOAD 394
+#define DISAGREEREMOVE 395
+#define OPPDISAGREEREMOVE 396
+#define DECLINEADJOURN 397
+#define REVIEWLIST 398
+#define REVIEWSTOP 399
+#define REVNODE 400
+#define REVCOMMENT 401
+#define REVEVENT 402
+#define REVRESULT 403
+#define REVPLACE 404
+#define REVUSER 405
+#define REVDATE 406
+#define REVKOMI 407
+#define REVGAMENAME 408
+#define REVWHITERANK 409
+#define REVBLACKRANK 410
+#define REVWHITENAME 411
+#define REVBLACKNAME 412
+#define REVSIZE 413
+#define REVGAME 414
+#define REVBLACK 415
+#define REVWHITE 416
+#define REVADDBLACK 417
+#define REVADDWHITE 418
+#define REVADDEMPTY 419
+#define REVNODENAME 420
+#define REVIEWEND 421
+#define REVBLACKTIME 422
+#define REVWHITETIME 423
+#define REVCOPYRIGHT 424
+#define REVHANDICAP 425
+#define REVLETTERS 426
+#define REVIEWVARIATIONS 427
+#define NOREVIEW 428
+#define SGFLIST 429
+#define NOSGF 430
+#define NOMOREMOVES 431
+#define BETWINNERS 432
+#define BETEVEN 433
+#define BETLOSERS 434
+#define USER 435
+#define CURRENTSCORE 436
+#define FINALSCORE 437
+#define TEAMGAME 438
+#define OBSERVETEAM 439
+#define RESTARTTEAMGAME 440
+#define SETPROBA 441
+#define NOTREVIEWING 442
+#define NOTREQUESTGAME 443
+
+/* Value type.  */
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+union YYSTYPE
+{
+#line 68 "gointer.y"
+
    char         *Name;
    int           Value;
    NameVal      *Nameval;
@@ -274,1320 +579,1984 @@ typedef union {
    void         *Dummy;
    DisputeDesc  *Disputedesc;
    BetDesc      *Bet;
-} YYSTYPE;
-#include <stdio.h>
 
-#ifndef __cplusplus
-#ifndef __STDC__
-#define const
-#endif
-#endif
+#line 584 "y.tab.c"
 
-
-
-#define	YYFINAL		776
-#define	YYFLAG		-32768
-#define	YYNTBASE	198
-
-#define YYTRANSLATE(x) ((unsigned)(x) <= 443 ? IgsYYtranslate[x] : 384)
-
-static const short IgsYYtranslate[] = {     0,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,   196,
-   197,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,   192,     2,   195,
-     2,   194,     2,   193,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-   189,     2,   190,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,   191,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
-     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-    16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
-    26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
-    36,    37,    38,    39,    40,    41,    42,    43,    44,    45,
-    46,    47,    48,    49,    50,    51,    52,    53,    54,    55,
-    56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-    66,    67,    68,    69,    70,    71,    72,    73,    74,    75,
-    76,    77,    78,    79,    80,    81,    82,    83,    84,    85,
-    86,    87,    88,    89,    90,    91,    92,    93,    94,    95,
-    96,    97,    98,    99,   100,   101,   102,   103,   104,   105,
-   106,   107,   108,   109,   110,   111,   112,   113,   114,   115,
-   116,   117,   118,   119,   120,   121,   122,   123,   124,   125,
-   126,   127,   128,   129,   130,   131,   132,   133,   134,   135,
-   136,   137,   138,   139,   140,   141,   142,   143,   144,   145,
-   146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
-   156,   157,   158,   159,   160,   161,   162,   163,   164,   165,
-   166,   167,   168,   169,   170,   171,   172,   173,   174,   175,
-   176,   177,   178,   179,   180,   181,   182,   183,   184,   185,
-   186,   187,   188
 };
-
-#if YYDEBUG != 0
-static const short IgsYYprhs[] = {     0,
-     0,     2,     4,    10,    11,    13,    14,    19,    20,    25,
-    26,    31,    32,    35,    36,    38,    40,    42,    44,    47,
-    48,    50,    52,    55,    57,    59,    61,    63,    65,    67,
-    69,    71,    73,    75,    77,    79,    81,    83,    85,    87,
-    89,    91,    93,    95,    97,    99,   101,   103,   105,   107,
-   109,   111,   113,   115,   117,   119,   121,   123,   125,   127,
-   129,   131,   133,   135,   137,   139,   141,   143,   145,   147,
-   149,   151,   153,   155,   157,   159,   161,   163,   165,   167,
-   169,   171,   173,   175,   177,   179,   181,   183,   185,   187,
-   189,   191,   193,   195,   197,   199,   201,   203,   205,   207,
-   209,   211,   213,   215,   217,   219,   221,   223,   225,   227,
-   229,   231,   233,   235,   237,   239,   241,   243,   245,   247,
-   249,   251,   253,   255,   257,   259,   261,   263,   265,   267,
-   269,   271,   273,   275,   277,   279,   281,   283,   285,   287,
-   289,   290,   294,   296,   299,   302,   304,   307,   310,   313,
-   316,   326,   333,   343,   355,   368,   380,   383,   388,   391,
-   394,   396,   399,   402,   405,   408,   423,   436,   438,   442,
-   445,   448,   452,   454,   457,   459,   461,   465,   468,   470,
-   472,   474,   476,   487,   489,   492,   495,   498,   500,   503,
-   505,   508,   510,   513,   516,   518,   522,   525,   526,   529,
-   534,   537,   538,   540,   541,   549,   557,   562,   565,   567,
-   569,   571,   582,   584,   586,   588,   606,   609,   610,   611,
-   615,   617,   620,   623,   624,   626,   627,   643,   665,   668,
-   669,   671,   674,   676,   678,   680,   682,   684,   685,   691,
-   703,   705,   706,   711,   717,   723,   729,   732,   735,   739,
-   742,   748,   760,   767,   780,   782,   787,   798,   803,   814,
-   817,   820,   822,   829,   832,   833,   836,   839,   842,   843,
-   847,   849,   850,   857,   862,   868,   880,   884,   886,   888,
-   895,   899,   902,   903,   915,   923,   924,   925,   932,   935,
-   938,   941,   942,   945,   950,   954,   959,   960,   984,   989,
-   992,   995,   997,  1000,  1002,  1006,  1010,  1012,  1013,  1019,
-  1021,  1023,  1025,  1027,  1029,  1032,  1035,  1037,  1039,  1041,
-  1045,  1047,  1050,  1052,  1056,  1058,  1060,  1062,  1064,  1066,
-  1068,  1070,  1072,  1076,  1079,  1082,  1083,  1085,  1089,  1099,
-  1103,  1107,  1116,  1119,  1122,  1124,  1128,  1131,  1134,  1137,
-  1139,  1142,  1143,  1145,  1147,  1149,  1152,  1155,  1158,  1161,
-  1164,  1167,  1170,  1173,  1176,  1179,  1182,  1185,  1188,  1191,
-  1194,  1197,  1200,  1203,  1206,  1209,  1212,  1215,  1218,  1221,
-  1224,  1227,  1230,  1231,  1232,  1237,  1240,  1242,  1244,  1247,
-  1249,  1251,  1253,  1260,  1263,  1270,  1273,  1275,  1277,  1280,
-  1283,  1284,  1288,  1289,  1292,  1293,  1295,  1297,  1299,  1300,
-  1303
-};
-
-static const short IgsYYrhs[] = {   199,
-     0,     1,     0,   199,   205,   200,   207,    80,     0,     0,
-    79,     0,     0,    78,   201,   205,   203,     0,     0,    19,
-   202,   205,   203,     0,     0,    74,   204,   380,    72,     0,
-     0,   205,   206,     0,     0,     3,     0,    24,     0,    77,
-     0,    25,     0,   207,   209,     0,     0,    48,     0,    75,
-     0,   210,   208,     0,   213,     0,   214,     0,   216,     0,
-   217,     0,   220,     0,   221,     0,   222,     0,   218,     0,
-   223,     0,   224,     0,   225,     0,   226,     0,   227,     0,
-   228,     0,   229,     0,   230,     0,   231,     0,   232,     0,
-   233,     0,   234,     0,   235,     0,   237,     0,   238,     0,
-   239,     0,   240,     0,   241,     0,   242,     0,   243,     0,
-   244,     0,   245,     0,   246,     0,   251,     0,   255,     0,
-   211,     0,   212,     0,   256,     0,   259,     0,   261,     0,
-   262,     0,   263,     0,   264,     0,   267,     0,   269,     0,
-   275,     0,   276,     0,   278,     0,   277,     0,   279,     0,
-   280,     0,   282,     0,   284,     0,   285,     0,   287,     0,
-   291,     0,   292,     0,   293,     0,   294,     0,   295,     0,
-   296,     0,   299,     0,   300,     0,   302,     0,   289,     0,
-   290,     0,   305,     0,   306,     0,   307,     0,   308,     0,
-   317,     0,   312,     0,   321,     0,   322,     0,   324,     0,
-   325,     0,   326,     0,   327,     0,   328,     0,   330,     0,
-   331,     0,   332,     0,   333,     0,   334,     0,   335,     0,
-   219,     0,   337,     0,   336,     0,   338,     0,   339,     0,
-   340,     0,   341,     0,   342,     0,   343,     0,   344,     0,
-   345,     0,   346,     0,   347,     0,   348,     0,   349,     0,
-   350,     0,   354,     0,   355,     0,   358,     0,   359,     0,
-   360,     0,   361,     0,   362,     0,   369,     0,   370,     0,
-   371,     0,   372,     0,   373,     0,   374,     0,   103,     0,
-   375,     0,   376,     0,   377,     0,     1,     0,     0,    60,
-   378,    72,     0,   131,     0,    81,     3,     0,   214,   215,
-     0,   215,     0,   103,   215,     0,     4,     3,     0,    33,
-     3,     0,    26,     3,     0,    76,     3,   189,     3,   190,
-     3,     3,   191,    72,     0,    76,     3,     3,     3,   191,
-    72,     0,    76,     3,     3,   192,   318,     3,   318,   191,
-    72,     0,    76,     3,     3,   192,     3,     3,     3,   192,
-   378,   191,    72,     0,    76,     3,     3,   192,     3,     3,
-     3,   193,     3,     3,   191,    72,     0,    76,     3,     3,
-   192,     3,     3,     3,     3,     3,   191,    72,     0,    29,
-     3,     0,    88,    75,    29,     3,     0,    44,   303,     0,
-    88,    43,     0,    43,     0,    47,     3,     0,    46,    70,
-     0,    38,     3,     0,    39,     3,     0,    88,    75,    92,
-   318,   192,     3,     3,     3,     3,   189,     3,   190,    72,
-     3,     0,    92,   318,   192,     3,     3,     3,     3,   189,
-     3,   190,    72,     3,     0,    54,     0,    57,    28,     3,
-     0,    57,    35,     0,    57,    36,     0,    57,    37,     3,
-     0,    58,     0,   116,     3,     0,    87,     0,    86,     0,
-   117,   378,    72,     0,    15,   378,     0,   125,     0,   126,
-     0,   127,     0,   128,     0,   236,   378,   194,     3,   195,
-   378,   194,   378,    72,   303,     0,     8,     0,    31,     3,
-     0,    93,     3,     0,    59,    88,     0,    59,     0,   120,
-     3,     0,   121,     0,   138,   139,     0,    82,     0,     5,
-     3,     0,   248,   247,     0,   247,     0,    90,   378,    72,
-     0,   249,   249,     0,     0,   248,   250,     0,    42,    67,
-   192,    67,     0,   253,   252,     0,     0,    27,     0,     0,
-   177,   253,   178,   253,   179,   253,   254,     0,    83,     3,
-     3,     3,     3,   382,    72,     0,    16,   378,    72,   379,
-     0,   258,   257,     0,   257,     0,   258,     0,   379,     0,
-   123,     3,   196,     3,     3,     3,   197,   192,    72,   260,
-     0,   124,     0,   176,     0,   188,     0,    49,   318,     3,
-   318,   196,     3,     3,     3,     3,     3,     3,   378,   197,
-   196,     3,   197,    72,     0,   266,   265,     0,     0,     0,
-    49,   268,   266,     0,    50,     0,    51,     3,     0,   271,
-   270,     0,     0,   328,     0,     0,    52,     3,   196,     3,
-     3,     3,   197,     3,     3,   196,     3,     3,     3,   197,
-    72,     0,    52,     3,   196,     3,     3,     3,   197,     3,
-     3,   196,     3,     3,     3,   197,    72,   183,     3,     3,
-     3,     3,    72,     0,   130,     3,     0,     0,    91,     0,
-   104,   282,     0,    17,     0,    18,     0,   140,     0,   141,
-     0,   187,     0,     0,   273,   271,   274,   272,   281,     0,
-   273,   271,   184,     3,     3,     3,     3,    72,   303,   274,
-   272,     0,    61,     0,     0,   104,   283,    75,   286,     0,
-   273,   271,   274,    88,   272,     0,   273,   271,   274,    88,
-   272,     0,   273,   271,   274,    75,   272,     0,    68,   285,
-     0,    68,   282,     0,   288,   102,     3,     0,   102,     3,
-     0,   288,   273,   271,   274,   272,     0,   288,   273,   271,
-   184,     3,     3,     3,     3,    72,   274,   272,     0,   102,
-     3,    88,   273,   271,   272,     0,   102,     3,    88,   273,
-   271,   184,     3,     3,     3,     3,    72,   272,     0,    98,
-     0,    99,   273,   271,    88,     0,    99,   273,   271,   185,
-     3,     3,     3,     3,    72,    88,     0,    99,   273,   271,
-   274,     0,    99,   273,   271,   185,     3,     3,     3,     3,
-    72,   274,     0,    88,   295,     0,   273,    55,     0,    34,
-     0,    42,    63,     3,    64,    65,    72,     0,   298,   297,
-     0,     0,   119,   298,     0,   118,   298,     0,   301,    66,
-     0,     0,    32,   301,    72,     0,    88,     0,     0,   304,
-   303,    71,     3,     3,     3,     0,    71,     3,     3,     3,
-     0,   304,   303,   273,   271,   274,     0,   304,   303,   273,
-   271,   184,     3,     3,     3,     3,    72,   274,     0,    89,
-   378,    72,     0,    53,     0,   108,     0,    84,     3,     3,
-     3,     3,    72,     0,    84,     3,    72,     0,   310,   309,
-     0,     0,     3,   196,     3,   197,     3,     3,     3,     3,
-     3,     3,    72,     0,     3,     3,     3,     3,     3,     3,
-    72,     0,     0,     0,    84,   313,   310,    72,   314,   311,
-     0,   378,    72,     0,   378,    73,     0,   316,   315,     0,
-     0,   180,   316,     0,     3,   189,     3,   190,     0,     3,
-   192,     3,     0,   196,     3,   197,     3,     0,     0,    95,
-     3,   192,     3,    72,    95,     3,   196,     3,   197,   192,
-   319,   320,    72,    95,     3,   196,     3,   197,   192,   319,
-   320,    72,     0,   181,     3,   182,     3,     0,    94,     3,
-     0,   324,   323,     0,   323,     0,    40,    12,     0,    41,
-     0,    96,    97,   272,     0,   101,     3,   303,     0,    97,
-     0,     0,    97,   329,   101,     3,   272,     0,   136,     0,
-   137,     0,    97,     0,   142,     0,    30,     0,    30,    30,
-     0,    10,    10,     0,    10,     0,     9,     0,   109,     0,
-   133,     3,    72,     0,    20,     0,   134,   378,     0,     6,
-     0,     6,    88,   303,     0,     7,     0,   100,     0,   135,
-     0,   129,     0,   107,     0,    11,     0,   105,     0,   132,
-     0,   106,   378,    72,     0,    56,     3,     0,   353,   352,
-     0,     0,    13,     0,   351,   351,   353,     0,     3,     3,
-     3,     3,   192,     3,   192,     3,     3,     0,   110,   356,
-    72,     0,   111,   356,    72,     0,   112,     3,     3,     3,
-     3,     3,     3,    72,     0,   113,     3,     0,   358,   357,
-     0,   357,     0,   174,   378,    72,     0,   174,   175,     0,
-   143,   378,     0,   172,   378,     0,    21,     0,   363,    22,
-     0,     0,   196,     0,   197,     0,   145,     0,    23,   363,
-     0,   165,    22,     0,   146,    22,     0,   152,    22,     0,
-   170,    22,     0,   150,    22,     0,   169,    22,     0,   149,
-    22,     0,   151,    22,     0,   148,    22,     0,   147,    22,
-     0,   153,    22,     0,   154,    22,     0,   155,    22,     0,
-   156,    22,     0,   157,    22,     0,   158,    22,     0,   159,
-    22,     0,   161,    22,     0,   160,    22,     0,   171,   363,
-     0,   168,    22,     0,   167,    22,     0,   162,   363,     0,
-   163,   363,     0,   164,   363,     0,   365,   364,     0,     0,
-     0,    62,   367,   365,    72,     0,   368,   366,     0,   366,
-     0,   368,     0,   368,   166,     0,   144,     0,   173,     0,
-   114,     0,    45,    69,    69,     3,     3,     3,     0,    45,
-    72,     0,   186,    69,    69,     3,     3,     3,     0,   186,
-    72,     0,   115,     0,    14,     0,    85,   383,     0,   378,
-     3,     0,     0,   379,   378,    72,     0,     0,   380,   381,
-     0,     0,    74,     0,     3,     0,     3,     0,     0,   383,
-     3,     0,     0
-};
-
-#endif
-
-#if YYDEBUG != 0
-static const short IgsYYrline[] = { 0,
-   137,   138,   141,   155,   161,   168,   175,   176,   181,   189,
-   197,   198,   201,   202,   205,   210,   216,   222,   230,   231,
-   234,   240,   247,   260,   261,   262,   263,   264,   265,   266,
-   267,   268,   269,   270,   271,   272,   273,   274,   275,   276,
-   277,   278,   279,   280,   281,   282,   283,   284,   285,   286,
-   287,   288,   289,   290,   291,   292,   293,   294,   295,   296,
-   297,   298,   299,   300,   301,   302,   303,   304,   305,   306,
-   307,   308,   309,   310,   311,   312,   313,   314,   315,   316,
-   317,   318,   319,   320,   321,   322,   323,   324,   325,   326,
-   327,   328,   329,   330,   331,   332,   333,   334,   335,   336,
-   337,   338,   339,   340,   341,   342,   343,   344,   345,   346,
-   347,   348,   349,   350,   351,   352,   353,   354,   355,   356,
-   357,   358,   359,   360,   361,   367,   368,   369,   370,   371,
-   372,   373,   374,   375,   376,   377,   378,   379,   380,   381,
-   386,   389,   412,   418,   435,   436,   437,   440,   447,   452,
-   461,   472,   482,   491,   502,   516,   532,   537,   544,   551,
-   555,   561,   568,   574,   579,   586,   598,   612,   618,   625,
-   631,   637,   644,   650,   657,   663,   669,   676,   684,   686,
-   687,   688,   691,   703,   710,   723,   736,   743,   750,   758,
-   764,   770,   781,   792,   799,   802,   805,   831,   842,   855,
-   864,   869,   875,   876,   879,   900,   912,   920,   933,   948,
-   955,   957,   971,   988,   997,  1006,  1035,  1036,  1039,  1044,
-  1049,  1052,  1069,  1076,  1087,  1088,  1091,  1117,  1152,  1153,
-  1156,  1159,  1165,  1172,  1179,  1190,  1199,  1205,  1208,  1229,
-  1252,  1253,  1292,  1301,  1313,  1323,  1335,  1339,  1345,  1351,
-  1358,  1366,  1376,  1389,  1404,  1407,  1415,  1432,  1444,  1461,
-  1464,  1474,  1480,  1493,  1500,  1507,  1520,  1533,  1537,  1543,
-  1549,  1552,  1556,  1563,  1572,  1579,  1589,  1596,  1602,  1608,
-  1616,  1623,  1624,  1630,  1642,  1654,  1658,  1663,  1665,  1691,
-  1708,  1720,  1728,  1735,  1743,  1755,  1761,  1764,  1780,  1801,
-  1808,  1809,  1812,  1820,  1826,  1832,  1841,  1844,  1848,  1856,
-  1861,  1869,  1875,  1881,  1886,  1893,  1900,  1907,  1914,  1920,
-  1936,  1941,  1952,  1957,  1964,  1971,  1977,  1983,  1989,  1995,
-  2002,  2008,  2014,  2020,  2028,  2035,  2044,  2052,  2061,  2090,
-  2102,  2116,  2132,  2141,  2142,  2145,  2150,  2156,  2163,  2177,
-  2184,  2195,  2206,  2207,  2208,  2212,  2223,  2232,  2241,  2246,
-  2251,  2256,  2261,  2266,  2271,  2276,  2281,  2286,  2291,  2296,
-  2301,  2306,  2311,  2316,  2325,  2334,  2339,  2348,  2357,  2362,
-  2367,  2374,  2375,  2378,  2382,  2385,  2386,  2389,  2393,  2399,
-  2405,  2411,  2418,  2427,  2432,  2441,  2446,  2453,  2460,  2465,
-  2476,  2486,  2495,  2505,  2506,  2509,  2510,  2517,  2518,  2521,
-  2548
-};
+typedef union YYSTYPE YYSTYPE;
+# define YYSTYPE_IS_TRIVIAL 1
+# define YYSTYPE_IS_DECLARED 1
 #endif
 
 
-#if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
+extern YYSTYPE IgsYYlval;
 
-static const char * const IgsYYtname[] = {   "$","error","$undefined.","NAME","SERVERMESSAGE",
-"STATSENTRY","ILLEGALMOVE","ILLEGALUNDO","REQUESTINGMATCH","REMOVEGAMEFILE",
-"MAILED","REMOVEGROUP","GIVEBYOYOMI","RESULTLINE","INVALID","AUTOMATCHDISPUTE",
-"NEWCHANNEL","MUSTPASS","OPPMUSTPASS","GUEST","TELLDONE","REVIEWSTART","REVLITERAL",
-"REVUNKNOWN","WELCOME","SERVERFULL","XSHOUT2","MYBET","YELL","TELL","RESIGN",
-"KOMIREQUEST","DISPUTEMATCHTYPE","XSHOUT","DECLINE","JOIN","LEAVE","NEWTITLE",
-"BROADCAST","ITBROADCAST","ENTERBYOYOMI","NOTIME","PERSON","BEEPING","PLAYERON",
-"PROBA","STORED","IDLE","PROMPT","GAMES","REMOVE","MOVE","GAME","OVEROBSERVE",
-"MESSAGES","NEWMATCH","STATUSLINE","CHANNEL","CHANGECHANNEL","FREE","TEXTFILE",
-"FIRSTREMOVE","REVIEWTYPE","GAMECOLOR","GAMESECONDS","BYOYOMI","MATCHTYPE","NATURAL",
-"BETRESULT","RATING","STOREDNUM","UNDO","END","FAIL","OLDPROMPT","SEMIPROMPT",
-"INFOMESSAGE","LUSER","OLDPASSWORD","PASSWORD","INVALIDPASSWORD","IGSENTRY",
-"TITLESET","TOGGLE","PLAYERS","UNKNOWNANSWER","MATCHCLOSED","MATCHOPEN","OBSERVE",
-"WATCHING","EXTSTATSENTRY","ADD","KIBITZ","KOMISET","TRANSLATION","GAMETIME",
-"LOSTCONNECTION","MYADJOURN","RESTORE","RESTART","NOTURN","GAMESAVED","UNDID",
-"EMPTY","DONE","RESTORESCORING","STATUSHEADER","REMOVELIBERTY","OBSERVEWHILEPLAY",
-"NOTELLTARGET","GMTTIME","LOCALTIME","SERVERUP","UPTIMEENTRY","THROWCOPY","SORRY",
-"WRONGCHANNEL","AUTOMATCHREQUEST","DISPUTE","OPPONENTDISPUTE","LATEFREE","NOPLAY",
-"CHANNELHEADER","OBSERVERS","GAMENOTFOUND","MATCHREQUEST","GOEMATCHREQUEST",
-"TOURNAMENTMATCHREQUEST","TOURNAMENTGOEMATCHREQUEST","USERESIGN","GAMETITLE",
-"ERASE","PLEASEREDONE","TELLTARGET","TELLOFF","NOREMOVETURN","ADJOURNSENTREQUEST",
-"ADJOURNREQUEST","OPPONENTNOTON","NOLOAD","DISAGREEREMOVE","OPPDISAGREEREMOVE",
-"DECLINEADJOURN","REVIEWLIST","REVIEWSTOP","REVNODE","REVCOMMENT","REVEVENT",
-"REVRESULT","REVPLACE","REVUSER","REVDATE","REVKOMI","REVGAMENAME","REVWHITERANK",
-"REVBLACKRANK","REVWHITENAME","REVBLACKNAME","REVSIZE","REVGAME","REVBLACK",
-"REVWHITE","REVADDBLACK","REVADDWHITE","REVADDEMPTY","REVNODENAME","REVIEWEND",
-"REVBLACKTIME","REVWHITETIME","REVCOPYRIGHT","REVHANDICAP","REVLETTERS","REVIEWVARIATIONS",
-"NOREVIEW","SGFLIST","NOSGF","NOMOREMOVES","BETWINNERS","BETEVEN","BETLOSERS",
-"USER","CURRENTSCORE","FINALSCORE","TEAMGAME","OBSERVETEAM","RESTARTTEAMGAME",
-"SETPROBA","NOTREVIEWING","NOTREQUESTGAME","'['","']'","'}'","':'","'@'","'>'",
-"'<'","'('","')'","start","session","pass","@1","@2","enterorfail","@3","loginmessages",
-"loginmessage","inputs","prompt","moreinput","input","textfile","erase","igsentry",
-"servermessages","servermessage","xshout","infomessage","tell","playeron","beeping",
-"idle","stored","broadcast","kibitz","messages","yell","join","leave","newtitle",
-"changechannel","wrongchannel","matchopen","matchclosed","automatchrequest",
-"automatchdispute","ruledmatchrequest","matchrequest","requestingmatch","komirequest",
-"komiset","freemessage","freeconfirm","latefree","noplay","noload","titleset",
-"statsentry","statsentries","extendstatsentry","optextend","stats","betentry",
-"betentries","optmybet","bet","toggle","channelentry","channelentries","channels",
-"observerentries","observers","gamenotfound","nomoremoves","notrequestgame",
-"gamesline","gameslines","games","@4","remove","move","movelist","optgamesaved",
-"gamedesc","optgametitle","add","doneobserve","mustpass","oppmustpass","disagreeremove",
-"opponentdisagreeremove","optnotreviewing","observe","optfirst","doneopponentobserve",
-"opponentobserve","opponentoptobserve","betresult","undidlist","undid","opponentundid",
-"restore","opponentrestart","restart","newmatch1","newmatch2","decline","disputeline",
-"disputelines","opponentdispute","dispute","matchtypes","disputematchtype","optobserve",
-"undolist","undo","watching","overobserve","observewhileplay","playerline","playerlines",
-"playersstatusline","players","@5","@6","userline","userlines","users","player",
-"playertime","optbyo","gametime","gamescore","translation","translations","byoyomi",
-"notime","lostconnection","gamesaved","optadjourn","adjourn","adjournsentrequest",
-"adjournrequest","oppadjourn","declineadjourn","resign","mailed","removegamefile",
-"notelltarget","telltarget","telldone","telloff","illegalmove","illegalundo",
-"noturn","noremoveturn","useresign","removeliberty","removegroup","restorescoring",
-"pleaseredone","statusheader","statusline","statuslines","resultline","status",
-"date","uptimeentry","uptime","sgflist","reviewlist","reviewvariations","reviewstart",
-"reviewliterals","reviewentry","reviewentries","review","@7","auxreviews","reviews",
-"reviewstop","noreview","throwcopy","proba","setproba","sorry","invalid","unknown",
-"names","namesset","promptnames","promptname","optname","literallines", NULL
+
+int IgsYYparse (void);
+
+
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */
+/* Symbol kind.  */
+enum IgsYYsymbol_kind_t
+{
+  YYSYMBOL_YYEMPTY = -2,
+  YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
+  YYSYMBOL_YYerror = 1,                    /* error  */
+  YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
+  YYSYMBOL_NAME = 3,                       /* NAME  */
+  YYSYMBOL_SERVERMESSAGE = 4,              /* SERVERMESSAGE  */
+  YYSYMBOL_STATSENTRY = 5,                 /* STATSENTRY  */
+  YYSYMBOL_ILLEGALMOVE = 6,                /* ILLEGALMOVE  */
+  YYSYMBOL_ILLEGALUNDO = 7,                /* ILLEGALUNDO  */
+  YYSYMBOL_REQUESTINGMATCH = 8,            /* REQUESTINGMATCH  */
+  YYSYMBOL_REMOVEGAMEFILE = 9,             /* REMOVEGAMEFILE  */
+  YYSYMBOL_MAILED = 10,                    /* MAILED  */
+  YYSYMBOL_REMOVEGROUP = 11,               /* REMOVEGROUP  */
+  YYSYMBOL_GIVEBYOYOMI = 12,               /* GIVEBYOYOMI  */
+  YYSYMBOL_RESULTLINE = 13,                /* RESULTLINE  */
+  YYSYMBOL_INVALID = 14,                   /* INVALID  */
+  YYSYMBOL_AUTOMATCHDISPUTE = 15,          /* AUTOMATCHDISPUTE  */
+  YYSYMBOL_NEWCHANNEL = 16,                /* NEWCHANNEL  */
+  YYSYMBOL_MUSTPASS = 17,                  /* MUSTPASS  */
+  YYSYMBOL_OPPMUSTPASS = 18,               /* OPPMUSTPASS  */
+  YYSYMBOL_GUEST = 19,                     /* GUEST  */
+  YYSYMBOL_TELLDONE = 20,                  /* TELLDONE  */
+  YYSYMBOL_REVIEWSTART = 21,               /* REVIEWSTART  */
+  YYSYMBOL_REVLITERAL = 22,                /* REVLITERAL  */
+  YYSYMBOL_REVUNKNOWN = 23,                /* REVUNKNOWN  */
+  YYSYMBOL_WELCOME = 24,                   /* WELCOME  */
+  YYSYMBOL_SERVERFULL = 25,                /* SERVERFULL  */
+  YYSYMBOL_XSHOUT2 = 26,                   /* XSHOUT2  */
+  YYSYMBOL_MYBET = 27,                     /* MYBET  */
+  YYSYMBOL_YELL = 28,                      /* YELL  */
+  YYSYMBOL_TELL = 29,                      /* TELL  */
+  YYSYMBOL_RESIGN = 30,                    /* RESIGN  */
+  YYSYMBOL_KOMIREQUEST = 31,               /* KOMIREQUEST  */
+  YYSYMBOL_DISPUTEMATCHTYPE = 32,          /* DISPUTEMATCHTYPE  */
+  YYSYMBOL_XSHOUT = 33,                    /* XSHOUT  */
+  YYSYMBOL_DECLINE = 34,                   /* DECLINE  */
+  YYSYMBOL_JOIN = 35,                      /* JOIN  */
+  YYSYMBOL_LEAVE = 36,                     /* LEAVE  */
+  YYSYMBOL_NEWTITLE = 37,                  /* NEWTITLE  */
+  YYSYMBOL_BROADCAST = 38,                 /* BROADCAST  */
+  YYSYMBOL_ITBROADCAST = 39,               /* ITBROADCAST  */
+  YYSYMBOL_ENTERBYOYOMI = 40,              /* ENTERBYOYOMI  */
+  YYSYMBOL_NOTIME = 41,                    /* NOTIME  */
+  YYSYMBOL_PERSON = 42,                    /* PERSON  */
+  YYSYMBOL_BEEPING = 43,                   /* BEEPING  */
+  YYSYMBOL_PLAYERON = 44,                  /* PLAYERON  */
+  YYSYMBOL_PROBA = 45,                     /* PROBA  */
+  YYSYMBOL_STORED = 46,                    /* STORED  */
+  YYSYMBOL_IDLE = 47,                      /* IDLE  */
+  YYSYMBOL_PROMPT = 48,                    /* PROMPT  */
+  YYSYMBOL_GAMES = 49,                     /* GAMES  */
+  YYSYMBOL_REMOVE = 50,                    /* REMOVE  */
+  YYSYMBOL_MOVE = 51,                      /* MOVE  */
+  YYSYMBOL_GAME = 52,                      /* GAME  */
+  YYSYMBOL_OVEROBSERVE = 53,               /* OVEROBSERVE  */
+  YYSYMBOL_MESSAGES = 54,                  /* MESSAGES  */
+  YYSYMBOL_NEWMATCH = 55,                  /* NEWMATCH  */
+  YYSYMBOL_STATUSLINE = 56,                /* STATUSLINE  */
+  YYSYMBOL_CHANNEL = 57,                   /* CHANNEL  */
+  YYSYMBOL_CHANGECHANNEL = 58,             /* CHANGECHANNEL  */
+  YYSYMBOL_FREE = 59,                      /* FREE  */
+  YYSYMBOL_TEXTFILE = 60,                  /* TEXTFILE  */
+  YYSYMBOL_FIRSTREMOVE = 61,               /* FIRSTREMOVE  */
+  YYSYMBOL_REVIEWTYPE = 62,                /* REVIEWTYPE  */
+  YYSYMBOL_GAMECOLOR = 63,                 /* GAMECOLOR  */
+  YYSYMBOL_GAMESECONDS = 64,               /* GAMESECONDS  */
+  YYSYMBOL_BYOYOMI = 65,                   /* BYOYOMI  */
+  YYSYMBOL_MATCHTYPE = 66,                 /* MATCHTYPE  */
+  YYSYMBOL_NATURAL = 67,                   /* NATURAL  */
+  YYSYMBOL_BETRESULT = 68,                 /* BETRESULT  */
+  YYSYMBOL_RATING = 69,                    /* RATING  */
+  YYSYMBOL_STOREDNUM = 70,                 /* STOREDNUM  */
+  YYSYMBOL_UNDO = 71,                      /* UNDO  */
+  YYSYMBOL_END = 72,                       /* END  */
+  YYSYMBOL_FAIL = 73,                      /* FAIL  */
+  YYSYMBOL_OLDPROMPT = 74,                 /* OLDPROMPT  */
+  YYSYMBOL_SEMIPROMPT = 75,                /* SEMIPROMPT  */
+  YYSYMBOL_INFOMESSAGE = 76,               /* INFOMESSAGE  */
+  YYSYMBOL_LUSER = 77,                     /* LUSER  */
+  YYSYMBOL_OLDPASSWORD = 78,               /* OLDPASSWORD  */
+  YYSYMBOL_PASSWORD = 79,                  /* PASSWORD  */
+  YYSYMBOL_INVALIDPASSWORD = 80,           /* INVALIDPASSWORD  */
+  YYSYMBOL_IGSENTRY = 81,                  /* IGSENTRY  */
+  YYSYMBOL_TITLESET = 82,                  /* TITLESET  */
+  YYSYMBOL_TOGGLE = 83,                    /* TOGGLE  */
+  YYSYMBOL_PLAYERS = 84,                   /* PLAYERS  */
+  YYSYMBOL_UNKNOWNANSWER = 85,             /* UNKNOWNANSWER  */
+  YYSYMBOL_MATCHCLOSED = 86,               /* MATCHCLOSED  */
+  YYSYMBOL_MATCHOPEN = 87,                 /* MATCHOPEN  */
+  YYSYMBOL_OBSERVE = 88,                   /* OBSERVE  */
+  YYSYMBOL_WATCHING = 89,                  /* WATCHING  */
+  YYSYMBOL_EXTSTATSENTRY = 90,             /* EXTSTATSENTRY  */
+  YYSYMBOL_ADD = 91,                       /* ADD  */
+  YYSYMBOL_KIBITZ = 92,                    /* KIBITZ  */
+  YYSYMBOL_KOMISET = 93,                   /* KOMISET  */
+  YYSYMBOL_TRANSLATION = 94,               /* TRANSLATION  */
+  YYSYMBOL_GAMETIME = 95,                  /* GAMETIME  */
+  YYSYMBOL_LOSTCONNECTION = 96,            /* LOSTCONNECTION  */
+  YYSYMBOL_MYADJOURN = 97,                 /* MYADJOURN  */
+  YYSYMBOL_RESTORE = 98,                   /* RESTORE  */
+  YYSYMBOL_RESTART = 99,                   /* RESTART  */
+  YYSYMBOL_NOTURN = 100,                   /* NOTURN  */
+  YYSYMBOL_GAMESAVED = 101,                /* GAMESAVED  */
+  YYSYMBOL_UNDID = 102,                    /* UNDID  */
+  YYSYMBOL_EMPTY = 103,                    /* EMPTY  */
+  YYSYMBOL_DONE = 104,                     /* DONE  */
+  YYSYMBOL_RESTORESCORING = 105,           /* RESTORESCORING  */
+  YYSYMBOL_STATUSHEADER = 106,             /* STATUSHEADER  */
+  YYSYMBOL_REMOVELIBERTY = 107,            /* REMOVELIBERTY  */
+  YYSYMBOL_OBSERVEWHILEPLAY = 108,         /* OBSERVEWHILEPLAY  */
+  YYSYMBOL_NOTELLTARGET = 109,             /* NOTELLTARGET  */
+  YYSYMBOL_GMTTIME = 110,                  /* GMTTIME  */
+  YYSYMBOL_LOCALTIME = 111,                /* LOCALTIME  */
+  YYSYMBOL_SERVERUP = 112,                 /* SERVERUP  */
+  YYSYMBOL_UPTIMEENTRY = 113,              /* UPTIMEENTRY  */
+  YYSYMBOL_THROWCOPY = 114,                /* THROWCOPY  */
+  YYSYMBOL_SORRY = 115,                    /* SORRY  */
+  YYSYMBOL_WRONGCHANNEL = 116,             /* WRONGCHANNEL  */
+  YYSYMBOL_AUTOMATCHREQUEST = 117,         /* AUTOMATCHREQUEST  */
+  YYSYMBOL_DISPUTE = 118,                  /* DISPUTE  */
+  YYSYMBOL_OPPONENTDISPUTE = 119,          /* OPPONENTDISPUTE  */
+  YYSYMBOL_LATEFREE = 120,                 /* LATEFREE  */
+  YYSYMBOL_NOPLAY = 121,                   /* NOPLAY  */
+  YYSYMBOL_CHANNELHEADER = 122,            /* CHANNELHEADER  */
+  YYSYMBOL_OBSERVERS = 123,                /* OBSERVERS  */
+  YYSYMBOL_GAMENOTFOUND = 124,             /* GAMENOTFOUND  */
+  YYSYMBOL_MATCHREQUEST = 125,             /* MATCHREQUEST  */
+  YYSYMBOL_GOEMATCHREQUEST = 126,          /* GOEMATCHREQUEST  */
+  YYSYMBOL_TOURNAMENTMATCHREQUEST = 127,   /* TOURNAMENTMATCHREQUEST  */
+  YYSYMBOL_TOURNAMENTGOEMATCHREQUEST = 128, /* TOURNAMENTGOEMATCHREQUEST  */
+  YYSYMBOL_USERESIGN = 129,                /* USERESIGN  */
+  YYSYMBOL_GAMETITLE = 130,                /* GAMETITLE  */
+  YYSYMBOL_ERASE = 131,                    /* ERASE  */
+  YYSYMBOL_PLEASEREDONE = 132,             /* PLEASEREDONE  */
+  YYSYMBOL_TELLTARGET = 133,               /* TELLTARGET  */
+  YYSYMBOL_TELLOFF = 134,                  /* TELLOFF  */
+  YYSYMBOL_NOREMOVETURN = 135,             /* NOREMOVETURN  */
+  YYSYMBOL_ADJOURNSENTREQUEST = 136,       /* ADJOURNSENTREQUEST  */
+  YYSYMBOL_ADJOURNREQUEST = 137,           /* ADJOURNREQUEST  */
+  YYSYMBOL_OPPONENTNOTON = 138,            /* OPPONENTNOTON  */
+  YYSYMBOL_NOLOAD = 139,                   /* NOLOAD  */
+  YYSYMBOL_DISAGREEREMOVE = 140,           /* DISAGREEREMOVE  */
+  YYSYMBOL_OPPDISAGREEREMOVE = 141,        /* OPPDISAGREEREMOVE  */
+  YYSYMBOL_DECLINEADJOURN = 142,           /* DECLINEADJOURN  */
+  YYSYMBOL_REVIEWLIST = 143,               /* REVIEWLIST  */
+  YYSYMBOL_REVIEWSTOP = 144,               /* REVIEWSTOP  */
+  YYSYMBOL_REVNODE = 145,                  /* REVNODE  */
+  YYSYMBOL_REVCOMMENT = 146,               /* REVCOMMENT  */
+  YYSYMBOL_REVEVENT = 147,                 /* REVEVENT  */
+  YYSYMBOL_REVRESULT = 148,                /* REVRESULT  */
+  YYSYMBOL_REVPLACE = 149,                 /* REVPLACE  */
+  YYSYMBOL_REVUSER = 150,                  /* REVUSER  */
+  YYSYMBOL_REVDATE = 151,                  /* REVDATE  */
+  YYSYMBOL_REVKOMI = 152,                  /* REVKOMI  */
+  YYSYMBOL_REVGAMENAME = 153,              /* REVGAMENAME  */
+  YYSYMBOL_REVWHITERANK = 154,             /* REVWHITERANK  */
+  YYSYMBOL_REVBLACKRANK = 155,             /* REVBLACKRANK  */
+  YYSYMBOL_REVWHITENAME = 156,             /* REVWHITENAME  */
+  YYSYMBOL_REVBLACKNAME = 157,             /* REVBLACKNAME  */
+  YYSYMBOL_REVSIZE = 158,                  /* REVSIZE  */
+  YYSYMBOL_REVGAME = 159,                  /* REVGAME  */
+  YYSYMBOL_REVBLACK = 160,                 /* REVBLACK  */
+  YYSYMBOL_REVWHITE = 161,                 /* REVWHITE  */
+  YYSYMBOL_REVADDBLACK = 162,              /* REVADDBLACK  */
+  YYSYMBOL_REVADDWHITE = 163,              /* REVADDWHITE  */
+  YYSYMBOL_REVADDEMPTY = 164,              /* REVADDEMPTY  */
+  YYSYMBOL_REVNODENAME = 165,              /* REVNODENAME  */
+  YYSYMBOL_REVIEWEND = 166,                /* REVIEWEND  */
+  YYSYMBOL_REVBLACKTIME = 167,             /* REVBLACKTIME  */
+  YYSYMBOL_REVWHITETIME = 168,             /* REVWHITETIME  */
+  YYSYMBOL_REVCOPYRIGHT = 169,             /* REVCOPYRIGHT  */
+  YYSYMBOL_REVHANDICAP = 170,              /* REVHANDICAP  */
+  YYSYMBOL_REVLETTERS = 171,               /* REVLETTERS  */
+  YYSYMBOL_REVIEWVARIATIONS = 172,         /* REVIEWVARIATIONS  */
+  YYSYMBOL_NOREVIEW = 173,                 /* NOREVIEW  */
+  YYSYMBOL_SGFLIST = 174,                  /* SGFLIST  */
+  YYSYMBOL_NOSGF = 175,                    /* NOSGF  */
+  YYSYMBOL_NOMOREMOVES = 176,              /* NOMOREMOVES  */
+  YYSYMBOL_BETWINNERS = 177,               /* BETWINNERS  */
+  YYSYMBOL_BETEVEN = 178,                  /* BETEVEN  */
+  YYSYMBOL_BETLOSERS = 179,                /* BETLOSERS  */
+  YYSYMBOL_USER = 180,                     /* USER  */
+  YYSYMBOL_CURRENTSCORE = 181,             /* CURRENTSCORE  */
+  YYSYMBOL_FINALSCORE = 182,               /* FINALSCORE  */
+  YYSYMBOL_TEAMGAME = 183,                 /* TEAMGAME  */
+  YYSYMBOL_OBSERVETEAM = 184,              /* OBSERVETEAM  */
+  YYSYMBOL_RESTARTTEAMGAME = 185,          /* RESTARTTEAMGAME  */
+  YYSYMBOL_SETPROBA = 186,                 /* SETPROBA  */
+  YYSYMBOL_NOTREVIEWING = 187,             /* NOTREVIEWING  */
+  YYSYMBOL_NOTREQUESTGAME = 188,           /* NOTREQUESTGAME  */
+  YYSYMBOL_189_ = 189,                     /* '['  */
+  YYSYMBOL_190_ = 190,                     /* ']'  */
+  YYSYMBOL_191_ = 191,                     /* '}'  */
+  YYSYMBOL_192_ = 192,                     /* ':'  */
+  YYSYMBOL_193_ = 193,                     /* '@'  */
+  YYSYMBOL_194_ = 194,                     /* '>'  */
+  YYSYMBOL_195_ = 195,                     /* '<'  */
+  YYSYMBOL_196_ = 196,                     /* '('  */
+  YYSYMBOL_197_ = 197,                     /* ')'  */
+  YYSYMBOL_YYACCEPT = 198,                 /* $accept  */
+  YYSYMBOL_start = 199,                    /* start  */
+  YYSYMBOL_session = 200,                  /* session  */
+  YYSYMBOL_pass = 201,                     /* pass  */
+  YYSYMBOL_202_1 = 202,                    /* $@1  */
+  YYSYMBOL_203_2 = 203,                    /* $@2  */
+  YYSYMBOL_enterorfail = 204,              /* enterorfail  */
+  YYSYMBOL_205_3 = 205,                    /* $@3  */
+  YYSYMBOL_loginmessages = 206,            /* loginmessages  */
+  YYSYMBOL_loginmessage = 207,             /* loginmessage  */
+  YYSYMBOL_inputs = 208,                   /* inputs  */
+  YYSYMBOL_prompt = 209,                   /* prompt  */
+  YYSYMBOL_moreinput = 210,                /* moreinput  */
+  YYSYMBOL_input = 211,                    /* input  */
+  YYSYMBOL_textfile = 212,                 /* textfile  */
+  YYSYMBOL_erase = 213,                    /* erase  */
+  YYSYMBOL_igsentry = 214,                 /* igsentry  */
+  YYSYMBOL_servermessages = 215,           /* servermessages  */
+  YYSYMBOL_servermessage = 216,            /* servermessage  */
+  YYSYMBOL_xshout = 217,                   /* xshout  */
+  YYSYMBOL_infomessage = 218,              /* infomessage  */
+  YYSYMBOL_tell = 219,                     /* tell  */
+  YYSYMBOL_playeron = 220,                 /* playeron  */
+  YYSYMBOL_beeping = 221,                  /* beeping  */
+  YYSYMBOL_idle = 222,                     /* idle  */
+  YYSYMBOL_stored = 223,                   /* stored  */
+  YYSYMBOL_broadcast = 224,                /* broadcast  */
+  YYSYMBOL_kibitz = 225,                   /* kibitz  */
+  YYSYMBOL_messages = 226,                 /* messages  */
+  YYSYMBOL_yell = 227,                     /* yell  */
+  YYSYMBOL_join = 228,                     /* join  */
+  YYSYMBOL_leave = 229,                    /* leave  */
+  YYSYMBOL_newtitle = 230,                 /* newtitle  */
+  YYSYMBOL_changechannel = 231,            /* changechannel  */
+  YYSYMBOL_wrongchannel = 232,             /* wrongchannel  */
+  YYSYMBOL_matchopen = 233,                /* matchopen  */
+  YYSYMBOL_matchclosed = 234,              /* matchclosed  */
+  YYSYMBOL_automatchrequest = 235,         /* automatchrequest  */
+  YYSYMBOL_automatchdispute = 236,         /* automatchdispute  */
+  YYSYMBOL_ruledmatchrequest = 237,        /* ruledmatchrequest  */
+  YYSYMBOL_matchrequest = 238,             /* matchrequest  */
+  YYSYMBOL_requestingmatch = 239,          /* requestingmatch  */
+  YYSYMBOL_komirequest = 240,              /* komirequest  */
+  YYSYMBOL_komiset = 241,                  /* komiset  */
+  YYSYMBOL_freemessage = 242,              /* freemessage  */
+  YYSYMBOL_freeconfirm = 243,              /* freeconfirm  */
+  YYSYMBOL_latefree = 244,                 /* latefree  */
+  YYSYMBOL_noplay = 245,                   /* noplay  */
+  YYSYMBOL_noload = 246,                   /* noload  */
+  YYSYMBOL_titleset = 247,                 /* titleset  */
+  YYSYMBOL_statsentry = 248,               /* statsentry  */
+  YYSYMBOL_statsentries = 249,             /* statsentries  */
+  YYSYMBOL_extendstatsentry = 250,         /* extendstatsentry  */
+  YYSYMBOL_optextend = 251,                /* optextend  */
+  YYSYMBOL_stats = 252,                    /* stats  */
+  YYSYMBOL_betentry = 253,                 /* betentry  */
+  YYSYMBOL_betentries = 254,               /* betentries  */
+  YYSYMBOL_optmybet = 255,                 /* optmybet  */
+  YYSYMBOL_bet = 256,                      /* bet  */
+  YYSYMBOL_toggle = 257,                   /* toggle  */
+  YYSYMBOL_channelentry = 258,             /* channelentry  */
+  YYSYMBOL_channelentries = 259,           /* channelentries  */
+  YYSYMBOL_channels = 260,                 /* channels  */
+  YYSYMBOL_observerentries = 261,          /* observerentries  */
+  YYSYMBOL_observers = 262,                /* observers  */
+  YYSYMBOL_gamenotfound = 263,             /* gamenotfound  */
+  YYSYMBOL_nomoremoves = 264,              /* nomoremoves  */
+  YYSYMBOL_notrequestgame = 265,           /* notrequestgame  */
+  YYSYMBOL_gamesline = 266,                /* gamesline  */
+  YYSYMBOL_gameslines = 267,               /* gameslines  */
+  YYSYMBOL_games = 268,                    /* games  */
+  YYSYMBOL_269_4 = 269,                    /* $@4  */
+  YYSYMBOL_remove = 270,                   /* remove  */
+  YYSYMBOL_move = 271,                     /* move  */
+  YYSYMBOL_movelist = 272,                 /* movelist  */
+  YYSYMBOL_optgamesaved = 273,             /* optgamesaved  */
+  YYSYMBOL_gamedesc = 274,                 /* gamedesc  */
+  YYSYMBOL_optgametitle = 275,             /* optgametitle  */
+  YYSYMBOL_add = 276,                      /* add  */
+  YYSYMBOL_doneobserve = 277,              /* doneobserve  */
+  YYSYMBOL_mustpass = 278,                 /* mustpass  */
+  YYSYMBOL_oppmustpass = 279,              /* oppmustpass  */
+  YYSYMBOL_disagreeremove = 280,           /* disagreeremove  */
+  YYSYMBOL_opponentdisagreeremove = 281,   /* opponentdisagreeremove  */
+  YYSYMBOL_optnotreviewing = 282,          /* optnotreviewing  */
+  YYSYMBOL_observe = 283,                  /* observe  */
+  YYSYMBOL_optfirst = 284,                 /* optfirst  */
+  YYSYMBOL_doneopponentobserve = 285,      /* doneopponentobserve  */
+  YYSYMBOL_opponentobserve = 286,          /* opponentobserve  */
+  YYSYMBOL_opponentoptobserve = 287,       /* opponentoptobserve  */
+  YYSYMBOL_betresult = 288,                /* betresult  */
+  YYSYMBOL_undidlist = 289,                /* undidlist  */
+  YYSYMBOL_undid = 290,                    /* undid  */
+  YYSYMBOL_opponentundid = 291,            /* opponentundid  */
+  YYSYMBOL_restore = 292,                  /* restore  */
+  YYSYMBOL_opponentrestart = 293,          /* opponentrestart  */
+  YYSYMBOL_restart = 294,                  /* restart  */
+  YYSYMBOL_newmatch1 = 295,                /* newmatch1  */
+  YYSYMBOL_newmatch2 = 296,                /* newmatch2  */
+  YYSYMBOL_decline = 297,                  /* decline  */
+  YYSYMBOL_disputeline = 298,              /* disputeline  */
+  YYSYMBOL_disputelines = 299,             /* disputelines  */
+  YYSYMBOL_opponentdispute = 300,          /* opponentdispute  */
+  YYSYMBOL_dispute = 301,                  /* dispute  */
+  YYSYMBOL_matchtypes = 302,               /* matchtypes  */
+  YYSYMBOL_disputematchtype = 303,         /* disputematchtype  */
+  YYSYMBOL_optobserve = 304,               /* optobserve  */
+  YYSYMBOL_undolist = 305,                 /* undolist  */
+  YYSYMBOL_undo = 306,                     /* undo  */
+  YYSYMBOL_watching = 307,                 /* watching  */
+  YYSYMBOL_overobserve = 308,              /* overobserve  */
+  YYSYMBOL_observewhileplay = 309,         /* observewhileplay  */
+  YYSYMBOL_playerline = 310,               /* playerline  */
+  YYSYMBOL_playerlines = 311,              /* playerlines  */
+  YYSYMBOL_playersstatusline = 312,        /* playersstatusline  */
+  YYSYMBOL_players = 313,                  /* players  */
+  YYSYMBOL_314_5 = 314,                    /* $@5  */
+  YYSYMBOL_315_6 = 315,                    /* $@6  */
+  YYSYMBOL_userline = 316,                 /* userline  */
+  YYSYMBOL_userlines = 317,                /* userlines  */
+  YYSYMBOL_users = 318,                    /* users  */
+  YYSYMBOL_player = 319,                   /* player  */
+  YYSYMBOL_playertime = 320,               /* playertime  */
+  YYSYMBOL_optbyo = 321,                   /* optbyo  */
+  YYSYMBOL_gametime = 322,                 /* gametime  */
+  YYSYMBOL_gamescore = 323,                /* gamescore  */
+  YYSYMBOL_translation = 324,              /* translation  */
+  YYSYMBOL_translations = 325,             /* translations  */
+  YYSYMBOL_byoyomi = 326,                  /* byoyomi  */
+  YYSYMBOL_notime = 327,                   /* notime  */
+  YYSYMBOL_lostconnection = 328,           /* lostconnection  */
+  YYSYMBOL_gamesaved = 329,                /* gamesaved  */
+  YYSYMBOL_optadjourn = 330,               /* optadjourn  */
+  YYSYMBOL_adjourn = 331,                  /* adjourn  */
+  YYSYMBOL_adjournsentrequest = 332,       /* adjournsentrequest  */
+  YYSYMBOL_adjournrequest = 333,           /* adjournrequest  */
+  YYSYMBOL_oppadjourn = 334,               /* oppadjourn  */
+  YYSYMBOL_declineadjourn = 335,           /* declineadjourn  */
+  YYSYMBOL_resign = 336,                   /* resign  */
+  YYSYMBOL_mailed = 337,                   /* mailed  */
+  YYSYMBOL_removegamefile = 338,           /* removegamefile  */
+  YYSYMBOL_notelltarget = 339,             /* notelltarget  */
+  YYSYMBOL_telltarget = 340,               /* telltarget  */
+  YYSYMBOL_telldone = 341,                 /* telldone  */
+  YYSYMBOL_telloff = 342,                  /* telloff  */
+  YYSYMBOL_illegalmove = 343,              /* illegalmove  */
+  YYSYMBOL_illegalundo = 344,              /* illegalundo  */
+  YYSYMBOL_noturn = 345,                   /* noturn  */
+  YYSYMBOL_noremoveturn = 346,             /* noremoveturn  */
+  YYSYMBOL_useresign = 347,                /* useresign  */
+  YYSYMBOL_removeliberty = 348,            /* removeliberty  */
+  YYSYMBOL_removegroup = 349,              /* removegroup  */
+  YYSYMBOL_restorescoring = 350,           /* restorescoring  */
+  YYSYMBOL_pleaseredone = 351,             /* pleaseredone  */
+  YYSYMBOL_statusheader = 352,             /* statusheader  */
+  YYSYMBOL_statusline = 353,               /* statusline  */
+  YYSYMBOL_statuslines = 354,              /* statuslines  */
+  YYSYMBOL_resultline = 355,               /* resultline  */
+  YYSYMBOL_status = 356,                   /* status  */
+  YYSYMBOL_date = 357,                     /* date  */
+  YYSYMBOL_uptimeentry = 358,              /* uptimeentry  */
+  YYSYMBOL_uptime = 359,                   /* uptime  */
+  YYSYMBOL_sgflist = 360,                  /* sgflist  */
+  YYSYMBOL_reviewlist = 361,               /* reviewlist  */
+  YYSYMBOL_reviewvariations = 362,         /* reviewvariations  */
+  YYSYMBOL_reviewstart = 363,              /* reviewstart  */
+  YYSYMBOL_reviewliterals = 364,           /* reviewliterals  */
+  YYSYMBOL_reviewentry = 365,              /* reviewentry  */
+  YYSYMBOL_reviewentries = 366,            /* reviewentries  */
+  YYSYMBOL_review = 367,                   /* review  */
+  YYSYMBOL_368_7 = 368,                    /* $@7  */
+  YYSYMBOL_auxreviews = 369,               /* auxreviews  */
+  YYSYMBOL_reviews = 370,                  /* reviews  */
+  YYSYMBOL_reviewstop = 371,               /* reviewstop  */
+  YYSYMBOL_noreview = 372,                 /* noreview  */
+  YYSYMBOL_throwcopy = 373,                /* throwcopy  */
+  YYSYMBOL_proba = 374,                    /* proba  */
+  YYSYMBOL_setproba = 375,                 /* setproba  */
+  YYSYMBOL_sorry = 376,                    /* sorry  */
+  YYSYMBOL_invalid = 377,                  /* invalid  */
+  YYSYMBOL_unknown = 378,                  /* unknown  */
+  YYSYMBOL_names = 379,                    /* names  */
+  YYSYMBOL_namesset = 380,                 /* namesset  */
+  YYSYMBOL_promptnames = 381,              /* promptnames  */
+  YYSYMBOL_promptname = 382,               /* promptname  */
+  YYSYMBOL_optname = 383,                  /* optname  */
+  YYSYMBOL_literallines = 384              /* literallines  */
 };
+typedef enum IgsYYsymbol_kind_t IgsYYsymbol_kind_t;
+
+
+
+
+#ifdef short
+# undef short
 #endif
 
-static const short IgsYYr1[] = {     0,
-   198,   198,   199,   199,   200,   201,   200,   202,   200,   204,
-   203,   203,   205,   205,   206,   206,   206,   206,   207,   207,
-   208,   208,   209,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   210,   210,   210,   210,   210,   210,   210,   210,   210,
-   210,   211,   212,   213,   214,   214,   214,   215,   216,   216,
-   217,   217,   217,   217,   217,   217,   218,   218,   219,   220,
-   220,   221,   222,   223,   223,   224,   224,   225,   226,   227,
-   228,   229,   230,   231,   232,   233,   234,   235,   236,   236,
-   236,   236,   237,   238,   239,   240,   241,   242,   243,   244,
-   245,   246,   247,   248,   248,   249,   250,   250,   251,   252,
-   253,   253,   254,   254,   255,   256,   257,   258,   258,   259,
-   260,   261,   262,   263,   264,   265,   266,   266,   268,   267,
-   269,   270,   271,   271,   272,   272,   273,   273,   274,   274,
-   275,   276,   277,   278,   279,   280,   281,   281,   282,   282,
-   283,   283,   284,   285,   286,   286,   287,   287,   288,   288,
-   289,   289,   290,   290,   291,   292,   292,   293,   293,   294,
-   295,   296,   297,   298,   298,   299,   300,   301,   301,   302,
-   303,   303,   304,   304,   305,   305,   306,   307,   308,   309,
-   309,   310,   310,   311,   311,   313,   314,   312,   315,   315,
-   316,   316,   317,   318,   319,   320,   320,   321,   322,   323,
-   324,   324,   325,   326,   327,   328,   329,   329,   330,   331,
-   332,   333,   334,   335,   335,   336,   336,   337,   338,   339,
-   340,   341,   342,   342,   343,   344,   345,   346,   347,   348,
-   349,   350,   351,   352,   353,   353,   354,   355,   356,   357,
-   357,   357,   357,   358,   358,   359,   359,   360,   361,   362,
-   363,   363,   364,   364,   364,   364,   364,   364,   364,   364,
-   364,   364,   364,   364,   364,   364,   364,   364,   364,   364,
-   364,   364,   364,   364,   364,   364,   364,   364,   364,   364,
-   364,   365,   365,   367,   366,   368,   368,   369,   369,   370,
-   371,   372,   373,   373,   374,   374,   375,   376,   377,   378,
-   378,   379,   379,   380,   380,   381,   381,   382,   382,   383,
-   383
-};
+/* On compilers that do not define __PTRDIFF_MAX__ etc., make sure
+   <limits.h> and (if available) <stdint.h> are included
+   so that the code can choose integer types of a good width.  */
 
-static const short IgsYYr2[] = {     0,
-     1,     1,     5,     0,     1,     0,     4,     0,     4,     0,
-     4,     0,     2,     0,     1,     1,     1,     1,     2,     0,
-     1,     1,     2,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     0,     3,     1,     2,     2,     1,     2,     2,     2,     2,
-     9,     6,     9,    11,    12,    11,     2,     4,     2,     2,
-     1,     2,     2,     2,     2,    14,    12,     1,     3,     2,
-     2,     3,     1,     2,     1,     1,     3,     2,     1,     1,
-     1,     1,    10,     1,     2,     2,     2,     1,     2,     1,
-     2,     1,     2,     2,     1,     3,     2,     0,     2,     4,
-     2,     0,     1,     0,     7,     7,     4,     2,     1,     1,
-     1,    10,     1,     1,     1,    17,     2,     0,     0,     3,
-     1,     2,     2,     0,     1,     0,    15,    21,     2,     0,
-     1,     2,     1,     1,     1,     1,     1,     0,     5,    11,
-     1,     0,     4,     5,     5,     5,     2,     2,     3,     2,
-     5,    11,     6,    12,     1,     4,    10,     4,    10,     2,
-     2,     1,     6,     2,     0,     2,     2,     2,     0,     3,
-     1,     0,     6,     4,     5,    11,     3,     1,     1,     6,
-     3,     2,     0,    11,     7,     0,     0,     6,     2,     2,
-     2,     0,     2,     4,     3,     4,     0,    23,     4,     2,
-     2,     1,     2,     1,     3,     3,     1,     0,     5,     1,
-     1,     1,     1,     1,     2,     2,     1,     1,     1,     3,
-     1,     2,     1,     3,     1,     1,     1,     1,     1,     1,
-     1,     1,     3,     2,     2,     0,     1,     3,     9,     3,
-     3,     8,     2,     2,     1,     3,     2,     2,     2,     1,
-     2,     0,     1,     1,     1,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     0,     0,     4,     2,     1,     1,     2,     1,
-     1,     1,     6,     2,     6,     2,     1,     1,     2,     2,
-     0,     3,     0,     2,     0,     1,     1,     1,     0,     2,
-     0
-};
+#ifndef __PTRDIFF_MAX__
+# include <limits.h> /* INFRINGES ON USER NAME SPACE */
+# if defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#  include <stdint.h> /* INFRINGES ON USER NAME SPACE */
+#  define YY_STDINT_H
+# endif
+#endif
 
-static const short IgsYYdefact[] = {     0,
-     2,    14,     0,    15,     8,    16,    18,    17,     6,     5,
-    20,    13,    14,    14,     0,    12,    12,   140,     0,     0,
-   323,   325,   184,   318,   317,   330,   337,   398,   401,   401,
-   233,   234,   321,   350,     0,     0,   314,     0,   269,     0,
-   262,     0,     0,     0,   304,   161,   272,     0,     0,     0,
-   219,   221,     0,   278,   168,     0,   173,   188,   401,   384,
-     0,     0,     0,     3,     0,   192,     0,   286,   411,   176,
-   175,     0,   401,   231,     0,     0,     0,     0,     0,   312,
-   255,     0,   326,     0,     0,   136,   242,   331,   401,   329,
-   279,   319,     0,     0,     0,     0,   392,   397,     0,   401,
-   265,   265,     0,   190,     0,   213,   179,   180,   181,   182,
-   328,   143,   332,     0,   401,   327,   310,   311,     0,   235,
-   236,   313,   401,   390,   401,   391,   401,   214,   202,   292,
-     0,     0,   215,    19,     0,    57,    58,    24,    25,   146,
-    26,    27,    31,   107,    28,    29,    30,    32,    33,    34,
-    35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-   401,    45,    46,    47,    48,    49,    50,    51,    52,    53,
-    54,   195,   198,    55,    56,    59,   209,   210,    60,    61,
-    62,    63,    64,    65,    66,   224,    67,    68,    70,    69,
-    71,    72,    73,    74,    75,    76,     0,    86,    87,    77,
-    78,    79,    80,    81,    82,    83,    84,    85,   272,    88,
-    89,    90,    91,    93,    92,    94,    95,   302,    96,    97,
-    98,    99,   100,   101,   102,   103,   104,   105,   106,   109,
-   108,   110,   111,   112,   113,   114,   115,   116,   117,   118,
-   119,   120,   121,   122,     0,   123,   124,   345,   125,   126,
-   127,   128,   129,   387,   388,   130,   131,   132,   133,   134,
-   135,   137,   138,   139,    10,     9,     7,   148,   193,   272,
-   316,   178,     0,   150,   157,   315,   185,     0,   149,   164,
-   165,   303,   271,   159,     0,   394,   163,   162,   218,     0,
-     0,   170,   171,     0,   187,     0,   383,   224,   248,   247,
-     0,     0,   144,     0,   283,   399,   160,     0,     0,   260,
-     0,     0,     0,   186,   300,     0,   226,   307,     0,   224,
-   272,   250,   147,   241,   224,   232,     0,     0,     0,     0,
-     0,     0,   343,   174,     0,   267,   266,   189,     0,     0,
-   322,   191,   348,   349,   347,     0,     0,   401,     0,     0,
-   396,    21,    22,    23,   145,     0,   401,   194,     0,   199,
-   208,   261,   230,     0,   224,     0,   301,   336,   344,   389,
-   386,   405,   324,   400,   403,   268,   270,     0,   220,     0,
-   169,   172,   142,     0,     0,     0,     0,     0,     0,   410,
-     0,     0,   277,     0,     0,     0,   305,   225,     0,   230,
-   306,     0,   230,     0,   333,     0,   340,   341,     0,   177,
-     0,   264,     0,   320,   346,     0,   202,   201,   291,     0,
-     0,     0,     0,     0,   197,     0,     0,     0,   223,   226,
-   249,   230,     0,   224,   338,     0,   207,     0,     0,   217,
-     0,   352,   385,   355,     0,     0,     0,     0,     0,     0,
-     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-   352,   352,   352,     0,     0,     0,     0,     0,   352,   353,
-   354,   382,   274,     0,     0,     0,     0,   287,     0,   282,
-   158,     0,     0,     0,     0,   226,   256,     0,   258,   224,
-   226,   224,   243,     0,     0,     0,     0,     0,     0,   289,
-   290,   299,     0,     0,   196,   222,   229,     0,   226,   238,
-     0,   226,     0,   230,     0,   335,   407,    11,   406,   404,
-     0,     0,     0,     0,   356,   358,   366,   365,   363,   361,
-   364,   359,   367,   368,   369,   370,   371,   372,   373,   375,
-   374,   379,   380,   381,   357,   378,   377,   362,   360,   376,
-     0,     0,     0,     0,   409,     0,     0,     0,   294,     0,
-     0,   309,     0,   226,   230,     0,     0,     0,     0,     0,
-   202,     0,   401,     0,   244,   237,   239,     0,   251,     0,
-     0,   275,   334,   402,   393,     0,     0,   351,   152,     0,
-     0,     0,   408,     0,     0,   288,     0,   281,     0,     0,
-     0,     0,     0,   253,     0,     0,     0,     0,     0,   200,
-   204,   395,     0,     0,     0,   273,     0,     0,     0,     0,
-     0,     0,   206,     0,     0,     0,     0,     0,     0,     0,
-     0,   226,   226,     0,     0,     0,     0,   203,   205,   401,
-     0,     0,     0,     0,     0,     0,   401,     0,     0,     0,
-     0,     0,     0,     0,     0,     0,     0,     0,   246,   245,
-     0,   342,   263,     0,     0,   272,     0,     0,     0,     0,
-     0,     0,     0,   153,   151,     0,     0,   280,     0,     0,
-     0,   230,     0,     0,   403,   272,   230,   230,     0,     0,
-     0,     0,     0,     0,     0,     0,     0,     0,     0,   257,
-   259,     0,   339,   212,   211,   183,   226,   226,   230,     0,
-     0,   156,   154,     0,     0,     0,     0,     0,     0,   226,
-   240,   252,   276,     0,     0,   155,   285,     0,     0,   167,
-     0,   297,   254,     0,     0,     0,     0,     0,     0,     0,
-   401,     0,     0,   166,   295,     0,     0,     0,   227,     0,
-     0,     0,     0,     0,   284,   296,     0,     0,     0,     0,
-     0,     0,     0,     0,     0,     0,   216,     0,     0,   228,
-   297,     0,   298,     0,     0,     0
-};
+/* Narrow types that promote to a signed type and that can represent a
+   signed or unsigned integer of at least N bits.  In tables they can
+   save space and decrease cache pressure.  Promoting to a signed type
+   helps avoid bugs in integer arithmetic.  */
 
-static const short IgsYYdefgoto[] = {   774,
-     2,    11,    14,    13,   266,   372,     3,    12,    15,   354,
-   134,   135,   136,   137,   138,   139,   140,   141,   142,   143,
-   144,   145,   146,   147,   148,   149,   150,   151,   152,   153,
-   154,   155,   156,   157,   158,   159,   160,   161,   162,   163,
-   164,   165,   166,   167,   168,   169,   170,   171,   172,   173,
-   359,   360,   174,   418,   347,   639,   175,   176,   177,   178,
-   179,   704,   180,   181,   182,   183,   440,   379,   184,   289,
-   185,   429,   363,   510,   186,   430,   187,   188,   189,   190,
-   191,   192,   577,   193,   327,   194,   195,   493,   196,   197,
-   198,   199,   200,   201,   202,   203,   204,   205,   412,   336,
-   206,   207,   278,   208,   284,   209,   210,   211,   212,   213,
-   480,   389,   596,   214,   305,   556,   419,   348,   215,   313,
-   732,   740,   216,   217,   218,   219,   220,   221,   222,   398,
-   319,   224,   225,   226,   227,   228,   229,   230,   231,   232,
-   233,   234,   235,   236,   237,   238,   239,   240,   241,   242,
-   243,   244,   245,   516,   435,   246,   247,   330,   248,   249,
-   250,   251,   252,   253,   525,   472,   384,   254,   297,   255,
-   256,   257,   258,   259,   260,   261,   262,   263,   264,   521,
-   437,   436,   520,   594,   306
-};
+#ifdef __INT_LEAST8_MAX__
+typedef __INT_LEAST8_TYPE__ IgsYYtype_int8;
+#elif defined YY_STDINT_H
+typedef int_least8_t IgsYYtype_int8;
+#else
+typedef signed char IgsYYtype_int8;
+#endif
 
-static const short IgsYYpact[] = {    32,
--32768,    59,    49,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,   541,    23,    23,-32768,    55,    72,
-    41,-32768,-32768,-32768,    67,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,    79,   133,   146,   178,-32768,   185,
--32768,   192,   193,   214,-32768,-32768,   139,   114,   159,   227,
--32768,-32768,   228,-32768,-32768,   182,-32768,   144,-32768,-32768,
-   181,   231,   232,-32768,   234,-32768,   235,-32768,-32768,-32768,
--32768,    27,-32768,-32768,   236,   237,   238,   239,   147,    36,
--32768,   181,-32768,   240,   242,   243,    26,-32768,-32768,-32768,
--32768,-32768,   245,   245,   246,   247,-32768,-32768,   248,-32768,
--32768,-32768,   250,-32768,   251,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,   252,-32768,-32768,-32768,-32768,   107,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,    81,-32768,-32768,-32768,
-   254,   156,-32768,-32768,    33,-32768,-32768,-32768,   243,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,    15,-32768,-32768,-32768,-32768,   244,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,   203,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,    -3,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   139,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   165,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,   155,-32768,-32768,-32768,   111,-32768,
--32768,-32768,-32768,-32768,   -51,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   139,
--32768,   259,    40,-32768,-32768,-32768,-32768,   118,-32768,-32768,
--32768,-32768,-32768,-32768,   194,-32768,-32768,-32768,-32768,    68,
-   262,-32768,-32768,   263,-32768,    47,-32768,-32768,-32768,-32768,
-   264,     9,-32768,   265,-32768,   266,-32768,    11,   203,-32768,
-    50,    82,    78,-32768,-32768,    80,   172,-32768,   173,-32768,
-   139,   187,-32768,-32768,-32768,-32768,   201,    58,   274,   206,
-   207,   277,-32768,-32768,    62,   241,   241,-32768,    85,   210,
-   259,-32768,   259,   259,-32768,    63,    -8,    45,   102,   216,
--32768,-32768,-32768,-32768,-32768,     7,-32768,-32768,   197,-32768,
--32768,-32768,   -13,   285,-32768,    24,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,   286,   249,   287,
--32768,-32768,-32768,    -5,   290,    16,   291,   292,     8,-32768,
-   293,   236,-32768,   294,   296,   297,-32768,-32768,   298,   -24,
--32768,   181,   -13,   181,-32768,   299,-32768,-32768,   300,-32768,
-   253,-32768,   301,-32768,-32768,   255,-32768,-32768,-32768,    12,
-   302,   303,   304,    66,-32768,   306,   307,   308,-32768,     0,
--32768,    -9,   309,-32768,   258,    51,   101,   312,   236,-32768,
-   314,-32768,-32768,-32768,   305,   310,   311,   313,   315,   316,
-   317,   318,   319,   320,   321,   323,   325,   326,   327,   328,
--32768,-32768,-32768,   329,   330,   331,   332,   333,-32768,-32768,
--32768,-32768,-32768,   127,   322,   134,   353,-32768,   354,-32768,
--32768,   131,   136,   355,   257,   172,-32768,   356,-32768,-32768,
-   172,-32768,-32768,   357,   358,   359,   360,   138,   -11,-32768,
--32768,-32768,   361,   141,-32768,-32768,-32768,   362,   172,   179,
-   364,   172,   365,    -6,   366,-32768,-32768,-32768,-32768,-32768,
-   110,   367,   368,   369,   351,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,   351,   351,   351,-32768,-32768,-32768,-32768,-32768,   351,
-   334,    22,   371,   372,   373,   374,   113,   375,-32768,   376,
-   288,-32768,   377,   -12,   -23,   142,   378,   267,   379,   324,
--32768,   381,-32768,   382,-32768,-32768,-32768,   383,-32768,   384,
-   385,-32768,-32768,-32768,-32768,   236,   195,-32768,-32768,   386,
-   236,   387,-32768,   335,     3,-32768,   390,-32768,   391,   394,
-   395,   396,   397,-32768,   105,   398,   399,   338,   208,-32768,
-   152,-32768,    10,   401,   406,-32768,   407,   215,   409,    13,
-   222,   223,-32768,   412,   413,   414,   415,   230,   224,   418,
-   419,   172,   172,   233,   352,   363,   256,-32768,-32768,-32768,
-   370,   420,   423,   424,   425,   426,-32768,   427,   380,   388,
-   428,   260,   389,   429,   430,   431,   392,   433,-32768,-32768,
-   434,-32768,-32768,   393,   164,   139,   400,   435,   436,   270,
-   271,    18,   437,-32768,-32768,   438,   440,-32768,   261,   268,
-   272,   -47,   441,   442,-32768,   139,   337,   337,   402,   443,
-   444,   403,   404,   279,   446,   448,   450,   405,   276,-32768,
--32768,   408,-32768,-32768,   101,-32768,   172,   172,   337,   451,
-   452,-32768,-32768,   410,   411,   453,   273,   468,   470,   172,
--32768,-32768,-32768,   475,   478,-32768,-32768,   481,   416,-32768,
-   295,   289,-32768,   483,   336,   486,   487,   488,   489,   421,
--32768,   422,   492,-32768,-32768,   339,   417,     6,   340,   432,
-   493,   494,   341,   495,-32768,-32768,   342,   496,   497,   498,
-   343,   499,   344,   439,   500,   347,-32768,   445,   470,-32768,
-   289,   447,-32768,   505,   506,-32768
-};
+#ifdef __INT_LEAST16_MAX__
+typedef __INT_LEAST16_TYPE__ IgsYYtype_int16;
+#elif defined YY_STDINT_H
+typedef int_least16_t IgsYYtype_int16;
+#else
+typedef short IgsYYtype_int16;
+#endif
 
-static const short IgsYYpgoto[] = {-32768,
--32768,-32768,-32768,-32768,   490,-32768,   202,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,   -49,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   345,-32768,
-   149,-32768,-32768,-32768,  -394,-32768,-32768,-32768,   346,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,  -303,  -312,   -58,  -396,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,   -15,-32768,-32768,   449,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,   454,-32768,-32768,   458,
--32768,-32768,-32768,-32768,  -207,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,  -384,
-  -260,  -258,-32768,-32768,   349,-32768,-32768,-32768,-32768,   501,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,   269,-32768,-32768,-32768,-32768,   459,   278,-32768,
--32768,-32768,-32768,-32768,  -249,-32768,-32768,   275,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   -29,
-  -170,-32768,-32768,-32768,-32768
-};
-
-
-#define	YYLAST		729
-
-
-static const short IgsYYtable[] = {   272,
-   273,   366,   298,   489,   397,   624,   491,   482,   374,   374,
-    60,   386,   374,   309,   374,   646,   400,   442,   474,    20,
-   374,   403,   499,   320,   590,     4,   426,   426,   325,   296,
-   416,    -4,     1,   416,    -4,   512,   323,   426,   426,   391,
-   700,   426,   374,   311,   426,   299,     6,     7,    53,   374,
-    -4,     4,   374,   517,   523,    -4,    -4,   268,    -1,   328,
-   374,   432,   373,   487,   374,   374,   443,     5,   374,   307,
-   335,   326,     6,     7,   269,    53,   271,    53,    53,   478,
-   352,   274,   427,   500,   501,   341,   324,   509,    84,   355,
-   553,   479,  -293,   343,   433,   344,   265,   346,   364,     8,
-    84,   308,   392,  -401,   357,   427,   427,   353,    -4,    -4,
-    -4,   375,   374,   401,   370,   597,   427,   582,   383,  -293,
-   427,   393,   518,   427,   519,     8,     9,    10,   270,   405,
-   514,   356,   318,   410,   415,   275,  -308,   505,   365,   444,
-   445,   446,   447,   448,   449,   450,   451,   452,   453,   454,
-   455,   456,   457,   458,   459,   460,   461,   462,   463,   464,
-   488,   465,   466,   467,   468,   469,   374,   571,   605,   417,
-   428,   603,  -401,   562,   511,   276,   611,   581,   638,   632,
-   277,   584,   285,   376,   598,   286,   564,   279,   565,   377,
-   470,   471,   633,   416,   280,   281,   575,   387,   625,   579,
-   423,   618,   753,   640,   647,   648,   621,   475,   693,   291,
-   394,   542,   543,   544,    16,    17,   292,   293,   294,   550,
-    93,    94,    95,    96,   350,   282,   283,   351,   287,   288,
-   290,   295,    53,   301,   302,   686,   303,   304,   312,   314,
-   315,   316,   321,   317,   322,   342,    19,   329,   332,   333,
-   334,   604,   338,   339,   340,   345,   349,   362,    77,    30,
-    89,   374,   378,   380,   381,   382,   385,   388,   390,   395,
-   394,   396,    84,   399,   402,   404,   406,   407,   408,   409,
-   413,   414,   411,   421,   422,   701,   357,   431,   438,   441,
-   707,   708,   473,   476,   477,   481,   483,   439,   484,   485,
-   486,   494,   495,   497,   502,   503,   504,   434,   506,   507,
-   508,   513,   723,   515,   522,   496,   524,   551,   420,   659,
-   660,   498,   558,   554,   552,   559,   526,   424,   561,   570,
-   608,   527,   528,   606,   529,   573,   530,   531,   532,   533,
-   534,   535,   536,   490,   537,   492,   538,   539,   540,   541,
-   545,   546,   547,   548,   549,   555,   557,   560,   563,   566,
-   567,   568,   569,   572,   574,   576,   578,   580,   583,   585,
-   586,   587,   588,   591,   592,   593,   595,   599,   600,   602,
-   607,   609,   601,   612,   614,   615,   616,   617,   620,   622,
-   610,   619,   626,   627,   721,   722,   628,   629,   630,   631,
-   634,   635,   636,   641,   637,   589,   623,   733,   642,   643,
-   644,   645,   649,   650,   651,   652,   653,   654,   655,   656,
-   657,   658,   667,   662,   661,   668,   669,   670,   671,   673,
-   676,   679,   680,   681,   663,   683,   684,   689,   690,   694,
-   695,   666,   696,   702,   703,   710,   711,   664,   715,   697,
-   716,   674,   717,   724,   725,   728,   677,   698,   687,   675,
-   678,   692,   729,   682,   685,   691,   427,   719,   699,   714,
-   730,   688,   731,   709,   712,   713,   718,   734,   706,   720,
-   735,   726,   727,   736,   739,   741,   738,   737,   743,   744,
-   745,   746,   747,   749,   750,   756,   757,   759,   761,   762,
-   763,   765,   768,   755,   775,   776,   267,   425,   771,   300,
-   767,   752,   772,   368,   705,   223,   770,   358,   773,     0,
-     0,     0,   754,   361,     0,   310,   369,     0,     0,   371,
-     0,     0,   742,     0,     0,   751,   758,   760,   769,   764,
-   766,    18,     0,   613,    19,    20,    21,    22,    23,    24,
-    25,    26,   331,    27,    28,    29,    30,    31,    32,   337,
-    33,    34,     0,     0,     0,     0,    35,   367,     0,    36,
-    37,    38,    39,    40,    41,     0,     0,     0,    42,    43,
-    44,    45,     0,    46,    47,    48,    49,    50,  -141,    51,
-    52,     0,    53,    54,    55,     0,     0,    56,    57,    58,
-    59,     0,    60,     0,     0,     0,     0,     0,    61,     0,
-   665,    62,     0,     0,     0,  -141,    63,   672,     0,     0,
-    64,    65,    66,    67,    68,    69,    70,    71,    72,    73,
-     0,    74,    75,    76,    77,    78,    79,    80,    81,    82,
-    83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-    93,    94,    95,    96,    97,    98,    99,   100,   101,   102,
-   103,   104,     0,   105,   106,   107,   108,   109,   110,   111,
-     0,   112,   113,   114,   115,   116,   117,   118,   119,     0,
-   120,   121,   122,   123,   124,     0,     0,     0,     0,     0,
-     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     0,   748,   125,   126,   127,     0,   128,   129,     0,     0,
-   130,   131,     0,     0,     0,     0,   132,     0,   133
-};
-
-static const short IgsYYcheck[] = {    29,
-    30,   209,    61,   400,   317,     3,   403,   392,     3,     3,
-    62,     3,     3,    72,     3,     3,   320,    23,     3,     5,
-     3,   325,   417,    82,     3,     3,    51,    51,    87,    59,
-    42,     0,     1,    42,     3,   432,    86,    51,    51,    29,
-    88,    51,     3,    73,    51,    61,    24,    25,    52,     3,
-    19,     3,     3,     3,   439,    24,    25,     3,     0,    89,
-     3,   365,   270,    88,     3,     3,    72,    19,     3,    43,
-   100,    87,    24,    25,     3,    52,    10,    52,    52,    72,
-    48,     3,   130,    72,    73,   115,    61,    88,   101,   139,
-   475,    84,    48,   123,    71,   125,    74,   127,   102,    77,
-   101,    75,    92,     3,    90,   130,   130,    75,    77,    78,
-    79,    72,     3,   321,   166,     3,   130,   514,    72,    75,
-   130,    72,    72,   130,    74,    77,    78,    79,    88,    72,
-   434,   161,    97,    72,    72,     3,   101,    72,   197,   145,
-   146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
-   156,   157,   158,   159,   160,   161,   162,   163,   164,   165,
-   185,   167,   168,   169,   170,   171,     3,   179,   565,   178,
-   184,   184,    72,   486,   184,    30,   571,   184,    27,    75,
-     3,    72,    69,    66,    72,    72,   490,     3,   492,    72,
-   196,   197,    88,    42,     3,     3,   509,   189,   196,   512,
-   194,   586,   197,   194,   192,   193,   591,   192,   191,    28,
-   189,   461,   462,   463,    13,    14,    35,    36,    37,   469,
-   110,   111,   112,   113,    69,    12,    88,    72,    70,     3,
-     3,    88,    52,     3,     3,    72,     3,     3,     3,     3,
-     3,     3,     3,    97,     3,   139,     4,     3,     3,     3,
-     3,   564,     3,     3,     3,   175,     3,    55,    94,    16,
-   106,     3,    69,   196,     3,     3,     3,     3,     3,   192,
-   189,   192,   101,   101,    88,    75,     3,    72,    72,     3,
-   196,    72,    42,   182,    69,   682,    90,     3,     3,     3,
-   687,   688,     3,     3,     3,     3,     3,    49,     3,     3,
-     3,     3,     3,     3,     3,     3,     3,   366,     3,     3,
-     3,     3,   709,    56,     3,    63,     3,   191,   348,   632,
-   633,    67,   192,   190,     3,   190,    22,   357,    72,   192,
-    64,    22,    22,   192,    22,   195,    22,    22,    22,    22,
-    22,    22,    22,   402,    22,   404,    22,    22,    22,    22,
-    22,    22,    22,    22,    22,     3,     3,     3,     3,     3,
-     3,     3,     3,     3,     3,   187,     3,     3,     3,     3,
-     3,     3,    22,     3,     3,     3,     3,     3,     3,     3,
-     3,     3,    95,     3,     3,     3,     3,     3,     3,     3,
-    67,   197,     3,     3,   707,   708,     3,     3,     3,     3,
-     3,     3,    65,     3,   197,    72,    72,   720,     3,     3,
-   196,     3,   191,   191,     3,     3,     3,     3,   189,   196,
-     3,     3,     3,    72,   192,     3,     3,     3,     3,     3,
-     3,     3,     3,     3,    72,     3,     3,     3,     3,     3,
-     3,    72,     3,     3,     3,     3,     3,   192,     3,   189,
-     3,    72,     3,     3,     3,     3,   197,   190,   666,    72,
-    72,   191,   190,    72,    72,   196,   130,   192,   197,   191,
-     3,    72,     3,    72,    72,    72,    72,     3,   686,    72,
-     3,    72,    72,     3,   196,     3,   192,    72,     3,     3,
-     3,     3,    72,    72,     3,     3,     3,     3,     3,     3,
-     3,     3,     3,    72,     0,     0,    17,   359,   769,    61,
-    72,    95,   771,   245,   685,    15,    72,   173,    72,    -1,
-    -1,    -1,   183,   178,    -1,    72,   249,    -1,    -1,   255,
-    -1,    -1,   197,    -1,    -1,   197,   196,   196,   192,   197,
-   197,     1,    -1,   573,     4,     5,     6,     7,     8,     9,
-    10,    11,    94,    13,    14,    15,    16,    17,    18,   102,
-    20,    21,    -1,    -1,    -1,    -1,    26,   219,    -1,    29,
-    30,    31,    32,    33,    34,    -1,    -1,    -1,    38,    39,
-    40,    41,    -1,    43,    44,    45,    46,    47,    48,    49,
-    50,    -1,    52,    53,    54,    -1,    -1,    57,    58,    59,
-    60,    -1,    62,    -1,    -1,    -1,    -1,    -1,    68,    -1,
-   640,    71,    -1,    -1,    -1,    75,    76,   647,    -1,    -1,
-    80,    81,    82,    83,    84,    85,    86,    87,    88,    89,
-    -1,    91,    92,    93,    94,    95,    96,    97,    98,    99,
-   100,   101,   102,   103,   104,   105,   106,   107,   108,   109,
-   110,   111,   112,   113,   114,   115,   116,   117,   118,   119,
-   120,   121,    -1,   123,   124,   125,   126,   127,   128,   129,
-    -1,   131,   132,   133,   134,   135,   136,   137,   138,    -1,
-   140,   141,   142,   143,   144,    -1,    -1,    -1,    -1,    -1,
-    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-    -1,   741,   172,   173,   174,    -1,   176,   177,    -1,    -1,
-   180,   181,    -1,    -1,    -1,    -1,   186,    -1,   188
-};
-/* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/bison.simple"
-
-/* Skeleton output parser for bison,
-   Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-/* As a special exception, when this file is copied by Bison into a
-   Bison output file, you may use that output file without restriction.
-   This special exception was added by the Free Software Foundation
-   in version 1.24 of Bison.  */
-
-#ifndef alloca
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
-#include <alloca.h>
-#else /* not sparc */
-#if defined (MSDOS) && !defined (__TURBOC__)
-#include <malloc.h>
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-#include <malloc.h>
- #pragma alloca
-#else /* not MSDOS, __TURBOC__, or _AIX */
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
 #ifdef __hpux
-#ifdef __cplusplus
-extern "C" {
-void *alloca (unsigned int);
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
+#endif
+
+#if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST8_TYPE__ IgsYYtype_uint8;
+#elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST8_MAX <= INT_MAX)
+typedef uint_least8_t IgsYYtype_uint8;
+#elif !defined __UINT_LEAST8_MAX__ && UCHAR_MAX <= INT_MAX
+typedef unsigned char IgsYYtype_uint8;
+#else
+typedef short IgsYYtype_uint8;
+#endif
+
+#if defined __UINT_LEAST16_MAX__ && __UINT_LEAST16_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST16_TYPE__ IgsYYtype_uint16;
+#elif (!defined __UINT_LEAST16_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST16_MAX <= INT_MAX)
+typedef uint_least16_t IgsYYtype_uint16;
+#elif !defined __UINT_LEAST16_MAX__ && USHRT_MAX <= INT_MAX
+typedef unsigned short IgsYYtype_uint16;
+#else
+typedef int IgsYYtype_uint16;
+#endif
+
+#ifndef YYPTRDIFF_T
+# if defined __PTRDIFF_TYPE__ && defined __PTRDIFF_MAX__
+#  define YYPTRDIFF_T __PTRDIFF_TYPE__
+#  define YYPTRDIFF_MAXIMUM __PTRDIFF_MAX__
+# elif defined PTRDIFF_MAX
+#  ifndef ptrdiff_t
+#   include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  endif
+#  define YYPTRDIFF_T ptrdiff_t
+#  define YYPTRDIFF_MAXIMUM PTRDIFF_MAX
+# else
+#  define YYPTRDIFF_T long
+#  define YYPTRDIFF_MAXIMUM LONG_MAX
+# endif
+#endif
+
+#ifndef YYSIZE_T
+# ifdef __SIZE_TYPE__
+#  define YYSIZE_T __SIZE_TYPE__
+# elif defined size_t
+#  define YYSIZE_T size_t
+# elif defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  define YYSIZE_T size_t
+# else
+#  define YYSIZE_T unsigned
+# endif
+#endif
+
+#define YYSIZE_MAXIMUM                                  \
+  YY_CAST (YYPTRDIFF_T,                                 \
+           (YYPTRDIFF_MAXIMUM < YY_CAST (YYSIZE_T, -1)  \
+            ? YYPTRDIFF_MAXIMUM                         \
+            : YY_CAST (YYSIZE_T, -1)))
+
+#define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
+
+
+/* Stored state numbers (used for stacks). */
+typedef IgsYYtype_int16 IgsYY_state_t;
+
+/* State numbers in computations.  */
+typedef int IgsYY_state_fast_t;
+
+#ifndef YY_
+# if defined YYENABLE_NLS && YYENABLE_NLS
+#  if ENABLE_NLS
+#   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
+#   define YY_(Msgid) dgettext ("bison-runtime", Msgid)
+#  endif
+# endif
+# ifndef YY_
+#  define YY_(Msgid) Msgid
+# endif
+#endif
+
+
+#ifndef YY_ATTRIBUTE_PURE
+# if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_PURE __attribute__ ((__pure__))
+# else
+#  define YY_ATTRIBUTE_PURE
+# endif
+#endif
+
+#ifndef YY_ATTRIBUTE_UNUSED
+# if defined __GNUC__ && 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+# else
+#  define YY_ATTRIBUTE_UNUSED
+# endif
+#endif
+
+/* Suppress unused-variable warnings by "using" E.  */
+#if ! defined lint || defined __GNUC__
+# define YY_USE(E) ((void) (E))
+#else
+# define YY_USE(E) /* empty */
+#endif
+
+/* Suppress an incorrect diagnostic about IgsYYlval being uninitialized.  */
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
+    _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
+    _Pragma ("GCC diagnostic pop")
+#else
+# define YY_INITIAL_VALUE(Value) Value
+#endif
+#ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END
+#endif
+#ifndef YY_INITIAL_VALUE
+# define YY_INITIAL_VALUE(Value) /* Nothing. */
+#endif
+
+#if defined __cplusplus && defined __GNUC__ && ! defined __ICC && 6 <= __GNUC__
+# define YY_IGNORE_USELESS_CAST_BEGIN                          \
+    _Pragma ("GCC diagnostic push")                            \
+    _Pragma ("GCC diagnostic ignored \"-Wuseless-cast\"")
+# define YY_IGNORE_USELESS_CAST_END            \
+    _Pragma ("GCC diagnostic pop")
+#endif
+#ifndef YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_END
+#endif
+
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
+
+#if !defined IgsYYoverflow
+
+/* The parser invokes alloca or malloc; define the necessary symbols.  */
+
+# ifdef YYSTACK_USE_ALLOCA
+#  if YYSTACK_USE_ALLOCA
+#   ifdef __GNUC__
+#    define YYSTACK_ALLOC __builtin_alloca
+#   elif defined __BUILTIN_VA_ARG_INCR
+#    include <alloca.h> /* INFRINGES ON USER NAME SPACE */
+#   elif defined _AIX
+#    define YYSTACK_ALLOC __alloca
+#   elif defined _MSC_VER
+#    include <malloc.h> /* INFRINGES ON USER NAME SPACE */
+#    define alloca _alloca
+#   else
+#    define YYSTACK_ALLOC alloca
+#    if ! defined _ALLOCA_H && ! defined EXIT_SUCCESS
+#     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+      /* Use EXIT_SUCCESS as a witness for stdlib.h.  */
+#     ifndef EXIT_SUCCESS
+#      define EXIT_SUCCESS 0
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
+
+# ifdef YYSTACK_ALLOC
+   /* Pacify GCC's 'empty if-body' warning.  */
+#  define YYSTACK_FREE(Ptr) do { /* empty */; } while (0)
+#  ifndef YYSTACK_ALLOC_MAXIMUM
+    /* The OS might guarantee only one guard page at the bottom of the stack,
+       and a page size can be as small as 4096 bytes.  So we cannot safely
+       invoke alloca (N) if N exceeds 4096.  Use a slightly smaller number
+       to allow for a few compiler-allocated temporary stack slots.  */
+#   define YYSTACK_ALLOC_MAXIMUM 4032 /* reasonable circa 2006 */
+#  endif
+# else
+#  define YYSTACK_ALLOC YYMALLOC
+#  define YYSTACK_FREE YYFREE
+#  ifndef YYSTACK_ALLOC_MAXIMUM
+#   define YYSTACK_ALLOC_MAXIMUM YYSIZE_MAXIMUM
+#  endif
+#  if (defined __cplusplus && ! defined EXIT_SUCCESS \
+       && ! ((defined YYMALLOC || defined malloc) \
+             && (defined YYFREE || defined free)))
+#   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+#   ifndef EXIT_SUCCESS
+#    define EXIT_SUCCESS 0
+#   endif
+#  endif
+#  ifndef YYMALLOC
+#   define YYMALLOC malloc
+#   if ! defined malloc && ! defined EXIT_SUCCESS
+void *malloc (YYSIZE_T); /* INFRINGES ON USER NAME SPACE */
+#   endif
+#  endif
+#  ifndef YYFREE
+#   define YYFREE free
+#   if ! defined free && ! defined EXIT_SUCCESS
+void free (void *); /* INFRINGES ON USER NAME SPACE */
+#   endif
+#  endif
+# endif
+#endif /* !defined IgsYYoverflow */
+
+#if (! defined IgsYYoverflow \
+     && (! defined __cplusplus \
+         || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+
+/* A type that is properly aligned for any stack member.  */
+union IgsYYalloc
+{
+  IgsYY_state_t IgsYYss_alloc;
+  YYSTYPE IgsYYvs_alloc;
 };
-#else /* not __cplusplus */
-void *alloca ();
-#endif /* not __cplusplus */
-#endif /* __hpux */
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc.  */
-#endif /* not GNU C.  */
-#endif /* alloca not defined.  */
 
-/* This is the parser code that is written into each bison parser
-  when the %semantic_parser declaration is not specified in the grammar.
-  It was written by Richard Stallman by simplifying the hairy parser
-  used when %semantic_parser is specified.  */
+/* The size of the maximum gap between one aligned stack and the next.  */
+# define YYSTACK_GAP_MAXIMUM (YYSIZEOF (union IgsYYalloc) - 1)
 
-/* Note: there must be only one dollar sign in this file.
-   It is replaced by the list of actions, each action
-   as one case of the switch.  */
+/* The size of an array large to enough to hold all stacks, each with
+   N elements.  */
+# define YYSTACK_BYTES(N) \
+     ((N) * (YYSIZEOF (IgsYY_state_t) + YYSIZEOF (YYSTYPE)) \
+      + YYSTACK_GAP_MAXIMUM)
 
-#define IgsYYerrok		(IgsYYerrstatus = 0)
-#define IgsYYclearin	(IgsYYchar = YYEMPTY)
-#define YYEMPTY		-2
-#define YYEOF		0
-#define YYACCEPT	return(0)
-#define YYABORT 	return(1)
-#define YYERROR		goto IgsYYerrlab1
-/* Like YYERROR except do call IgsYYerror.
-   This remains here temporarily to ease the
-   transition to the new meaning of YYERROR, for GCC.
-   Once GCC version 2 has supplanted version 1, this can go.  */
-#define YYFAIL		goto IgsYYerrlab
+# define YYCOPY_NEEDED 1
+
+/* Relocate STACK from its old location to the new one.  The
+   local variables YYSIZE and YYSTACKSIZE give the old and new number of
+   elements in the stack, and YYPTR gives the new location of the
+   stack.  Advance YYPTR to a properly aligned location for the next
+   stack.  */
+# define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
+    do                                                                  \
+      {                                                                 \
+        YYPTRDIFF_T IgsYYnewbytes;                                         \
+        YYCOPY (&IgsYYptr->Stack_alloc, Stack, IgsYYsize);                    \
+        Stack = &IgsYYptr->Stack_alloc;                                    \
+        IgsYYnewbytes = IgsYYstacksize * YYSIZEOF (*Stack) + YYSTACK_GAP_MAXIMUM; \
+        IgsYYptr += IgsYYnewbytes / YYSIZEOF (*IgsYYptr);                        \
+      }                                                                 \
+    while (0)
+
+#endif
+
+#if defined YYCOPY_NEEDED && YYCOPY_NEEDED
+/* Copy COUNT objects from SRC to DST.  The source and destination do
+   not overlap.  */
+# ifndef YYCOPY
+#  if defined __GNUC__ && 1 < __GNUC__
+#   define YYCOPY(Dst, Src, Count) \
+      __builtin_memcpy (Dst, Src, YY_CAST (YYSIZE_T, (Count)) * sizeof (*(Src)))
+#  else
+#   define YYCOPY(Dst, Src, Count)              \
+      do                                        \
+        {                                       \
+          YYPTRDIFF_T IgsYYi;                      \
+          for (IgsYYi = 0; IgsYYi < (Count); IgsYYi++)   \
+            (Dst)[IgsYYi] = (Src)[IgsYYi];            \
+        }                                       \
+      while (0)
+#  endif
+# endif
+#endif /* !YYCOPY_NEEDED */
+
+/* YYFINAL -- State number of the termination state.  */
+#define YYFINAL  4
+/* YYLAST -- Last index in YYTABLE.  */
+#define YYLAST   729
+
+/* YYNTOKENS -- Number of terminals.  */
+#define YYNTOKENS  198
+/* YYNNTS -- Number of nonterminals.  */
+#define YYNNTS  187
+/* YYNRULES -- Number of rules.  */
+#define YYNRULES  412
+/* YYNSTATES -- Number of states.  */
+#define YYNSTATES  776
+
+/* YYMAXUTOK -- Last valid token kind.  */
+#define YYMAXUTOK   443
+
+
+/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
+   as returned by IgsYYlex, with out-of-bounds checking.  */
+#define YYTRANSLATE(YYX)                                \
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK                     \
+   ? YY_CAST (IgsYYsymbol_kind_t, IgsYYtranslate[YYX])        \
+   : YYSYMBOL_YYUNDEF)
+
+/* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
+   as returned by IgsYYlex.  */
+static const IgsYYtype_uint8 IgsYYtranslate[] =
+{
+       0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     196,   197,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,   192,     2,
+     195,     2,   194,     2,   193,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,   189,     2,   190,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,   191,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
+      45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
+      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
+      65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
+      75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
+      85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
+      95,    96,    97,    98,    99,   100,   101,   102,   103,   104,
+     105,   106,   107,   108,   109,   110,   111,   112,   113,   114,
+     115,   116,   117,   118,   119,   120,   121,   122,   123,   124,
+     125,   126,   127,   128,   129,   130,   131,   132,   133,   134,
+     135,   136,   137,   138,   139,   140,   141,   142,   143,   144,
+     145,   146,   147,   148,   149,   150,   151,   152,   153,   154,
+     155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
+     165,   166,   167,   168,   169,   170,   171,   172,   173,   174,
+     175,   176,   177,   178,   179,   180,   181,   182,   183,   184,
+     185,   186,   187,   188
+};
+
+#if YYDEBUG
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+static const IgsYYtype_int16 IgsYYrline[] =
+{
+       0,   138,   138,   139,   142,   157,   162,   170,   169,   178,
+     177,   191,   190,   199,   202,   203,   206,   211,   217,   222,
+     230,   231,   234,   240,   247,   260,   261,   262,   263,   264,
+     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
+     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
+     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
+     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
+     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
+     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
+     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
+     355,   356,   357,   358,   359,   360,   361,   367,   368,   369,
+     370,   371,   372,   373,   374,   375,   376,   377,   378,   379,
+     380,   381,   386,   389,   412,   418,   435,   436,   437,   440,
+     447,   452,   461,   472,   482,   491,   502,   516,   532,   537,
+     544,   551,   555,   561,   568,   574,   579,   586,   598,   612,
+     618,   625,   631,   637,   644,   650,   657,   663,   669,   676,
+     685,   686,   687,   688,   691,   703,   710,   723,   736,   743,
+     750,   758,   764,   770,   781,   792,   799,   802,   805,   832,
+     842,   855,   864,   870,   875,   876,   879,   900,   912,   920,
+     933,   948,   955,   957,   971,   988,   997,  1006,  1035,  1036,
+    1040,  1039,  1049,  1052,  1069,  1077,  1087,  1088,  1091,  1117,
+    1152,  1153,  1156,  1159,  1165,  1172,  1179,  1190,  1199,  1205,
+    1208,  1230,  1252,  1253,  1292,  1301,  1313,  1323,  1335,  1339,
+    1345,  1351,  1358,  1366,  1376,  1389,  1404,  1407,  1415,  1432,
+    1444,  1461,  1464,  1474,  1480,  1493,  1501,  1507,  1520,  1533,
+    1538,  1543,  1549,  1552,  1556,  1563,  1572,  1579,  1589,  1596,
+    1602,  1608,  1616,  1623,  1625,  1630,  1642,  1655,  1659,  1654,
+    1665,  1691,  1708,  1721,  1728,  1735,  1743,  1755,  1761,  1764,
+    1780,  1801,  1808,  1809,  1812,  1820,  1826,  1832,  1841,  1844,
+    1848,  1856,  1861,  1869,  1875,  1881,  1886,  1893,  1900,  1907,
+    1914,  1920,  1936,  1941,  1952,  1957,  1964,  1971,  1977,  1983,
+    1989,  1995,  2002,  2008,  2014,  2020,  2028,  2036,  2044,  2052,
+    2061,  2090,  2102,  2116,  2132,  2141,  2142,  2145,  2150,  2156,
+    2163,  2177,  2184,  2196,  2206,  2207,  2208,  2212,  2223,  2232,
+    2241,  2246,  2251,  2256,  2261,  2266,  2271,  2276,  2281,  2286,
+    2291,  2296,  2301,  2306,  2311,  2316,  2325,  2334,  2339,  2348,
+    2357,  2362,  2367,  2374,  2375,  2379,  2378,  2385,  2386,  2389,
+    2393,  2399,  2405,  2411,  2418,  2427,  2432,  2441,  2446,  2453,
+    2460,  2465,  2476,  2486,  2495,  2505,  2506,  2509,  2510,  2517,
+    2518,  2521,  2548
+};
+#endif
+
+/** Accessing symbol of state STATE.  */
+#define YY_ACCESSING_SYMBOL(State) YY_CAST (IgsYYsymbol_kind_t, IgsYYstos[State])
+
+#if YYDEBUG || 0
+/* The user-facing name of the symbol whose (internal) number is
+   YYSYMBOL.  No bounds checking.  */
+static const char *IgsYYsymbol_name (IgsYYsymbol_kind_t IgsYYsymbol) YY_ATTRIBUTE_UNUSED;
+
+/* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+   First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
+static const char *const IgsYYtname[] =
+{
+  "\"end of file\"", "error", "\"invalid token\"", "NAME",
+  "SERVERMESSAGE", "STATSENTRY", "ILLEGALMOVE", "ILLEGALUNDO",
+  "REQUESTINGMATCH", "REMOVEGAMEFILE", "MAILED", "REMOVEGROUP",
+  "GIVEBYOYOMI", "RESULTLINE", "INVALID", "AUTOMATCHDISPUTE", "NEWCHANNEL",
+  "MUSTPASS", "OPPMUSTPASS", "GUEST", "TELLDONE", "REVIEWSTART",
+  "REVLITERAL", "REVUNKNOWN", "WELCOME", "SERVERFULL", "XSHOUT2", "MYBET",
+  "YELL", "TELL", "RESIGN", "KOMIREQUEST", "DISPUTEMATCHTYPE", "XSHOUT",
+  "DECLINE", "JOIN", "LEAVE", "NEWTITLE", "BROADCAST", "ITBROADCAST",
+  "ENTERBYOYOMI", "NOTIME", "PERSON", "BEEPING", "PLAYERON", "PROBA",
+  "STORED", "IDLE", "PROMPT", "GAMES", "REMOVE", "MOVE", "GAME",
+  "OVEROBSERVE", "MESSAGES", "NEWMATCH", "STATUSLINE", "CHANNEL",
+  "CHANGECHANNEL", "FREE", "TEXTFILE", "FIRSTREMOVE", "REVIEWTYPE",
+  "GAMECOLOR", "GAMESECONDS", "BYOYOMI", "MATCHTYPE", "NATURAL",
+  "BETRESULT", "RATING", "STOREDNUM", "UNDO", "END", "FAIL", "OLDPROMPT",
+  "SEMIPROMPT", "INFOMESSAGE", "LUSER", "OLDPASSWORD", "PASSWORD",
+  "INVALIDPASSWORD", "IGSENTRY", "TITLESET", "TOGGLE", "PLAYERS",
+  "UNKNOWNANSWER", "MATCHCLOSED", "MATCHOPEN", "OBSERVE", "WATCHING",
+  "EXTSTATSENTRY", "ADD", "KIBITZ", "KOMISET", "TRANSLATION", "GAMETIME",
+  "LOSTCONNECTION", "MYADJOURN", "RESTORE", "RESTART", "NOTURN",
+  "GAMESAVED", "UNDID", "EMPTY", "DONE", "RESTORESCORING", "STATUSHEADER",
+  "REMOVELIBERTY", "OBSERVEWHILEPLAY", "NOTELLTARGET", "GMTTIME",
+  "LOCALTIME", "SERVERUP", "UPTIMEENTRY", "THROWCOPY", "SORRY",
+  "WRONGCHANNEL", "AUTOMATCHREQUEST", "DISPUTE", "OPPONENTDISPUTE",
+  "LATEFREE", "NOPLAY", "CHANNELHEADER", "OBSERVERS", "GAMENOTFOUND",
+  "MATCHREQUEST", "GOEMATCHREQUEST", "TOURNAMENTMATCHREQUEST",
+  "TOURNAMENTGOEMATCHREQUEST", "USERESIGN", "GAMETITLE", "ERASE",
+  "PLEASEREDONE", "TELLTARGET", "TELLOFF", "NOREMOVETURN",
+  "ADJOURNSENTREQUEST", "ADJOURNREQUEST", "OPPONENTNOTON", "NOLOAD",
+  "DISAGREEREMOVE", "OPPDISAGREEREMOVE", "DECLINEADJOURN", "REVIEWLIST",
+  "REVIEWSTOP", "REVNODE", "REVCOMMENT", "REVEVENT", "REVRESULT",
+  "REVPLACE", "REVUSER", "REVDATE", "REVKOMI", "REVGAMENAME",
+  "REVWHITERANK", "REVBLACKRANK", "REVWHITENAME", "REVBLACKNAME",
+  "REVSIZE", "REVGAME", "REVBLACK", "REVWHITE", "REVADDBLACK",
+  "REVADDWHITE", "REVADDEMPTY", "REVNODENAME", "REVIEWEND", "REVBLACKTIME",
+  "REVWHITETIME", "REVCOPYRIGHT", "REVHANDICAP", "REVLETTERS",
+  "REVIEWVARIATIONS", "NOREVIEW", "SGFLIST", "NOSGF", "NOMOREMOVES",
+  "BETWINNERS", "BETEVEN", "BETLOSERS", "USER", "CURRENTSCORE",
+  "FINALSCORE", "TEAMGAME", "OBSERVETEAM", "RESTARTTEAMGAME", "SETPROBA",
+  "NOTREVIEWING", "NOTREQUESTGAME", "'['", "']'", "'}'", "':'", "'@'",
+  "'>'", "'<'", "'('", "')'", "$accept", "start", "session", "pass", "$@1",
+  "$@2", "enterorfail", "$@3", "loginmessages", "loginmessage", "inputs",
+  "prompt", "moreinput", "input", "textfile", "erase", "igsentry",
+  "servermessages", "servermessage", "xshout", "infomessage", "tell",
+  "playeron", "beeping", "idle", "stored", "broadcast", "kibitz",
+  "messages", "yell", "join", "leave", "newtitle", "changechannel",
+  "wrongchannel", "matchopen", "matchclosed", "automatchrequest",
+  "automatchdispute", "ruledmatchrequest", "matchrequest",
+  "requestingmatch", "komirequest", "komiset", "freemessage",
+  "freeconfirm", "latefree", "noplay", "noload", "titleset", "statsentry",
+  "statsentries", "extendstatsentry", "optextend", "stats", "betentry",
+  "betentries", "optmybet", "bet", "toggle", "channelentry",
+  "channelentries", "channels", "observerentries", "observers",
+  "gamenotfound", "nomoremoves", "notrequestgame", "gamesline",
+  "gameslines", "games", "$@4", "remove", "move", "movelist",
+  "optgamesaved", "gamedesc", "optgametitle", "add", "doneobserve",
+  "mustpass", "oppmustpass", "disagreeremove", "opponentdisagreeremove",
+  "optnotreviewing", "observe", "optfirst", "doneopponentobserve",
+  "opponentobserve", "opponentoptobserve", "betresult", "undidlist",
+  "undid", "opponentundid", "restore", "opponentrestart", "restart",
+  "newmatch1", "newmatch2", "decline", "disputeline", "disputelines",
+  "opponentdispute", "dispute", "matchtypes", "disputematchtype",
+  "optobserve", "undolist", "undo", "watching", "overobserve",
+  "observewhileplay", "playerline", "playerlines", "playersstatusline",
+  "players", "$@5", "$@6", "userline", "userlines", "users", "player",
+  "playertime", "optbyo", "gametime", "gamescore", "translation",
+  "translations", "byoyomi", "notime", "lostconnection", "gamesaved",
+  "optadjourn", "adjourn", "adjournsentrequest", "adjournrequest",
+  "oppadjourn", "declineadjourn", "resign", "mailed", "removegamefile",
+  "notelltarget", "telltarget", "telldone", "telloff", "illegalmove",
+  "illegalundo", "noturn", "noremoveturn", "useresign", "removeliberty",
+  "removegroup", "restorescoring", "pleaseredone", "statusheader",
+  "statusline", "statuslines", "resultline", "status", "date",
+  "uptimeentry", "uptime", "sgflist", "reviewlist", "reviewvariations",
+  "reviewstart", "reviewliterals", "reviewentry", "reviewentries",
+  "review", "$@7", "auxreviews", "reviews", "reviewstop", "noreview",
+  "throwcopy", "proba", "setproba", "sorry", "invalid", "unknown", "names",
+  "namesset", "promptnames", "promptname", "optname", "literallines", YY_NULLPTR
+};
+
+static const char *
+IgsYYsymbol_name (IgsYYsymbol_kind_t IgsYYsymbol)
+{
+  return IgsYYtname[IgsYYsymbol];
+}
+#endif
+
+#define YYPACT_NINF (-399)
+
+#define IgsYYpact_value_is_default(Yyn) \
+  ((Yyn) == YYPACT_NINF)
+
+#define YYTABLE_NINF (-403)
+
+#define IgsYYtable_value_is_error(Yyn) \
+  0
+
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
+static const IgsYYtype_int16 IgsYYpact[] =
+{
+      32,  -399,    77,    78,  -399,    49,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,   541,    23,    23,
+    -399,    55,    85,     4,  -399,  -399,  -399,   126,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,    92,   176,   151,
+     218,  -399,   222,  -399,   223,   224,   216,  -399,  -399,   141,
+     111,   160,   228,  -399,  -399,   229,  -399,  -399,   158,  -399,
+     145,  -399,  -399,   182,   232,   234,  -399,   235,  -399,   236,
+    -399,  -399,  -399,  -399,    27,  -399,  -399,   237,   238,   239,
+     240,   147,    36,  -399,   182,  -399,   242,   243,   244,    68,
+    -399,  -399,  -399,  -399,  -399,   246,   246,   247,   248,  -399,
+    -399,   250,  -399,  -399,  -399,   251,  -399,   252,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,   253,  -399,  -399,  -399,
+    -399,   108,  -399,  -399,  -399,  -399,  -399,  -399,  -399,    82,
+    -399,  -399,  -399,   255,   150,  -399,  -399,     1,  -399,  -399,
+    -399,   244,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,    15,  -399,  -399,  -399,  -399,
+     245,  -399,  -399,  -399,  -399,  -399,  -399,  -399,   204,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,   -15,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,   141,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,   166,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,   156,  -399,  -399,
+    -399,   105,  -399,  -399,  -399,  -399,  -399,   -51,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,   141,  -399,   260,    40,  -399,  -399,  -399,  -399,
+     124,  -399,  -399,  -399,  -399,  -399,  -399,   195,  -399,  -399,
+    -399,  -399,    69,   263,  -399,  -399,   264,  -399,    47,  -399,
+    -399,  -399,  -399,   265,     9,  -399,   266,  -399,   267,  -399,
+      11,   204,  -399,    50,    83,    79,  -399,  -399,    81,   173,
+    -399,   174,  -399,   141,   188,  -399,  -399,  -399,  -399,   202,
+      58,   275,   207,   209,   277,  -399,  -399,    62,   241,   241,
+    -399,    86,   212,   260,  -399,   260,   260,  -399,    63,    -8,
+      33,   103,   219,  -399,  -399,  -399,  -399,  -399,     7,  -399,
+    -399,   197,  -399,  -399,  -399,   -13,   286,  -399,    30,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+     287,   249,   290,  -399,  -399,  -399,    -5,   291,    16,   292,
+     293,   104,  -399,   294,   237,  -399,   296,   297,   298,  -399,
+    -399,   299,   -24,  -399,   182,   -13,   182,  -399,   300,  -399,
+    -399,   301,  -399,   254,  -399,   302,  -399,  -399,   256,  -399,
+    -399,  -399,    12,   303,   304,   306,    66,  -399,   307,   308,
+     309,  -399,   -29,  -399,    -9,   311,  -399,   259,    51,   101,
+     313,   237,  -399,   315,  -399,  -399,  -399,   305,   310,   312,
+     314,   316,   317,   318,   319,   320,   321,   323,   325,   326,
+     327,   328,   329,  -399,  -399,  -399,   330,   331,   332,   333,
+     334,  -399,  -399,  -399,  -399,  -399,   131,   322,   134,   354,
+    -399,   355,  -399,  -399,   137,   136,   356,   258,   173,  -399,
+     357,  -399,  -399,   173,  -399,  -399,   358,   359,   360,   361,
+     139,   -11,  -399,  -399,  -399,   362,   138,  -399,  -399,  -399,
+     363,   173,   148,   364,   173,   365,    -6,   366,  -399,  -399,
+    -399,  -399,  -399,   110,   367,   368,   369,   351,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,   351,   351,   351,  -399,  -399,  -399,
+    -399,  -399,   351,   335,    22,   371,   372,   373,   374,   113,
+     375,  -399,   376,   285,  -399,   378,   -12,   -23,   190,   380,
+     273,   381,   324,  -399,   382,  -399,   383,  -399,  -399,  -399,
+     384,  -399,   385,   386,  -399,  -399,  -399,  -399,   237,   193,
+    -399,  -399,   389,   237,   390,  -399,   337,     3,  -399,   391,
+    -399,   394,   395,   396,   397,   398,  -399,     5,   399,   400,
+     339,   213,  -399,    48,  -399,    10,   402,   403,  -399,   408,
+     217,   409,    13,   225,   226,  -399,   411,   412,   415,   416,
+     231,   227,   418,   419,   173,   173,   233,   352,   370,   257,
+    -399,  -399,  -399,   379,   423,   424,   425,   426,   427,  -399,
+     428,   388,   392,   429,   261,   393,   430,   431,   432,   401,
+     433,  -399,  -399,   434,  -399,  -399,   404,   164,   141,   405,
+     435,   436,   270,   262,    18,   437,  -399,  -399,   438,   440,
+    -399,   268,   271,   272,   -47,   441,   442,  -399,   141,   338,
+     338,   406,   443,   444,   410,   413,   276,   445,   447,   449,
+     414,   278,  -399,  -399,   417,  -399,  -399,   101,  -399,   173,
+     173,   338,   451,   452,  -399,  -399,   420,   421,   453,   281,
+     459,   460,   173,  -399,  -399,  -399,   469,   471,  -399,  -399,
+     472,   422,  -399,   288,   295,  -399,   478,   336,   480,   481,
+     484,   485,   439,  -399,   446,   487,  -399,  -399,   340,   407,
+       6,   341,   448,   492,   493,   342,   494,  -399,  -399,   343,
+     495,   496,   497,   344,   498,   346,   450,   500,   348,  -399,
+     454,   460,  -399,   295,   455,  -399
+};
+
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
+static const IgsYYtype_int16 IgsYYdefact[] =
+{
+       0,     3,     0,    15,     1,     0,    16,     9,    17,    19,
+      18,     7,     6,    21,    14,    15,    15,     0,    13,    13,
+     141,     0,     0,   324,   326,   185,   319,   318,   331,   338,
+     399,   402,   402,   234,   235,   322,   351,     0,     0,   315,
+       0,   270,     0,   263,     0,     0,     0,   305,   162,   273,
+       0,     0,     0,   220,   222,     0,   279,   169,     0,   174,
+     189,   402,   385,     0,     0,     0,     4,     0,   193,     0,
+     287,   412,   177,   176,     0,   402,   232,     0,     0,     0,
+       0,     0,   313,   256,     0,   327,     0,     0,   137,   243,
+     332,   402,   330,   280,   320,     0,     0,     0,     0,   393,
+     398,     0,   402,   266,   266,     0,   191,     0,   214,   180,
+     181,   182,   183,   329,   144,   333,     0,   402,   328,   311,
+     312,     0,   236,   237,   314,   402,   391,   402,   392,   402,
+     215,   203,   293,     0,     0,   216,    20,     0,    58,    59,
+      25,    26,   147,    27,    28,    32,   108,    29,    30,    31,
+      33,    34,    35,    36,    37,    38,    39,    40,    41,    42,
+      43,    44,    45,   402,    46,    47,    48,    49,    50,    51,
+      52,    53,    54,    55,   196,   199,    56,    57,    60,   210,
+     211,    61,    62,    63,    64,    65,    66,    67,   225,    68,
+      69,    71,    70,    72,    73,    74,    75,    76,    77,     0,
+      87,    88,    78,    79,    80,    81,    82,    83,    84,    85,
+      86,   273,    89,    90,    91,    92,    94,    93,    95,    96,
+     303,    97,    98,    99,   100,   101,   102,   103,   104,   105,
+     106,   107,   110,   109,   111,   112,   113,   114,   115,   116,
+     117,   118,   119,   120,   121,   122,   123,     0,   124,   125,
+     346,   126,   127,   128,   129,   130,   388,   389,   131,   132,
+     133,   134,   135,   136,   138,   139,   140,    11,    10,     8,
+     149,   194,   273,   317,   179,     0,   151,   158,   316,   186,
+       0,   150,   165,   166,   304,   272,   160,     0,   395,   164,
+     163,   219,     0,     0,   171,   172,     0,   188,     0,   384,
+     225,   249,   248,     0,     0,   145,     0,   284,   400,   161,
+       0,     0,   261,     0,     0,     0,   187,   301,     0,   227,
+     308,     0,   225,   273,   251,   148,   242,   225,   233,     0,
+       0,     0,     0,     0,     0,   344,   175,     0,   268,   267,
+     190,     0,     0,   323,   192,   349,   350,   348,     0,     0,
+     402,     0,     0,   397,    22,    23,    24,   146,     0,   402,
+     195,     0,   200,   209,   262,   231,     0,   225,     0,   302,
+     337,   345,   390,   387,   406,   325,   401,   404,   269,   271,
+       0,   221,     0,   170,   173,   143,     0,     0,     0,     0,
+       0,     0,   411,     0,     0,   278,     0,     0,     0,   306,
+     226,     0,   231,   307,     0,   231,     0,   334,     0,   341,
+     342,     0,   178,     0,   265,     0,   321,   347,     0,   203,
+     202,   292,     0,     0,     0,     0,     0,   198,     0,     0,
+       0,   224,   227,   250,   231,     0,   225,   339,     0,   208,
+       0,     0,   218,     0,   353,   386,   356,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,   353,   353,   353,     0,     0,     0,     0,
+       0,   353,   354,   355,   383,   275,     0,     0,     0,     0,
+     288,     0,   283,   159,     0,     0,     0,     0,   227,   257,
+       0,   259,   225,   227,   225,   244,     0,     0,     0,     0,
+       0,     0,   290,   291,   300,     0,     0,   197,   223,   230,
+       0,   227,   239,     0,   227,     0,   231,     0,   336,   408,
+      12,   407,   405,     0,     0,     0,     0,   357,   359,   367,
+     366,   364,   362,   365,   360,   368,   369,   370,   371,   372,
+     373,   374,   376,   375,   380,   381,   382,   358,   379,   378,
+     363,   361,   377,     0,     0,     0,     0,   410,     0,     0,
+       0,   295,     0,     0,   310,     0,   227,   231,     0,     0,
+       0,     0,     0,   203,     0,   402,     0,   245,   238,   240,
+       0,   252,     0,     0,   276,   335,   403,   394,     0,     0,
+     352,   153,     0,     0,     0,   409,     0,     0,   289,     0,
+     282,     0,     0,     0,     0,     0,   254,     0,     0,     0,
+       0,     0,   201,   205,   396,     0,     0,     0,   274,     0,
+       0,     0,     0,     0,     0,   207,     0,     0,     0,     0,
+       0,     0,     0,     0,   227,   227,     0,     0,     0,     0,
+     204,   206,   402,     0,     0,     0,     0,     0,     0,   402,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,   247,   246,     0,   343,   264,     0,     0,   273,     0,
+       0,     0,     0,     0,     0,     0,   154,   152,     0,     0,
+     281,     0,     0,     0,   231,     0,     0,   404,   273,   231,
+     231,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   258,   260,     0,   340,   213,   212,   184,   227,
+     227,   231,     0,     0,   157,   155,     0,     0,     0,     0,
+       0,     0,   227,   241,   253,   277,     0,     0,   156,   286,
+       0,     0,   168,     0,   298,   255,     0,     0,     0,     0,
+       0,     0,     0,   402,     0,     0,   167,   296,     0,     0,
+       0,   228,     0,     0,     0,     0,     0,   285,   297,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,   217,
+       0,     0,   229,   298,     0,   299
+};
+
+/* YYPGOTO[NTERM-NUM].  */
+static const IgsYYtype_int16 IgsYYpgoto[] =
+{
+    -399,  -399,  -399,  -399,  -399,  -399,   486,  -399,   208,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,   -42,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+     350,  -399,   143,  -399,  -399,  -399,  -396,  -399,  -399,  -399,
+     349,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -305,  -314,   -60,  -398,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,   121,  -399,  -399,   456,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,   457,  -399,
+    -399,   461,  -399,  -399,  -399,  -399,  -209,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -386,  -265,  -266,  -399,  -399,   289,  -399,  -399,  -399,
+    -399,   491,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,  -399,  -399,  -399,   269,  -399,  -399,  -399,  -399,   464,
+     279,  -399,  -399,  -399,  -399,  -399,  -251,  -399,  -399,   345,
+    -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,  -399,
+    -399,   -31,  -178,  -399,  -399,  -399,  -399
+};
+
+/* YYDEFGOTO[NTERM-NUM].  */
+static const IgsYYtype_int16 IgsYYdefgoto[] =
+{
+       0,     2,     3,    13,    16,    15,   268,   374,     5,    14,
+      17,   356,   136,   137,   138,   139,   140,   141,   142,   143,
+     144,   145,   146,   147,   148,   149,   150,   151,   152,   153,
+     154,   155,   156,   157,   158,   159,   160,   161,   162,   163,
+     164,   165,   166,   167,   168,   169,   170,   171,   172,   173,
+     174,   175,   361,   362,   176,   420,   349,   641,   177,   178,
+     179,   180,   181,   706,   182,   183,   184,   185,   442,   381,
+     186,   291,   187,   431,   365,   512,   188,   432,   189,   190,
+     191,   192,   193,   194,   579,   195,   329,   196,   197,   495,
+     198,   199,   200,   201,   202,   203,   204,   205,   206,   207,
+     414,   338,   208,   209,   280,   210,   286,   211,   212,   213,
+     214,   215,   482,   391,   598,   216,   307,   558,   421,   350,
+     217,   315,   734,   742,   218,   219,   220,   221,   222,   223,
+     224,   400,   321,   226,   227,   228,   229,   230,   231,   232,
+     233,   234,   235,   236,   237,   238,   239,   240,   241,   242,
+     243,   244,   245,   246,   247,   518,   437,   248,   249,   332,
+     250,   251,   252,   253,   254,   255,   527,   474,   386,   256,
+     299,   257,   258,   259,   260,   261,   262,   263,   264,   265,
+     266,   523,   439,   438,   522,   596,   308
+};
+
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
+static const IgsYYtype_int16 IgsYYtable[] =
+{
+     274,   275,   368,   300,   491,   399,   626,   493,   484,   376,
+     376,    62,   388,   376,   311,   376,   648,   402,   444,   476,
+      22,   376,   405,   501,   322,   592,     6,   428,   428,   327,
+     298,   418,    -5,     1,   418,    -5,   514,    55,   428,   428,
+     393,   702,   428,   376,   313,   428,   325,     8,     9,   354,
+     376,    -5,     6,   376,   519,   525,    -5,    -5,   270,   511,
+     330,   376,   434,   375,   489,   376,   376,   445,     7,   376,
+     309,   337,    86,     8,     9,   640,   355,     4,    -2,    55,
+     634,  -294,    55,   429,   502,   503,   343,   366,   271,    86,
+     418,   555,   272,   635,   345,   276,   346,   267,   348,   357,
+      10,   435,   310,   394,  -402,   359,   429,   429,  -294,    -5,
+      -5,    -5,   377,   376,   403,   372,   599,   429,   584,   385,
+      55,   429,   395,   520,   429,   521,    10,    11,    12,   326,
+     407,   516,   358,   320,   412,   417,   273,  -309,   507,   367,
+     446,   447,   448,   449,   450,   451,   452,   453,   454,   455,
+     456,   457,   458,   459,   460,   461,   462,   463,   464,   465,
+     466,   490,   467,   468,   469,   470,   471,   376,   573,   607,
+     419,   430,   605,  -402,   564,   513,   480,   613,   583,   277,
+     287,   278,   586,   288,   301,   600,   293,   566,   481,   567,
+     378,   472,   473,   294,   295,   296,   379,   577,   389,   627,
+     581,   425,   620,   755,   642,   649,   650,   623,   477,   695,
+     328,   396,   544,   545,   546,    95,    96,    97,    98,   352,
+     552,   279,   353,    18,    19,   281,   282,   283,   284,   285,
+     289,   290,   292,   297,    55,   303,   688,   304,   305,   306,
+     314,   316,   317,   318,   319,   323,   324,   344,    21,   331,
+     334,   335,   606,   336,   340,   341,   342,   347,   351,   364,
+      79,    32,    91,   376,   380,   382,   383,   384,   387,   390,
+     392,   397,   396,   398,    86,   401,   404,   406,   408,   409,
+     411,   410,   415,   413,   416,   423,   703,   359,   424,   433,
+     440,   709,   710,   443,   475,   478,   479,   483,   441,   485,
+     486,   487,   488,   496,   497,   499,   504,   505,   436,   506,
+     508,   509,   510,   725,   515,   517,   524,   498,   526,   422,
+     661,   662,   553,   500,   556,   554,   561,   528,   426,   560,
+     563,   572,   529,   575,   530,   578,   531,   610,   532,   533,
+     534,   535,   536,   537,   492,   538,   494,   539,   540,   541,
+     542,   543,   547,   548,   549,   550,   551,   557,   559,   562,
+     565,   568,   569,   570,   571,   574,   576,   580,   582,   585,
+     587,   588,   589,   590,   593,   594,   595,   597,   601,   602,
+     603,   604,   608,   609,   611,   614,   616,   617,   618,   619,
+     621,   612,   622,   624,   628,   723,   724,   629,   630,   631,
+     632,   633,   636,   637,   638,   643,   644,   591,   735,   625,
+     639,   645,   647,   646,   653,   654,   651,   652,   655,   656,
+     657,   659,   660,   658,   664,   663,   669,   670,   671,   672,
+     673,   675,   678,   681,   682,   683,   685,   686,   691,   692,
+     696,   697,   665,   698,   704,   705,   712,   713,   717,   666,
+     718,   668,   719,   694,   726,   727,   730,   699,   679,   689,
+     676,   700,   732,   733,   677,   680,   693,   716,   429,   701,
+     721,   731,   736,   684,   737,   738,   687,   690,   711,   708,
+     740,   743,   714,   745,   746,   715,   720,   747,   748,   722,
+     752,   741,   728,   729,   739,   758,   759,   761,   763,   764,
+     765,   767,   754,   770,   427,   269,   773,   774,   225,   707,
+     369,   749,     0,     0,     0,     0,   370,     0,   751,   302,
+     757,     0,   769,     0,   756,   360,   772,   775,     0,   363,
+     371,   312,     0,   744,     0,     0,     0,   753,   760,   762,
+     771,   766,    20,   768,   615,    21,    22,    23,    24,    25,
+      26,    27,    28,     0,    29,    30,    31,    32,    33,    34,
+     333,    35,    36,     0,     0,   339,     0,    37,     0,     0,
+      38,    39,    40,    41,    42,    43,     0,     0,     0,    44,
+      45,    46,    47,     0,    48,    49,    50,    51,    52,  -142,
+      53,    54,     0,    55,    56,    57,     0,     0,    58,    59,
+      60,    61,   373,    62,     0,     0,     0,     0,     0,    63,
+       0,   667,    64,     0,     0,     0,  -142,    65,   674,     0,
+       0,    66,    67,    68,    69,    70,    71,    72,    73,    74,
+      75,     0,    76,    77,    78,    79,    80,    81,    82,    83,
+      84,    85,    86,    87,    88,    89,    90,    91,    92,    93,
+      94,    95,    96,    97,    98,    99,   100,   101,   102,   103,
+     104,   105,   106,     0,   107,   108,   109,   110,   111,   112,
+     113,     0,   114,   115,   116,   117,   118,   119,   120,   121,
+       0,   122,   123,   124,   125,   126,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,   750,   127,   128,   129,     0,   130,   131,     0,
+       0,   132,   133,     0,     0,     0,     0,   134,     0,   135
+};
+
+static const IgsYYtype_int16 IgsYYcheck[] =
+{
+      31,    32,   211,    63,   402,   319,     3,   405,   394,     3,
+       3,    62,     3,     3,    74,     3,     3,   322,    23,     3,
+       5,     3,   327,   419,    84,     3,     3,    51,    51,    89,
+      61,    42,     0,     1,    42,     3,   434,    52,    51,    51,
+      29,    88,    51,     3,    75,    51,    88,    24,    25,    48,
+       3,    19,     3,     3,     3,   441,    24,    25,     3,    88,
+      91,     3,   367,   272,    88,     3,     3,    72,    19,     3,
+      43,   102,   101,    24,    25,    27,    75,     0,     0,    52,
+      75,    48,    52,   130,    72,    73,   117,   102,     3,   101,
+      42,   477,    88,    88,   125,     3,   127,    74,   129,   141,
+      77,    71,    75,    92,     3,    90,   130,   130,    75,    77,
+      78,    79,    72,     3,   323,   166,     3,   130,   516,    72,
+      52,   130,    72,    72,   130,    74,    77,    78,    79,    61,
+      72,   436,   163,    97,    72,    72,    10,   101,    72,   199,
+     145,   146,   147,   148,   149,   150,   151,   152,   153,   154,
+     155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
+     165,   185,   167,   168,   169,   170,   171,     3,   179,   567,
+     178,   184,   184,    72,   488,   184,    72,   573,   184,     3,
+      69,    30,    72,    72,    63,    72,    28,   492,    84,   494,
+      66,   196,   197,    35,    36,    37,    72,   511,   189,   196,
+     514,   194,   588,   197,   194,   192,   193,   593,   192,   191,
+      89,   189,   463,   464,   465,   110,   111,   112,   113,    69,
+     471,     3,    72,    15,    16,     3,     3,     3,    12,    88,
+      70,     3,     3,    88,    52,     3,    72,     3,     3,     3,
+       3,     3,     3,     3,    97,     3,     3,   139,     4,     3,
+       3,     3,   566,     3,     3,     3,     3,   175,     3,    55,
+      94,    16,   106,     3,    69,   196,     3,     3,     3,     3,
+       3,   192,   189,   192,   101,   101,    88,    75,     3,    72,
+       3,    72,   196,    42,    72,   182,   684,    90,    69,     3,
+       3,   689,   690,     3,     3,     3,     3,     3,    49,     3,
+       3,     3,     3,     3,     3,     3,     3,     3,   368,     3,
+       3,     3,     3,   711,     3,    56,     3,    63,     3,   350,
+     634,   635,   191,    67,   190,     3,   190,    22,   359,   192,
+      72,   192,    22,   195,    22,   187,    22,    64,    22,    22,
+      22,    22,    22,    22,   404,    22,   406,    22,    22,    22,
+      22,    22,    22,    22,    22,    22,    22,     3,     3,     3,
+       3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+       3,     3,     3,    22,     3,     3,     3,     3,     3,     3,
+      95,     3,   192,     3,     3,     3,     3,     3,     3,     3,
+     197,    67,     3,     3,     3,   709,   710,     3,     3,     3,
+       3,     3,     3,     3,    65,     3,     3,    72,   722,    72,
+     197,     3,     3,   196,     3,     3,   191,   191,     3,     3,
+     189,     3,     3,   196,    72,   192,     3,     3,     3,     3,
+       3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+       3,     3,    72,     3,     3,     3,     3,     3,     3,   192,
+       3,    72,     3,   191,     3,     3,     3,   189,   197,   668,
+      72,   190,     3,     3,    72,    72,   196,   191,   130,   197,
+     192,   190,     3,    72,     3,     3,    72,    72,    72,   688,
+     192,     3,    72,     3,     3,    72,    72,     3,     3,    72,
+       3,   196,    72,    72,    72,     3,     3,     3,     3,     3,
+       3,     3,    95,     3,   361,    19,   771,   773,    17,   687,
+     221,    72,    -1,    -1,    -1,    -1,   247,    -1,    72,    63,
+      72,    -1,    72,    -1,   183,   175,    72,    72,    -1,   180,
+     251,    74,    -1,   197,    -1,    -1,    -1,   197,   196,   196,
+     192,   197,     1,   197,   575,     4,     5,     6,     7,     8,
+       9,    10,    11,    -1,    13,    14,    15,    16,    17,    18,
+      96,    20,    21,    -1,    -1,   104,    -1,    26,    -1,    -1,
+      29,    30,    31,    32,    33,    34,    -1,    -1,    -1,    38,
+      39,    40,    41,    -1,    43,    44,    45,    46,    47,    48,
+      49,    50,    -1,    52,    53,    54,    -1,    -1,    57,    58,
+      59,    60,   257,    62,    -1,    -1,    -1,    -1,    -1,    68,
+      -1,   642,    71,    -1,    -1,    -1,    75,    76,   649,    -1,
+      -1,    80,    81,    82,    83,    84,    85,    86,    87,    88,
+      89,    -1,    91,    92,    93,    94,    95,    96,    97,    98,
+      99,   100,   101,   102,   103,   104,   105,   106,   107,   108,
+     109,   110,   111,   112,   113,   114,   115,   116,   117,   118,
+     119,   120,   121,    -1,   123,   124,   125,   126,   127,   128,
+     129,    -1,   131,   132,   133,   134,   135,   136,   137,   138,
+      -1,   140,   141,   142,   143,   144,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,   743,   172,   173,   174,    -1,   176,   177,    -1,
+      -1,   180,   181,    -1,    -1,    -1,    -1,   186,    -1,   188
+};
+
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
+static const IgsYYtype_int16 IgsYYstos[] =
+{
+       0,     1,   199,   200,     0,   206,     3,    19,    24,    25,
+      77,    78,    79,   201,   207,   203,   202,   208,   206,   206,
+       1,     4,     5,     6,     7,     8,     9,    10,    11,    13,
+      14,    15,    16,    17,    18,    20,    21,    26,    29,    30,
+      31,    32,    33,    34,    38,    39,    40,    41,    43,    44,
+      45,    46,    47,    49,    50,    52,    53,    54,    57,    58,
+      59,    60,    62,    68,    71,    76,    80,    81,    82,    83,
+      84,    85,    86,    87,    88,    89,    91,    92,    93,    94,
+      95,    96,    97,    98,    99,   100,   101,   102,   103,   104,
+     105,   106,   107,   108,   109,   110,   111,   112,   113,   114,
+     115,   116,   117,   118,   119,   120,   121,   123,   124,   125,
+     126,   127,   128,   129,   131,   132,   133,   134,   135,   136,
+     137,   138,   140,   141,   142,   143,   144,   172,   173,   174,
+     176,   177,   180,   181,   186,   188,   210,   211,   212,   213,
+     214,   215,   216,   217,   218,   219,   220,   221,   222,   223,
+     224,   225,   226,   227,   228,   229,   230,   231,   232,   233,
+     234,   235,   236,   237,   238,   239,   240,   241,   242,   243,
+     244,   245,   246,   247,   248,   249,   252,   256,   257,   258,
+     259,   260,   262,   263,   264,   265,   268,   270,   274,   276,
+     277,   278,   279,   280,   281,   283,   285,   286,   288,   289,
+     290,   291,   292,   293,   294,   295,   296,   297,   300,   301,
+     303,   305,   306,   307,   308,   309,   313,   318,   322,   323,
+     324,   325,   326,   327,   328,   329,   331,   332,   333,   334,
+     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
+     345,   346,   347,   348,   349,   350,   351,   352,   355,   356,
+     358,   359,   360,   361,   362,   363,   367,   369,   370,   371,
+     372,   373,   374,   375,   376,   377,   378,    74,   204,   204,
+       3,     3,    88,    10,   379,   379,     3,     3,    30,     3,
+     302,     3,     3,     3,    12,    88,   304,    69,    72,    70,
+       3,   269,     3,    28,    35,    36,    37,    88,   379,   368,
+     274,   283,   286,     3,     3,     3,     3,   314,   384,    43,
+      75,   274,   296,   379,     3,   319,     3,     3,     3,    97,
+      97,   330,   274,     3,     3,   216,    61,   274,   283,   284,
+     379,     3,   357,   357,     3,     3,     3,   379,   299,   299,
+       3,     3,     3,   379,   139,   379,   379,   175,   379,   254,
+     317,     3,    69,    72,    48,    75,   209,   216,   379,    90,
+     248,   250,   251,   258,    55,   272,   102,   274,   304,   324,
+     352,   358,   166,   367,   205,   304,     3,    72,    66,    72,
+      69,   267,   196,     3,     3,    72,   366,     3,     3,   189,
+       3,   311,     3,    29,    92,    72,   189,   192,   192,   273,
+     329,   101,   272,   304,    88,   272,    75,    72,     3,    72,
+      72,     3,    72,    42,   298,   196,    72,    72,    42,   178,
+     253,   316,   379,   182,    69,   194,   379,   250,    51,   130,
+     184,   271,   275,     3,   272,    71,   274,   354,   381,   380,
+       3,    49,   266,     3,    23,    72,   145,   146,   147,   148,
+     149,   150,   151,   152,   153,   154,   155,   156,   157,   158,
+     159,   160,   161,   162,   163,   164,   165,   167,   168,   169,
+     170,   171,   196,   197,   365,     3,     3,   192,     3,     3,
+      72,    84,   310,     3,   319,     3,     3,     3,     3,    88,
+     185,   275,   274,   275,   274,   287,     3,     3,    63,     3,
+      67,   254,    72,    73,     3,     3,     3,    72,     3,     3,
+       3,    88,   273,   184,   275,     3,   272,    56,   353,     3,
+      72,    74,   382,   379,     3,   319,     3,   364,    22,    22,
+      22,    22,    22,    22,    22,    22,    22,    22,    22,    22,
+      22,    22,    22,    22,   364,   364,   364,    22,    22,    22,
+      22,    22,   364,   191,     3,   319,   190,     3,   315,     3,
+     192,   190,     3,    72,   273,     3,   272,   272,     3,     3,
+       3,     3,   192,   179,     3,   195,     3,   273,   187,   282,
+       3,   273,     3,   184,   275,     3,    72,     3,     3,     3,
+      22,    72,     3,     3,     3,     3,   383,     3,   312,     3,
+      72,     3,     3,    95,     3,   184,   273,   275,   192,     3,
+      64,     3,    67,   254,     3,   379,     3,     3,     3,     3,
+     319,   197,     3,   319,     3,    72,     3,   196,     3,     3,
+       3,     3,     3,     3,    75,    88,     3,     3,    65,   197,
+      27,   255,   194,     3,     3,     3,   196,     3,     3,   192,
+     193,   191,   191,     3,     3,     3,     3,   189,   196,     3,
+       3,   273,   273,   192,    72,    72,   192,   379,    72,     3,
+       3,     3,     3,     3,   379,     3,    72,    72,     3,   197,
+      72,     3,     3,     3,    72,     3,     3,    72,    72,   304,
+      72,     3,     3,   196,   191,   191,     3,     3,     3,   189,
+     190,   197,    88,   275,     3,     3,   261,   380,   304,   275,
+     275,    72,     3,     3,    72,    72,   191,     3,     3,     3,
+      72,   192,    72,   273,   273,   275,     3,     3,    72,    72,
+       3,   190,     3,     3,   320,   273,     3,     3,     3,    72,
+     192,   196,   321,     3,   197,     3,     3,     3,     3,    72,
+     379,    72,     3,   197,    95,   197,   183,    72,     3,     3,
+     196,     3,   196,     3,     3,     3,   197,     3,   197,    72,
+       3,   192,    72,   320,   321,    72
+};
+
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
+static const IgsYYtype_int16 IgsYYr1[] =
+{
+       0,   198,   199,   199,   200,   200,   201,   202,   201,   203,
+     201,   205,   204,   204,   206,   206,   207,   207,   207,   207,
+     208,   208,   209,   209,   210,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   211,   211,
+     211,   211,   211,   212,   213,   214,   215,   215,   215,   216,
+     217,   217,   218,   218,   218,   218,   218,   218,   219,   219,
+     220,   221,   221,   222,   223,   224,   224,   225,   225,   226,
+     227,   228,   229,   230,   231,   232,   233,   234,   235,   236,
+     237,   237,   237,   237,   238,   239,   240,   241,   242,   243,
+     244,   245,   246,   247,   248,   249,   249,   250,   251,   251,
+     252,   253,   254,   254,   255,   255,   256,   257,   258,   259,
+     259,   260,   261,   262,   263,   264,   265,   266,   267,   267,
+     269,   268,   270,   271,   272,   272,   273,   273,   274,   274,
+     275,   275,   276,   277,   278,   279,   280,   281,   282,   282,
+     283,   283,   284,   284,   285,   286,   287,   287,   288,   288,
+     289,   289,   290,   290,   291,   291,   292,   293,   293,   294,
+     294,   295,   296,   297,   298,   299,   299,   300,   301,   302,
+     302,   303,   304,   304,   305,   305,   306,   306,   307,   308,
+     309,   310,   310,   311,   311,   312,   312,   314,   315,   313,
+     316,   316,   317,   317,   318,   319,   320,   321,   321,   322,
+     323,   324,   325,   325,   326,   327,   328,   329,   330,   330,
+     331,   332,   333,   334,   335,   336,   336,   337,   337,   338,
+     339,   340,   341,   342,   343,   343,   344,   345,   346,   347,
+     348,   349,   350,   351,   352,   353,   354,   354,   355,   356,
+     357,   358,   358,   358,   358,   359,   359,   360,   360,   361,
+     362,   363,   364,   364,   365,   365,   365,   365,   365,   365,
+     365,   365,   365,   365,   365,   365,   365,   365,   365,   365,
+     365,   365,   365,   365,   365,   365,   365,   365,   365,   365,
+     365,   365,   365,   366,   366,   368,   367,   369,   369,   370,
+     370,   371,   372,   373,   374,   374,   375,   375,   376,   377,
+     378,   379,   379,   380,   380,   381,   381,   382,   382,   383,
+     383,   384,   384
+};
+
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
+static const IgsYYtype_int8 IgsYYr2[] =
+{
+       0,     2,     1,     1,     5,     0,     1,     0,     4,     0,
+       4,     0,     4,     0,     2,     0,     1,     1,     1,     1,
+       2,     0,     1,     1,     2,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     0,     3,     1,     2,     2,     1,     2,     2,
+       2,     2,     9,     6,     9,    11,    12,    11,     2,     4,
+       2,     2,     1,     2,     2,     2,     2,    14,    12,     1,
+       3,     2,     2,     3,     1,     2,     1,     1,     3,     2,
+       1,     1,     1,     1,    10,     1,     2,     2,     2,     1,
+       2,     1,     2,     1,     2,     2,     1,     3,     2,     0,
+       2,     4,     2,     0,     1,     0,     7,     7,     4,     2,
+       1,     1,     1,    10,     1,     1,     1,    17,     2,     0,
+       0,     3,     1,     2,     2,     0,     1,     0,    15,    21,
+       2,     0,     1,     2,     1,     1,     1,     1,     1,     0,
+       5,    11,     1,     0,     4,     5,     5,     5,     2,     2,
+       3,     2,     5,    11,     6,    12,     1,     4,    10,     4,
+      10,     2,     2,     1,     6,     2,     0,     2,     2,     2,
+       0,     3,     1,     0,     6,     4,     5,    11,     3,     1,
+       1,     6,     3,     2,     0,    11,     7,     0,     0,     6,
+       2,     2,     2,     0,     2,     4,     3,     4,     0,    23,
+       4,     2,     2,     1,     2,     1,     3,     3,     1,     0,
+       5,     1,     1,     1,     1,     1,     2,     2,     1,     1,
+       1,     3,     1,     2,     1,     3,     1,     1,     1,     1,
+       1,     1,     1,     1,     3,     2,     2,     0,     1,     3,
+       9,     3,     3,     8,     2,     2,     1,     3,     2,     2,
+       2,     1,     2,     0,     1,     1,     1,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     0,     0,     4,     2,     1,     1,
+       2,     1,     1,     1,     6,     2,     6,     2,     1,     1,
+       2,     2,     0,     3,     0,     2,     0,     1,     1,     1,
+       0,     2,     0
+};
+
+
+enum { YYENOMEM = -2 };
+
+#define IgsYYerrok         (IgsYYerrstatus = 0)
+#define IgsYYclearin       (IgsYYchar = YYEMPTY)
+
+#define YYACCEPT        goto IgsYYacceptlab
+#define YYABORT         goto IgsYYabortlab
+#define YYERROR         goto IgsYYerrorlab
+#define YYNOMEM         goto IgsYYexhaustedlab
+
+
 #define YYRECOVERING()  (!!IgsYYerrstatus)
-#define YYBACKUP(token, value) \
-do								\
-  if (IgsYYchar == YYEMPTY && IgsYYlen == 1)				\
-    { IgsYYchar = (token), IgsYYlval = (value);			\
-      IgsYYchar1 = YYTRANSLATE (IgsYYchar);				\
-      YYPOPSTACK;						\
-      goto IgsYYbackup;						\
-    }								\
-  else								\
-    { IgsYYerror ("syntax error: cannot back up"); YYERROR; }	\
-while (0)
 
-#define YYTERROR	1
-#define YYERRCODE	256
+#define YYBACKUP(Token, Value)                                    \
+  do                                                              \
+    if (IgsYYchar == YYEMPTY)                                        \
+      {                                                           \
+        IgsYYchar = (Token);                                         \
+        IgsYYlval = (Value);                                         \
+        YYPOPSTACK (IgsYYlen);                                       \
+        IgsYYstate = *IgsYYssp;                                         \
+        goto IgsYYbackup;                                            \
+      }                                                           \
+    else                                                          \
+      {                                                           \
+        IgsYYerror (YY_("syntax error: cannot back up")); \
+        YYERROR;                                                  \
+      }                                                           \
+  while (0)
 
-#ifndef YYPURE
-#define YYLEX		IgsYYlex()
+/* Backward compatibility with an undocumented macro.
+   Use YYerror or YYUNDEF. */
+#define YYERRCODE YYUNDEF
+
+
+/* Enable debugging if requested.  */
+#if YYDEBUG
+
+# ifndef YYFPRINTF
+#  include <stdio.h> /* INFRINGES ON USER NAME SPACE */
+#  define YYFPRINTF fprintf
+# endif
+
+# define YYDPRINTF(Args)                        \
+do {                                            \
+  if (IgsYYdebug)                                  \
+    YYFPRINTF Args;                             \
+} while (0)
+
+
+
+
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
+do {                                                                      \
+  if (IgsYYdebug)                                                            \
+    {                                                                     \
+      YYFPRINTF (stderr, "%s ", Title);                                   \
+      IgsYY_symbol_print (stderr,                                            \
+                  Kind, Value); \
+      YYFPRINTF (stderr, "\n");                                           \
+    }                                                                     \
+} while (0)
+
+
+/*-----------------------------------.
+| Print this symbol's value on YYO.  |
+`-----------------------------------*/
+
+static void
+IgsYY_symbol_value_print (FILE *IgsYYo,
+                       IgsYYsymbol_kind_t IgsYYkind, YYSTYPE const * const IgsYYvaluep)
+{
+  FILE *IgsYYoutput = IgsYYo;
+  YY_USE (IgsYYoutput);
+  if (!IgsYYvaluep)
+    return;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+  YY_USE (IgsYYkind);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
+}
+
+
+/*---------------------------.
+| Print this symbol on YYO.  |
+`---------------------------*/
+
+static void
+IgsYY_symbol_print (FILE *IgsYYo,
+                 IgsYYsymbol_kind_t IgsYYkind, YYSTYPE const * const IgsYYvaluep)
+{
+  YYFPRINTF (IgsYYo, "%s %s (",
+             IgsYYkind < YYNTOKENS ? "token" : "nterm", IgsYYsymbol_name (IgsYYkind));
+
+  IgsYY_symbol_value_print (IgsYYo, IgsYYkind, IgsYYvaluep);
+  YYFPRINTF (IgsYYo, ")");
+}
+
+/*------------------------------------------------------------------.
+| IgsYY_stack_print -- Print the state stack from its BOTTOM up to its |
+| TOP (included).                                                   |
+`------------------------------------------------------------------*/
+
+static void
+IgsYY_stack_print (IgsYY_state_t *IgsYYbottom, IgsYY_state_t *IgsYYtop)
+{
+  YYFPRINTF (stderr, "Stack now");
+  for (; IgsYYbottom <= IgsYYtop; IgsYYbottom++)
+    {
+      int IgsYYbot = *IgsYYbottom;
+      YYFPRINTF (stderr, " %d", IgsYYbot);
+    }
+  YYFPRINTF (stderr, "\n");
+}
+
+# define YY_STACK_PRINT(Bottom, Top)                            \
+do {                                                            \
+  if (IgsYYdebug)                                                  \
+    IgsYY_stack_print ((Bottom), (Top));                           \
+} while (0)
+
+
+/*------------------------------------------------.
+| Report that the YYRULE is going to be reduced.  |
+`------------------------------------------------*/
+
+static void
+IgsYY_reduce_print (IgsYY_state_t *IgsYYssp, YYSTYPE *IgsYYvsp,
+                 int IgsYYrule)
+{
+  int IgsYYlno = IgsYYrline[IgsYYrule];
+  int IgsYYnrhs = IgsYYr2[IgsYYrule];
+  int IgsYYi;
+  YYFPRINTF (stderr, "Reducing stack by rule %d (line %d):\n",
+             IgsYYrule - 1, IgsYYlno);
+  /* The symbols being reduced.  */
+  for (IgsYYi = 0; IgsYYi < IgsYYnrhs; IgsYYi++)
+    {
+      YYFPRINTF (stderr, "   $%d = ", IgsYYi + 1);
+      IgsYY_symbol_print (stderr,
+                       YY_ACCESSING_SYMBOL (+IgsYYssp[IgsYYi + 1 - IgsYYnrhs]),
+                       &IgsYYvsp[(IgsYYi + 1) - (IgsYYnrhs)]);
+      YYFPRINTF (stderr, "\n");
+    }
+}
+
+# define YY_REDUCE_PRINT(Rule)          \
+do {                                    \
+  if (IgsYYdebug)                          \
+    IgsYY_reduce_print (IgsYYssp, IgsYYvsp, Rule); \
+} while (0)
+
+/* Nonzero means print parse trace.  It is left uninitialized so that
+   multiple parsers can coexist.  */
+int IgsYYdebug;
+#else /* !YYDEBUG */
+# define YYDPRINTF(Args) ((void) 0)
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)
+# define YY_STACK_PRINT(Bottom, Top)
+# define YY_REDUCE_PRINT(Rule)
+#endif /* !YYDEBUG */
+
+
+/* YYINITDEPTH -- initial size of the parser's stacks.  */
+#ifndef YYINITDEPTH
+# define YYINITDEPTH 200
 #endif
 
-#ifdef YYPURE
-#ifdef YYLSP_NEEDED
-#ifdef YYLEX_PARAM
-#define YYLEX		IgsYYlex(&IgsYYlval, &IgsYYlloc, YYLEX_PARAM)
-#else
-#define YYLEX		IgsYYlex(&IgsYYlval, &IgsYYlloc)
-#endif
-#else /* not YYLSP_NEEDED */
-#ifdef YYLEX_PARAM
-#define YYLEX		IgsYYlex(&IgsYYlval, YYLEX_PARAM)
-#else
-#define YYLEX		IgsYYlex(&IgsYYlval)
-#endif
-#endif /* not YYLSP_NEEDED */
-#endif
+/* YYMAXDEPTH -- maximum size the stacks can grow to (effective only
+   if the built-in stack extension method is used).
 
-/* If nonreentrant, generate the variables here */
-
-#ifndef YYPURE
-
-int	IgsYYchar;			/*  the lookahead symbol		*/
-YYSTYPE	IgsYYlval;			/*  the semantic value of the		*/
-				/*  lookahead symbol			*/
-
-#ifdef YYLSP_NEEDED
-YYLTYPE IgsYYlloc;			/*  location data for the lookahead	*/
-				/*  symbol				*/
-#endif
-
-int IgsYYnerrs;			/*  number of parse errors so far       */
-#endif  /* not YYPURE */
-
-#if YYDEBUG != 0
-int IgsYYdebug;			/*  nonzero means print parse trace	*/
-/* Since this is uninitialized, it does not stop multiple parsers
-   from coexisting.  */
-#endif
-
-/*  YYINITDEPTH indicates the initial size of the parser's stacks	*/
-
-#ifndef	YYINITDEPTH
-#define YYINITDEPTH 200
-#endif
-
-/*  YYMAXDEPTH is the maximum size the stacks can grow to
-    (effective only if the built-in stack extension method is used).  */
-
-#if YYMAXDEPTH == 0
-#undef YYMAXDEPTH
-#endif
+   Do not make this value too large; the results are undefined if
+   YYSTACK_ALLOC_MAXIMUM < YYSTACK_BYTES (YYMAXDEPTH)
+   evaluated with infinite-precision integer arithmetic.  */
 
 #ifndef YYMAXDEPTH
-#define YYMAXDEPTH 10000
+# define YYMAXDEPTH 10000
 #endif
 
-#ifndef YYPARSE_RETURN_TYPE
-#define YYPARSE_RETURN_TYPE int
-#endif
 
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-YYPARSE_RETURN_TYPE IgsYYparse (void);
-#endif
-
-#if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
-#define __IgsYY_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
-#else				/* not GNU C or C++ */
-#ifndef __cplusplus
 
-/* This is the most reliable way to avoid incompatibilities
-   in available built-in functions on various systems.  */
+
+
+
+/*-----------------------------------------------.
+| Release the memory associated to this symbol.  |
+`-----------------------------------------------*/
+
 static void
-__IgsYY_memcpy (to, from, count)
-     char *to;
-     char *from;
-     int count;
+IgsYYdestruct (const char *IgsYYmsg,
+            IgsYYsymbol_kind_t IgsYYkind, YYSTYPE *IgsYYvaluep)
 {
-  register char *f = from;
-  register char *t = to;
-  register int i = count;
+  YY_USE (IgsYYvaluep);
+  if (!IgsYYmsg)
+    IgsYYmsg = "Deleting";
+  YY_SYMBOL_PRINT (IgsYYmsg, IgsYYkind, IgsYYvaluep, IgsYYlocationp);
 
-  while (i-- > 0)
-    *t++ = *f++;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+  YY_USE (IgsYYkind);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
-#else /* __cplusplus */
 
-/* This is the most reliable way to avoid incompatibilities
-   in available built-in functions on various systems.  */
-static void
-__IgsYY_memcpy (char *to, char *from, int count)
+/* Lookahead token kind.  */
+int IgsYYchar;
+
+/* The semantic value of the lookahead symbol.  */
+YYSTYPE IgsYYlval;
+/* Number of syntax errors so far.  */
+int IgsYYnerrs;
+
+
+
+
+/*----------.
+| IgsYYparse.  |
+`----------*/
+
+int
+IgsYYparse (void)
 {
-  register char *f = from;
-  register char *t = to;
-  register int i = count;
+    IgsYY_state_fast_t IgsYYstate = 0;
+    /* Number of tokens to shift before error messages enabled.  */
+    int IgsYYerrstatus = 0;
 
-  while (i-- > 0)
-    *t++ = *f++;
-}
+    /* Refer to the stacks through separate pointers, to allow IgsYYoverflow
+       to reallocate them elsewhere.  */
 
-#endif
-#endif
-
-#line 196 "/usr/share/bison.simple"
+    /* Their size.  */
+    YYPTRDIFF_T IgsYYstacksize = YYINITDEPTH;
 
-/* The user can define YYPARSE_PARAM as the name of an argument to be passed
-   into IgsYYparse.  The argument should have type void *.
-   It should actually point to an object.
-   Grammar actions can access the variable by casting it
-   to the proper pointer type.  */
+    /* The state stack: array, bottom, top.  */
+    IgsYY_state_t IgsYYssa[YYINITDEPTH];
+    IgsYY_state_t *IgsYYss = IgsYYssa;
+    IgsYY_state_t *IgsYYssp = IgsYYss;
 
-#ifdef YYPARSE_PARAM
-#ifdef __cplusplus
-#define YYPARSE_PARAM_ARG void *YYPARSE_PARAM
-#define YYPARSE_PARAM_DECL
-#else /* not __cplusplus */
-#define YYPARSE_PARAM_ARG YYPARSE_PARAM
-#define YYPARSE_PARAM_DECL void *YYPARSE_PARAM;
-#endif /* not __cplusplus */
-#else /* not YYPARSE_PARAM */
-#define YYPARSE_PARAM_ARG
-#define YYPARSE_PARAM_DECL
-#endif /* not YYPARSE_PARAM */
+    /* The semantic value stack: array, bottom, top.  */
+    YYSTYPE IgsYYvsa[YYINITDEPTH];
+    YYSTYPE *IgsYYvs = IgsYYvsa;
+    YYSTYPE *IgsYYvsp = IgsYYvs;
 
-YYPARSE_RETURN_TYPE
-IgsYYparse(YYPARSE_PARAM_ARG)
-     YYPARSE_PARAM_DECL
-{
-  register int IgsYYstate;
-  register int IgsYYn;
-  register short *IgsYYssp;
-  register YYSTYPE *IgsYYvsp;
-  int IgsYYerrstatus;	/*  number of tokens to shift before error messages enabled */
-  int IgsYYchar1 = 0;		/*  lookahead token as an internal (translated) token number */
+  int IgsYYn;
+  /* The return value of IgsYYparse.  */
+  int IgsYYresult;
+  /* Lookahead symbol kind.  */
+  IgsYYsymbol_kind_t IgsYYtoken = YYSYMBOL_YYEMPTY;
+  /* The variables used to return semantic value and location from the
+     action routines.  */
+  YYSTYPE IgsYYval;
 
-  short	IgsYYssa[YYINITDEPTH];	/*  the state stack			*/
-  YYSTYPE IgsYYvsa[YYINITDEPTH];	/*  the semantic value stack		*/
 
-  short *IgsYYss = IgsYYssa;		/*  refer to the stacks thru separate pointers */
-  YYSTYPE *IgsYYvs = IgsYYvsa;	/*  to allow IgsYYoverflow to reallocate them elsewhere */
 
-#ifdef YYLSP_NEEDED
-  YYLTYPE IgsYYlsa[YYINITDEPTH];	/*  the location stack			*/
-  YYLTYPE *IgsYYls = IgsYYlsa;
-  YYLTYPE *IgsYYlsp;
+#define YYPOPSTACK(N)   (IgsYYvsp -= (N), IgsYYssp -= (N))
 
-#define YYPOPSTACK   (IgsYYvsp--, IgsYYssp--, IgsYYlsp--)
-#else
-#define YYPOPSTACK   (IgsYYvsp--, IgsYYssp--)
-#endif
+  /* The number of symbols on the RHS of the reduced rule.
+     Keep to zero when no symbol should be popped.  */
+  int IgsYYlen = 0;
 
-  int IgsYYstacksize = YYINITDEPTH;
+  YYDPRINTF ((stderr, "Starting parse\n"));
 
-#ifdef YYPURE
-  int IgsYYchar;
-  YYSTYPE IgsYYlval;
-  int IgsYYnerrs;
-#ifdef YYLSP_NEEDED
-  YYLTYPE IgsYYlloc;
-#endif
-#endif
+  IgsYYchar = YYEMPTY; /* Cause a token to be read.  */
 
-  YYSTYPE IgsYYval;		/*  the variable used to return		*/
-				/*  semantic values from the action	*/
-				/*  routines				*/
+  goto IgsYYsetstate;
 
-  int IgsYYlen;
 
-#if YYDEBUG != 0
-  if (IgsYYdebug)
-    fprintf(stderr, "Starting parse\n");
-#endif
-
-  IgsYYstate = 0;
-  IgsYYerrstatus = 0;
-  IgsYYnerrs = 0;
-  IgsYYchar = YYEMPTY;		/* Cause a token to be read.  */
-
-  /* Initialize stack pointers.
-     Waste one element of value and location stack
-     so that they stay on the same level as the state stack.
-     The wasted elements are never initialized.  */
-
-  IgsYYssp = IgsYYss - 1;
-  IgsYYvsp = IgsYYvs;
-#ifdef YYLSP_NEEDED
-  IgsYYlsp = IgsYYls;
-#endif
-
-/* Push a new state, which is found in  IgsYYstate  .  */
-/* In all cases, when you get here, the value and location stacks
-   have just been pushed. so pushing a state here evens the stacks.  */
+/*------------------------------------------------------------.
+| IgsYYnewstate -- push a new state, which is found in IgsYYstate.  |
+`------------------------------------------------------------*/
 IgsYYnewstate:
+  /* In all cases, when you get here, the value and location stacks
+     have just been pushed.  So pushing a state here evens the stacks.  */
+  IgsYYssp++;
 
-  *++IgsYYssp = IgsYYstate;
 
-  if (IgsYYssp >= IgsYYss + IgsYYstacksize - 1)
-    {
-      /* Give user a chance to reallocate the stack */
-      /* Use copies of these so that the &'s don't force the real ones into memory. */
-      YYSTYPE *IgsYYvs1 = IgsYYvs;
-      short *IgsYYss1 = IgsYYss;
-#ifdef YYLSP_NEEDED
-      YYLTYPE *IgsYYls1 = IgsYYls;
-#endif
+/*--------------------------------------------------------------------.
+| IgsYYsetstate -- set current state (the top of the stack) to IgsYYstate.  |
+`--------------------------------------------------------------------*/
+IgsYYsetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", IgsYYstate));
+  YY_ASSERT (0 <= IgsYYstate && IgsYYstate < YYNSTATES);
+  YY_IGNORE_USELESS_CAST_BEGIN
+  *IgsYYssp = YY_CAST (IgsYY_state_t, IgsYYstate);
+  YY_IGNORE_USELESS_CAST_END
+  YY_STACK_PRINT (IgsYYss, IgsYYssp);
 
-      /* Get the current used size of the three stacks, in elements.  */
-      int size = IgsYYssp - IgsYYss + 1;
-
-#ifdef IgsYYoverflow
-      /* Each stack pointer address is followed by the size of
-	 the data in use in that stack, in bytes.  */
-#ifdef YYLSP_NEEDED
-      /* This used to be a conditional around just the two extra args,
-	 but that might be undefined if IgsYYoverflow is a macro.  */
-      IgsYYoverflow("parser stack overflow",
-		 &IgsYYss1, size * sizeof (*IgsYYssp),
-		 &IgsYYvs1, size * sizeof (*IgsYYvsp),
-		 &IgsYYls1, size * sizeof (*IgsYYlsp),
-		 &IgsYYstacksize);
+  if (IgsYYss + IgsYYstacksize - 1 <= IgsYYssp)
+#if !defined IgsYYoverflow && !defined YYSTACK_RELOCATE
+    YYNOMEM;
 #else
-      IgsYYoverflow("parser stack overflow",
-		 &IgsYYss1, size * sizeof (*IgsYYssp),
-		 &IgsYYvs1, size * sizeof (*IgsYYvsp),
-		 &IgsYYstacksize);
-#endif
+    {
+      /* Get the current used size of the three stacks, in elements.  */
+      YYPTRDIFF_T IgsYYsize = IgsYYssp - IgsYYss + 1;
 
-      IgsYYss = IgsYYss1; IgsYYvs = IgsYYvs1;
-#ifdef YYLSP_NEEDED
-      IgsYYls = IgsYYls1;
-#endif
-#else /* no IgsYYoverflow */
+# if defined IgsYYoverflow
+      {
+        /* Give user a chance to reallocate the stack.  Use copies of
+           these so that the &'s don't force the real ones into
+           memory.  */
+        IgsYY_state_t *IgsYYss1 = IgsYYss;
+        YYSTYPE *IgsYYvs1 = IgsYYvs;
+
+        /* Each stack pointer address is followed by the size of the
+           data in use in that stack, in bytes.  This used to be a
+           conditional around just the two extra args, but that might
+           be undefined if IgsYYoverflow is a macro.  */
+        IgsYYoverflow (YY_("memory exhausted"),
+                    &IgsYYss1, IgsYYsize * YYSIZEOF (*IgsYYssp),
+                    &IgsYYvs1, IgsYYsize * YYSIZEOF (*IgsYYvsp),
+                    &IgsYYstacksize);
+        IgsYYss = IgsYYss1;
+        IgsYYvs = IgsYYvs1;
+      }
+# else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
-      if (IgsYYstacksize >= YYMAXDEPTH)
-	{
-	  IgsYYerror("parser stack overflow");
-	  return 2;
-	}
+      if (YYMAXDEPTH <= IgsYYstacksize)
+        YYNOMEM;
       IgsYYstacksize *= 2;
-      if (IgsYYstacksize > YYMAXDEPTH)
-	IgsYYstacksize = YYMAXDEPTH;
-      IgsYYss = (short *) alloca (IgsYYstacksize * sizeof (*IgsYYssp));
-      __IgsYY_memcpy ((char *)IgsYYss, (char *)IgsYYss1, size * sizeof (*IgsYYssp));
-      IgsYYvs = (YYSTYPE *) alloca (IgsYYstacksize * sizeof (*IgsYYvsp));
-      __IgsYY_memcpy ((char *)IgsYYvs, (char *)IgsYYvs1, size * sizeof (*IgsYYvsp));
-#ifdef YYLSP_NEEDED
-      IgsYYls = (YYLTYPE *) alloca (IgsYYstacksize * sizeof (*IgsYYlsp));
-      __IgsYY_memcpy ((char *)IgsYYls, (char *)IgsYYls1, size * sizeof (*IgsYYlsp));
-#endif
-#endif /* no IgsYYoverflow */
+      if (YYMAXDEPTH < IgsYYstacksize)
+        IgsYYstacksize = YYMAXDEPTH;
 
-      IgsYYssp = IgsYYss + size - 1;
-      IgsYYvsp = IgsYYvs + size - 1;
-#ifdef YYLSP_NEEDED
-      IgsYYlsp = IgsYYls + size - 1;
-#endif
+      {
+        IgsYY_state_t *IgsYYss1 = IgsYYss;
+        union IgsYYalloc *IgsYYptr =
+          YY_CAST (union IgsYYalloc *,
+                   YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (IgsYYstacksize))));
+        if (! IgsYYptr)
+          YYNOMEM;
+        YYSTACK_RELOCATE (IgsYYss_alloc, IgsYYss);
+        YYSTACK_RELOCATE (IgsYYvs_alloc, IgsYYvs);
+#  undef YYSTACK_RELOCATE
+        if (IgsYYss1 != IgsYYssa)
+          YYSTACK_FREE (IgsYYss1);
+      }
+# endif
 
-#if YYDEBUG != 0
-      if (IgsYYdebug)
-	fprintf(stderr, "Stack size increased to %d\n", IgsYYstacksize);
-#endif
+      IgsYYssp = IgsYYss + IgsYYsize - 1;
+      IgsYYvsp = IgsYYvs + IgsYYsize - 1;
 
-      if (IgsYYssp >= IgsYYss + IgsYYstacksize - 1)
-	YYABORT;
+      YY_IGNORE_USELESS_CAST_BEGIN
+      YYDPRINTF ((stderr, "Stack size increased to %ld\n",
+                  YY_CAST (long, IgsYYstacksize)));
+      YY_IGNORE_USELESS_CAST_END
+
+      if (IgsYYss + IgsYYstacksize - 1 <= IgsYYssp)
+        YYABORT;
     }
+#endif /* !defined IgsYYoverflow && !defined YYSTACK_RELOCATE */
 
-#if YYDEBUG != 0
-  if (IgsYYdebug)
-    fprintf(stderr, "Entering state %d\n", IgsYYstate);
-#endif
+
+  if (IgsYYstate == YYFINAL)
+    YYACCEPT;
 
   goto IgsYYbackup;
- IgsYYbackup:
 
-/* Do appropriate processing given the current state.  */
-/* Read a lookahead token if we need one and don't already have one.  */
-/* IgsYYresume: */
+
+/*-----------.
+| IgsYYbackup.  |
+`-----------*/
+IgsYYbackup:
+  /* Do appropriate processing given the current state.  Read a
+     lookahead token if we need one and don't already have one.  */
 
   /* First try to decide what to do without reference to lookahead token.  */
-
   IgsYYn = IgsYYpact[IgsYYstate];
-  if (IgsYYn == YYFLAG)
+  if (IgsYYpact_value_is_default (IgsYYn))
     goto IgsYYdefault;
 
   /* Not known => get a lookahead token if don't already have one.  */
 
-  /* IgsYYchar is either YYEMPTY or YYEOF
-     or a valid token in external form.  */
-
+  /* YYCHAR is either empty, or end-of-input, or a valid lookahead.  */
   if (IgsYYchar == YYEMPTY)
     {
-#if YYDEBUG != 0
-      if (IgsYYdebug)
-	fprintf(stderr, "Reading a token: ");
-#endif
-      IgsYYchar = YYLEX;
+      YYDPRINTF ((stderr, "Reading a token\n"));
+      IgsYYchar = IgsYYlex ();
     }
 
-  /* Convert token to internal form (in IgsYYchar1) for indexing tables with */
-
-  if (IgsYYchar <= 0)		/* This means end of input. */
+  if (IgsYYchar <= YYEOF)
     {
-      IgsYYchar1 = 0;
-      IgsYYchar = YYEOF;		/* Don't call YYLEX any more */
-
-#if YYDEBUG != 0
-      if (IgsYYdebug)
-	fprintf(stderr, "Now at end of input.\n");
-#endif
+      IgsYYchar = YYEOF;
+      IgsYYtoken = YYSYMBOL_YYEOF;
+      YYDPRINTF ((stderr, "Now at end of input.\n"));
+    }
+  else if (IgsYYchar == YYerror)
+    {
+      /* The scanner already issued an error message, process directly
+         to error recovery.  But do not keep the error token as
+         lookahead, it is too special and may lead us to an endless
+         loop in error recovery. */
+      IgsYYchar = YYUNDEF;
+      IgsYYtoken = YYSYMBOL_YYerror;
+      goto IgsYYerrlab1;
     }
   else
     {
-      IgsYYchar1 = YYTRANSLATE(IgsYYchar);
-
-#if YYDEBUG != 0
-      if (IgsYYdebug)
-	{
-	  fprintf (stderr, "Next token is %d (%s", IgsYYchar, IgsYYtname[IgsYYchar1]);
-	  /* Give the individual parser a way to print the precise meaning
-	     of a token, for further debugging info.  */
-#ifdef YYPRINT
-	  YYPRINT (stderr, IgsYYchar, IgsYYlval);
-#endif
-	  fprintf (stderr, ")\n");
-	}
-#endif
+      IgsYYtoken = YYTRANSLATE (IgsYYchar);
+      YY_SYMBOL_PRINT ("Next token is", IgsYYtoken, &IgsYYlval, &IgsYYlloc);
     }
 
-  IgsYYn += IgsYYchar1;
-  if (IgsYYn < 0 || IgsYYn > YYLAST || IgsYYcheck[IgsYYn] != IgsYYchar1)
+  /* If the proper action on seeing token YYTOKEN is to reduce or to
+     detect an error, take that action.  */
+  IgsYYn += IgsYYtoken;
+  if (IgsYYn < 0 || YYLAST < IgsYYn || IgsYYcheck[IgsYYn] != IgsYYtoken)
     goto IgsYYdefault;
-
   IgsYYn = IgsYYtable[IgsYYn];
-
-  /* IgsYYn is what to do for this token type in this state.
-     Negative => reduce, -IgsYYn is rule number.
-     Positive => shift, IgsYYn is new state.
-       New state is final state => don't bother to shift,
-       just return success.
-     0, or most negative number => error.  */
-
-  if (IgsYYn < 0)
+  if (IgsYYn <= 0)
     {
-      if (IgsYYn == YYFLAG)
-	goto IgsYYerrlab;
+      if (IgsYYtable_value_is_error (IgsYYn))
+        goto IgsYYerrlab;
       IgsYYn = -IgsYYn;
       goto IgsYYreduce;
     }
-  else if (IgsYYn == 0)
-    goto IgsYYerrlab;
 
-  if (IgsYYn == YYFINAL)
-    YYACCEPT;
+  /* Count tokens shifted since error; after three, turn off error
+     status.  */
+  if (IgsYYerrstatus)
+    IgsYYerrstatus--;
 
   /* Shift the lookahead token.  */
-
-#if YYDEBUG != 0
-  if (IgsYYdebug)
-    fprintf(stderr, "Shifting token %d (%s), ", IgsYYchar, IgsYYtname[IgsYYchar1]);
-#endif
-
-  /* Discard the token being shifted unless it is eof.  */
-  if (IgsYYchar != YYEOF)
-    IgsYYchar = YYEMPTY;
-
-  *++IgsYYvsp = IgsYYlval;
-#ifdef YYLSP_NEEDED
-  *++IgsYYlsp = IgsYYlloc;
-#endif
-
-  /* count tokens shifted since error; after three, turn off error status.  */
-  if (IgsYYerrstatus) IgsYYerrstatus--;
-
+  YY_SYMBOL_PRINT ("Shifting", IgsYYtoken, &IgsYYlval, &IgsYYlloc);
   IgsYYstate = IgsYYn;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+  *++IgsYYvsp = IgsYYlval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
+
+  /* Discard the shifted token.  */
+  IgsYYchar = YYEMPTY;
   goto IgsYYnewstate;
 
-/* Do the default action for the current state.  */
-IgsYYdefault:
 
+/*-----------------------------------------------------------.
+| IgsYYdefault -- do the default action for the current state.  |
+`-----------------------------------------------------------*/
+IgsYYdefault:
   IgsYYn = IgsYYdefact[IgsYYstate];
   if (IgsYYn == 0)
     goto IgsYYerrlab;
+  goto IgsYYreduce;
 
-/* Do a reduction.  IgsYYn is the number of a rule to reduce with.  */
+
+/*-----------------------------.
+| IgsYYreduce -- do a reduction.  |
+`-----------------------------*/
 IgsYYreduce:
+  /* IgsYYn is the number of a rule to reduce with.  */
   IgsYYlen = IgsYYr2[IgsYYn];
-  if (IgsYYlen > 0)
-    IgsYYval = IgsYYvsp[1-IgsYYlen]; /* implement default value of the action */
 
-#if YYDEBUG != 0
-  if (IgsYYdebug)
+  /* If YYLEN is nonzero, implement the default value of the action:
+     '$$ = $1'.
+
+     Otherwise, the following line sets YYVAL to garbage.
+     This behavior is undocumented and Bison
+     users should not rely upon it.  Assigning to YYVAL
+     unconditionally makes the parser a bit smaller, and it avoids a
+     GCC warning that YYVAL may be used uninitialized.  */
+  IgsYYval = IgsYYvsp[1-IgsYYlen];
+
+
+  YY_REDUCE_PRINT (IgsYYn);
+  switch (IgsYYn)
     {
-      int i;
-
-      fprintf (stderr, "Reducing via rule %d (line %d), ",
-	       IgsYYn, IgsYYrline[IgsYYn]);
-
-      /* Print the symbols being reduced, and their result.  */
-      for (i = IgsYYprhs[IgsYYn]; IgsYYrhs[i] > 0; i++)
-	fprintf (stderr, "%s ", IgsYYtname[IgsYYrhs[i]]);
-      fprintf (stderr, " -> %s\n", IgsYYtname[IgsYYr1[IgsYYn]]);
-    }
-#endif
-
-
-  switch (IgsYYn) {
-
-case 3:
-#line 142 "./gointer.y"
-{
+  case 4: /* session: session loginmessages pass inputs INVALIDPASSWORD  */
+#line 143 "gointer.y"
+                {
 #ifndef __STDC__
 # ifdef const
 #  undef const
@@ -1599,896 +2568,1135 @@ case 3:
                     myfree(MyName);
                     MyName = NULL;
                     Passed = 0;
-                ;
-    break;}
-case 4:
-#line 156 "./gointer.y"
-{
+                }
+#line 2573 "y.tab.c"
+    break;
+
+  case 5: /* session: %empty  */
+#line 157 "gointer.y"
+                {
                     Passed = 0;
-                ;
-    break;}
-case 5:
-#line 162 "./gointer.y"
-{
+                }
+#line 2581 "y.tab.c"
+    break;
+
+  case 6: /* pass: PASSWORD  */
+#line 163 "gointer.y"
+                {
                     if (MyPassword) ForceCommand(NULL, MyPassword);
                     else AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
-                ;
-    break;}
-case 6:
-#line 169 "./gointer.y"
-{
+                }
+#line 2592 "y.tab.c"
+    break;
+
+  case 7: /* $@1: %empty  */
+#line 170 "gointer.y"
+                {
                     if (MyPassword) ForceCommand(NULL, MyPassword);
                     else AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
-                ;
-    break;}
-case 8:
-#line 177 "./gointer.y"
-{
+                }
+#line 2603 "y.tab.c"
+    break;
+
+  case 9: /* $@2: %empty  */
+#line 178 "gointer.y"
+                {
                     myfree(MyName);
-                    MyName = IgsYYvsp[0].Name;
-                ;
-    break;}
-case 9:
-#line 182 "./gointer.y"
-{
+                    MyName = (IgsYYvsp[0].Name);
+                }
+#line 2612 "y.tab.c"
+    break;
+
+  case 10: /* pass: GUEST $@2 loginmessages enterorfail  */
+#line 183 "gointer.y"
+                {
                     Outputf("This is a guest account. Please see "
                             "'help register' to register.\n"
-                            "Your account name is %s\n", IgsYYvsp[-3].Name);
-                ;
-    break;}
-case 10:
-#line 190 "./gointer.y"
-{
+                            "Your account name is %s\n", (IgsYYvsp[-3].Name));
+                }
+#line 2622 "y.tab.c"
+    break;
+
+  case 11: /* $@3: %empty  */
+#line 191 "gointer.y"
+                {
                     if (!Passed) {
                         Passed = 1;
                         PlayerPasses(MyName);
                     }
                     ForceCommand(NULL, "toggle client on");
-                ;
-    break;}
-case 15:
-#line 206 "./gointer.y"
-{
-                    Outputf("%s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 16:
-#line 211 "./gointer.y"
-{
-                    Outputf("          Welcome to IGS at %s ", IgsYYvsp[0].Name);
-                    SiteLogon(NULL, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 17:
-#line 217 "./gointer.y"
-{
+                }
+#line 2634 "y.tab.c"
+    break;
+
+  case 16: /* loginmessage: NAME  */
+#line 207 "gointer.y"
+                {
+                    Outputf("%s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 2643 "y.tab.c"
+    break;
+
+  case 17: /* loginmessage: WELCOME  */
+#line 212 "gointer.y"
+                {
+                    Outputf("          Welcome to IGS at %s ", (IgsYYvsp[0].Name));
+                    SiteLogon(NULL, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 2653 "y.tab.c"
+    break;
+
+  case 18: /* loginmessage: LUSER  */
+#line 218 "gointer.y"
+                {
                     if (MyName) ForceCommand(NULL, MyName);
-                    else AskString(toplevel, EnterString, (XtPointer) &MyName,
-                                   "Enter user", "user", &MyName, NULL, NULL);
-                ;
-    break;}
-case 18:
-#line 223 "./gointer.y"
-{
-                    ServerMessage("%s\n", IgsYYvsp[0].Name);
-                    Outputf("%s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 19:
-#line 230 "./gointer.y"
-{ eEmpty = 0; ;
-    break;}
-case 20:
-#line 231 "./gointer.y"
-{ eEmpty = PreEmpty = 0; ;
-    break;}
-case 21:
-#line 235 "./gointer.y"
-{
+                    else ForceCommand(NULL, "guest");
+                }
+#line 2662 "y.tab.c"
+    break;
+
+  case 19: /* loginmessage: SERVERFULL  */
+#line 223 "gointer.y"
+                {
+                    ServerMessage("%s\n", (IgsYYvsp[0].Name));
+                    Outputf("%s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 2672 "y.tab.c"
+    break;
+
+  case 20: /* inputs: inputs moreinput  */
+#line 230 "gointer.y"
+                                { eEmpty = 0; }
+#line 2678 "y.tab.c"
+    break;
+
+  case 21: /* inputs: %empty  */
+#line 231 "gointer.y"
+                                { eEmpty = PreEmpty = 0; }
+#line 2684 "y.tab.c"
+    break;
+
+  case 22: /* prompt: PROMPT  */
+#line 235 "gointer.y"
+                {
                     PreEmpty = 0;
                     SeenAdd = 0;
-                    IgsYYval.Value = IgsYYvsp[0].Value;
-                ;
-    break;}
-case 22:
-#line 241 "./gointer.y"
-{
+                    (IgsYYval.Value) = (IgsYYvsp[0].Value);
+                }
+#line 2694 "y.tab.c"
+    break;
+
+  case 23: /* prompt: SEMIPROMPT  */
+#line 241 "gointer.y"
+                {
                     PreEmpty = eEmpty;
-                    IgsYYval.Value = 0;
-                ;
-    break;}
-case 23:
-#line 248 "./gointer.y"
-{
-                    if (!Passed && IgsYYvsp[0].Value) {
+                    (IgsYYval.Value) = 0;
+                }
+#line 2703 "y.tab.c"
+    break;
+
+  case 24: /* moreinput: input prompt  */
+#line 248 "gointer.y"
+                {
+                    if (!Passed && (IgsYYvsp[0].Value)) {
                         Passed = 1;
                         PlayerPasses(MyName);
                     }
-                    if (IgsYYvsp[0].Value) {
+                    if ((IgsYYvsp[0].Value)) {
                         ChangeCommand(NULL, 1);
                         ResyncCommand(NULL);
                     }
-                ;
-    break;}
-case 25:
-#line 261 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 26:
-#line 262 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 27:
-#line 263 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 28:
-#line 264 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 31:
-#line 267 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 32:
-#line 268 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 33:
-#line 269 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 35:
-#line 271 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 36:
-#line 272 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 37:
-#line 273 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 38:
-#line 274 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 45:
-#line 281 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 49:
-#line 285 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 70:
-#line 306 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 72:
-#line 308 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 74:
-#line 310 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 75:
-#line 311 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 76:
-#line 312 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 78:
-#line 314 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 80:
-#line 316 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 83:
-#line 319 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 87:
-#line 323 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 88:
-#line 324 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 99:
-#line 335 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 102:
-#line 338 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 103:
-#line 339 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 104:
-#line 340 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 105:
-#line 341 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 106:
-#line 342 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 107:
-#line 343 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 108:
-#line 344 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 125:
-#line 362 "./gointer.y"
-{
+                }
+#line 2718 "y.tab.c"
+    break;
+
+  case 26: /* input: servermessages  */
+#line 261 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2724 "y.tab.c"
+    break;
+
+  case 27: /* input: xshout  */
+#line 262 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2730 "y.tab.c"
+    break;
+
+  case 28: /* input: infomessage  */
+#line 263 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2736 "y.tab.c"
+    break;
+
+  case 29: /* input: beeping  */
+#line 264 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2742 "y.tab.c"
+    break;
+
+  case 32: /* input: tell  */
+#line 267 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2748 "y.tab.c"
+    break;
+
+  case 33: /* input: broadcast  */
+#line 268 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2754 "y.tab.c"
+    break;
+
+  case 34: /* input: kibitz  */
+#line 269 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2760 "y.tab.c"
+    break;
+
+  case 36: /* input: yell  */
+#line 271 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2766 "y.tab.c"
+    break;
+
+  case 37: /* input: join  */
+#line 272 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2772 "y.tab.c"
+    break;
+
+  case 38: /* input: leave  */
+#line 273 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2778 "y.tab.c"
+    break;
+
+  case 39: /* input: newtitle  */
+#line 274 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2784 "y.tab.c"
+    break;
+
+  case 46: /* input: matchrequest  */
+#line 281 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2790 "y.tab.c"
+    break;
+
+  case 50: /* input: freemessage  */
+#line 285 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2796 "y.tab.c"
+    break;
+
+  case 71: /* input: mustpass  */
+#line 306 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2802 "y.tab.c"
+    break;
+
+  case 73: /* input: opponentdisagreeremove  */
+#line 308 "gointer.y"
+                                     { ChangeCommand(NULL, -1); }
+#line 2808 "y.tab.c"
+    break;
+
+  case 75: /* input: doneopponentobserve  */
+#line 310 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2814 "y.tab.c"
+    break;
+
+  case 76: /* input: opponentobserve  */
+#line 311 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2820 "y.tab.c"
+    break;
+
+  case 77: /* input: betresult  */
+#line 312 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2826 "y.tab.c"
+    break;
+
+  case 79: /* input: opponentrestart  */
+#line 314 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2832 "y.tab.c"
+    break;
+
+  case 81: /* input: newmatch1  */
+#line 316 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2838 "y.tab.c"
+    break;
+
+  case 84: /* input: opponentdispute  */
+#line 319 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2844 "y.tab.c"
+    break;
+
+  case 88: /* input: opponentundid  */
+#line 323 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2850 "y.tab.c"
+    break;
+
+  case 89: /* input: undo  */
+#line 324 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2856 "y.tab.c"
+    break;
+
+  case 100: /* input: lostconnection  */
+#line 335 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2862 "y.tab.c"
+    break;
+
+  case 103: /* input: adjournsentrequest  */
+#line 338 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2868 "y.tab.c"
+    break;
+
+  case 104: /* input: adjournrequest  */
+#line 339 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2874 "y.tab.c"
+    break;
+
+  case 105: /* input: oppadjourn  */
+#line 340 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2880 "y.tab.c"
+    break;
+
+  case 106: /* input: declineadjourn  */
+#line 341 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2886 "y.tab.c"
+    break;
+
+  case 107: /* input: resign  */
+#line 342 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2892 "y.tab.c"
+    break;
+
+  case 108: /* input: playeron  */
+#line 343 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2898 "y.tab.c"
+    break;
+
+  case 109: /* input: removegamefile  */
+#line 344 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2904 "y.tab.c"
+    break;
+
+  case 126: /* input: uptime  */
+#line 362 "gointer.y"
+                {
                     if (!Entered) {
                         Entering();
                     }
-                ;
-    break;}
-case 136:
-#line 377 "./gointer.y"
-{ ChangeCommand(NULL, -1); ;
-    break;}
-case 140:
-#line 382 "./gointer.y"
-{
+                }
+#line 2914 "y.tab.c"
+    break;
+
+  case 137: /* input: EMPTY  */
+#line 377 "gointer.y"
+                                  { ChangeCommand(NULL, -1); }
+#line 2920 "y.tab.c"
+    break;
+
+  case 141: /* input: error  */
+#line 382 "gointer.y"
+                {
                     /* 1 in case next token is SEMIPROMPT */
                     SetCommand(NULL, 1);
-                ;
-    break;}
-case 141:
-#line 386 "./gointer.y"
-{ eEmpty = 1; ;
-    break;}
-case 142:
-#line 390 "./gointer.y"
-{
+                }
+#line 2929 "y.tab.c"
+    break;
+
+  case 142: /* input: %empty  */
+#line 386 "gointer.y"
+                                  { eEmpty = 1; }
+#line 2935 "y.tab.c"
+    break;
+
+  case 143: /* textfile: TEXTFILE names END  */
+#line 390 "gointer.y"
+                {
                     NameList   *Names;
                     const char *User;
 
-                    switch(IgsYYvsp[-2].Value) {
+                    switch((IgsYYvsp[-2].Value)) {
                       case 25: /* Results */
                         if (UserCommandP(NULL)) goto user;
                         User = StripFirstArgCommand(NULL, "results");
                         if (!User) goto user;
 			if (*User == '-') User++;
                         /* AddResults keeps $2 */
-                        AddResults(User, IgsYYvsp[-1].Namelist);
+                        AddResults(User, (IgsYYvsp[-1].Namelist));
                         break;
                       default:
                       user:
-                        for (Names = IgsYYvsp[-1].Namelist->Next;Names != IgsYYvsp[-1].Namelist; Names = Names->Next)
+                        for (Names = (IgsYYvsp[-1].Namelist)->Next;Names != (IgsYYvsp[-1].Namelist); Names = Names->Next)
                             Outputf("%s\n", Names->Name);
-                        FreeNameList(IgsYYvsp[-1].Namelist);
+                        FreeNameList((IgsYYvsp[-1].Namelist));
                     }
-                ;
-    break;}
-case 143:
-#line 413 "./gointer.y"
-{
+                }
+#line 2960 "y.tab.c"
+    break;
+
+  case 144: /* erase: ERASE  */
+#line 413 "gointer.y"
+                {
                     Output("Please erase your messages (see help erase)\n");
-                ;
-    break;}
-case 144:
-#line 419 "./gointer.y"
-{
+                }
+#line 2968 "y.tab.c"
+    break;
+
+  case 145: /* igsentry: IGSENTRY NAME  */
+#line 419 "gointer.y"
+                {
                     char *ptr;
 
-                    Outputf("Logging into %s %s\n", IgsYYvsp[-1].Dummy, IgsYYvsp[0].Name);
-                    ptr = mystrdup(IgsYYvsp[-1].Dummy);
+                    Outputf("Logging into %s %s\n", (IgsYYvsp[-1].Dummy), (IgsYYvsp[0].Name));
+                    ptr = mystrdup((IgsYYvsp[-1].Dummy));
                     myfree(ServerName);
                     ServerName = ptr;
                     switch(ptr[0]) {
                       case 'N': ServerType = NNGS; break;
                       default:  ServerType = IGS;  break;
                     }
-                    myfree(IgsYYvsp[-1].Dummy);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 147:
-#line 437 "./gointer.y"
-{;
-    break;}
-case 148:
-#line 441 "./gointer.y"
-{
-                    ServerMessage("%s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 149:
-#line 448 "./gointer.y"
-{
-                    ServerMessage("%s: %s\n", PlayerString(IgsYYvsp[-1].Person), IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 150:
-#line 453 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Dummy));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 2987 "y.tab.c"
+    break;
+
+  case 148: /* servermessages: EMPTY servermessage  */
+#line 437 "gointer.y"
+                                  {}
+#line 2993 "y.tab.c"
+    break;
+
+  case 149: /* servermessage: SERVERMESSAGE NAME  */
+#line 441 "gointer.y"
+                {
+                    ServerMessage("%s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3002 "y.tab.c"
+    break;
+
+  case 150: /* xshout: XSHOUT NAME  */
+#line 448 "gointer.y"
+                {
+                    ServerMessage("%s: %s\n", PlayerString((IgsYYvsp[-1].Person)), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3011 "y.tab.c"
+    break;
+
+  case 151: /* xshout: XSHOUT2 NAME  */
+#line 453 "gointer.y"
+                {
 		    /* dummy player name such as "*8^)*" */
-                    ServerMessage("%s: %s\n", IgsYYvsp[-1].Name, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 151:
-#line 462 "./gointer.y"
-{
+                    ServerMessage("%s: %s\n", (IgsYYvsp[-1].Name), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3022 "y.tab.c"
+    break;
+
+  case 152: /* infomessage: INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END  */
+#line 462 "gointer.y"
+                {
                     /* A Connect */
-                    if (strcmp(IgsYYvsp[-3].Name, "has") || strcmp(IgsYYvsp[-2].Name, "connected."))
-                        YYFAIL;
-                    PlayerConnect(IgsYYvsp[-7].Name, IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 152:
-#line 473 "./gointer.y"
-{
+                    if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "connected."))
+                        YYERROR;
+                    PlayerConnect((IgsYYvsp[-7].Name), (IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3037 "y.tab.c"
+    break;
+
+  case 153: /* infomessage: INFOMESSAGE NAME NAME NAME '}' END  */
+#line 473 "gointer.y"
+                {
                     /* A disconnect */
-                    if (strcmp(IgsYYvsp[-3].Name, "has") || strcmp(IgsYYvsp[-2].Name, "disconnected"))
-                        YYFAIL;
-                    PlayerDisconnect(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 153:
-#line 483 "./gointer.y"
-{
+                    if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "disconnected"))
+                        YYERROR;
+                    PlayerDisconnect((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3051 "y.tab.c"
+    break;
+
+  case 154: /* infomessage: INFOMESSAGE NAME NAME ':' player NAME player '}' END  */
+#line 483 "gointer.y"
+                {
                     /* A new match, format with game number */
-                    if (strcmp(IgsYYvsp[-3].Name, "vs.") || strcmp(IgsYYvsp[-7].Name, "Match")) YYFAIL;
-                    NewMatch(atoi(IgsYYvsp[-6].Name), IgsYYvsp[-4].Person, IgsYYvsp[-2].Person);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                ;
-    break;}
-case 154:
-#line 492 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-5].Name, "vs") || strcmp(IgsYYvsp[-9].Name, "Game")) YYFAIL;
-                    GameInfo(atoi(IgsYYvsp[-8].Name), IgsYYvsp[-4].Name, IgsYYvsp[-6].Name, IgsYYvsp[-2].Namelist);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    FreeNameList(IgsYYvsp[-2].Namelist);
-                ;
-    break;}
-case 155:
-#line 503 "./gointer.y"
-{
+                    if (strcmp((IgsYYvsp[-3].Name), "vs.") || strcmp((IgsYYvsp[-7].Name), "Match")) YYERROR;
+                    NewMatch(atoi((IgsYYvsp[-6].Name)), (IgsYYvsp[-4].Person), (IgsYYvsp[-2].Person));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                }
+#line 3064 "y.tab.c"
+    break;
+
+  case 155: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME ':' names '}' END  */
+#line 492 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-5].Name), "vs") || strcmp((IgsYYvsp[-9].Name), "Game")) YYERROR;
+                    GameInfo(atoi((IgsYYvsp[-8].Name)), (IgsYYvsp[-4].Name), (IgsYYvsp[-6].Name), (IgsYYvsp[-2].Namelist));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    FreeNameList((IgsYYvsp[-2].Namelist));
+                }
+#line 3079 "y.tab.c"
+    break;
+
+  case 156: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME '@' NAME NAME '}' END  */
+#line 503 "gointer.y"
+                {
                     /* Resume */
-                    if (strcmp(IgsYYvsp[-10].Name, "Game") || strcmp(IgsYYvsp[-6].Name, "vs") ||
-                        strcmp(IgsYYvsp[-3].Name, "Move")) YYFAIL;
-                    Resume(atoi(IgsYYvsp[-9].Name), IgsYYvsp[-5].Name, IgsYYvsp[-7].Name, atoi(IgsYYvsp[-2].Name));
-                    myfree(IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 156:
-#line 517 "./gointer.y"
-{
+                    if (strcmp((IgsYYvsp[-10].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs") ||
+                        strcmp((IgsYYvsp[-3].Name), "Move")) YYERROR;
+                    Resume(atoi((IgsYYvsp[-9].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-7].Name), atoi((IgsYYvsp[-2].Name)));
+                    myfree((IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3097 "y.tab.c"
+    break;
+
+  case 157: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME NAME NAME '}' END  */
+#line 517 "gointer.y"
+                {
                     /* Adjourn */
-                    if (strcmp(IgsYYvsp[-3].Name, "has") || strcmp(IgsYYvsp[-2].Name, "adjourned.") ||
-                        strcmp(IgsYYvsp[-5].Name, "vs")) YYFAIL;
-                    Adjourn(atoi(IgsYYvsp[-8].Name), IgsYYvsp[-4].Name, IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 157:
-#line 533 "./gointer.y"
-{
-                    ReceivedTell(IgsYYvsp[-1].Person, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 158:
-#line 538 "./gointer.y"
-{
-                    ReceivedTell(IgsYYvsp[-1].Person, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 159:
-#line 545 "./gointer.y"
-{
-                    ReceivedTell(IgsYYvsp[-1].Person, "is now on.");
-                ;
-    break;}
-case 160:
-#line 552 "./gointer.y"
-{
-                    Beeping(IgsYYvsp[0].Person);
-                ;
-    break;}
-case 161:
-#line 556 "./gointer.y"
-{
-                    Beeping(IgsYYvsp[0].Person);
-                ;
-    break;}
-case 162:
-#line 562 "./gointer.y"
-{
-		    Idle(IgsYYvsp[-1].Person, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 163:
-#line 569 "./gointer.y"
-{
-		    StoredNum(IgsYYvsp[-1].Person, IgsYYvsp[0].Value);
-                ;
-    break;}
-case 164:
-#line 575 "./gointer.y"
-{
-                    ShowBroadcast(IgsYYvsp[-1].Person, ":", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 165:
-#line 580 "./gointer.y"
-{
-                    ShowBroadcast(IgsYYvsp[-1].Person, "", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 166:
-#line 588 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-8].Name, "Game") || strcmp(IgsYYvsp[-6].Name, "vs")) YYFAIL;
-                    ReceivedKibitz(IgsYYvsp[-10].Person, atoi(IgsYYvsp[-3].Name), IgsYYvsp[-5].Name, IgsYYvsp[-7].Name, IgsYYvsp[0].Name, strlen(IgsYYvsp[0].Name));
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 167:
-#line 600 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-8].Name, "Game") || strcmp(IgsYYvsp[-6].Name, "vs")) YYFAIL;
-                    ReceivedKibitz(IgsYYvsp[-10].Person, atoi(IgsYYvsp[-3].Name), IgsYYvsp[-5].Name, IgsYYvsp[-7].Name, IgsYYvsp[0].Name, strlen(IgsYYvsp[0].Name));
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[0].Name);
-                  ;
-    break;}
-case 168:
-#line 613 "./gointer.y"
-{
+                    if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "adjourned.") ||
+                        strcmp((IgsYYvsp[-5].Name), "vs")) YYERROR;
+                    Adjourn(atoi((IgsYYvsp[-8].Name)), (IgsYYvsp[-4].Name), (IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3115 "y.tab.c"
+    break;
+
+  case 158: /* tell: TELL NAME  */
+#line 533 "gointer.y"
+                {
+                    ReceivedTell((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3124 "y.tab.c"
+    break;
+
+  case 159: /* tell: OBSERVE SEMIPROMPT TELL NAME  */
+#line 538 "gointer.y"
+                {
+                    ReceivedTell((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3133 "y.tab.c"
+    break;
+
+  case 160: /* playeron: PLAYERON optobserve  */
+#line 545 "gointer.y"
+                {
+                    ReceivedTell((IgsYYvsp[-1].Person), "is now on.");
+                }
+#line 3141 "y.tab.c"
+    break;
+
+  case 161: /* beeping: OBSERVE BEEPING  */
+#line 552 "gointer.y"
+                {
+                    Beeping((IgsYYvsp[0].Person));
+                }
+#line 3149 "y.tab.c"
+    break;
+
+  case 162: /* beeping: BEEPING  */
+#line 556 "gointer.y"
+                {
+                    Beeping((IgsYYvsp[0].Person));
+                }
+#line 3157 "y.tab.c"
+    break;
+
+  case 163: /* idle: IDLE NAME  */
+#line 562 "gointer.y"
+                {
+		    Idle((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3166 "y.tab.c"
+    break;
+
+  case 164: /* stored: STORED STOREDNUM  */
+#line 569 "gointer.y"
+                {
+		    StoredNum((IgsYYvsp[-1].Person), (IgsYYvsp[0].Value));
+                }
+#line 3174 "y.tab.c"
+    break;
+
+  case 165: /* broadcast: BROADCAST NAME  */
+#line 575 "gointer.y"
+                {
+                    ShowBroadcast((IgsYYvsp[-1].Person), ":", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3183 "y.tab.c"
+    break;
+
+  case 166: /* broadcast: ITBROADCAST NAME  */
+#line 580 "gointer.y"
+                {
+                    ShowBroadcast((IgsYYvsp[-1].Person), "", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3192 "y.tab.c"
+    break;
+
+  case 167: /* kibitz: OBSERVE SEMIPROMPT KIBITZ player ':' NAME NAME NAME NAME '[' NAME ']' END NAME  */
+#line 588 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-8].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs")) YYERROR;
+                    ReceivedKibitz((IgsYYvsp[-10].Person), atoi((IgsYYvsp[-3].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-7].Name), (IgsYYvsp[0].Name), strlen((IgsYYvsp[0].Name)));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3207 "y.tab.c"
+    break;
+
+  case 168: /* kibitz: KIBITZ player ':' NAME NAME NAME NAME '[' NAME ']' END NAME  */
+#line 600 "gointer.y"
+                  {
+                    if (strcmp((IgsYYvsp[-8].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs")) YYERROR;
+                    ReceivedKibitz((IgsYYvsp[-10].Person), atoi((IgsYYvsp[-3].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-7].Name), (IgsYYvsp[0].Name), strlen((IgsYYvsp[0].Name)));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[0].Name));
+                  }
+#line 3222 "y.tab.c"
+    break;
+
+  case 169: /* messages: MESSAGES  */
+#line 613 "gointer.y"
+                {
                     Outputf("You have %d line%s of messages\n",
-                            IgsYYvsp[0].Value, IgsYYvsp[0].Value==1 ? "" : "s");
-                ;
-    break;}
-case 169:
-#line 619 "./gointer.y"
-{
-                    ShowYell(IgsYYvsp[-2].Value, IgsYYvsp[-1].Person, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 170:
-#line 626 "./gointer.y"
-{
-                    ChannelJoin(IgsYYvsp[-1].Value, IgsYYvsp[0].Person);
-                ;
-    break;}
-case 171:
-#line 632 "./gointer.y"
-{
-                    ChannelLeave(IgsYYvsp[-1].Value, IgsYYvsp[0].Person);
-                ;
-    break;}
-case 172:
-#line 638 "./gointer.y"
-{
-                    ChannelTitle(IgsYYvsp[-2].Value, IgsYYvsp[-1].Person, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 173:
-#line 645 "./gointer.y"
-{
-                    JoinChannel(IgsYYvsp[0].Value);
-                ;
-    break;}
-case 174:
-#line 651 "./gointer.y"
-{
-                    WrongChannel(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 175:
-#line 658 "./gointer.y"
-{
+                            (IgsYYvsp[0].Value), (IgsYYvsp[0].Value)==1 ? "" : "s");
+                }
+#line 3231 "y.tab.c"
+    break;
+
+  case 170: /* yell: CHANNEL YELL NAME  */
+#line 619 "gointer.y"
+                {
+                    ShowYell((IgsYYvsp[-2].Value), (IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3240 "y.tab.c"
+    break;
+
+  case 171: /* join: CHANNEL JOIN  */
+#line 626 "gointer.y"
+                {
+                    ChannelJoin((IgsYYvsp[-1].Value), (IgsYYvsp[0].Person));
+                }
+#line 3248 "y.tab.c"
+    break;
+
+  case 172: /* leave: CHANNEL LEAVE  */
+#line 632 "gointer.y"
+                {
+                    ChannelLeave((IgsYYvsp[-1].Value), (IgsYYvsp[0].Person));
+                }
+#line 3256 "y.tab.c"
+    break;
+
+  case 173: /* newtitle: CHANNEL NEWTITLE NAME  */
+#line 638 "gointer.y"
+                {
+                    ChannelTitle((IgsYYvsp[-2].Value), (IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3265 "y.tab.c"
+    break;
+
+  case 174: /* changechannel: CHANGECHANNEL  */
+#line 645 "gointer.y"
+                {
+                    JoinChannel((IgsYYvsp[0].Value));
+                }
+#line 3273 "y.tab.c"
+    break;
+
+  case 175: /* wrongchannel: WRONGCHANNEL NAME  */
+#line 651 "gointer.y"
+                {
+                    WrongChannel((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3282 "y.tab.c"
+    break;
+
+  case 176: /* matchopen: MATCHOPEN  */
+#line 658 "gointer.y"
+                {
                     Output("Setting you open for matches\n");
-                ;
-    break;}
-case 176:
-#line 664 "./gointer.y"
-{
+                }
+#line 3290 "y.tab.c"
+    break;
+
+  case 177: /* matchclosed: MATCHCLOSED  */
+#line 664 "gointer.y"
+                {
                     Output("You are not open for matches\n");
-                ;
-    break;}
-case 177:
-#line 670 "./gointer.y"
-{
-                    AutoMatchRequest(IgsYYvsp[-1].Namelist);
-                    FreeNameList(IgsYYvsp[-1].Namelist);
-                ;
-    break;}
-case 178:
-#line 677 "./gointer.y"
-{
-                    AutoMatchDispute(IgsYYvsp[-1].Name, IgsYYvsp[0].Namelist);
-                    myfree(IgsYYvsp[-1].Name);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 179:
-#line 685 "./gointer.y"
-{ IgsYYval.Value = 'I'; ;
-    break;}
-case 180:
-#line 686 "./gointer.y"
-{ IgsYYval.Value = 'G'; ;
-    break;}
-case 181:
-#line 687 "./gointer.y"
-{ IgsYYval.Value = 'i'; ;
-    break;}
-case 182:
-#line 688 "./gointer.y"
-{ IgsYYval.Value = 'g'; ;
-    break;}
-case 183:
-#line 693 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-6].Name, "or")) YYFAIL;
-                    MatchRequest(IgsYYvsp[-9].Value, IgsYYvsp[-8].Namelist);
-                    FreeNameList(IgsYYvsp[-8].Namelist);
-                    myfree(IgsYYvsp[-6].Name);
-                    FreeNameList(IgsYYvsp[-4].Namelist);
-                    FreeNameList(IgsYYvsp[-2].Namelist);
-                ;
-    break;}
-case 184:
-#line 704 "./gointer.y"
-{
+                }
+#line 3298 "y.tab.c"
+    break;
+
+  case 178: /* automatchrequest: AUTOMATCHREQUEST names END  */
+#line 670 "gointer.y"
+                {
+                    AutoMatchRequest((IgsYYvsp[-1].Namelist));
+                    FreeNameList((IgsYYvsp[-1].Namelist));
+                }
+#line 3307 "y.tab.c"
+    break;
+
+  case 179: /* automatchdispute: AUTOMATCHDISPUTE names  */
+#line 677 "gointer.y"
+                {
+                    AutoMatchDispute((IgsYYvsp[-1].Name), (IgsYYvsp[0].Namelist));
+                    myfree((IgsYYvsp[-1].Name));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 3317 "y.tab.c"
+    break;
+
+  case 180: /* ruledmatchrequest: MATCHREQUEST  */
+#line 685 "gointer.y"
+                                        { (IgsYYval.Value) = 'I'; }
+#line 3323 "y.tab.c"
+    break;
+
+  case 181: /* ruledmatchrequest: GOEMATCHREQUEST  */
+#line 686 "gointer.y"
+                                        { (IgsYYval.Value) = 'G'; }
+#line 3329 "y.tab.c"
+    break;
+
+  case 182: /* ruledmatchrequest: TOURNAMENTMATCHREQUEST  */
+#line 687 "gointer.y"
+                                        { (IgsYYval.Value) = 'i'; }
+#line 3335 "y.tab.c"
+    break;
+
+  case 183: /* ruledmatchrequest: TOURNAMENTGOEMATCHREQUEST  */
+#line 688 "gointer.y"
+                                        { (IgsYYval.Value) = 'g'; }
+#line 3341 "y.tab.c"
+    break;
+
+  case 184: /* matchrequest: ruledmatchrequest names '>' NAME '<' names '>' names END optobserve  */
+#line 693 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-6].Name), "or")) YYERROR;
+                    MatchRequest((IgsYYvsp[-9].Value), (IgsYYvsp[-8].Namelist));
+                    FreeNameList((IgsYYvsp[-8].Namelist));
+                    myfree((IgsYYvsp[-6].Name));
+                    FreeNameList((IgsYYvsp[-4].Namelist));
+                    FreeNameList((IgsYYvsp[-2].Namelist));
+                }
+#line 3354 "y.tab.c"
+    break;
+
+  case 185: /* requestingmatch: REQUESTINGMATCH  */
+#line 704 "gointer.y"
+                {
                     /* Outputf("%s\n", $1); */
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 185:
-#line 711 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3363 "y.tab.c"
+    break;
+
+  case 186: /* komirequest: KOMIREQUEST NAME  */
+#line 711 "gointer.y"
+                {
                     char *Ptr;
 
-                    Ptr = strchr(IgsYYvsp[0].Name, 0)-1;
+                    Ptr = strchr((IgsYYvsp[0].Name), 0)-1;
                     if (*Ptr == '.') *Ptr = 0;
                     MyGameMessage("%s wants the komi to be %s",
-	                          PlayerString(IgsYYvsp[-1].Person), IgsYYvsp[0].Name);
+	                          PlayerString((IgsYYvsp[-1].Person)), (IgsYYvsp[0].Name));
                     if (WhatCommand(NULL, "komi") < 0) ChangeCommand(NULL, -1);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 186:
-#line 724 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3378 "y.tab.c"
+    break;
+
+  case 187: /* komiset: KOMISET NAME  */
+#line 724 "gointer.y"
+                {
                     char *Ptr;
 
-                    Ptr = strchr(IgsYYvsp[0].Name, 0)-1;
+                    Ptr = strchr((IgsYYvsp[0].Name), 0)-1;
                     if (*Ptr == '.') *Ptr = 0;
-                    MyGameMessage("The komi has been set to %s", IgsYYvsp[0].Name);
-                    CheckMyKomi(IgsYYvsp[0].Name);
+                    MyGameMessage("The komi has been set to %s", (IgsYYvsp[0].Name));
+                    CheckMyKomi((IgsYYvsp[0].Name));
                     if (WhatCommand(NULL, "komi") < 0) ChangeCommand(NULL, -1);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 187:
-#line 737 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3393 "y.tab.c"
+    break;
+
+  case 188: /* freemessage: FREE OBSERVE  */
+#line 737 "gointer.y"
+                {
                     Outputf("Game will %scount towards ratings\n",
-                            IgsYYvsp[-1].Value ? "not" : "");
-                ;
-    break;}
-case 188:
-#line 744 "./gointer.y"
-{
+                            (IgsYYvsp[-1].Value) ? "not" : "");
+                }
+#line 3402 "y.tab.c"
+    break;
+
+  case 189: /* freeconfirm: FREE  */
+#line 744 "gointer.y"
+                {
                     Outputf("Game will %scount towards ratings\n",
-                            IgsYYvsp[0].Value ? "not " : "");
-                ;
-    break;}
-case 189:
-#line 751 "./gointer.y"
-{
+                            (IgsYYvsp[0].Value) ? "not " : "");
+                }
+#line 3411 "y.tab.c"
+    break;
+
+  case 190: /* latefree: LATEFREE NAME  */
+#line 751 "gointer.y"
+                {
                     Outputf("You cannot change into a free game after %s\n",
-                            IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 190:
-#line 759 "./gointer.y"
-{
+                            (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3421 "y.tab.c"
+    break;
+
+  case 191: /* noplay: NOPLAY  */
+#line 759 "gointer.y"
+                {
                     Output("You are not playing a game\n");
-                ;
-    break;}
-case 191:
-#line 765 "./gointer.y"
-{
+                }
+#line 3429 "y.tab.c"
+    break;
+
+  case 192: /* noload: OPPONENTNOTON NOLOAD  */
+#line 765 "gointer.y"
+                {
                     Output("Your opponent is not on currently. "
                            "Game failed to load\n");
-                ;
-    break;}
-case 192:
-#line 771 "./gointer.y"
-{
+                }
+#line 3438 "y.tab.c"
+    break;
+
+  case 193: /* titleset: TITLESET  */
+#line 771 "gointer.y"
+                {
                     const char *title;
 
                     title = ArgsCommand(NULL, "title");
                     if (title) SetMyGameTitle(title);
                     else Warning("Title set, but I "
                                  "can't remember to what....\n");
-                ;
-    break;}
-case 193:
-#line 782 "./gointer.y"
-{
+                }
+#line 3451 "y.tab.c"
+    break;
+
+  case 194: /* statsentry: STATSENTRY NAME  */
+#line 782 "gointer.y"
+                {
                     NameVal *nameval;
 
-                    IgsYYval.Nameval = nameval = mynew(NameVal);
+                    (IgsYYval.Nameval) = nameval = mynew(NameVal);
                     nameval->Next  = nameval->Previous = nameval;
-                    nameval->Name  = IgsYYvsp[-1].Name;
-                    nameval->Value = IgsYYvsp[0].Name;
-                ;
-    break;}
-case 194:
-#line 793 "./gointer.y"
-{
-                    IgsYYval.Nameval = IgsYYvsp[-1].Nameval;
-                    IgsYYvsp[0].Nameval->Previous = IgsYYvsp[-1].Nameval->Previous;
-                    IgsYYvsp[0].Nameval->Next     = IgsYYvsp[-1].Nameval;
-                    IgsYYvsp[0].Nameval->Previous->Next = IgsYYvsp[0].Nameval->Next->Previous = IgsYYvsp[0].Nameval;
-                ;
-    break;}
-case 195:
-#line 799 "./gointer.y"
-{ IgsYYval.Nameval = IgsYYvsp[0].Nameval; ;
-    break;}
-case 196:
-#line 802 "./gointer.y"
-{ IgsYYval.Namelist = IgsYYvsp[-1].Namelist; ;
-    break;}
-case 197:
-#line 806 "./gointer.y"
-{
+                    nameval->Name  = (IgsYYvsp[-1].Name);
+                    nameval->Value = (IgsYYvsp[0].Name);
+                }
+#line 3464 "y.tab.c"
+    break;
+
+  case 195: /* statsentries: statsentries statsentry  */
+#line 793 "gointer.y"
+                {
+                    (IgsYYval.Nameval) = (IgsYYvsp[-1].Nameval);
+                    (IgsYYvsp[0].Nameval)->Previous = (IgsYYvsp[-1].Nameval)->Previous;
+                    (IgsYYvsp[0].Nameval)->Next     = (IgsYYvsp[-1].Nameval);
+                    (IgsYYvsp[0].Nameval)->Previous->Next = (IgsYYvsp[0].Nameval)->Next->Previous = (IgsYYvsp[0].Nameval);
+                }
+#line 3475 "y.tab.c"
+    break;
+
+  case 196: /* statsentries: statsentry  */
+#line 799 "gointer.y"
+                         { (IgsYYval.Nameval) = (IgsYYvsp[0].Nameval); }
+#line 3481 "y.tab.c"
+    break;
+
+  case 197: /* extendstatsentry: EXTSTATSENTRY names END  */
+#line 802 "gointer.y"
+                                          { (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist); }
+#line 3487 "y.tab.c"
+    break;
+
+  case 198: /* optextend: extendstatsentry extendstatsentry  */
+#line 806 "gointer.y"
+                {
                     NameVal *nameval;
                     NameList *Pos1, *Pos2;
 
                     nameval = mynew(NameVal);
                     nameval->Previous = nameval->Next = nameval;
                     nameval->Name = nameval->Value = NULL;
-                    IgsYYval.Nameval = nameval;
+                    (IgsYYval.Nameval) = nameval;
 
-                    for (Pos1=IgsYYvsp[-1].Namelist->Next, Pos2=IgsYYvsp[0].Namelist->Next;
-                         Pos1 != IgsYYvsp[-1].Namelist && Pos2 != IgsYYvsp[0].Namelist;
+                    for (Pos1=(IgsYYvsp[-1].Namelist)->Next, Pos2=(IgsYYvsp[0].Namelist)->Next;
+                         Pos1 != (IgsYYvsp[-1].Namelist) && Pos2 != (IgsYYvsp[0].Namelist);
                          Pos1 = Pos1->Next, Pos2 = Pos2->Next) {
                         nameval = mynew(NameVal);
                         nameval->Name  = Pos1->Name; Pos1->Name = NULL;
                         nameval->Value = Pos2->Name; Pos2->Name = NULL;
-                        nameval->Next = IgsYYval.Nameval;
-                        nameval->Previous = IgsYYval.Nameval->Previous;
+                        nameval->Next = (IgsYYval.Nameval);
+                        nameval->Previous = (IgsYYval.Nameval)->Previous;
                         nameval->Previous->Next =
                             nameval->Next->Previous = nameval;
                     }
-                    if (Pos1 != IgsYYvsp[-1].Namelist || Pos2 != IgsYYvsp[0].Namelist)
+                    if (Pos1 != (IgsYYvsp[-1].Namelist) || Pos2 != (IgsYYvsp[0].Namelist))
                         Warning("Name value lists have different length\n");
                     FreeNameList(Pos1);
                     FreeNameList(Pos2);
-                ;
-    break;}
-case 198:
-#line 832 "./gointer.y"
-{
+                }
+#line 3517 "y.tab.c"
+    break;
+
+  case 199: /* optextend: %empty  */
+#line 832 "gointer.y"
+                {
                     NameVal *nameval;
 
                     nameval = mynew(NameVal);
                     nameval->Previous = nameval->Next = nameval;
                     nameval->Name = nameval->Value = NULL;
-                    IgsYYval.Nameval = nameval;
-                ;
-    break;}
-case 199:
-#line 843 "./gointer.y"
-{
+                    (IgsYYval.Nameval) = nameval;
+                }
+#line 3530 "y.tab.c"
+    break;
+
+  case 200: /* stats: statsentries optextend  */
+#line 843 "gointer.y"
+                {
                     NameVal *ext;
 
-                    IgsYYvsp[0].Nameval->Next->Previous = IgsYYvsp[-1].Nameval->Previous;
-                    ext = IgsYYvsp[-1].Nameval->Previous->Next = IgsYYvsp[0].Nameval->Next;
-                    IgsYYvsp[0].Nameval->Next = IgsYYvsp[-1].Nameval;
-                    IgsYYvsp[-1].Nameval->Previous = IgsYYvsp[0].Nameval;
-                    ShowStats(IgsYYvsp[0].Nameval, ext);
-                    FreeNameValList(IgsYYvsp[0].Nameval);
-                ;
-    break;}
-case 200:
-#line 856 "./gointer.y"
-{
-                    IgsYYval.Bet = mynew(BetDesc);
-                    IgsYYval.Bet->Who  = IgsYYvsp[-3].Person;
-                    IgsYYval.Bet->Wins = IgsYYvsp[-2].Value;
-                    IgsYYval.Bet->Bets = IgsYYvsp[0].Value;
-                ;
-    break;}
-case 201:
-#line 865 "./gointer.y"
-{
-                    IgsYYvsp[0].Bet->Next = IgsYYvsp[-1].Bet;
-                    IgsYYval.Bet = IgsYYvsp[0].Bet;
-                ;
-    break;}
-case 202:
-#line 870 "./gointer.y"
-{
-                    IgsYYval.Bet = NULL;
-                ;
-    break;}
-case 203:
-#line 875 "./gointer.y"
-{ IgsYYval.Name = IgsYYvsp[0].Name;   ;
-    break;}
-case 204:
-#line 876 "./gointer.y"
-{ IgsYYval.Name = NULL; ;
-    break;}
-case 205:
-#line 881 "./gointer.y"
-{
+                    (IgsYYvsp[0].Nameval)->Next->Previous = (IgsYYvsp[-1].Nameval)->Previous;
+                    ext = (IgsYYvsp[-1].Nameval)->Previous->Next = (IgsYYvsp[0].Nameval)->Next;
+                    (IgsYYvsp[0].Nameval)->Next = (IgsYYvsp[-1].Nameval);
+                    (IgsYYvsp[-1].Nameval)->Previous = (IgsYYvsp[0].Nameval);
+                    ShowStats((IgsYYvsp[0].Nameval), ext);
+                    FreeNameValList((IgsYYvsp[0].Nameval));
+                }
+#line 3545 "y.tab.c"
+    break;
+
+  case 201: /* betentry: PERSON NATURAL ':' NATURAL  */
+#line 856 "gointer.y"
+                {
+                    (IgsYYval.Bet) = mynew(BetDesc);
+                    (IgsYYval.Bet)->Who  = (IgsYYvsp[-3].Person);
+                    (IgsYYval.Bet)->Wins = (IgsYYvsp[-2].Value);
+                    (IgsYYval.Bet)->Bets = (IgsYYvsp[0].Value);
+                }
+#line 3556 "y.tab.c"
+    break;
+
+  case 202: /* betentries: betentries betentry  */
+#line 865 "gointer.y"
+                {
+                    (IgsYYvsp[0].Bet)->Next = (IgsYYvsp[-1].Bet);
+                    (IgsYYval.Bet) = (IgsYYvsp[0].Bet);
+                }
+#line 3565 "y.tab.c"
+    break;
+
+  case 203: /* betentries: %empty  */
+#line 870 "gointer.y"
+                {
+                    (IgsYYval.Bet) = NULL;
+                }
+#line 3573 "y.tab.c"
+    break;
+
+  case 204: /* optmybet: MYBET  */
+#line 875 "gointer.y"
+                    { (IgsYYval.Name) = (IgsYYvsp[0].Name);   }
+#line 3579 "y.tab.c"
+    break;
+
+  case 205: /* optmybet: %empty  */
+#line 876 "gointer.y"
+                    { (IgsYYval.Name) = NULL; }
+#line 3585 "y.tab.c"
+    break;
+
+  case 206: /* bet: BETWINNERS betentries BETEVEN betentries BETLOSERS betentries optmybet  */
+#line 881 "gointer.y"
+                {
                     BetDesc *Here, *Next;
 
-                    BetResults(IgsYYvsp[-5].Bet, IgsYYvsp[-3].Bet, IgsYYvsp[-1].Bet, IgsYYvsp[0].Name);
-                    for (Here = IgsYYvsp[-5].Bet; Here; Here = Next) {
+                    BetResults((IgsYYvsp[-5].Bet), (IgsYYvsp[-3].Bet), (IgsYYvsp[-1].Bet), (IgsYYvsp[0].Name));
+                    for (Here = (IgsYYvsp[-5].Bet); Here; Here = Next) {
                         Next = Here->Next;
                         myfree(Here);
                     }
-                    for (Here = IgsYYvsp[-3].Bet; Here; Here = Next) {
+                    for (Here = (IgsYYvsp[-3].Bet); Here; Here = Next) {
                         Next = Here->Next;
                         myfree(Here);
                     }
-                    for (Here = IgsYYvsp[-1].Bet; Here; Here = Next) {
+                    for (Here = (IgsYYvsp[-1].Bet); Here; Here = Next) {
                         Next = Here->Next;
                         myfree(Here);
                     }
-                ;
-    break;}
-case 206:
-#line 901 "./gointer.y"
-{
+                }
+#line 3607 "y.tab.c"
+    break;
+
+  case 207: /* toggle: TOGGLE NAME NAME NAME NAME optname END  */
+#line 901 "gointer.y"
+                {
                     /* -Ton remove the optname */
                     /* eg: Set | verbose to be True. */
-                    SetStat(IgsYYvsp[-5].Name, strcmp(IgsYYvsp[-2].Name+1, "alse."));
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 207:
-#line 913 "./gointer.y"
-{
-                    IgsYYvsp[-2].Namelist->Name = (char *) IgsYYvsp[0].Namelist;
-                    IgsYYvsp[0].Namelist->Name = IgsYYvsp[-3].Name;
-                    IgsYYval.Namelist = IgsYYvsp[-2].Namelist;
-                ;
-    break;}
-case 208:
-#line 921 "./gointer.y"
-{
+                    SetStat((IgsYYvsp[-5].Name), strcmp((IgsYYvsp[-2].Name)+1, "alse."));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3621 "y.tab.c"
+    break;
+
+  case 208: /* channelentry: NEWCHANNEL names END namesset  */
+#line 913 "gointer.y"
+                {
+                    (IgsYYvsp[-2].Namelist)->Name = (char *) (IgsYYvsp[0].Namelist);
+                    (IgsYYvsp[0].Namelist)->Name = (IgsYYvsp[-3].Name);
+                    (IgsYYval.Namelist) = (IgsYYvsp[-2].Namelist);
+                }
+#line 3631 "y.tab.c"
+    break;
+
+  case 209: /* channelentries: channelentries channelentry  */
+#line 921 "gointer.y"
+                {
                     NameList *Names;
 
-                    IgsYYval.Channeldata = IgsYYvsp[-1].Channeldata;
-                    Names = (NameList *) IgsYYvsp[0].Namelist->Name;
-                    IgsYYvsp[0].Namelist->Name = NULL;
-                    AddChannelData(IgsYYval.Channeldata, Names->Name, IgsYYvsp[0].Namelist->Next->Name,
-                                   IgsYYvsp[0].Namelist->Next->Next->Name,
-                                   IgsYYvsp[0].Namelist->Next->Next->Next->Name, Names);
+                    (IgsYYval.Channeldata) = (IgsYYvsp[-1].Channeldata);
+                    Names = (NameList *) (IgsYYvsp[0].Namelist)->Name;
+                    (IgsYYvsp[0].Namelist)->Name = NULL;
+                    AddChannelData((IgsYYval.Channeldata), Names->Name, (IgsYYvsp[0].Namelist)->Next->Name,
+                                   (IgsYYvsp[0].Namelist)->Next->Next->Name,
+                                   (IgsYYvsp[0].Namelist)->Next->Next->Next->Name, Names);
                     Names->Name = NULL;
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 209:
-#line 934 "./gointer.y"
-{
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 3648 "y.tab.c"
+    break;
+
+  case 210: /* channelentries: channelentry  */
+#line 934 "gointer.y"
+                {
                     NameList *Names;
 
-                    IgsYYval.Channeldata = OpenChannelData();
-                    Names = (NameList *) IgsYYvsp[0].Namelist->Name;
-                    IgsYYvsp[0].Namelist->Name = NULL;
-                    AddChannelData(IgsYYval.Channeldata, Names->Name, IgsYYvsp[0].Namelist->Next->Name,
-                                   IgsYYvsp[0].Namelist->Next->Next->Name,
-                                   IgsYYvsp[0].Namelist->Next->Next->Next->Name, Names);
+                    (IgsYYval.Channeldata) = OpenChannelData();
+                    Names = (NameList *) (IgsYYvsp[0].Namelist)->Name;
+                    (IgsYYvsp[0].Namelist)->Name = NULL;
+                    AddChannelData((IgsYYval.Channeldata), Names->Name, (IgsYYvsp[0].Namelist)->Next->Name,
+                                   (IgsYYvsp[0].Namelist)->Next->Next->Name,
+                                   (IgsYYvsp[0].Namelist)->Next->Next->Next->Name, Names);
                     Names->Name = NULL;
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 210:
-#line 949 "./gointer.y"
-{
-                    ChannelList(IgsYYvsp[0].Channeldata);
-                    CloseChannelData(IgsYYvsp[0].Channeldata);
-                ;
-    break;}
-case 211:
-#line 955 "./gointer.y"
-{ IgsYYval.Namelist = IgsYYvsp[0].Namelist; ;
-    break;}
-case 212:
-#line 959 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-5].Name, "vs.")) YYFAIL;
-                    ShowObservers(atoi(IgsYYvsp[-8].Name), IgsYYvsp[-4].Name, IgsYYvsp[-6].Name, IgsYYvsp[0].Namelist);
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 3665 "y.tab.c"
+    break;
 
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 213:
-#line 972 "./gointer.y"
-{
+  case 211: /* channels: channelentries  */
+#line 949 "gointer.y"
+                {
+                    ChannelList((IgsYYvsp[0].Channeldata));
+                    CloseChannelData((IgsYYvsp[0].Channeldata));
+                }
+#line 3674 "y.tab.c"
+    break;
+
+  case 212: /* observerentries: namesset  */
+#line 955 "gointer.y"
+                          { (IgsYYval.Namelist) = (IgsYYvsp[0].Namelist); }
+#line 3680 "y.tab.c"
+    break;
+
+  case 213: /* observers: OBSERVERS NAME '(' NAME NAME NAME ')' ':' END observerentries  */
+#line 959 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-5].Name), "vs.")) YYERROR;
+                    ShowObservers(atoi((IgsYYvsp[-8].Name)), (IgsYYvsp[-4].Name), (IgsYYvsp[-6].Name), (IgsYYvsp[0].Namelist));
+
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 3695 "y.tab.c"
+    break;
+
+  case 214: /* gamenotfound: GAMENOTFOUND  */
+#line 972 "gointer.y"
+                {
                     const char *arg;
 
                     arg = StripFirstArgCommand(NULL, "games");
@@ -2501,243 +3709,293 @@ case 213:
                     } else {
 			Output("Game not found.\n");
 		    }
-                ;
-    break;}
-case 214:
-#line 989 "./gointer.y"
-{
+                }
+#line 3714 "y.tab.c"
+    break;
+
+  case 215: /* nomoremoves: NOMOREMOVES  */
+#line 989 "gointer.y"
+                {
 		    const char *msg = "There are no more moves";
 		    StopMyGameForward(msg);
                     MyGameMessage(msg);
-                ;
-    break;}
-case 215:
-#line 998 "./gointer.y"
-{
+                }
+#line 3724 "y.tab.c"
+    break;
+
+  case 216: /* notrequestgame: NOTREQUESTGAME  */
+#line 998 "gointer.y"
+                {
 		    const char *msg = "This teach game is not a request game";
 		    StopMyGameForward(msg);
                     MyGameMessage(msg);
-                ;
-    break;}
-case 216:
-#line 1008 "./gointer.y"
-{
+                }
+#line 3734 "y.tab.c"
+    break;
+
+  case 217: /* gamesline: GAMES player NAME player '(' NAME NAME NAME NAME NAME NAME names ')' '(' NAME ')' END  */
+#line 1008 "gointer.y"
+                {
                     int    Mode, Rules;
                     size_t size;
                     char  *ptr;
 
-                    ptr = IgsYYvsp[-6].Name;
+                    ptr = (IgsYYvsp[-6].Name);
                     if (ptr[1]) Mode = *ptr++;
                     else Mode = ' ';
                     Rules = *ptr++;
-                    if (*ptr) YYFAIL;
+                    if (*ptr) YYERROR;
 
-                    size = atoi(IgsYYvsp[-10].Name);
-                    IgsYYval.Game = FindGame(IgsYYvsp[-16].Value, IgsYYvsp[-13].Person, IgsYYvsp[-15].Person,
-                                  atoi(IgsYYvsp[-11].Name), size, size, atoi(IgsYYvsp[-9].Name), IgsYYvsp[-8].Name,
-                                  atoi(IgsYYvsp[-7].Name), Mode, Rules, atoi(IgsYYvsp[-2].Name));
-                    myfree(IgsYYvsp[-14].Name);
-                    myfree(IgsYYvsp[-11].Name);
-                    myfree(IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    FreeNameList(IgsYYvsp[-5].Namelist);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 217:
-#line 1035 "./gointer.y"
-{ IgsYYval.Value = IgsYYvsp[-1].Value+1; gamesSeen++; ;
-    break;}
-case 218:
-#line 1036 "./gointer.y"
-{ IgsYYval.Value = 0; gamesSeen = 0; ;
-    break;}
-case 219:
-#line 1040 "./gointer.y"
-{
+                    size = atoi((IgsYYvsp[-10].Name));
+                    (IgsYYval.Game) = FindGame((IgsYYvsp[-16].Value), (IgsYYvsp[-13].Person), (IgsYYvsp[-15].Person),
+                                  atoi((IgsYYvsp[-11].Name)), size, size, atoi((IgsYYvsp[-9].Name)), (IgsYYvsp[-8].Name),
+                                  atoi((IgsYYvsp[-7].Name)), Mode, Rules, atoi((IgsYYvsp[-2].Name)));
+                    myfree((IgsYYvsp[-14].Name));
+                    myfree((IgsYYvsp[-11].Name));
+                    myfree((IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    FreeNameList((IgsYYvsp[-5].Namelist));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3764 "y.tab.c"
+    break;
+
+  case 218: /* gameslines: gameslines gamesline  */
+#line 1035 "gointer.y"
+                                   { (IgsYYval.Value) = (IgsYYvsp[-1].Value)+1; gamesSeen++; }
+#line 3770 "y.tab.c"
+    break;
+
+  case 219: /* gameslines: %empty  */
+#line 1036 "gointer.y"
+                                   { (IgsYYval.Value) = 0; gamesSeen = 0; }
+#line 3776 "y.tab.c"
+    break;
+
+  case 220: /* $@4: %empty  */
+#line 1040 "gointer.y"
+                {
                     AssertGamesDeleted();
-                ;
-    break;}
-case 220:
-#line 1044 "./gointer.y"
-{
+                }
+#line 3784 "y.tab.c"
+    break;
+
+  case 221: /* games: GAMES $@4 gameslines  */
+#line 1044 "gointer.y"
+                {
                     TestGamesDeleted(gamesSeen);
-                ;
-    break;}
-case 221:
-#line 1049 "./gointer.y"
-{ UnObserve(IgsYYvsp[0].Value); ;
-    break;}
-case 222:
-#line 1053 "./gointer.y"
-{
+                }
+#line 3792 "y.tab.c"
+    break;
+
+  case 222: /* remove: REMOVE  */
+#line 1049 "gointer.y"
+                     { UnObserve((IgsYYvsp[0].Value)); }
+#line 3798 "y.tab.c"
+    break;
+
+  case 223: /* move: MOVE NAME  */
+#line 1053 "gointer.y"
+                {
                     char     Num[20], *ptr;
                     NameVal *nameval;
-                    IgsYYval.Nameval = nameval = mynew(NameVal);
-                    sprintf(Num, "%d", IgsYYvsp[-1].Value);
+                    (IgsYYval.Nameval) = nameval = mynew(NameVal);
+                    sprintf(Num, "%d", (IgsYYvsp[-1].Value));
                     nameval->Next  = nameval->Previous = nameval;
                     nameval->Name  = mystrdup(Num);
-                    ptr = IgsYYvsp[0].Name;
+                    ptr = (IgsYYvsp[0].Name);
                     /* Get rid of extra `removed stones' entries.
                        Maybe I ought to compare them with what I work out.. */
                     while (*ptr && !isspace(*ptr)) ptr++;
-                    if (ptr-IgsYYvsp[0].Name <= 3) *ptr = 0;
-                    nameval->Value = IgsYYvsp[0].Name;
-                ;
-    break;}
-case 223:
-#line 1070 "./gointer.y"
-{
-                    IgsYYval.Nameval = IgsYYvsp[-1].Nameval;
-                    IgsYYvsp[0].Nameval->Previous = IgsYYvsp[-1].Nameval->Previous;
-                    IgsYYvsp[0].Nameval->Next     = IgsYYvsp[-1].Nameval;
-                    IgsYYvsp[0].Nameval->Previous->Next = IgsYYvsp[0].Nameval->Next->Previous = IgsYYvsp[0].Nameval;
-                ;
-    break;}
-case 224:
-#line 1077 "./gointer.y"
-{
+                    if (ptr-(IgsYYvsp[0].Name) <= 3) *ptr = 0;
+                    nameval->Value = (IgsYYvsp[0].Name);
+                }
+#line 3817 "y.tab.c"
+    break;
+
+  case 224: /* movelist: movelist move  */
+#line 1070 "gointer.y"
+                {
+                    (IgsYYval.Nameval) = (IgsYYvsp[-1].Nameval);
+                    (IgsYYvsp[0].Nameval)->Previous = (IgsYYvsp[-1].Nameval)->Previous;
+                    (IgsYYvsp[0].Nameval)->Next     = (IgsYYvsp[-1].Nameval);
+                    (IgsYYvsp[0].Nameval)->Previous->Next = (IgsYYvsp[0].Nameval)->Next->Previous = (IgsYYvsp[0].Nameval);
+                }
+#line 3828 "y.tab.c"
+    break;
+
+  case 225: /* movelist: %empty  */
+#line 1077 "gointer.y"
+                {
                     NameVal *nameval;
 
-                    IgsYYval.Nameval = nameval = mynew(NameVal);
+                    (IgsYYval.Nameval) = nameval = mynew(NameVal);
                     nameval->Next  = nameval->Previous = nameval;
                     nameval->Name  = NULL;
                     nameval->Value = NULL;
-                ;
-    break;}
-case 225:
-#line 1087 "./gointer.y"
-{;
-    break;}
-case 226:
-#line 1088 "./gointer.y"
-{;
-    break;}
-case 227:
-#line 1093 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-7].Name, "vs")) YYFAIL;
+                }
+#line 3841 "y.tab.c"
+    break;
 
-                    IgsYYval.Gamedesc = mynew(GameDesc);
-                    IgsYYval.Gamedesc->Id            = IgsYYvsp[-14].Value;
-                    IgsYYval.Gamedesc->BlackName     = IgsYYvsp[-6].Name;
-                    IgsYYval.Gamedesc->BlackName2    = 0;
-                    IgsYYval.Gamedesc->BlackCaptures = atoi(IgsYYvsp[-4].Name);
-                    IgsYYval.Gamedesc->BlackTime     = atoi(IgsYYvsp[-3].Name);
-                    IgsYYval.Gamedesc->BlackByo      = atoi(IgsYYvsp[-2].Name);
-                    IgsYYval.Gamedesc->WhiteName     = IgsYYvsp[-13].Name;
-                    IgsYYval.Gamedesc->WhiteName2    = 0;
-                    IgsYYval.Gamedesc->WhiteCaptures = atoi(IgsYYvsp[-11].Name);
-                    IgsYYval.Gamedesc->WhiteTime     = atoi(IgsYYvsp[-10].Name);
-                    IgsYYval.Gamedesc->WhiteByo      = atoi(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-11].Name);
-                    myfree(IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 228:
-#line 1120 "./gointer.y"
-{
+  case 226: /* optgamesaved: gamesaved  */
+#line 1087 "gointer.y"
+                        {}
+#line 3847 "y.tab.c"
+    break;
+
+  case 227: /* optgamesaved: %empty  */
+#line 1088 "gointer.y"
+              {}
+#line 3853 "y.tab.c"
+    break;
+
+  case 228: /* gamedesc: GAME NAME '(' NAME NAME NAME ')' NAME NAME '(' NAME NAME NAME ')' END  */
+#line 1093 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-7].Name), "vs")) YYERROR;
+
+                    (IgsYYval.Gamedesc) = mynew(GameDesc);
+                    (IgsYYval.Gamedesc)->Id            = (IgsYYvsp[-14].Value);
+                    (IgsYYval.Gamedesc)->BlackName     = (IgsYYvsp[-6].Name);
+                    (IgsYYval.Gamedesc)->BlackName2    = 0;
+                    (IgsYYval.Gamedesc)->BlackCaptures = atoi((IgsYYvsp[-4].Name));
+                    (IgsYYval.Gamedesc)->BlackTime     = atoi((IgsYYvsp[-3].Name));
+                    (IgsYYval.Gamedesc)->BlackByo      = atoi((IgsYYvsp[-2].Name));
+                    (IgsYYval.Gamedesc)->WhiteName     = (IgsYYvsp[-13].Name);
+                    (IgsYYval.Gamedesc)->WhiteName2    = 0;
+                    (IgsYYval.Gamedesc)->WhiteCaptures = atoi((IgsYYvsp[-11].Name));
+                    (IgsYYval.Gamedesc)->WhiteTime     = atoi((IgsYYvsp[-10].Name));
+                    (IgsYYval.Gamedesc)->WhiteByo      = atoi((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-11].Name));
+                    myfree((IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 3881 "y.tab.c"
+    break;
+
+  case 229: /* gamedesc: GAME NAME '(' NAME NAME NAME ')' NAME NAME '(' NAME NAME NAME ')' END TEAMGAME NAME NAME NAME NAME END  */
+#line 1120 "gointer.y"
+                {
 		    Game *game;
-                    if (strcmp(IgsYYvsp[-13].Name, "vs")) YYFAIL;
+                    if (strcmp((IgsYYvsp[-13].Name), "vs")) YYERROR;
 
-                    IgsYYval.Gamedesc = mynew(GameDesc);
-                    IgsYYval.Gamedesc->Id            = IgsYYvsp[-20].Value;
-                    IgsYYval.Gamedesc->BlackName     = IgsYYvsp[-12].Name;
-                    IgsYYval.Gamedesc->BlackName2    = IgsYYvsp[-2].Name;
-                    IgsYYval.Gamedesc->BlackCaptures = atoi(IgsYYvsp[-10].Name);
-                    IgsYYval.Gamedesc->BlackTime     = atoi(IgsYYvsp[-9].Name);
-                    IgsYYval.Gamedesc->BlackByo      = atoi(IgsYYvsp[-8].Name);
-                    IgsYYval.Gamedesc->WhiteName     = IgsYYvsp[-19].Name;
-                    IgsYYval.Gamedesc->WhiteName2    = IgsYYvsp[-1].Name;
-                    IgsYYval.Gamedesc->WhiteCaptures = atoi(IgsYYvsp[-17].Name);
-                    IgsYYval.Gamedesc->WhiteTime     = atoi(IgsYYvsp[-16].Name);
-                    IgsYYval.Gamedesc->WhiteByo      = atoi(IgsYYvsp[-15].Name);
+                    (IgsYYval.Gamedesc) = mynew(GameDesc);
+                    (IgsYYval.Gamedesc)->Id            = (IgsYYvsp[-20].Value);
+                    (IgsYYval.Gamedesc)->BlackName     = (IgsYYvsp[-12].Name);
+                    (IgsYYval.Gamedesc)->BlackName2    = (IgsYYvsp[-2].Name);
+                    (IgsYYval.Gamedesc)->BlackCaptures = atoi((IgsYYvsp[-10].Name));
+                    (IgsYYval.Gamedesc)->BlackTime     = atoi((IgsYYvsp[-9].Name));
+                    (IgsYYval.Gamedesc)->BlackByo      = atoi((IgsYYvsp[-8].Name));
+                    (IgsYYval.Gamedesc)->WhiteName     = (IgsYYvsp[-19].Name);
+                    (IgsYYval.Gamedesc)->WhiteName2    = (IgsYYvsp[-1].Name);
+                    (IgsYYval.Gamedesc)->WhiteCaptures = atoi((IgsYYvsp[-17].Name));
+                    (IgsYYval.Gamedesc)->WhiteTime     = atoi((IgsYYvsp[-16].Name));
+                    (IgsYYval.Gamedesc)->WhiteByo      = atoi((IgsYYvsp[-15].Name));
 		    /* We must create the game now, since the "games Id"
                      * command will not give the 3rd and 4th players:
                      */
-                    TeamGame(IgsYYval.Gamedesc->Id, IgsYYvsp[-4].Name, IgsYYvsp[-3].Name, IgsYYvsp[-2].Name, IgsYYvsp[-1].Name, 0);
-                    myfree(IgsYYvsp[-17].Name);
-                    myfree(IgsYYvsp[-16].Name);
-                    myfree(IgsYYvsp[-15].Name);
-                    myfree(IgsYYvsp[-13].Name);
-                    myfree(IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-9].Name);
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                ;
-    break;}
-case 229:
-#line 1152 "./gointer.y"
-{ IgsYYval.Name = IgsYYvsp[0].Name; ;
-    break;}
-case 230:
-#line 1153 "./gointer.y"
-{ IgsYYval.Name = 0;  ;
-    break;}
-case 231:
-#line 1156 "./gointer.y"
-{ SeenAdd = 1; ;
-    break;}
-case 232:
-#line 1160 "./gointer.y"
-{
+                    TeamGame((IgsYYval.Gamedesc)->Id, (IgsYYvsp[-4].Name), (IgsYYvsp[-3].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[-1].Name), 0);
+                    myfree((IgsYYvsp[-17].Name));
+                    myfree((IgsYYvsp[-16].Name));
+                    myfree((IgsYYvsp[-15].Name));
+                    myfree((IgsYYvsp[-13].Name));
+                    myfree((IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-9].Name));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                }
+#line 3916 "y.tab.c"
+    break;
+
+  case 230: /* optgametitle: GAMETITLE NAME  */
+#line 1152 "gointer.y"
+                             { (IgsYYval.Name) = (IgsYYvsp[0].Name); }
+#line 3922 "y.tab.c"
+    break;
+
+  case 231: /* optgametitle: %empty  */
+#line 1153 "gointer.y"
+                             { (IgsYYval.Name) = 0;  }
+#line 3928 "y.tab.c"
+    break;
+
+  case 232: /* add: ADD  */
+#line 1156 "gointer.y"
+                  { SeenAdd = 1; }
+#line 3934 "y.tab.c"
+    break;
+
+  case 233: /* doneobserve: DONE observe  */
+#line 1160 "gointer.y"
+                {
                     Done();
-                ;
-    break;}
-case 233:
-#line 1166 "./gointer.y"
-{
-                    MyGameMessage(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 234:
-#line 1173 "./gointer.y"
-{
-                    MyGameMessage(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 235:
-#line 1180 "./gointer.y"
-{
+                }
+#line 3942 "y.tab.c"
+    break;
+
+  case 234: /* mustpass: MUSTPASS  */
+#line 1166 "gointer.y"
+                {
+                    MyGameMessage((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3951 "y.tab.c"
+    break;
+
+  case 235: /* oppmustpass: OPPMUSTPASS  */
+#line 1173 "gointer.y"
+                {
+                    MyGameMessage((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3960 "y.tab.c"
+    break;
+
+  case 236: /* disagreeremove: DISAGREEREMOVE  */
+#line 1180 "gointer.y"
+                {
                     MyGameMessage("There is a disagreement about the "
                                   "life/death of that stone. "
                                   "The game will resume.");
                     RestoreFromScoring();
                     MyGameMessage("Board is restored to what it was"
                                   " before you started scoring");
-                ;
-    break;}
-case 236:
-#line 1191 "./gointer.y"
-{
+                }
+#line 3973 "y.tab.c"
+    break;
+
+  case 237: /* opponentdisagreeremove: OPPDISAGREEREMOVE  */
+#line 1191 "gointer.y"
+                {
                     MyGameMessage("There is a disagreement about the "
                                   "life/death of that stone. "
                                   "The game will resume.");
                     RestoreFromScoring();
-                ;
-    break;}
-case 237:
-#line 1200 "./gointer.y"
-{ /* teach invalid-game. The gamdesc will force "games"
+                }
+#line 3984 "y.tab.c"
+    break;
+
+  case 238: /* optnotreviewing: NOTREVIEWING  */
+#line 1200 "gointer.y"
+                    { /* teach invalid-game. The gamdesc will force "games"
                        * since teaching games are not announced.
                        */
 		      Output("Game not found\n");
-                    ;
-    break;}
-case 239:
-#line 1209 "./gointer.y"
-{
+                    }
+#line 3994 "y.tab.c"
+    break;
+
+  case 240: /* observe: gamedesc movelist optgametitle optgamesaved optnotreviewing  */
+#line 1209 "gointer.y"
+                {
                     Game *game;
                     int   Nr;
 
@@ -2745,563 +4003,677 @@ case 239:
                      * a race condition. Instead assume that the movelist
 		     * is a result of "moves <id>" if it starts with move 0.
                      */
-		    if (SeenAdd || IgsYYvsp[-3].Nameval->Next == IgsYYvsp[-3].Nameval ||
-			strcmp(IgsYYvsp[-3].Nameval->Next->Name, "0")) {
-                        game = AddMove(SeenAdd, IgsYYvsp[-4].Gamedesc, IgsYYvsp[-3].Nameval);
+		    if (SeenAdd || (IgsYYvsp[-3].Nameval)->Next == (IgsYYvsp[-3].Nameval) ||
+			strcmp((IgsYYvsp[-3].Nameval)->Next->Name, "0")) {
+                        game = AddMove(SeenAdd, (IgsYYvsp[-4].Gamedesc), (IgsYYvsp[-3].Nameval));
 /*                      if (game && !MyGameP(game)) ChangeCommand(NULL, -1); */
-                        if (game) SetGameTitle(game, IgsYYvsp[-2].Name);
-                        myfree(IgsYYvsp[-2].Name);
+                        if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
+                        myfree((IgsYYvsp[-2].Name));
                     } else {
-		        Moves(IgsYYvsp[-4].Gamedesc, IgsYYvsp[-3].Nameval);
+		        Moves((IgsYYvsp[-4].Gamedesc), (IgsYYvsp[-3].Nameval));
 		    }
-                    FreeGameDesc(IgsYYvsp[-4].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-3].Nameval);
-                ;
-    break;}
-case 240:
-#line 1232 "./gointer.y"
-{
+                    FreeGameDesc((IgsYYvsp[-4].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-3].Nameval));
+                }
+#line 4019 "y.tab.c"
+    break;
+
+  case 241: /* observe: gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optobserve optgametitle optgamesaved  */
+#line 1232 "gointer.y"
+                {
                     Game *game;
                     int   Nr;
 
-		    IgsYYvsp[-10].Gamedesc->BlackName2 = strcmp(IgsYYvsp[-10].Gamedesc->BlackName, IgsYYvsp[-7].Name) ? IgsYYvsp[-7].Name : IgsYYvsp[-5].Name;
-		    IgsYYvsp[-10].Gamedesc->WhiteName2 = strcmp(IgsYYvsp[-10].Gamedesc->WhiteName, IgsYYvsp[-6].Name) ? IgsYYvsp[-6].Name : IgsYYvsp[-4].Name;
-		    if (SeenAdd || IgsYYvsp[-9].Nameval->Next == IgsYYvsp[-9].Nameval ||
-			strcmp(IgsYYvsp[-9].Nameval->Next->Name, "0")) {
-                        game = AddMove(SeenAdd, IgsYYvsp[-10].Gamedesc, IgsYYvsp[-9].Nameval);
+		    (IgsYYvsp[-10].Gamedesc)->BlackName2 = strcmp((IgsYYvsp[-10].Gamedesc)->BlackName, (IgsYYvsp[-7].Name)) ? (IgsYYvsp[-7].Name) : (IgsYYvsp[-5].Name);
+		    (IgsYYvsp[-10].Gamedesc)->WhiteName2 = strcmp((IgsYYvsp[-10].Gamedesc)->WhiteName, (IgsYYvsp[-6].Name)) ? (IgsYYvsp[-6].Name) : (IgsYYvsp[-4].Name);
+		    if (SeenAdd || (IgsYYvsp[-9].Nameval)->Next == (IgsYYvsp[-9].Nameval) ||
+			strcmp((IgsYYvsp[-9].Nameval)->Next->Name, "0")) {
+                        game = AddMove(SeenAdd, (IgsYYvsp[-10].Gamedesc), (IgsYYvsp[-9].Nameval));
 /*                      if (game && !MyGameP(game)) ChangeCommand(NULL, -1); */
-                        if (game) SetGameTitle(game, IgsYYvsp[-1].Name);
-                        myfree(IgsYYvsp[-1].Name);
+                        if (game) SetGameTitle(game, (IgsYYvsp[-1].Name));
+                        myfree((IgsYYvsp[-1].Name));
                     } else {
-		        Moves(IgsYYvsp[-10].Gamedesc, IgsYYvsp[-9].Nameval);
+		        Moves((IgsYYvsp[-10].Gamedesc), (IgsYYvsp[-9].Nameval));
 		    }
-                    FreeGameDesc(IgsYYvsp[-10].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-9].Nameval);
-                ;
-    break;}
-case 241:
-#line 1252 "./gointer.y"
-{ IgsYYval.Value = IgsYYvsp[0].Value; ;
-    break;}
-case 242:
-#line 1253 "./gointer.y"
-{ IgsYYval.Value = Empty; ;
-    break;}
-case 243:
-#line 1293 "./gointer.y"
-{
+                    FreeGameDesc((IgsYYvsp[-10].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-9].Nameval));
+                }
+#line 4042 "y.tab.c"
+    break;
+
+  case 242: /* optfirst: FIRSTREMOVE  */
+#line 1252 "gointer.y"
+                          { (IgsYYval.Value) = (IgsYYvsp[0].Value); }
+#line 4048 "y.tab.c"
+    break;
+
+  case 243: /* optfirst: %empty  */
+#line 1253 "gointer.y"
+                          { (IgsYYval.Value) = Empty; }
+#line 4054 "y.tab.c"
+    break;
+
+  case 244: /* doneopponentobserve: DONE optfirst SEMIPROMPT opponentoptobserve  */
+#line 1293 "gointer.y"
+                {
                     Done();
-                    if (IgsYYvsp[-2].Value != Empty)
+                    if ((IgsYYvsp[-2].Value) != Empty)
                         MyGameMessage("%s needs to remove a group first.",
-                                      IgsYYvsp[-2].Value == White ? "White" : "Black");
-                ;
-    break;}
-case 244:
-#line 1302 "./gointer.y"
-{
+                                      (IgsYYvsp[-2].Value) == White ? "White" : "Black");
+                }
+#line 4065 "y.tab.c"
+    break;
+
+  case 245: /* opponentobserve: gamedesc movelist optgametitle OBSERVE optgamesaved  */
+#line 1302 "gointer.y"
+                {
                     Game *game;
 
-                    game = AddMove(0, IgsYYvsp[-4].Gamedesc, IgsYYvsp[-3].Nameval);
-                    FreeGameDesc(IgsYYvsp[-4].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-3].Nameval);
-                    if (game) SetGameTitle(game, IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 245:
-#line 1314 "./gointer.y"
-{
+                    game = AddMove(0, (IgsYYvsp[-4].Gamedesc), (IgsYYvsp[-3].Nameval));
+                    FreeGameDesc((IgsYYvsp[-4].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-3].Nameval));
+                    if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4079 "y.tab.c"
+    break;
+
+  case 246: /* opponentoptobserve: gamedesc movelist optgametitle OBSERVE optgamesaved  */
+#line 1314 "gointer.y"
+                {
                     Game *game;
 
-                    game = AddMove(0, IgsYYvsp[-4].Gamedesc, IgsYYvsp[-3].Nameval);
-                    FreeGameDesc(IgsYYvsp[-4].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-3].Nameval);
-                    if (game) SetGameTitle(game, IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 246:
-#line 1324 "./gointer.y"
-{
+                    game = AddMove(0, (IgsYYvsp[-4].Gamedesc), (IgsYYvsp[-3].Nameval));
+                    FreeGameDesc((IgsYYvsp[-4].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-3].Nameval));
+                    if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4093 "y.tab.c"
+    break;
+
+  case 247: /* opponentoptobserve: gamedesc movelist optgametitle SEMIPROMPT optgamesaved  */
+#line 1324 "gointer.y"
+                {
                     Game *game;
 
-                    game = AddMove(0, IgsYYvsp[-4].Gamedesc, IgsYYvsp[-3].Nameval);
-                    FreeGameDesc(IgsYYvsp[-4].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-3].Nameval);
-                    if (game) SetGameTitle(game, IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 247:
-#line 1336 "./gointer.y"
-{
+                    game = AddMove(0, (IgsYYvsp[-4].Gamedesc), (IgsYYvsp[-3].Nameval));
+                    FreeGameDesc((IgsYYvsp[-4].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-3].Nameval));
+                    if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4107 "y.tab.c"
+    break;
+
+  case 248: /* betresult: BETRESULT opponentobserve  */
+#line 1336 "gointer.y"
+                {
                     AutoCommand(NULL, "%%bet bet");
-                ;
-    break;}
-case 248:
-#line 1340 "./gointer.y"
-{
+                }
+#line 4115 "y.tab.c"
+    break;
+
+  case 249: /* betresult: BETRESULT observe  */
+#line 1340 "gointer.y"
+                {
                     AutoCommand(NULL, "%%bet bet");
-                ;
-    break;}
-case 249:
-#line 1346 "./gointer.y"
-{
+                }
+#line 4123 "y.tab.c"
+    break;
+
+  case 250: /* undidlist: undidlist UNDID NAME  */
+#line 1346 "gointer.y"
+                {
                     /* undo of multiple moves allowed in a teaching game */
-		    MyGameUndo(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 250:
-#line 1352 "./gointer.y"
-{
-		    MyGameUndo(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 251:
-#line 1360 "./gointer.y"
-{
-                    FreeGameDesc(IgsYYvsp[-3].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-2].Nameval);
+		    MyGameUndo((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4133 "y.tab.c"
+    break;
+
+  case 251: /* undidlist: UNDID NAME  */
+#line 1352 "gointer.y"
+                {
+		    MyGameUndo((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4142 "y.tab.c"
+    break;
+
+  case 252: /* undid: undidlist gamedesc movelist optgametitle optgamesaved  */
+#line 1360 "gointer.y"
+                {
+                    FreeGameDesc((IgsYYvsp[-3].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-2].Nameval));
                     /* if (game) SetGameTitle(game, $4); */
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 252:
-#line 1368 "./gointer.y"
-{
-                    FreeGameDesc(IgsYYvsp[-9].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-8].Nameval);
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4153 "y.tab.c"
+    break;
+
+  case 253: /* undid: undidlist gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgametitle optgamesaved  */
+#line 1368 "gointer.y"
+                {
+                    FreeGameDesc((IgsYYvsp[-9].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-8].Nameval));
                     /* if (game) SetGameTitle(game, $10); */
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 253:
-#line 1378 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4164 "y.tab.c"
+    break;
+
+  case 254: /* opponentundid: UNDID NAME OBSERVE gamedesc movelist optgamesaved  */
+#line 1378 "gointer.y"
+                {
                     char *ptr;
 
-                    ptr = strchr(IgsYYvsp[-4].Name, ')');
+                    ptr = strchr((IgsYYvsp[-4].Name), ')');
                     if (ptr) *ptr = 0;
-                    else YYFAIL;
-                    Undo(0, IgsYYvsp[-2].Gamedesc->Id, IgsYYvsp[-2].Gamedesc->BlackName, IgsYYvsp[-2].Gamedesc->WhiteName, IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    FreeGameDesc(IgsYYvsp[-2].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-1].Nameval);
-                ;
-    break;}
-case 254:
-#line 1391 "./gointer.y"
-{
+                    else YYERROR;
+                    Undo(0, (IgsYYvsp[-2].Gamedesc)->Id, (IgsYYvsp[-2].Gamedesc)->BlackName, (IgsYYvsp[-2].Gamedesc)->WhiteName, (IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    FreeGameDesc((IgsYYvsp[-2].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-1].Nameval));
+                }
+#line 4180 "y.tab.c"
+    break;
+
+  case 255: /* opponentundid: UNDID NAME OBSERVE gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgamesaved  */
+#line 1391 "gointer.y"
+                {
                     char *ptr;
 
-                    ptr = strchr(IgsYYvsp[-10].Name, ')');
+                    ptr = strchr((IgsYYvsp[-10].Name), ')');
                     if (ptr) *ptr = 0;
-                    else YYFAIL;
-                    Undo(0, IgsYYvsp[-8].Gamedesc->Id, IgsYYvsp[-8].Gamedesc->BlackName, IgsYYvsp[-8].Gamedesc->WhiteName, IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-10].Name);
-                    FreeGameDesc(IgsYYvsp[-8].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-7].Nameval);
-                ;
-    break;}
-case 255:
-#line 1404 "./gointer.y"
-{;
-    break;}
-case 256:
-#line 1408 "./gointer.y"
-{
-                    Resume(IgsYYvsp[-2].Gamedesc->Id, IgsYYvsp[-2].Gamedesc->BlackName, IgsYYvsp[-2].Gamedesc->WhiteName,
-                           IgsYYvsp[-1].Nameval->Previous->Name ?
-                           1+atoi(IgsYYvsp[-1].Nameval->Previous->Name) : 0);
-                    FreeGameDesc(IgsYYvsp[-2].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-1].Nameval);
-                ;
-    break;}
-case 257:
-#line 1417 "./gointer.y"
-{
+                    else YYERROR;
+                    Undo(0, (IgsYYvsp[-8].Gamedesc)->Id, (IgsYYvsp[-8].Gamedesc)->BlackName, (IgsYYvsp[-8].Gamedesc)->WhiteName, (IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-10].Name));
+                    FreeGameDesc((IgsYYvsp[-8].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-7].Nameval));
+                }
+#line 4196 "y.tab.c"
+    break;
+
+  case 256: /* restore: RESTORE  */
+#line 1404 "gointer.y"
+                      {}
+#line 4202 "y.tab.c"
+    break;
+
+  case 257: /* opponentrestart: RESTART gamedesc movelist OBSERVE  */
+#line 1408 "gointer.y"
+                {
+                    Resume((IgsYYvsp[-2].Gamedesc)->Id, (IgsYYvsp[-2].Gamedesc)->BlackName, (IgsYYvsp[-2].Gamedesc)->WhiteName,
+                           (IgsYYvsp[-1].Nameval)->Previous->Name ?
+                           1+atoi((IgsYYvsp[-1].Nameval)->Previous->Name) : 0);
+                    FreeGameDesc((IgsYYvsp[-2].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-1].Nameval));
+                }
+#line 4214 "y.tab.c"
+    break;
+
+  case 258: /* opponentrestart: RESTART gamedesc movelist RESTARTTEAMGAME NAME NAME NAME NAME END OBSERVE  */
+#line 1417 "gointer.y"
+                {
                     Game *game;
 		    /* We must create the game now, since the "games Id"
                      * command will not give the 3rd and 4th players:
 		     */
-                    game = ResumeTeam(IgsYYvsp[-8].Gamedesc->Id, IgsYYvsp[-5].Name, IgsYYvsp[-4].Name, IgsYYvsp[-3].Name, IgsYYvsp[-2].Name,
-                                  IgsYYvsp[-7].Nameval->Previous->Name ?
-                                  1+atoi(IgsYYvsp[-7].Nameval->Previous->Name) : 0);
-                    if (game) SetGameTitle(game, IgsYYvsp[0].Dummy);
-                    FreeGameDesc(IgsYYvsp[-8].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-7].Nameval);
-                    myfree(IgsYYvsp[0].Dummy);
-                ;
-    break;}
-case 258:
-#line 1433 "./gointer.y"
-{
+                    game = ResumeTeam((IgsYYvsp[-8].Gamedesc)->Id, (IgsYYvsp[-5].Name), (IgsYYvsp[-4].Name), (IgsYYvsp[-3].Name), (IgsYYvsp[-2].Name),
+                                  (IgsYYvsp[-7].Nameval)->Previous->Name ?
+                                  1+atoi((IgsYYvsp[-7].Nameval)->Previous->Name) : 0);
+                    if (game) SetGameTitle(game, (IgsYYvsp[0].Dummy));
+                    FreeGameDesc((IgsYYvsp[-8].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-7].Nameval));
+                    myfree((IgsYYvsp[0].Dummy));
+                }
+#line 4232 "y.tab.c"
+    break;
+
+  case 259: /* restart: RESTART gamedesc movelist optgametitle  */
+#line 1433 "gointer.y"
+                {
                     Game *game;
 
-                    game = Resume(IgsYYvsp[-2].Gamedesc->Id, IgsYYvsp[-2].Gamedesc->BlackName, IgsYYvsp[-2].Gamedesc->WhiteName,
-                                  IgsYYvsp[-1].Nameval->Previous->Name ?
-                                  1+atoi(IgsYYvsp[-1].Nameval->Previous->Name) : 0);
-                    if (game) SetGameTitle(game, IgsYYvsp[0].Name);
-                    FreeGameDesc(IgsYYvsp[-2].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-1].Nameval);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 259:
-#line 1446 "./gointer.y"
-{
+                    game = Resume((IgsYYvsp[-2].Gamedesc)->Id, (IgsYYvsp[-2].Gamedesc)->BlackName, (IgsYYvsp[-2].Gamedesc)->WhiteName,
+                                  (IgsYYvsp[-1].Nameval)->Previous->Name ?
+                                  1+atoi((IgsYYvsp[-1].Nameval)->Previous->Name) : 0);
+                    if (game) SetGameTitle(game, (IgsYYvsp[0].Name));
+                    FreeGameDesc((IgsYYvsp[-2].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-1].Nameval));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4248 "y.tab.c"
+    break;
+
+  case 260: /* restart: RESTART gamedesc movelist RESTARTTEAMGAME NAME NAME NAME NAME END optgametitle  */
+#line 1446 "gointer.y"
+                {
                     Game *game;
 		    /* We must create the game now, since the "games Id"
                      * command will not give the 3rd and 4th players:
 		     */
-                    game = ResumeTeam(IgsYYvsp[-8].Gamedesc->Id, IgsYYvsp[-5].Name, IgsYYvsp[-4].Name, IgsYYvsp[-3].Name, IgsYYvsp[-2].Name,
-                                  IgsYYvsp[-7].Nameval->Previous->Name ?
-                                  1+atoi(IgsYYvsp[-7].Nameval->Previous->Name) : 0);
-                    if (game) SetGameTitle(game, IgsYYvsp[0].Name);
-                    FreeGameDesc(IgsYYvsp[-8].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-7].Nameval);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 260:
-#line 1461 "./gointer.y"
-{;
-    break;}
-case 261:
-#line 1465 "./gointer.y"
-{
-                    SendCommand(NULL, INT_TO_XTPOINTER(IgsYYvsp[-1].Gamedesc->Id+1),
-				"games %d", IgsYYvsp[-1].Gamedesc->Id);
+                    game = ResumeTeam((IgsYYvsp[-8].Gamedesc)->Id, (IgsYYvsp[-5].Name), (IgsYYvsp[-4].Name), (IgsYYvsp[-3].Name), (IgsYYvsp[-2].Name),
+                                  (IgsYYvsp[-7].Nameval)->Previous->Name ?
+                                  1+atoi((IgsYYvsp[-7].Nameval)->Previous->Name) : 0);
+                    if (game) SetGameTitle(game, (IgsYYvsp[0].Name));
+                    FreeGameDesc((IgsYYvsp[-8].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-7].Nameval));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4266 "y.tab.c"
+    break;
+
+  case 261: /* newmatch1: OBSERVE newmatch2  */
+#line 1461 "gointer.y"
+                                {}
+#line 4272 "y.tab.c"
+    break;
+
+  case 262: /* newmatch2: gamedesc NEWMATCH  */
+#line 1465 "gointer.y"
+                {
+                    SendCommand(NULL, INT_TO_XTPOINTER((IgsYYvsp[-1].Gamedesc)->Id+1),
+				"games %d", (IgsYYvsp[-1].Gamedesc)->Id);
                     /* INT_TO_XTPOINTER(Id+1) will set ForceNew = Id
                      in AssertGamesDeleted() */
-                    FreeGameDesc(IgsYYvsp[-1].Gamedesc);
-                ;
-    break;}
-case 262:
-#line 1475 "./gointer.y"
-{
-                    Decline(IgsYYvsp[0].Person);
-                ;
-    break;}
-case 263:
-#line 1481 "./gointer.y"
-{
-                    IgsYYval.Disputedesc = mynew(DisputeDesc);
-                    IgsYYval.Disputedesc->Player = IgsYYvsp[-5].Person;
-                    IgsYYval.Disputedesc->Color  = IgsYYvsp[-4].Value;
-                    IgsYYval.Disputedesc->SizeX  = atoi(IgsYYvsp[-3].Name);
-                    IgsYYval.Disputedesc->SizeY  = atoi(strchr(IgsYYvsp[-3].Name, 'x')+1);
-                    IgsYYval.Disputedesc->Tim    = IgsYYvsp[-2].Value;
-                    IgsYYval.Disputedesc->ByoYomi= IgsYYvsp[-1].Value;
-                    myfree(IgsYYvsp[-3].Name);
-                ;
-    break;}
-case 264:
-#line 1494 "./gointer.y"
-{
-                    IgsYYvsp[0].Disputedesc->Next     = IgsYYvsp[-1].Disputedesc;
-                    IgsYYvsp[0].Disputedesc->Previous = IgsYYvsp[-1].Disputedesc->Previous;
-                    IgsYYvsp[0].Disputedesc->Next->Previous = IgsYYvsp[0].Disputedesc->Previous->Next = IgsYYvsp[0].Disputedesc;
-                    IgsYYval.Disputedesc = IgsYYvsp[-1].Disputedesc;
-                ;
-    break;}
-case 265:
-#line 1501 "./gointer.y"
-{
-                    IgsYYval.Disputedesc = mynew(DisputeDesc);
-                    IgsYYval.Disputedesc->Next = IgsYYval.Disputedesc->Previous = IgsYYval.Disputedesc;
-                ;
-    break;}
-case 266:
-#line 1508 "./gointer.y"
-{
+                    FreeGameDesc((IgsYYvsp[-1].Gamedesc));
+                }
+#line 4284 "y.tab.c"
+    break;
+
+  case 263: /* decline: DECLINE  */
+#line 1475 "gointer.y"
+                {
+                    Decline((IgsYYvsp[0].Person));
+                }
+#line 4292 "y.tab.c"
+    break;
+
+  case 264: /* disputeline: PERSON GAMECOLOR NAME GAMESECONDS BYOYOMI END  */
+#line 1481 "gointer.y"
+                {
+                    (IgsYYval.Disputedesc) = mynew(DisputeDesc);
+                    (IgsYYval.Disputedesc)->Player = (IgsYYvsp[-5].Person);
+                    (IgsYYval.Disputedesc)->Color  = (IgsYYvsp[-4].Value);
+                    (IgsYYval.Disputedesc)->SizeX  = atoi((IgsYYvsp[-3].Name));
+                    (IgsYYval.Disputedesc)->SizeY  = atoi(strchr((IgsYYvsp[-3].Name), 'x')+1);
+                    (IgsYYval.Disputedesc)->Tim    = (IgsYYvsp[-2].Value);
+                    (IgsYYval.Disputedesc)->ByoYomi= (IgsYYvsp[-1].Value);
+                    myfree((IgsYYvsp[-3].Name));
+                }
+#line 4307 "y.tab.c"
+    break;
+
+  case 265: /* disputelines: disputelines disputeline  */
+#line 1494 "gointer.y"
+                {
+                    (IgsYYvsp[0].Disputedesc)->Next     = (IgsYYvsp[-1].Disputedesc);
+                    (IgsYYvsp[0].Disputedesc)->Previous = (IgsYYvsp[-1].Disputedesc)->Previous;
+                    (IgsYYvsp[0].Disputedesc)->Next->Previous = (IgsYYvsp[0].Disputedesc)->Previous->Next = (IgsYYvsp[0].Disputedesc);
+                    (IgsYYval.Disputedesc) = (IgsYYvsp[-1].Disputedesc);
+                }
+#line 4318 "y.tab.c"
+    break;
+
+  case 266: /* disputelines: %empty  */
+#line 1501 "gointer.y"
+                {
+                    (IgsYYval.Disputedesc) = mynew(DisputeDesc);
+                    (IgsYYval.Disputedesc)->Next = (IgsYYval.Disputedesc)->Previous = (IgsYYval.Disputedesc);
+                }
+#line 4327 "y.tab.c"
+    break;
+
+  case 267: /* opponentdispute: OPPONENTDISPUTE disputelines  */
+#line 1508 "gointer.y"
+                {
                     DisputeDesc *Here, *Next;
 
-                    Dispute(IgsYYvsp[0].Disputedesc, 1);
-                    for (Here = IgsYYvsp[0].Disputedesc->Next; Here != IgsYYvsp[0].Disputedesc; Here = Next) {
+                    Dispute((IgsYYvsp[0].Disputedesc), 1);
+                    for (Here = (IgsYYvsp[0].Disputedesc)->Next; Here != (IgsYYvsp[0].Disputedesc); Here = Next) {
                         Next = Here->Next;
                         myfree(Here);
                     }
-                    myfree(IgsYYvsp[0].Disputedesc);
-                ;
-    break;}
-case 267:
-#line 1521 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Disputedesc));
+                }
+#line 4342 "y.tab.c"
+    break;
+
+  case 268: /* dispute: DISPUTE disputelines  */
+#line 1521 "gointer.y"
+                {
                     DisputeDesc *Here, *Next;
 
-                    Dispute(IgsYYvsp[0].Disputedesc, 0);
-                    for (Here = IgsYYvsp[0].Disputedesc->Next; Here != IgsYYvsp[0].Disputedesc; Here = Next) {
+                    Dispute((IgsYYvsp[0].Disputedesc), 0);
+                    for (Here = (IgsYYvsp[0].Disputedesc)->Next; Here != (IgsYYvsp[0].Disputedesc); Here = Next) {
                         Next = Here->Next;
                         myfree(Here);
                     }
-                    myfree(IgsYYvsp[0].Disputedesc);
-                ;
-    break;}
-case 268:
-#line 1534 "./gointer.y"
-{
-                    IgsYYval.Value = IgsYYvsp[-1].Value | IgsYYvsp[0].Value;
-                ;
-    break;}
-case 269:
-#line 1538 "./gointer.y"
-{
-                    IgsYYval.Value = 0;
-                ;
-    break;}
-case 270:
-#line 1544 "./gointer.y"
-{
-                    WantMatchType(IgsYYvsp[-2].Person, IgsYYvsp[-1].Value);
-                ;
-    break;}
-case 271:
-#line 1550 "./gointer.y"
-{
-                ;
-    break;}
-case 273:
-#line 1557 "./gointer.y"
-{             /* gameid white black move */
-		    Undo(0, IgsYYvsp[-3].Value, IgsYYvsp[-1].Name, IgsYYvsp[-2].Name, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 274:
-#line 1564 "./gointer.y"
-{
-		    Undo(0, IgsYYvsp[-3].Value, IgsYYvsp[-1].Name, IgsYYvsp[-2].Name, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 275:
-#line 1573 "./gointer.y"
-{
-                    FreeGameDesc(IgsYYvsp[-2].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-1].Nameval);
+                    myfree((IgsYYvsp[0].Disputedesc));
+                }
+#line 4357 "y.tab.c"
+    break;
+
+  case 269: /* matchtypes: matchtypes MATCHTYPE  */
+#line 1534 "gointer.y"
+                {
+                    (IgsYYval.Value) = (IgsYYvsp[-1].Value) | (IgsYYvsp[0].Value);
+                }
+#line 4365 "y.tab.c"
+    break;
+
+  case 270: /* matchtypes: %empty  */
+#line 1538 "gointer.y"
+                {
+                    (IgsYYval.Value) = 0;
+                }
+#line 4373 "y.tab.c"
+    break;
+
+  case 271: /* disputematchtype: DISPUTEMATCHTYPE matchtypes END  */
+#line 1544 "gointer.y"
+                {
+                    WantMatchType((IgsYYvsp[-2].Person), (IgsYYvsp[-1].Value));
+                }
+#line 4381 "y.tab.c"
+    break;
+
+  case 272: /* optobserve: OBSERVE  */
+#line 1550 "gointer.y"
+                {
+                }
+#line 4388 "y.tab.c"
+    break;
+
+  case 274: /* undolist: undolist optobserve UNDO NAME NAME NAME  */
+#line 1557 "gointer.y"
+                {             /* gameid white black move */
+		    Undo(0, (IgsYYvsp[-3].Value), (IgsYYvsp[-1].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4399 "y.tab.c"
+    break;
+
+  case 275: /* undolist: UNDO NAME NAME NAME  */
+#line 1564 "gointer.y"
+                {
+		    Undo(0, (IgsYYvsp[-3].Value), (IgsYYvsp[-1].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4410 "y.tab.c"
+    break;
+
+  case 276: /* undo: undolist optobserve gamedesc movelist optgametitle  */
+#line 1573 "gointer.y"
+                {
+                    FreeGameDesc((IgsYYvsp[-2].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-1].Nameval));
                     /* if (game && $5) SetGameTitle(game, $5); */
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 276:
-#line 1581 "./gointer.y"
-{
-                    FreeGameDesc(IgsYYvsp[-8].Gamedesc);
-                    FreeNameValList(IgsYYvsp[-7].Nameval);
-                    /* if (game && $11) SetGameTitle(game, $11); */
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 277:
-#line 1590 "./gointer.y"
-{
-                    Watching(IgsYYvsp[-1].Namelist);
-                    FreeNameList(IgsYYvsp[-1].Namelist);
-                ;
-    break;}
-case 278:
-#line 1597 "./gointer.y"
-{
-                    OverObserve(IgsYYvsp[0].Value);
-                ;
-    break;}
-case 279:
-#line 1603 "./gointer.y"
-{
-                    ObserveWhilePlaying();
-                ;
-    break;}
-case 280:
-#line 1609 "./gointer.y"
-{
-                    FindPlayer(IgsYYvsp[-3].Name, IgsYYvsp[-1].Name, IgsYYvsp[-4].Name, IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 281:
-#line 1617 "./gointer.y"
-{
-                    FindPlayer(IgsYYvsp[-1].Name, "???", "?????  ???", UNKNOWN);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 283:
-#line 1625 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4421 "y.tab.c"
+    break;
 
-                ;
-    break;}
-case 284:
-#line 1631 "./gointer.y"
-{
-                    PlayerStatusLine(atoi(IgsYYvsp[-10].Name), atoi(IgsYYvsp[-8].Name), atoi(IgsYYvsp[-4].Name));
-                    myfree(IgsYYvsp[-10].Name);
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 285:
-#line 1643 "./gointer.y"
-{
-                    PlayerStatusLine(atoi(IgsYYvsp[-6].Name), -1, atoi(IgsYYvsp[-4].Name));
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 286:
-#line 1655 "./gointer.y"
-{
+  case 277: /* undo: undolist optobserve gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgametitle  */
+#line 1581 "gointer.y"
+                {
+                    FreeGameDesc((IgsYYvsp[-8].Gamedesc));
+                    FreeNameValList((IgsYYvsp[-7].Nameval));
+                    /* if (game && $11) SetGameTitle(game, $11); */
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4432 "y.tab.c"
+    break;
+
+  case 278: /* watching: WATCHING names END  */
+#line 1590 "gointer.y"
+                {
+                    Watching((IgsYYvsp[-1].Namelist));
+                    FreeNameList((IgsYYvsp[-1].Namelist));
+                }
+#line 4441 "y.tab.c"
+    break;
+
+  case 279: /* overobserve: OVEROBSERVE  */
+#line 1597 "gointer.y"
+                {
+                    OverObserve((IgsYYvsp[0].Value));
+                }
+#line 4449 "y.tab.c"
+    break;
+
+  case 280: /* observewhileplay: OBSERVEWHILEPLAY  */
+#line 1603 "gointer.y"
+                {
+                    ObserveWhilePlaying();
+                }
+#line 4457 "y.tab.c"
+    break;
+
+  case 281: /* playerline: PLAYERS NAME NAME NAME NAME END  */
+#line 1609 "gointer.y"
+                {
+                    FindPlayer((IgsYYvsp[-3].Name), (IgsYYvsp[-1].Name), (IgsYYvsp[-4].Name), (IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4469 "y.tab.c"
+    break;
+
+  case 282: /* playerline: PLAYERS NAME END  */
+#line 1617 "gointer.y"
+                {
+                    FindPlayer((IgsYYvsp[-1].Name), "???", "?????  ???", UNKNOWN);
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4478 "y.tab.c"
+    break;
+
+  case 284: /* playerlines: %empty  */
+#line 1625 "gointer.y"
+                {
+
+                }
+#line 4486 "y.tab.c"
+    break;
+
+  case 285: /* playersstatusline: NAME '(' NAME ')' NAME NAME NAME NAME NAME NAME END  */
+#line 1631 "gointer.y"
+                {
+                    PlayerStatusLine(atoi((IgsYYvsp[-10].Name)), atoi((IgsYYvsp[-8].Name)), atoi((IgsYYvsp[-4].Name)));
+                    myfree((IgsYYvsp[-10].Name));
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4502 "y.tab.c"
+    break;
+
+  case 286: /* playersstatusline: NAME NAME NAME NAME NAME NAME END  */
+#line 1643 "gointer.y"
+                {
+                    PlayerStatusLine(atoi((IgsYYvsp[-6].Name)), -1, atoi((IgsYYvsp[-4].Name)));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4516 "y.tab.c"
+    break;
+
+  case 287: /* $@5: %empty  */
+#line 1655 "gointer.y"
+                {
                     AssertPlayersDeleted();
-                ;
-    break;}
-case 287:
-#line 1659 "./gointer.y"
-{
+                }
+#line 4524 "y.tab.c"
+    break;
+
+  case 288: /* $@6: %empty  */
+#line 1659 "gointer.y"
+                {
                     TestPlayersDeleted();
-                ;
-    break;}
-case 289:
-#line 1666 "./gointer.y"
-{
+                }
+#line 4532 "y.tab.c"
+    break;
+
+  case 290: /* userline: names END  */
+#line 1666 "gointer.y"
+                {
                     NameList *Here;
                     int n;
 
                     n =0;
-                    for (Here = IgsYYvsp[-1].Namelist->Next; Here != IgsYYvsp[-1].Namelist; Here = Here->Next) n++;
+                    for (Here = (IgsYYvsp[-1].Namelist)->Next; Here != (IgsYYvsp[-1].Namelist); Here = Here->Next) n++;
                     if (n == 11) {
-		      IgsYYval.Namelist = IgsYYvsp[-1].Namelist;
+		      (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
 		    } else if (n == 0) { /* list header */
-		      IgsYYval.Namelist = NULL;
+		      (IgsYYval.Namelist) = NULL;
                     } else {
-                        /* Don't call YYFAIL. user command leads to easily
+                        /* Don't call YYERROR. user command leads to easily
                            to parse errors */
 		        Output("Got the expected parse error following a "
                                "\"user\" command:\n");
-                        for (Here = IgsYYvsp[-1].Namelist->Next; Here != IgsYYvsp[-1].Namelist; Here = Here->Next) {
+                        for (Here = (IgsYYvsp[-1].Namelist)->Next; Here != (IgsYYvsp[-1].Namelist); Here = Here->Next) {
                             Output(Here->Name);
                             Output(" ");
                         }
                         Output("\n");
                         _IgsDefaultParse();
-                        FreeNameList(IgsYYvsp[-1].Namelist);
-                        IgsYYval.Namelist = NULL;
+                        FreeNameList((IgsYYvsp[-1].Namelist));
+                        (IgsYYval.Namelist) = NULL;
                     }
-                ;
-    break;}
-case 290:
-#line 1692 "./gointer.y"
-{
+                }
+#line 4562 "y.tab.c"
+    break;
+
+  case 291: /* userline: names FAIL  */
+#line 1692 "gointer.y"
+                {
                     NameList *Here;
 
                     Output("Got the expected parse failure following a "
                            "\"user\" command:\n");
-                    for (Here = IgsYYvsp[-1].Namelist->Next; Here != IgsYYvsp[-1].Namelist; Here = Here->Next) {
+                    for (Here = (IgsYYvsp[-1].Namelist)->Next; Here != (IgsYYvsp[-1].Namelist); Here = Here->Next) {
                         Output(Here->Name);
                         Output(" ");
                     }
                     Output("\n");
                     _IgsDefaultParse();
-                    FreeNameList(IgsYYvsp[-1].Namelist);
-                    IgsYYval.Namelist = NULL;
-                ;
-    break;}
-case 291:
-#line 1709 "./gointer.y"
-{
-                    if (IgsYYvsp[0].Namelist) {
+                    FreeNameList((IgsYYvsp[-1].Namelist));
+                    (IgsYYval.Namelist) = NULL;
+                }
+#line 4581 "y.tab.c"
+    break;
+
+  case 292: /* userlines: userlines userline  */
+#line 1709 "gointer.y"
+                {
+                    if ((IgsYYvsp[0].Namelist)) {
                         NameListList *Last;
                         Last = mynew(NameListList);
-                        Last->Names    = IgsYYvsp[0].Namelist;
-                        Last->Previous = IgsYYvsp[-1].NameListlist->Previous;
-                        Last->Next     = IgsYYvsp[-1].NameListlist;
+                        Last->Names    = (IgsYYvsp[0].Namelist);
+                        Last->Previous = (IgsYYvsp[-1].NameListlist)->Previous;
+                        Last->Next     = (IgsYYvsp[-1].NameListlist);
                         Last->Next->Previous = Last->Previous->Next = Last;
                     }
-                    IgsYYval.NameListlist = IgsYYvsp[-1].NameListlist;
-                ;
-    break;}
-case 292:
-#line 1721 "./gointer.y"
-{
-                    IgsYYval.NameListlist = mynew(NameListList);
-                    IgsYYval.NameListlist->Previous = IgsYYval.NameListlist->Next = IgsYYval.NameListlist;
-                    IgsYYval.NameListlist->Names = NULL;
-                ;
-    break;}
-case 293:
-#line 1729 "./gointer.y"
-{
-                    UserData(IgsYYvsp[0].NameListlist);
-                    FreeNameListList(IgsYYvsp[0].NameListlist);
-                ;
-    break;}
-case 294:
-#line 1736 "./gointer.y"
-{
-                    IgsYYval.Person = FindPlayerByNameAndStrength(IgsYYvsp[-3].Name, IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 295:
-#line 1744 "./gointer.y"
-{
+                    (IgsYYval.NameListlist) = (IgsYYvsp[-1].NameListlist);
+                }
+#line 4597 "y.tab.c"
+    break;
+
+  case 293: /* userlines: %empty  */
+#line 1721 "gointer.y"
+                {
+                    (IgsYYval.NameListlist) = mynew(NameListList);
+                    (IgsYYval.NameListlist)->Previous = (IgsYYval.NameListlist)->Next = (IgsYYval.NameListlist);
+                    (IgsYYval.NameListlist)->Names = NULL;
+                }
+#line 4607 "y.tab.c"
+    break;
+
+  case 294: /* users: USER userlines  */
+#line 1729 "gointer.y"
+                {
+                    UserData((IgsYYvsp[0].NameListlist));
+                    FreeNameListList((IgsYYvsp[0].NameListlist));
+                }
+#line 4616 "y.tab.c"
+    break;
+
+  case 295: /* player: NAME '[' NAME ']'  */
+#line 1736 "gointer.y"
+                {
+                    (IgsYYval.Person) = FindPlayerByNameAndStrength((IgsYYvsp[-3].Name), (IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4626 "y.tab.c"
+    break;
+
+  case 296: /* playertime: NAME ':' NAME  */
+#line 1744 "gointer.y"
+                {
                     int sec;
 
-                    sec = atoi(IgsYYvsp[0].Name);
-                    if (IgsYYvsp[-2].Name[0] == '-') IgsYYval.Value = -60 * atoi(IgsYYvsp[-2].Name+1)-sec;
-                    else              IgsYYval.Value =  60 * atoi(IgsYYvsp[-2].Name)  +sec;
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 296:
-#line 1756 "./gointer.y"
-{
-                    IgsYYval.Value = atoi(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 297:
-#line 1761 "./gointer.y"
-{ IgsYYval.Value = -1; ;
-    break;}
-case 298:
-#line 1767 "./gointer.y"
-{
-                    if (strcmp(IgsYYvsp[-21].Name, "Game") ||
-                        strcmp(IgsYYvsp[-16].Name, "White") || strcmp(IgsYYvsp[-7].Name, "Black")) YYFAIL;
-                    GameTime(atoi(IgsYYvsp[-19].Name), IgsYYvsp[-5].Name, IgsYYvsp[-2].Value, IgsYYvsp[-1].Value, IgsYYvsp[-14].Name, IgsYYvsp[-11].Value, IgsYYvsp[-10].Value);
-                    myfree(IgsYYvsp[-21].Name);
-                    myfree(IgsYYvsp[-19].Name);
-                    myfree(IgsYYvsp[-16].Name);
-                    myfree(IgsYYvsp[-14].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                ;
-    break;}
-case 299:
-#line 1781 "./gointer.y"
-{
+                    sec = atoi((IgsYYvsp[0].Name));
+                    if ((IgsYYvsp[-2].Name)[0] == '-') (IgsYYval.Value) = -60 * atoi((IgsYYvsp[-2].Name)+1)-sec;
+                    else              (IgsYYval.Value) =  60 * atoi((IgsYYvsp[-2].Name))  +sec;
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4640 "y.tab.c"
+    break;
+
+  case 297: /* optbyo: '(' NAME ')' NAME  */
+#line 1756 "gointer.y"
+                {
+                    (IgsYYval.Value) = atoi((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4650 "y.tab.c"
+    break;
+
+  case 298: /* optbyo: %empty  */
+#line 1761 "gointer.y"
+                { (IgsYYval.Value) = -1; }
+#line 4656 "y.tab.c"
+    break;
+
+  case 299: /* gametime: GAMETIME NAME ':' NAME END GAMETIME NAME '(' NAME ')' ':' playertime optbyo END GAMETIME NAME '(' NAME ')' ':' playertime optbyo END  */
+#line 1767 "gointer.y"
+                {
+                    if (strcmp((IgsYYvsp[-21].Name), "Game") ||
+                        strcmp((IgsYYvsp[-16].Name), "White") || strcmp((IgsYYvsp[-7].Name), "Black")) YYERROR;
+                    GameTime(atoi((IgsYYvsp[-19].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-2].Value), (IgsYYvsp[-1].Value), (IgsYYvsp[-14].Name), (IgsYYvsp[-11].Value), (IgsYYvsp[-10].Value));
+                    myfree((IgsYYvsp[-21].Name));
+                    myfree((IgsYYvsp[-19].Name));
+                    myfree((IgsYYvsp[-16].Name));
+                    myfree((IgsYYvsp[-14].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                }
+#line 4672 "y.tab.c"
+    break;
+
+  case 300: /* gamescore: CURRENTSCORE NAME FINALSCORE NAME  */
+#line 1781 "gointer.y"
+                {
                     int Nr;
                     Game     *game;
 
@@ -3309,137 +4681,173 @@ case 299:
                         (Nr = WhatCommand(NULL, "score")) >= 0 &&
                         (game = ServerIdToGame(Nr)) != NULL) {
                         GameMessage(game, "..........", "Current score:");
-                        GameMessage(game, "..........", "%s", IgsYYvsp[-2].Name);
+                        GameMessage(game, "..........", "%s", (IgsYYvsp[-2].Name));
                         GameMessage(game, "..........", "Final score:");
-                        GameMessage(game, "..........", "%s", IgsYYvsp[0].Name);
+                        GameMessage(game, "..........", "%s", (IgsYYvsp[0].Name));
                     } else {
-                        Outputf("Current score:\n %s\n", IgsYYvsp[-2].Name);
-                        Outputf("Final score:\n %s\n", IgsYYvsp[0].Name);
+                        Outputf("Current score:\n %s\n", (IgsYYvsp[-2].Name));
+                        Outputf("Final score:\n %s\n", (IgsYYvsp[0].Name));
                     }
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 300:
-#line 1802 "./gointer.y"
-{
-                    Outputf("%s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 303:
-#line 1813 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4695 "y.tab.c"
+    break;
+
+  case 301: /* translation: TRANSLATION NAME  */
+#line 1802 "gointer.y"
+                {
+                    Outputf("%s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4704 "y.tab.c"
+    break;
+
+  case 304: /* byoyomi: ENTERBYOYOMI GIVEBYOYOMI  */
+#line 1813 "gointer.y"
+                {
                     MyGameMessage("%s is now in byo-yomi, having %s",
-                                  PlayerString(IgsYYvsp[-1].Person), IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 304:
-#line 1821 "./gointer.y"
-{
-                    MyGameMessage("%s has run out of time.", PlayerString(IgsYYvsp[0].Person));
-                ;
-    break;}
-case 305:
-#line 1827 "./gointer.y"
-{
+                                  PlayerString((IgsYYvsp[-1].Person)), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4714 "y.tab.c"
+    break;
+
+  case 305: /* notime: NOTIME  */
+#line 1821 "gointer.y"
+                {
+                    MyGameMessage("%s has run out of time.", PlayerString((IgsYYvsp[0].Person)));
+                }
+#line 4722 "y.tab.c"
+    break;
+
+  case 306: /* lostconnection: LOSTCONNECTION MYADJOURN optgamesaved  */
+#line 1827 "gointer.y"
+                {
                     MyGameMessage("Your opponent has lost his connection.");
-                ;
-    break;}
-case 306:
-#line 1833 "./gointer.y"
-{
+                }
+#line 4730 "y.tab.c"
+    break;
+
+  case 307: /* gamesaved: GAMESAVED NAME optobserve  */
+#line 1833 "gointer.y"
+                {
 		    if (appdata.WantVerbose) {
-                        MyGameMessage("Game saved.%s", IgsYYvsp[-1].Name);
+                        MyGameMessage("Game saved.%s", (IgsYYvsp[-1].Name));
 		    }
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 307:
-#line 1842 "./gointer.y"
-{
-                ;
-    break;}
-case 309:
-#line 1849 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4741 "y.tab.c"
+    break;
+
+  case 308: /* optadjourn: MYADJOURN  */
+#line 1842 "gointer.y"
+                {
+                }
+#line 4748 "y.tab.c"
+    break;
+
+  case 310: /* adjourn: MYADJOURN optadjourn GAMESAVED NAME optgamesaved  */
+#line 1849 "gointer.y"
+                {
                     MyGameMessage("Game has been adjourned.");
-                    MyGameMessage("Game saved.%s", IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 310:
-#line 1857 "./gointer.y"
-{
-                ;
-    break;}
-case 311:
-#line 1862 "./gointer.y"
-{
+                    MyGameMessage("Game saved.%s", (IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4758 "y.tab.c"
+    break;
+
+  case 311: /* adjournsentrequest: ADJOURNSENTREQUEST  */
+#line 1857 "gointer.y"
+                {
+                }
+#line 4765 "y.tab.c"
+    break;
+
+  case 312: /* adjournrequest: ADJOURNREQUEST  */
+#line 1862 "gointer.y"
+                {
                     MyGameMessage("Your opponent requests an adjournment");
                     MyGameMessage("Use the <adjourn> or <decline adjourn> "
                                   "entries in the commands menu.");
-                ;
-    break;}
-case 312:
-#line 1870 "./gointer.y"
-{
+                }
+#line 4775 "y.tab.c"
+    break;
+
+  case 313: /* oppadjourn: MYADJOURN  */
+#line 1870 "gointer.y"
+                {
                     MyGameMessage("Game has been adjourned.");
-                ;
-    break;}
-case 313:
-#line 1876 "./gointer.y"
-{
+                }
+#line 4783 "y.tab.c"
+    break;
+
+  case 314: /* declineadjourn: DECLINEADJOURN  */
+#line 1876 "gointer.y"
+                {
                     MyGameMessage("Your opponent declines to adjourn.");
-                ;
-    break;}
-case 314:
-#line 1882 "./gointer.y"
-{
+                }
+#line 4791 "y.tab.c"
+    break;
+
+  case 315: /* resign: RESIGN  */
+#line 1882 "gointer.y"
+                {
                     MyGameMessage("%s has resigned the game.",
-                                  PlayerString(IgsYYvsp[0].Person));
-                ;
-    break;}
-case 315:
-#line 1887 "./gointer.y"
-{ /* Double message in teaching game --Ton */
+                                  PlayerString((IgsYYvsp[0].Person)));
+                }
+#line 4800 "y.tab.c"
+    break;
+
+  case 316: /* resign: RESIGN RESIGN  */
+#line 1887 "gointer.y"
+                { /* Double message in teaching game --Ton */
                     MyGameMessage("%s has resigned the game.",
-                                  PlayerString(IgsYYvsp[-1].Person));
-                ;
-    break;}
-case 316:
-#line 1894 "./gointer.y"
-{
-                   Mailed(IgsYYvsp[-1].Name);
-                   Mailed(IgsYYvsp[0].Name);
-                   myfree(IgsYYvsp[-1].Name);
-                   myfree(IgsYYvsp[0].Name);
-               ;
-    break;}
-case 317:
-#line 1901 "./gointer.y"
-{
-                   Mailed(IgsYYvsp[0].Name);
-                   myfree(IgsYYvsp[0].Name);
-               ;
-    break;}
-case 318:
-#line 1908 "./gointer.y"
-{
-                   RemoveGameFile(IgsYYvsp[0].Name);
-                   myfree(IgsYYvsp[0].Name);
-               ;
-    break;}
-case 319:
-#line 1915 "./gointer.y"
-{
+                                  PlayerString((IgsYYvsp[-1].Person)));
+                }
+#line 4809 "y.tab.c"
+    break;
+
+  case 317: /* mailed: MAILED MAILED  */
+#line 1894 "gointer.y"
+               {
+                   Mailed((IgsYYvsp[-1].Name));
+                   Mailed((IgsYYvsp[0].Name));
+                   myfree((IgsYYvsp[-1].Name));
+                   myfree((IgsYYvsp[0].Name));
+               }
+#line 4820 "y.tab.c"
+    break;
+
+  case 318: /* mailed: MAILED  */
+#line 1901 "gointer.y"
+               {
+                   Mailed((IgsYYvsp[0].Name));
+                   myfree((IgsYYvsp[0].Name));
+               }
+#line 4829 "y.tab.c"
+    break;
+
+  case 319: /* removegamefile: REMOVEGAMEFILE  */
+#line 1908 "gointer.y"
+               {
+                   RemoveGameFile((IgsYYvsp[0].Name));
+                   myfree((IgsYYvsp[0].Name));
+               }
+#line 4838 "y.tab.c"
+    break;
+
+  case 320: /* notelltarget: NOTELLTARGET  */
+#line 1915 "gointer.y"
+                {
                     NoTell();
-                ;
-    break;}
-case 320:
-#line 1921 "./gointer.y"
-{
+                }
+#line 4846 "y.tab.c"
+    break;
+
+  case 321: /* telltarget: TELLTARGET NAME END  */
+#line 1921 "gointer.y"
+                {
                     /* Kludge to stop bell/raise at telltarget change --Ton */
                     int OldEntered;
 
@@ -3447,144 +4855,182 @@ case 320:
                     Entered = 0;
 		    if (appdata.WantVerbose) {
                         Outputf("Setting your '.' to %16s\n",
-                                PlayerNameToString(IgsYYvsp[-1].Name));
+                                PlayerNameToString((IgsYYvsp[-1].Name)));
 		    }
                     Entered = OldEntered;
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 321:
-#line 1937 "./gointer.y"
-{
-                ;
-    break;}
-case 322:
-#line 1942 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 4864 "y.tab.c"
+    break;
+
+  case 322: /* telldone: TELLDONE  */
+#line 1937 "gointer.y"
+                {
+                }
+#line 4871 "y.tab.c"
+    break;
+
+  case 323: /* telloff: TELLOFF names  */
+#line 1942 "gointer.y"
+                {
                     NameList *Here;
 
                     Output("User is not accepting tells.\n");
-                    for (Here = IgsYYvsp[0].Namelist->Next; Here != IgsYYvsp[0].Namelist; Here = Here->Next)
+                    for (Here = (IgsYYvsp[0].Namelist)->Next; Here != (IgsYYvsp[0].Namelist); Here = Here->Next)
                         Outputf("%s\n", Here->Name);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 323:
-#line 1953 "./gointer.y"
-{
-                    MyGameMessage("Illegal move: %s", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 324:
-#line 1958 "./gointer.y"
-{
-                    MyGameMessage("Illegal move: %s", IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                ;
-    break;}
-case 325:
-#line 1965 "./gointer.y"
-{
-                    MyGameMessage("Cannot undo: %s", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 326:
-#line 1972 "./gointer.y"
-{
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 4884 "y.tab.c"
+    break;
+
+  case 324: /* illegalmove: ILLEGALMOVE  */
+#line 1953 "gointer.y"
+                {
+                    MyGameMessage("Illegal move: %s", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4893 "y.tab.c"
+    break;
+
+  case 325: /* illegalmove: ILLEGALMOVE OBSERVE optobserve  */
+#line 1958 "gointer.y"
+                {
+                    MyGameMessage("Illegal move: %s", (IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                }
+#line 4902 "y.tab.c"
+    break;
+
+  case 326: /* illegalundo: ILLEGALUNDO  */
+#line 1965 "gointer.y"
+                {
+                    MyGameMessage("Cannot undo: %s", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4911 "y.tab.c"
+    break;
+
+  case 327: /* noturn: NOTURN  */
+#line 1972 "gointer.y"
+                {
                     MyGameMessage("It isn't your turn");
-                ;
-    break;}
-case 327:
-#line 1978 "./gointer.y"
-{
+                }
+#line 4919 "y.tab.c"
+    break;
+
+  case 328: /* noremoveturn: NOREMOVETURN  */
+#line 1978 "gointer.y"
+                {
                     MyGameMessage("It is not your turn to remove a group");
-                ;
-    break;}
-case 328:
-#line 1984 "./gointer.y"
-{
+                }
+#line 4927 "y.tab.c"
+    break;
+
+  case 329: /* useresign: USERESIGN  */
+#line 1984 "gointer.y"
+                {
                     MyGameMessage("To resign, please use 'resign'");
-                ;
-    break;}
-case 329:
-#line 1990 "./gointer.y"
-{
+                }
+#line 4935 "y.tab.c"
+    break;
+
+  case 330: /* removeliberty: REMOVELIBERTY  */
+#line 1990 "gointer.y"
+                {
                     MyGameMessage("You cannot remove liberties.");
-                ;
-    break;}
-case 330:
-#line 1996 "./gointer.y"
-{
-                    RemoveGroup(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 331:
-#line 2003 "./gointer.y"
-{
+                }
+#line 4943 "y.tab.c"
+    break;
+
+  case 331: /* removegroup: REMOVEGROUP  */
+#line 1996 "gointer.y"
+                {
+                    RemoveGroup((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 4952 "y.tab.c"
+    break;
+
+  case 332: /* restorescoring: RESTORESCORING  */
+#line 2003 "gointer.y"
+                {
                     RestoreScoring();
-                ;
-    break;}
-case 332:
-#line 2009 "./gointer.y"
-{
+                }
+#line 4960 "y.tab.c"
+    break;
+
+  case 333: /* pleaseredone: PLEASEREDONE  */
+#line 2009 "gointer.y"
+                {
                     MyGameMessage("Please repeat 'done'");
-                ;
-    break;}
-case 333:
-#line 2015 "./gointer.y"
-{
-                    IgsYYval.Namelist = IgsYYvsp[-1].Namelist;
-                ;
-    break;}
-case 334:
-#line 2021 "./gointer.y"
-{
-                    IgsYYval.Numval = mynew(NumVal);
-                    IgsYYval.Numval->Num   = IgsYYvsp[-1].Value;
-                    IgsYYval.Numval->Value = IgsYYvsp[0].Name;
-                ;
-    break;}
-case 335:
-#line 2029 "./gointer.y"
-{
-                    IgsYYvsp[0].Numval->Next = IgsYYvsp[-1].Numval;
-                    IgsYYvsp[0].Numval->Previous = IgsYYvsp[-1].Numval->Previous;
-                    IgsYYvsp[0].Numval->Next->Previous = IgsYYvsp[0].Numval->Previous->Next = IgsYYvsp[0].Numval;
-                    IgsYYval.Numval = IgsYYvsp[-1].Numval;
-                ;
-    break;}
-case 336:
-#line 2036 "./gointer.y"
-{
-                    IgsYYval.Numval = mynew(NumVal);
-                    IgsYYval.Numval->Next  = IgsYYval.Numval->Previous = IgsYYval.Numval;
-                    IgsYYval.Numval->Num   = -1;
-                    IgsYYval.Numval->Value = NULL;
-                ;
-    break;}
-case 337:
-#line 2045 "./gointer.y"
-{
+                }
+#line 4968 "y.tab.c"
+    break;
+
+  case 334: /* statusheader: STATUSHEADER names END  */
+#line 2015 "gointer.y"
+                {
+                    (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
+                }
+#line 4976 "y.tab.c"
+    break;
+
+  case 335: /* statusline: STATUSLINE NAME  */
+#line 2021 "gointer.y"
+                {
+                    (IgsYYval.Numval) = mynew(NumVal);
+                    (IgsYYval.Numval)->Num   = (IgsYYvsp[-1].Value);
+                    (IgsYYval.Numval)->Value = (IgsYYvsp[0].Name);
+                }
+#line 4986 "y.tab.c"
+    break;
+
+  case 336: /* statuslines: statuslines statusline  */
+#line 2029 "gointer.y"
+                {
+                    (IgsYYvsp[0].Numval)->Next = (IgsYYvsp[-1].Numval);
+                    (IgsYYvsp[0].Numval)->Previous = (IgsYYvsp[-1].Numval)->Previous;
+                    (IgsYYvsp[0].Numval)->Next->Previous = (IgsYYvsp[0].Numval)->Previous->Next = (IgsYYvsp[0].Numval);
+                    (IgsYYval.Numval) = (IgsYYvsp[-1].Numval);
+                }
+#line 4997 "y.tab.c"
+    break;
+
+  case 337: /* statuslines: %empty  */
+#line 2036 "gointer.y"
+                {
+                    (IgsYYval.Numval) = mynew(NumVal);
+                    (IgsYYval.Numval)->Next  = (IgsYYval.Numval)->Previous = (IgsYYval.Numval);
+                    (IgsYYval.Numval)->Num   = -1;
+                    (IgsYYval.Numval)->Value = NULL;
+                }
+#line 5008 "y.tab.c"
+    break;
+
+  case 338: /* resultline: RESULTLINE  */
+#line 2045 "gointer.y"
+                {
 	            /* 20 jl (W:O):  2.5 to jloup (B:#):  3.0 */
-                    MyGameMessage("%s", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 338:
-#line 2053 "./gointer.y"
-{
-                    if (GamePosition(IgsYYvsp[-1].Namelist, IgsYYvsp[-2].Namelist, IgsYYvsp[0].Numval)) ChangeCommand(NULL, 1);
-                    FreeNameList(IgsYYvsp[-2].Namelist);
-                    FreeNameList(IgsYYvsp[-1].Namelist);
-                    FreeNumValList(IgsYYvsp[0].Numval);
-                ;
-    break;}
-case 339:
-#line 2062 "./gointer.y"
-{
+                    MyGameMessage("%s", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5018 "y.tab.c"
+    break;
+
+  case 339: /* status: statusheader statusheader statuslines  */
+#line 2053 "gointer.y"
+                {
+                    if (GamePosition((IgsYYvsp[-1].Namelist), (IgsYYvsp[-2].Namelist), (IgsYYvsp[0].Numval))) ChangeCommand(NULL, 1);
+                    FreeNameList((IgsYYvsp[-2].Namelist));
+                    FreeNameList((IgsYYvsp[-1].Namelist));
+                    FreeNumValList((IgsYYvsp[0].Numval));
+                }
+#line 5029 "y.tab.c"
+    break;
+
+  case 340: /* date: NAME NAME NAME NAME ':' NAME ':' NAME NAME  */
+#line 2062 "gointer.y"
+                {
                     struct tm *FullTime;
                     int        i;
                     static const char *Month[] = {
@@ -3592,105 +5038,121 @@ case 339:
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
                     FullTime = mynew(struct tm);
-                    for (i=0; i<12; i++) if (strcmp(IgsYYvsp[-7].Name, Month[i]) == 0) break;
-                    FullTime->tm_year  = atoi(IgsYYvsp[0].Name)-1900;
+                    for (i=0; i<12; i++) if (strcmp((IgsYYvsp[-7].Name), Month[i]) == 0) break;
+                    FullTime->tm_year  = atoi((IgsYYvsp[0].Name))-1900;
                     FullTime->tm_mon   = i;
-                    FullTime->tm_mday  = atoi(IgsYYvsp[-6].Name);
-                    FullTime->tm_hour  = atoi(IgsYYvsp[-5].Name);
-                    FullTime->tm_min   = atoi(IgsYYvsp[-3].Name);
-                    FullTime->tm_sec   = atoi(IgsYYvsp[-1].Name);
+                    FullTime->tm_mday  = atoi((IgsYYvsp[-6].Name));
+                    FullTime->tm_hour  = atoi((IgsYYvsp[-5].Name));
+                    FullTime->tm_min   = atoi((IgsYYvsp[-3].Name));
+                    FullTime->tm_sec   = atoi((IgsYYvsp[-1].Name));
                     FullTime->tm_isdst = LocalTime.tm_isdst;
                     mktime(FullTime);
-                    IgsYYval.Dummy = FullTime;
-                    myfree(IgsYYvsp[-8].Name);
-                    myfree(IgsYYvsp[-7].Name);
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 340:
-#line 2091 "./gointer.y"
-{
+                    (IgsYYval.Dummy) = FullTime;
+                    myfree((IgsYYvsp[-8].Name));
+                    myfree((IgsYYvsp[-7].Name));
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5060 "y.tab.c"
+    break;
+
+  case 341: /* uptimeentry: GMTTIME date END  */
+#line 2091 "gointer.y"
+                {
                     char *ptr;
                     int   Length;
 
 		    if (appdata.WantVerbose) {
-			ptr = asctime(IgsYYvsp[-1].Dummy);
+			ptr = asctime((IgsYYvsp[-1].Dummy));
 			Length = strlen(ptr);
 			Outputf("Gmt    time: %.*s\n", Length-1, ptr);
 		    }
-                    myfree(IgsYYvsp[-1].Dummy);
-                ;
-    break;}
-case 341:
-#line 2103 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Dummy));
+                }
+#line 5076 "y.tab.c"
+    break;
+
+  case 342: /* uptimeentry: LOCALTIME date END  */
+#line 2103 "gointer.y"
+                {
                     char *ptr;
                     int   Length;
 
-                    ServerTime = *(struct tm *) IgsYYvsp[-1].Dummy;
+                    ServerTime = *(struct tm *) (IgsYYvsp[-1].Dummy);
                     SetServerTime = 1;
 		    if (appdata.WantVerbose) {
-			ptr = asctime(IgsYYvsp[-1].Dummy);
+			ptr = asctime((IgsYYvsp[-1].Dummy));
 			Length = strlen(ptr);
 			Outputf("Server time: %.*s\n", Length-1, ptr);
 		    }
-                    myfree(IgsYYvsp[-1].Dummy);
-                ;
-    break;}
-case 342:
-#line 2117 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Dummy));
+                }
+#line 5094 "y.tab.c"
+    break;
+
+  case 343: /* uptimeentry: SERVERUP NAME NAME NAME NAME NAME NAME END  */
+#line 2117 "gointer.y"
+                {
                     long Uptime;
 
 		    if (appdata.WantVerbose) {
-			Uptime = ((24*atoi(IgsYYvsp[-6].Name) + atoi(IgsYYvsp[-4].Name))*60 + atoi(IgsYYvsp[-2].Name)) * 60;
+			Uptime = ((24*atoi((IgsYYvsp[-6].Name)) + atoi((IgsYYvsp[-4].Name)))*60 + atoi((IgsYYvsp[-2].Name))) * 60;
 			Outputf("Uptime: %s %s %s %s %s %s (%ld seconds)\n",
-				IgsYYvsp[-6].Name, IgsYYvsp[-5].Name, IgsYYvsp[-4].Name, IgsYYvsp[-3].Name, IgsYYvsp[-2].Name, IgsYYvsp[-1].Name, Uptime);
+				(IgsYYvsp[-6].Name), (IgsYYvsp[-5].Name), (IgsYYvsp[-4].Name), (IgsYYvsp[-3].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[-1].Name), Uptime);
 		    }
-                    myfree(IgsYYvsp[-6].Name);
-                    myfree(IgsYYvsp[-5].Name);
-                    myfree(IgsYYvsp[-4].Name);
-                    myfree(IgsYYvsp[-3].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                ;
-    break;}
-case 343:
-#line 2133 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-6].Name));
+                    myfree((IgsYYvsp[-5].Name));
+                    myfree((IgsYYvsp[-4].Name));
+                    myfree((IgsYYvsp[-3].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                }
+#line 5114 "y.tab.c"
+    break;
+
+  case 344: /* uptimeentry: UPTIMEENTRY NAME  */
+#line 2133 "gointer.y"
+                {
 		    if (appdata.WantVerbose) {
-			Outputf("%s\n", IgsYYvsp[0].Name);
+			Outputf("%s\n", (IgsYYvsp[0].Name));
 		    }
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 346:
-#line 2146 "./gointer.y"
-{
-                    SgfList(IgsYYvsp[-1].Namelist);
-                    FreeNameList(IgsYYvsp[-1].Namelist);
-                ;
-    break;}
-case 347:
-#line 2151 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5125 "y.tab.c"
+    break;
+
+  case 347: /* sgflist: SGFLIST names END  */
+#line 2146 "gointer.y"
+                {
+                    SgfList((IgsYYvsp[-1].Namelist));
+                    FreeNameList((IgsYYvsp[-1].Namelist));
+                }
+#line 5134 "y.tab.c"
+    break;
+
+  case 348: /* sgflist: SGFLIST NOSGF  */
+#line 2151 "gointer.y"
+                {
                     Output("sgf needs arguments\n");
-                ;
-    break;}
-case 348:
-#line 2157 "./gointer.y"
-{
-                    ReviewList(IgsYYvsp[0].Namelist);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 349:
-#line 2164 "./gointer.y"
-{
+                }
+#line 5142 "y.tab.c"
+    break;
+
+  case 349: /* reviewlist: REVIEWLIST names  */
+#line 2157 "gointer.y"
+                {
+                    ReviewList((IgsYYvsp[0].Namelist));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5151 "y.tab.c"
+    break;
+
+  case 350: /* reviewvariations: REVIEWVARIATIONS names  */
+#line 2164 "gointer.y"
+                {
 /* For the moment we just ignore the variations list
                     NameList *Here;
 
@@ -3699,425 +5161,533 @@ case 349:
                         Outputf(" %s", Here->Name);
                     Output("\n");
 */
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 350:
-#line 2178 "./gointer.y"
-{
-                    ReviewStart(IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 351:
-#line 2185 "./gointer.y"
-{
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5167 "y.tab.c"
+    break;
+
+  case 351: /* reviewstart: REVIEWSTART  */
+#line 2178 "gointer.y"
+                {
+                    ReviewStart((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5176 "y.tab.c"
+    break;
+
+  case 352: /* reviewliterals: reviewliterals REVLITERAL  */
+#line 2185 "gointer.y"
+                {
                     NameList *names;
 
                     names = mynew(NameList);
-                    names->Name     = IgsYYvsp[0].Name;
-                    names->Next     = IgsYYvsp[-1].Namelist;
-                    names->Previous = IgsYYvsp[-1].Namelist->Previous;
+                    names->Name     = (IgsYYvsp[0].Name);
+                    names->Next     = (IgsYYvsp[-1].Namelist);
+                    names->Previous = (IgsYYvsp[-1].Namelist)->Previous;
                     names->Next->Previous = names->Previous->Next = names;
-                    IgsYYval.Namelist = IgsYYvsp[-1].Namelist;
-                ;
-    break;}
-case 352:
-#line 2196 "./gointer.y"
-{
+                    (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
+                }
+#line 5191 "y.tab.c"
+    break;
+
+  case 353: /* reviewliterals: %empty  */
+#line 2196 "gointer.y"
+                {
                     NameList *header;
 
                     header = mynew(NameList);
                     header->Name = NULL;
                     header->Next = header->Previous = header;
-                    IgsYYval.Namelist = header;
-                ;
-    break;}
-case 353:
-#line 2206 "./gointer.y"
-{ ReviewOpenVariation(); ;
-    break;}
-case 354:
-#line 2207 "./gointer.y"
-{ ReviewCloseVariation(); ;
-    break;}
-case 355:
-#line 2209 "./gointer.y"
-{
+                    (IgsYYval.Namelist) = header;
+                }
+#line 5204 "y.tab.c"
+    break;
+
+  case 354: /* reviewentry: '('  */
+#line 2206 "gointer.y"
+                  { ReviewOpenVariation(); }
+#line 5210 "y.tab.c"
+    break;
+
+  case 355: /* reviewentry: ')'  */
+#line 2207 "gointer.y"
+                  { ReviewCloseVariation(); }
+#line 5216 "y.tab.c"
+    break;
+
+  case 356: /* reviewentry: REVNODE  */
+#line 2209 "gointer.y"
+                {
                     ReviewNewNode();
-                ;
-    break;}
-case 356:
-#line 2213 "./gointer.y"
-{
+                }
+#line 5224 "y.tab.c"
+    break;
+
+  case 357: /* reviewentry: REVUNKNOWN reviewliterals  */
+#line 2213 "gointer.y"
+                {
                     NameList *Here;
 
-                    Outputf("Unknown: %s:", IgsYYvsp[-1].Name);
-                    for (Here = IgsYYvsp[0].Namelist->Next; Here != IgsYYvsp[0].Namelist; Here = Here->Next)
+                    Outputf("Unknown: %s:", (IgsYYvsp[-1].Name));
+                    for (Here = (IgsYYvsp[0].Namelist)->Next; Here != (IgsYYvsp[0].Namelist); Here = Here->Next)
                         Outputf(" %s", Here->Name);
                     Output("\n");
-                    myfree(IgsYYvsp[-1].Name);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 357:
-#line 2224 "./gointer.y"
-{
+                    myfree((IgsYYvsp[-1].Name));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5239 "y.tab.c"
+    break;
+
+  case 358: /* reviewentry: REVNODENAME REVLITERAL  */
+#line 2224 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retNODENAME, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 358:
-#line 2233 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5252 "y.tab.c"
+    break;
+
+  case 359: /* reviewentry: REVCOMMENT REVLITERAL  */
+#line 2233 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retCOMMENT, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 359:
-#line 2242 "./gointer.y"
-{
-                    ReviewGlobalProperty(retKOMI, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 360:
-#line 2247 "./gointer.y"
-{
-                    ReviewGlobalProperty(retHANDICAP, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 361:
-#line 2252 "./gointer.y"
-{
-                    ReviewGlobalProperty(retENTEREDBY, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 362:
-#line 2257 "./gointer.y"
-{
-                    ReviewGlobalProperty(retCOPYRIGHT, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 363:
-#line 2262 "./gointer.y"
-{
-                    ReviewGlobalProperty(retPLACE, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 364:
-#line 2267 "./gointer.y"
-{
-                    ReviewGlobalProperty(retDATE, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 365:
-#line 2272 "./gointer.y"
-{
-                    ReviewGlobalProperty(retRESULT, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 366:
-#line 2277 "./gointer.y"
-{
-                    ReviewGlobalProperty(retTOURNAMENT, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 367:
-#line 2282 "./gointer.y"
-{
-                    ReviewGlobalProperty(retNAME, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 368:
-#line 2287 "./gointer.y"
-{
-                    ReviewGlobalProperty(retWHITESTRENGTH, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 369:
-#line 2292 "./gointer.y"
-{
-                    ReviewGlobalProperty(retBLACKSTRENGTH, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 370:
-#line 2297 "./gointer.y"
-{
-                    ReviewGlobalProperty(retWHITENAME, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 371:
-#line 2302 "./gointer.y"
-{
-                    ReviewGlobalProperty(retBLACKNAME, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 372:
-#line 2307 "./gointer.y"
-{
-                    ReviewGlobalProperty(retSIZE, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 373:
-#line 2312 "./gointer.y"
-{
-                    ReviewGlobalProperty(retGAME, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 374:
-#line 2317 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5265 "y.tab.c"
+    break;
+
+  case 360: /* reviewentry: REVKOMI REVLITERAL  */
+#line 2242 "gointer.y"
+                {
+                    ReviewGlobalProperty(retKOMI, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5274 "y.tab.c"
+    break;
+
+  case 361: /* reviewentry: REVHANDICAP REVLITERAL  */
+#line 2247 "gointer.y"
+                {
+                    ReviewGlobalProperty(retHANDICAP, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5283 "y.tab.c"
+    break;
+
+  case 362: /* reviewentry: REVUSER REVLITERAL  */
+#line 2252 "gointer.y"
+                {
+                    ReviewGlobalProperty(retENTEREDBY, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5292 "y.tab.c"
+    break;
+
+  case 363: /* reviewentry: REVCOPYRIGHT REVLITERAL  */
+#line 2257 "gointer.y"
+                {
+                    ReviewGlobalProperty(retCOPYRIGHT, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5301 "y.tab.c"
+    break;
+
+  case 364: /* reviewentry: REVPLACE REVLITERAL  */
+#line 2262 "gointer.y"
+                {
+                    ReviewGlobalProperty(retPLACE, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5310 "y.tab.c"
+    break;
+
+  case 365: /* reviewentry: REVDATE REVLITERAL  */
+#line 2267 "gointer.y"
+                {
+                    ReviewGlobalProperty(retDATE, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5319 "y.tab.c"
+    break;
+
+  case 366: /* reviewentry: REVRESULT REVLITERAL  */
+#line 2272 "gointer.y"
+                {
+                    ReviewGlobalProperty(retRESULT, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5328 "y.tab.c"
+    break;
+
+  case 367: /* reviewentry: REVEVENT REVLITERAL  */
+#line 2277 "gointer.y"
+                {
+                    ReviewGlobalProperty(retTOURNAMENT, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5337 "y.tab.c"
+    break;
+
+  case 368: /* reviewentry: REVGAMENAME REVLITERAL  */
+#line 2282 "gointer.y"
+                {
+                    ReviewGlobalProperty(retNAME, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5346 "y.tab.c"
+    break;
+
+  case 369: /* reviewentry: REVWHITERANK REVLITERAL  */
+#line 2287 "gointer.y"
+                {
+                    ReviewGlobalProperty(retWHITESTRENGTH, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5355 "y.tab.c"
+    break;
+
+  case 370: /* reviewentry: REVBLACKRANK REVLITERAL  */
+#line 2292 "gointer.y"
+                {
+                    ReviewGlobalProperty(retBLACKSTRENGTH, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5364 "y.tab.c"
+    break;
+
+  case 371: /* reviewentry: REVWHITENAME REVLITERAL  */
+#line 2297 "gointer.y"
+                {
+                    ReviewGlobalProperty(retWHITENAME, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5373 "y.tab.c"
+    break;
+
+  case 372: /* reviewentry: REVBLACKNAME REVLITERAL  */
+#line 2302 "gointer.y"
+                {
+                    ReviewGlobalProperty(retBLACKNAME, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5382 "y.tab.c"
+    break;
+
+  case 373: /* reviewentry: REVSIZE REVLITERAL  */
+#line 2307 "gointer.y"
+                {
+                    ReviewGlobalProperty(retSIZE, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5391 "y.tab.c"
+    break;
+
+  case 374: /* reviewentry: REVGAME REVLITERAL  */
+#line 2312 "gointer.y"
+                {
+                    ReviewGlobalProperty(retGAME, (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5400 "y.tab.c"
+    break;
+
+  case 375: /* reviewentry: REVWHITE REVLITERAL  */
+#line 2317 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retWHITE, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 375:
-#line 2326 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5413 "y.tab.c"
+    break;
+
+  case 376: /* reviewentry: REVBLACK REVLITERAL  */
+#line 2326 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retBLACK, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 376:
-#line 2335 "./gointer.y"
-{
-                    ReviewLocalProperty(retLETTERS, IgsYYvsp[0].Namelist);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 377:
-#line 2340 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5426 "y.tab.c"
+    break;
+
+  case 377: /* reviewentry: REVLETTERS reviewliterals  */
+#line 2335 "gointer.y"
+                {
+                    ReviewLocalProperty(retLETTERS, (IgsYYvsp[0].Namelist));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5435 "y.tab.c"
+    break;
+
+  case 378: /* reviewentry: REVWHITETIME REVLITERAL  */
+#line 2340 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retWHITETIME, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 378:
-#line 2349 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5448 "y.tab.c"
+    break;
+
+  case 379: /* reviewentry: REVBLACKTIME REVLITERAL  */
+#line 2349 "gointer.y"
+                {
                     NameList Entry;
 
-                    Entry.Name = IgsYYvsp[0].Name;
+                    Entry.Name = (IgsYYvsp[0].Name);
                     Entry.Next = Entry.Previous = &Entry;
                     ReviewLocalProperty(retBLACKTIME, &Entry);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 379:
-#line 2358 "./gointer.y"
-{
-                    ReviewLocalProperty(retBLACKSET, IgsYYvsp[0].Namelist);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 380:
-#line 2363 "./gointer.y"
-{
-                    ReviewLocalProperty(retWHITESET, IgsYYvsp[0].Namelist);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 381:
-#line 2368 "./gointer.y"
-{
-                    ReviewLocalProperty(retEMPTYSET, IgsYYvsp[0].Namelist);
-                    FreeNameList(IgsYYvsp[0].Namelist);
-                ;
-    break;}
-case 384:
-#line 2379 "./gointer.y"
-{
-                    ReviewEntryBegin(IgsYYvsp[0].Value);
-                ;
-    break;}
-case 388:
-#line 2390 "./gointer.y"
-{
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5461 "y.tab.c"
+    break;
+
+  case 380: /* reviewentry: REVADDBLACK reviewliterals  */
+#line 2358 "gointer.y"
+                {
+                    ReviewLocalProperty(retBLACKSET, (IgsYYvsp[0].Namelist));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5470 "y.tab.c"
+    break;
+
+  case 381: /* reviewentry: REVADDWHITE reviewliterals  */
+#line 2363 "gointer.y"
+                {
+                    ReviewLocalProperty(retWHITESET, (IgsYYvsp[0].Namelist));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5479 "y.tab.c"
+    break;
+
+  case 382: /* reviewentry: REVADDEMPTY reviewliterals  */
+#line 2368 "gointer.y"
+                {
+                    ReviewLocalProperty(retEMPTYSET, (IgsYYvsp[0].Namelist));
+                    FreeNameList((IgsYYvsp[0].Namelist));
+                }
+#line 5488 "y.tab.c"
+    break;
+
+  case 385: /* $@7: %empty  */
+#line 2379 "gointer.y"
+                {
+                    ReviewEntryBegin((IgsYYvsp[0].Value));
+                }
+#line 5496 "y.tab.c"
+    break;
+
+  case 389: /* reviews: auxreviews  */
+#line 2390 "gointer.y"
+                {
                     ReviewEnd(0);
-                ;
-    break;}
-case 389:
-#line 2394 "./gointer.y"
-{
+                }
+#line 5504 "y.tab.c"
+    break;
+
+  case 390: /* reviews: auxreviews REVIEWEND  */
+#line 2394 "gointer.y"
+                {
                     ReviewEnd(1);
-                ;
-    break;}
-case 390:
-#line 2400 "./gointer.y"
-{
+                }
+#line 5512 "y.tab.c"
+    break;
+
+  case 391: /* reviewstop: REVIEWSTOP  */
+#line 2400 "gointer.y"
+                {
                     ReviewStop();
-                ;
-    break;}
-case 391:
-#line 2406 "./gointer.y"
-{
+                }
+#line 5520 "y.tab.c"
+    break;
+
+  case 392: /* noreview: NOREVIEW  */
+#line 2406 "gointer.y"
+                {
                     ReviewNotFound();
-                ;
-    break;}
-case 392:
-#line 2412 "./gointer.y"
-{
+                }
+#line 5528 "y.tab.c"
+    break;
+
+  case 393: /* throwcopy: THROWCOPY  */
+#line 2412 "gointer.y"
+                {
                     Output("You are already logged on. "
                            "Throwing other copy out\n");
-                ;
-    break;}
-case 393:
-#line 2419 "./gointer.y"
-{ /* my rating, their rating, handicap,
+                }
+#line 5537 "y.tab.c"
+    break;
+
+  case 394: /* proba: PROBA RATING RATING NAME NAME NAME  */
+#line 2419 "gointer.y"
+                { /* my rating, their rating, handicap,
                    * proba lose as white, proba lose as black
                    */
-                    MyLoseProbas(IgsYYvsp[-5].Person, IgsYYvsp[-4].Value, IgsYYvsp[-3].Value, IgsYYvsp[-2].Name, IgsYYvsp[-1].Name, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 394:
-#line 2428 "./gointer.y"
-{ /* other player does not have a rating */
-                ;
-    break;}
-case 395:
-#line 2433 "./gointer.y"
-{ /* my rating, their rating, handicap,
+                    MyLoseProbas((IgsYYvsp[-5].Person), (IgsYYvsp[-4].Value), (IgsYYvsp[-3].Value), (IgsYYvsp[-2].Name), (IgsYYvsp[-1].Name), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5550 "y.tab.c"
+    break;
+
+  case 395: /* proba: PROBA END  */
+#line 2428 "gointer.y"
+                { /* other player does not have a rating */
+                }
+#line 5557 "y.tab.c"
+    break;
+
+  case 396: /* setproba: SETPROBA RATING RATING NAME NAME NAME  */
+#line 2433 "gointer.y"
+                { /* my rating, their rating, handicap,
                    * proba lose as white, proba lose as black
                    */
-                    MyLoseProbas(NULL, IgsYYvsp[-4].Value, IgsYYvsp[-3].Value, IgsYYvsp[-2].Name, IgsYYvsp[-1].Name, IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[-2].Name);
-                    myfree(IgsYYvsp[-1].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 396:
-#line 2442 "./gointer.y"
-{ /* I do not have a rating */
-                ;
-    break;}
-case 397:
-#line 2447 "./gointer.y"
-{
+                    MyLoseProbas(NULL, (IgsYYvsp[-4].Value), (IgsYYvsp[-3].Value), (IgsYYvsp[-2].Name), (IgsYYvsp[-1].Name), (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[-2].Name));
+                    myfree((IgsYYvsp[-1].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5570 "y.tab.c"
+    break;
+
+  case 397: /* setproba: SETPROBA END  */
+#line 2442 "gointer.y"
+                { /* I do not have a rating */
+                }
+#line 5577 "y.tab.c"
+    break;
+
+  case 398: /* sorry: SORRY  */
+#line 2447 "gointer.y"
+                {
                     if (ArgsCommand(NULL, ";")) ChannelDisallowed();
                     else Output("Sorry.\n");
-                ;
-    break;}
-case 398:
-#line 2454 "./gointer.y"
-{
-                    Outputf("Unknown command %s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 399:
-#line 2461 "./gointer.y"
-{
-                ;
-    break;}
-case 400:
-#line 2466 "./gointer.y"
-{
+                }
+#line 5586 "y.tab.c"
+    break;
+
+  case 399: /* invalid: INVALID  */
+#line 2454 "gointer.y"
+                {
+                    Outputf("Unknown command %s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5595 "y.tab.c"
+    break;
+
+  case 400: /* unknown: UNKNOWNANSWER literallines  */
+#line 2461 "gointer.y"
+                {
+                }
+#line 5602 "y.tab.c"
+    break;
+
+  case 401: /* names: names NAME  */
+#line 2466 "gointer.y"
+                {
                     NameList *names;
 
                     names = mynew(NameList);
-                    names->Name     = IgsYYvsp[0].Name;
-                    names->Next     = IgsYYvsp[-1].Namelist;
-                    names->Previous = IgsYYvsp[-1].Namelist->Previous;
+                    names->Name     = (IgsYYvsp[0].Name);
+                    names->Next     = (IgsYYvsp[-1].Namelist);
+                    names->Previous = (IgsYYvsp[-1].Namelist)->Previous;
                     names->Next->Previous = names->Previous->Next = names;
-                    IgsYYval.Namelist = IgsYYvsp[-1].Namelist;
-                ;
-    break;}
-case 401:
-#line 2476 "./gointer.y"
-{
+                    (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
+                }
+#line 5617 "y.tab.c"
+    break;
+
+  case 402: /* names: %empty  */
+#line 2476 "gointer.y"
+                {
                     NameList *header;
 
                     header = mynew(NameList);
                     header->Name = NULL;
                     header->Next = header->Previous = header;
-                    IgsYYval.Namelist = header;
-                ;
-    break;}
-case 402:
-#line 2487 "./gointer.y"
-{
-                    IgsYYvsp[-2].Namelist->Previous->Next = IgsYYvsp[-1].Namelist->Next;
-                    IgsYYvsp[-1].Namelist->Next->Previous = IgsYYvsp[-2].Namelist->Previous;
-                    IgsYYvsp[-1].Namelist->Previous->Next = IgsYYvsp[-2].Namelist;
-                    IgsYYvsp[-2].Namelist->Previous       = IgsYYvsp[-1].Namelist->Previous;
-                    myfree(IgsYYvsp[-1].Namelist);
-                    IgsYYval.Namelist = IgsYYvsp[-2].Namelist;
-                ;
-    break;}
-case 403:
-#line 2495 "./gointer.y"
-{
+                    (IgsYYval.Namelist) = header;
+                }
+#line 5630 "y.tab.c"
+    break;
+
+  case 403: /* namesset: namesset names END  */
+#line 2487 "gointer.y"
+                {
+                    (IgsYYvsp[-2].Namelist)->Previous->Next = (IgsYYvsp[-1].Namelist)->Next;
+                    (IgsYYvsp[-1].Namelist)->Next->Previous = (IgsYYvsp[-2].Namelist)->Previous;
+                    (IgsYYvsp[-1].Namelist)->Previous->Next = (IgsYYvsp[-2].Namelist);
+                    (IgsYYvsp[-2].Namelist)->Previous       = (IgsYYvsp[-1].Namelist)->Previous;
+                    myfree((IgsYYvsp[-1].Namelist));
+                    (IgsYYval.Namelist) = (IgsYYvsp[-2].Namelist);
+                }
+#line 5643 "y.tab.c"
+    break;
+
+  case 404: /* namesset: %empty  */
+#line 2495 "gointer.y"
+                {
                     NameList *header;
 
                     header = mynew(NameList);
                     header->Name = NULL;
                     header->Next = header->Previous = header;
-                    IgsYYval.Namelist = header;
-                ;
-    break;}
-case 406:
-#line 2509 "./gointer.y"
-{;
-    break;}
-case 407:
-#line 2511 "./gointer.y"
-{
-                    Outputf("%s\n", IgsYYvsp[0].Name);
-                    myfree(IgsYYvsp[0].Name);
-                ;
-    break;}
-case 408:
-#line 2517 "./gointer.y"
-{ IgsYYval.Name = IgsYYvsp[0].Name;   ;
-    break;}
-case 409:
-#line 2518 "./gointer.y"
-{ IgsYYval.Name = NULL; ;
-    break;}
-case 410:
-#line 2522 "./gointer.y"
-{
+                    (IgsYYval.Namelist) = header;
+                }
+#line 5656 "y.tab.c"
+    break;
+
+  case 407: /* promptname: OLDPROMPT  */
+#line 2509 "gointer.y"
+                              {}
+#line 5662 "y.tab.c"
+    break;
+
+  case 408: /* promptname: NAME  */
+#line 2511 "gointer.y"
+                {
+                    Outputf("%s\n", (IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 5671 "y.tab.c"
+    break;
+
+  case 409: /* optname: NAME  */
+#line 2517 "gointer.y"
+                   { (IgsYYval.Name) = (IgsYYvsp[0].Name);   }
+#line 5677 "y.tab.c"
+    break;
+
+  case 410: /* optname: %empty  */
+#line 2518 "gointer.y"
+                   { (IgsYYval.Name) = NULL; }
+#line 5683 "y.tab.c"
+    break;
+
+  case 411: /* literallines: literallines NAME  */
+#line 2522 "gointer.y"
+                {
                     char *ptr;
 
-                    ptr = IgsYYvsp[0].Name;
+                    ptr = (IgsYYvsp[0].Name);
                     if (ptr[0] == '\r') ptr++;
                     if (isdigit(ptr[0])) {
                         ptr++;
@@ -4125,7 +5695,7 @@ case 410:
                         if (ptr[0] == ' ') ptr++;
                     }
                     Outputf("%s\n", ptr);
-                    myfree(IgsYYvsp[0].Name);
+                    myfree((IgsYYvsp[0].Name));
 /* To match xmalloc in bison template: */
 # ifdef free
 #  undef free
@@ -4139,207 +5709,205 @@ case 410:
 #  undef calloc
 # endif /* calloc */
 # define calloc(m, n) mycalloc(m, n)
-                ;
-    break;}
-}
-   /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/bison.simple"
-
-  IgsYYvsp -= IgsYYlen;
-  IgsYYssp -= IgsYYlen;
-#ifdef YYLSP_NEEDED
-  IgsYYlsp -= IgsYYlen;
-#endif
+                }
+#line 5714 "y.tab.c"
+    break;
 
-#if YYDEBUG != 0
-  if (IgsYYdebug)
-    {
-      short *ssp1 = IgsYYss - 1;
-      fprintf (stderr, "state stack now");
-      while (ssp1 != IgsYYssp)
-	fprintf (stderr, " %d", *++ssp1);
-      fprintf (stderr, "\n");
+
+#line 5718 "y.tab.c"
+
+      default: break;
     }
-#endif
+  /* User semantic actions sometimes alter IgsYYchar, and that requires
+     that IgsYYtoken be updated with the new translation.  We take the
+     approach of translating immediately before every use of IgsYYtoken.
+     One alternative is translating here after every semantic action,
+     but that translation would be missed if the semantic action invokes
+     YYABORT, YYACCEPT, or YYERROR immediately after altering IgsYYchar or
+     if it invokes YYBACKUP.  In the case of YYABORT or YYACCEPT, an
+     incorrect destructor might then be invoked immediately.  In the
+     case of YYERROR or YYBACKUP, subsequent parser actions might lead
+     to an incorrect destructor call or verbose syntax error message
+     before the lookahead is translated.  */
+  YY_SYMBOL_PRINT ("-> $$ =", YY_CAST (IgsYYsymbol_kind_t, IgsYYr1[IgsYYn]), &IgsYYval, &IgsYYloc);
+
+  YYPOPSTACK (IgsYYlen);
+  IgsYYlen = 0;
 
   *++IgsYYvsp = IgsYYval;
 
-#ifdef YYLSP_NEEDED
-  IgsYYlsp++;
-  if (IgsYYlen == 0)
-    {
-      IgsYYlsp->first_line = IgsYYlloc.first_line;
-      IgsYYlsp->first_column = IgsYYlloc.first_column;
-      IgsYYlsp->last_line = (IgsYYlsp-1)->last_line;
-      IgsYYlsp->last_column = (IgsYYlsp-1)->last_column;
-      IgsYYlsp->text = 0;
-    }
-  else
-    {
-      IgsYYlsp->last_line = (IgsYYlsp+IgsYYlen-1)->last_line;
-      IgsYYlsp->last_column = (IgsYYlsp+IgsYYlen-1)->last_column;
-    }
-#endif
-
-  /* Now "shift" the result of the reduction.
-     Determine what state that goes to,
-     based on the state we popped back to
-     and the rule number reduced by.  */
-
-  IgsYYn = IgsYYr1[IgsYYn];
-
-  IgsYYstate = IgsYYpgoto[IgsYYn - YYNTBASE] + *IgsYYssp;
-  if (IgsYYstate >= 0 && IgsYYstate <= YYLAST && IgsYYcheck[IgsYYstate] == *IgsYYssp)
-    IgsYYstate = IgsYYtable[IgsYYstate];
-  else
-    IgsYYstate = IgsYYdefgoto[IgsYYn - YYNTBASE];
+  /* Now 'shift' the result of the reduction.  Determine what state
+     that goes to, based on the state we popped back to and the rule
+     number reduced by.  */
+  {
+    const int IgsYYlhs = IgsYYr1[IgsYYn] - YYNTOKENS;
+    const int IgsYYi = IgsYYpgoto[IgsYYlhs] + *IgsYYssp;
+    IgsYYstate = (0 <= IgsYYi && IgsYYi <= YYLAST && IgsYYcheck[IgsYYi] == *IgsYYssp
+               ? IgsYYtable[IgsYYi]
+               : IgsYYdefgoto[IgsYYlhs]);
+  }
 
   goto IgsYYnewstate;
 
-IgsYYerrlab:   /* here on detecting error */
 
-  if (! IgsYYerrstatus)
-    /* If not already recovering from an error, report this error.  */
+/*--------------------------------------.
+| IgsYYerrlab -- here on detecting error.  |
+`--------------------------------------*/
+IgsYYerrlab:
+  /* Make sure we have latest lookahead translation.  See comments at
+     user semantic actions for why this is necessary.  */
+  IgsYYtoken = IgsYYchar == YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (IgsYYchar);
+  /* If not already recovering from an error, report this error.  */
+  if (!IgsYYerrstatus)
     {
       ++IgsYYnerrs;
-
-#ifdef YYERROR_VERBOSE
-      IgsYYn = IgsYYpact[IgsYYstate];
-
-      if (IgsYYn > YYFLAG && IgsYYn < YYLAST)
-	{
-	  int size = 0;
-	  char *msg;
-	  int x, count;
-
-	  count = 0;
-	  /* Start X at -IgsYYn if nec to avoid negative indexes in IgsYYcheck.  */
-	  for (x = (IgsYYn < 0 ? -IgsYYn : 0);
-	       x < (sizeof(IgsYYtname) / sizeof(char *)); x++)
-	    if (IgsYYcheck[x + IgsYYn] == x)
-	      size += strlen(IgsYYtname[x]) + 15, count++;
-	  msg = (char *) malloc(size + 15);
-	  if (msg != 0)
-	    {
-	      strcpy(msg, "parse error");
-
-	      if (count < 5)
-		{
-		  count = 0;
-		  for (x = (IgsYYn < 0 ? -IgsYYn : 0);
-		       x < (sizeof(IgsYYtname) / sizeof(char *)); x++)
-		    if (IgsYYcheck[x + IgsYYn] == x)
-		      {
-			strcat(msg, count == 0 ? ", expecting `" : " or `");
-			strcat(msg, IgsYYtname[x]);
-			strcat(msg, "'");
-			count++;
-		      }
-		}
-	      IgsYYerror(msg);
-	      free(msg);
-	    }
-	  else
-	    IgsYYerror ("parse error; also virtual memory exceeded");
-	}
-      else
-#endif /* YYERROR_VERBOSE */
-	IgsYYerror("parse error");
+      IgsYYerror (YY_("syntax error"));
     }
-
-  goto IgsYYerrlab1;
-IgsYYerrlab1:   /* here on error raised explicitly by an action */
 
   if (IgsYYerrstatus == 3)
     {
-      /* if just tried and failed to reuse lookahead token after an error, discard it.  */
+      /* If just tried and failed to reuse lookahead token after an
+         error, discard it.  */
 
-      /* return failure if at end of input */
-      if (IgsYYchar == YYEOF)
-	YYABORT;
-
-#if YYDEBUG != 0
-      if (IgsYYdebug)
-	fprintf(stderr, "Discarding token %d (%s).\n", IgsYYchar, IgsYYtname[IgsYYchar1]);
-#endif
-
-      IgsYYchar = YYEMPTY;
+      if (IgsYYchar <= YYEOF)
+        {
+          /* Return failure if at end of input.  */
+          if (IgsYYchar == YYEOF)
+            YYABORT;
+        }
+      else
+        {
+          IgsYYdestruct ("Error: discarding",
+                      IgsYYtoken, &IgsYYlval);
+          IgsYYchar = YYEMPTY;
+        }
     }
 
-  /* Else will try to reuse lookahead token
-     after shifting the error token.  */
+  /* Else will try to reuse lookahead token after shifting the error
+     token.  */
+  goto IgsYYerrlab1;
 
-  IgsYYerrstatus = 3;		/* Each real token shifted decrements this */
 
-  goto IgsYYerrhandle;
+/*---------------------------------------------------.
+| IgsYYerrorlab -- error raised explicitly by YYERROR.  |
+`---------------------------------------------------*/
+IgsYYerrorlab:
+  /* Pacify compilers when the user code never invokes YYERROR and the
+     label IgsYYerrorlab therefore never appears in user code.  */
+  if (0)
+    YYERROR;
+  ++IgsYYnerrs;
 
-IgsYYerrdefault:  /* current state does not do anything special for the error token. */
+  /* Do not reclaim the symbols of the rule whose action triggered
+     this YYERROR.  */
+  YYPOPSTACK (IgsYYlen);
+  IgsYYlen = 0;
+  YY_STACK_PRINT (IgsYYss, IgsYYssp);
+  IgsYYstate = *IgsYYssp;
+  goto IgsYYerrlab1;
 
-#if 0
-  /* This is wrong; only states that explicitly want error tokens
-     should shift them.  */
-  IgsYYn = IgsYYdefact[IgsYYstate];  /* If its default is to accept any token, ok.  Otherwise pop it.*/
-  if (IgsYYn) goto IgsYYdefault;
-#endif
 
-IgsYYerrpop:   /* pop the current state because it cannot handle the error token */
+/*-------------------------------------------------------------.
+| IgsYYerrlab1 -- common code for both syntax error and YYERROR.  |
+`-------------------------------------------------------------*/
+IgsYYerrlab1:
+  IgsYYerrstatus = 3;      /* Each real token shifted decrements this.  */
 
-  if (IgsYYssp == IgsYYss) YYABORT;
-  IgsYYvsp--;
-  IgsYYstate = *--IgsYYssp;
-#ifdef YYLSP_NEEDED
-  IgsYYlsp--;
-#endif
-
-#if YYDEBUG != 0
-  if (IgsYYdebug)
+  /* Pop stack until we find a state that shifts the error token.  */
+  for (;;)
     {
-      short *ssp1 = IgsYYss - 1;
-      fprintf (stderr, "Error: state stack now");
-      while (ssp1 != IgsYYssp)
-	fprintf (stderr, " %d", *++ssp1);
-      fprintf (stderr, "\n");
+      IgsYYn = IgsYYpact[IgsYYstate];
+      if (!IgsYYpact_value_is_default (IgsYYn))
+        {
+          IgsYYn += YYSYMBOL_YYerror;
+          if (0 <= IgsYYn && IgsYYn <= YYLAST && IgsYYcheck[IgsYYn] == YYSYMBOL_YYerror)
+            {
+              IgsYYn = IgsYYtable[IgsYYn];
+              if (0 < IgsYYn)
+                break;
+            }
+        }
+
+      /* Pop the current state because it cannot handle the error token.  */
+      if (IgsYYssp == IgsYYss)
+        YYABORT;
+
+
+      IgsYYdestruct ("Error: popping",
+                  YY_ACCESSING_SYMBOL (IgsYYstate), IgsYYvsp);
+      YYPOPSTACK (1);
+      IgsYYstate = *IgsYYssp;
+      YY_STACK_PRINT (IgsYYss, IgsYYssp);
     }
-#endif
 
-IgsYYerrhandle:
-
-  IgsYYn = IgsYYpact[IgsYYstate];
-  if (IgsYYn == YYFLAG)
-    goto IgsYYerrdefault;
-
-  IgsYYn += YYTERROR;
-  if (IgsYYn < 0 || IgsYYn > YYLAST || IgsYYcheck[IgsYYn] != YYTERROR)
-    goto IgsYYerrdefault;
-
-  IgsYYn = IgsYYtable[IgsYYn];
-  if (IgsYYn < 0)
-    {
-      if (IgsYYn == YYFLAG)
-	goto IgsYYerrpop;
-      IgsYYn = -IgsYYn;
-      goto IgsYYreduce;
-    }
-  else if (IgsYYn == 0)
-    goto IgsYYerrpop;
-
-  if (IgsYYn == YYFINAL)
-    YYACCEPT;
-
-#if YYDEBUG != 0
-  if (IgsYYdebug)
-    fprintf(stderr, "Shifting error token, ");
-#endif
-
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++IgsYYvsp = IgsYYlval;
-#ifdef YYLSP_NEEDED
-  *++IgsYYlsp = IgsYYlloc;
-#endif
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
+
+
+  /* Shift the error token.  */
+  YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (IgsYYn), IgsYYvsp, IgsYYlsp);
 
   IgsYYstate = IgsYYn;
   goto IgsYYnewstate;
+
+
+/*-------------------------------------.
+| IgsYYacceptlab -- YYACCEPT comes here.  |
+`-------------------------------------*/
+IgsYYacceptlab:
+  IgsYYresult = 0;
+  goto IgsYYreturnlab;
+
+
+/*-----------------------------------.
+| IgsYYabortlab -- YYABORT comes here.  |
+`-----------------------------------*/
+IgsYYabortlab:
+  IgsYYresult = 1;
+  goto IgsYYreturnlab;
+
+
+/*-----------------------------------------------------------.
+| IgsYYexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
+IgsYYexhaustedlab:
+  IgsYYerror (YY_("memory exhausted"));
+  IgsYYresult = 2;
+  goto IgsYYreturnlab;
+
+
+/*----------------------------------------------------------.
+| IgsYYreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+IgsYYreturnlab:
+  if (IgsYYchar != YYEMPTY)
+    {
+      /* Make sure we have latest lookahead translation.  See comments at
+         user semantic actions for why this is necessary.  */
+      IgsYYtoken = YYTRANSLATE (IgsYYchar);
+      IgsYYdestruct ("Cleanup: discarding lookahead",
+                  IgsYYtoken, &IgsYYlval);
+    }
+  /* Do not reclaim the symbols of the rule whose action triggered
+     this YYABORT or YYACCEPT.  */
+  YYPOPSTACK (IgsYYlen);
+  YY_STACK_PRINT (IgsYYss, IgsYYssp);
+  while (IgsYYssp != IgsYYss)
+    {
+      IgsYYdestruct ("Cleanup: popping",
+                  YY_ACCESSING_SYMBOL (+*IgsYYssp), IgsYYvsp);
+      YYPOPSTACK (1);
+    }
+#ifndef IgsYYoverflow
+  if (IgsYYss != IgsYYssa)
+    YYSTACK_FREE (IgsYYss);
+#endif
+
+  return IgsYYresult;
 }
-#line 2550 "./gointer.y"
+
+#line 2550 "gointer.y"
 
 /* Kludge in case bison template defined const to nothing */
 #ifndef __cplusplus

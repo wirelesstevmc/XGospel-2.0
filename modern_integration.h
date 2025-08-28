@@ -20,10 +20,6 @@ extern int GetModernServerCapabilities(void);
 /* Enhanced parsing integration */
 extern int ParseWithModernProtocol(const char *line);
 
-/* q5Go-style partial data authentication */
-extern int HandlePartialAuthData(const char *data, int data_len);
-extern void ResetAuthState(void);
-
 /* Enhanced command interface */
 extern void SendEnhancedCommand(const char *command, ...);
 
@@ -46,9 +42,5 @@ extern Connection ModernConnect_Wrapper(const char *site, int port);
 /* Global connection management */
 extern void SetModernConnection(ModernConnection conn);
 extern ModernConnection GetModernConnection(void);
-
-/* Modern XGospel initialization functions */
-extern void InitModernXGospel(void);
-extern void CleanupModernXGospel(void);
 
 #endif /* MODERN_INTEGRATION_H */

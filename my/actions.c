@@ -11,9 +11,7 @@
 #include <X11/Xos.h>
 #include <X11/Xaw/AsciiText.h>
 
-extern int close(/* int fd */);
-extern pid_t fork(/* void */);
-extern int execvp(/* char *file, char **argv */);
+/* Function declarations removed to avoid conflicts with system headers */
 
 #if XlibSpecificationRelease <= 5
 /* In IntrinsicP.h in X11R6 */

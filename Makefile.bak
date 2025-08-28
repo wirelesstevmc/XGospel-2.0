@@ -1,32 +1,32 @@
 # Generated automatically from Makefile.in by configure.
 srcdir = .
 
-RM   = rm -f
+RM   = $rm -f
 
 CC   = gcc
 LEX  = flex
-YACC = bison -y
+YACC = $bison -y
 
-INSTALL = /usr/bin/ginstall -c
+INSTALL = $/usr/bin/ginstall -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 transform=s,x,x,
 
-DEFS         =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DXAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
+DEFS         =  -DSTDC_HEADERS=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MEMORY_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DHAVE_SYS_SELECT_H=1 -DRETSIGTYPE=void -DHAVE_STRFTIME=1 -DHAVE_MEMCHR=1 -DHAVE_MEMMOVE=1 -DHAVE_STRERROR=1 -DHAVE_DIFFTIME=1 -DHAVE_UNAME=1 -DHAVE_CUSERID=1 -DHAVE_MEMCHR=1 -DHAVE_STRERROR=1 -DHAVE_H_ERRLIST=1 -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 -DNO_XAW3D=1 -DHAVE_XPM=1 -DHAVE_GETHOSTNAME=1 -DHAVE_NO_TERM=1 -DHAVE_NO_TERMNET=1 -DHAVE_NO_SOCKS=1 
 FUNCPROTO    = -DFUNCPROTO=15
 EDEFS        = $(DEFS) $(FUNCPROTO)
 LIBS         =  
 TERM_LIBS    = 
 TERM_DIR     = 
-X_CFLAGS     =  -I/usr/X11R6/include
-X_LIBS       =  -L/usr/X11R6/lib
-X_PRE_LIBS   = -lXpm  -lSM -lICE
-XAW_LIB      = -lXaw3d
+X_CFLAGS     = 
+X_LIBS       = 
+X_PRE_LIBS   = -lXpm 
+XAW_LIB      = -lXaw
 USE_X        = yes
 
-CFLAGS   = -O6 -fomit-frame-pointer 
+CFLAGS   = -m32 -O2
 CPPFLAGS = 
-LDFLAGS  = 
+LDFLAGS  = -m32
 
 # poor mans VPATH. You could for example set TMP to /tmp/ , so at least the
 # executable will not eat space in your source directory
@@ -56,8 +56,8 @@ mandir = $(prefix)/man/man1
 manext = l
 
 SHELL       = /bin/sh
-DEPEND      = makedepend
-DEPENDFLAGS =  -D__GNUC__=2 -D__GNUC_MINOR__=95 -D__ELF__ -Dunix -D__i386__ -Dlinux -D__ELF__ -D__unix__ -D__i386__ -D__linux__ -D__unix -D__linux -Dsystem=posix -Dcpu=i386 -Dmachine=i386 -Di386 -D__i386 -D__i386__ -I/usr/local/include -I/usr/lib/gcc-lib/i386-slackware-linux/2.95.3/include -I/usr/include
+DEPEND      = :
+DEPENDFLAGS =  -I/usr/lib64/gcc/x86_64-slackware-linux/15.1.0/include -I/usr/local/include -I/usr/lib64/gcc/x86_64-slackware-linux/15.1.0/include-fixed -I/usr/include
 ETAGS       = :
 
 LFLAGS          = -I -8 -d
@@ -81,12 +81,14 @@ INSTALL_PROGS = $(INSTALL_PROGS_X_yes)
 SRCS_X_no  =
 SRCS_X_yes = xgospel.c gospel.c resources.c GoBoard.c connect.c \
        observe.c analyze.c stats.c reviews.c games.c players.c \
-       broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c
+       broadcast.c tell.c messages.c match.c events.c utils.c SmeBell.c \
+       modern_connect.c modern_parser.c modern_integration.c modern_xgospel_patch.c
 EXTRASRCS = relog.c relay.c rport.c
 OBJS_X_no  =
 OBJS_X_yes = gointer.o goserver.o xgospel.o gospel.o resources.o GoBoard.o \
        connect.o observe.o analyze.o stats.o reviews.o games.o players.o \
-       broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o
+       broadcast.o tell.o messages.o match.o events.o utils.o SmeBell.o \
+       modern_connect.o modern_parser.o modern_integration.o modern_xgospel_patch.o
 SRCS = $(SRCS_X_yes)
 OBJS = $(OBJS_X_yes)
 

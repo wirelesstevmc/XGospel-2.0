@@ -161,13 +161,10 @@ session     : session loginmessages pass inputs INVALIDPASSWORD
 
 pass        : PASSWORD
                 {
-                    if (MyPassword) {
-                        ForceCommand(NULL, MyPassword);
-                    } else {
-                        AskString(toplevel, EnterString,
+                    if (MyPassword) ForceCommand(NULL, MyPassword);
+                    else AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
-                    }
                 }
             | OLDPASSWORD
                 {
@@ -219,12 +216,8 @@ loginmessage: NAME
                 }
             | LUSER
                 {
-                    if (MyName) {
-                        ForceCommand(NULL, MyName);
-                    } else {
-                        AskString(toplevel, EnterString, (XtPointer) &MyName,
-                                   "Enter user", "user", &MyName, NULL, NULL);
-                    }
+                    if (MyName) ForceCommand(NULL, MyName);
+                    else ForceCommand(NULL, "guest");
                 }
             | SERVERFULL
                 {
@@ -2690,18 +2683,17 @@ static void PlayerPasses(const char *Name)
     Name = PlayerToName(Me);
     RejoinChannel();
     /* FirstCommand(NULL, "review"); */
-    /* Temporarily disable immediate commands that may cause disconnection */
     if (appdata.GamesTimeout > 0) FirstCommand(NULL, "games");
     /* Will cause "games" due to nrgames inconsistency */
-    /* if (appdata.WhoTimeout > 0) FirstCommand(NULL, "who"); */
+    if (appdata.WhoTimeout > 0) FirstCommand(NULL, "who");
     /* So who comes BEFORE games (inversion made by FirstCommand) */
     /* FirstCommand(NULL, "toggle bell on"); */
-    /* FirstCommand(NULL, "toggle quiet off"); */ /* Temporarily disabled */
+    FirstCommand(NULL, "toggle quiet off");
     if (appdata.GamesTimeout > 0 && appdata.WhoTimeout > 0) {
 #if 0
 	LastCommand(NULL, "id xgospel %s", VERSION);
 #endif
-        /* LastCommand(NULL, "uptime"); */ /* Temporarily disabled */
+        LastCommand(NULL, "uptime");
 	/* uptime must come *after* to run Entering with Me defined */
     }
     EnterServer(Me);
