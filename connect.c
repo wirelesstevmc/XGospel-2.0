@@ -58,6 +58,7 @@
 #include <except.h>
 #include <mymalloc.h>
 #include <myxlib.h>
+#include "igs_protocol_adapter.h"
 
 #ifdef index
 # undef index
@@ -151,6 +152,7 @@ struct _Connection {
     char          Parsing[BUFSIZE+1];   /* Last read buffer (errormessages) */
     char          Line[BUFSIZE];        /* current parse buffer             */
     XtInputId     Id, WriteId, SendId;
+    IGSProtocolAdapter *adapter;        /* IGS protocol adapter             */
 };
 
 static struct _Connection Connections;
@@ -381,6 +383,12 @@ static void CloseConnection(Connection conn)
     conn->Sent    =  0;
     conn->Used    =  0;
 
+    /* Clean up protocol adapter */
+    if (conn->adapter) {
+        adapter_free(conn->adapter);
+        conn->adapter = NULL;
+    }
+
     Outputf("Connection with %s %d closed\n", conn->Name, conn->Port);
     AutoReconnect(conn);
 }
@@ -562,12 +570,54 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
     if (NrBytes && conn->Request >= 0) {
         if (NrBytes > conn->Request) conn->Sent = conn->Request;
         else                         conn->Sent = NrBytes;
-        memcpy(conn->Buffer,  conn->Line, conn->Sent);
-        memcpy(conn->Parsing, conn->Line, conn->Sent);
-        conn->Parsing[conn->Sent] = 0;
         
-        conn->Used -= conn->Sent;
-        memmove(conn->Line, conn->Line+conn->Sent, conn->Used);
+        /* Process data through IGS protocol adapter */
+        int adapted_len = 0;
+        char *adapted_data = NULL;
+        
+        printf("DEBUG: IgsInput processing %d bytes of server data\n", conn->Sent);
+        fflush(stdout);
+        
+        if (conn->adapter) {
+            adapted_data = adapter_process_server_data(conn->adapter, conn->Line, 
+                                                     conn->Sent, &adapted_len);
+            if (adapted_data && adapted_len > 0) {
+                /* Use adapted data for parsing */
+                if (adapted_len > BUFSIZE) adapted_len = BUFSIZE;
+                memcpy(conn->Buffer, adapted_data, adapted_len);
+                memcpy(conn->Parsing, adapted_data, adapted_len);
+                conn->Parsing[adapted_len] = 0;
+                conn->Sent = adapted_len;
+                
+                printf("ADAPTER: Forwarded %d bytes to yacc parser\n", adapted_len);
+                printf("ADAPTER: Data forwarded to parser (first 100 chars): '");
+                for (int i = 0; i < adapted_len && i < 100; i++) {
+                    if (adapted_data[i] >= 32 && adapted_data[i] < 127) {
+                        printf("%c", adapted_data[i]);
+                    } else {
+                        printf("\\x%02X", (unsigned char)adapted_data[i]);
+                    }
+                }
+                printf("'\n");
+                fflush(stdout);
+                
+                myfree(adapted_data);
+            } else {
+                /* No adapted data yet, don't send anything to parser */
+                conn->Sent = 0;
+            }
+        } else {
+            /* No adapter, use original data */
+            memcpy(conn->Buffer,  conn->Line, conn->Sent);
+            memcpy(conn->Parsing, conn->Line, conn->Sent);
+            conn->Parsing[conn->Sent] = 0;
+        }
+        
+        conn->Used -= (conn->Sent > 0 ? (NrBytes > conn->Request ? conn->Request : NrBytes) : 0);
+        if (conn->Used > 0) {
+            int bytes_consumed = (NrBytes > conn->Request ? conn->Request : NrBytes);
+            memmove(conn->Line, conn->Line + bytes_consumed, conn->Used);
+        }
         conn->Request = -1;
     }
 }
@@ -691,6 +741,8 @@ void ReConnect(Connection conn)
         sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) Raise(SockError);
 
+        printf("DEBUG: Attempting to connect to %s %d\n", conn->Name, conn->Port);
+        fflush(stdout);
         Outputf("Attempting to connect to %.200s %d\n",
                 conn->Name, conn->Port);
 
@@ -795,6 +847,8 @@ static char *ConnectionNameFun(const char *Pattern, XtPointer Closure)
 
 Connection Connect(const char *Site, int Port)
 {
+    printf("DEBUG: Connect() called with Site=%s Port=%d\n", Site, Port);
+    fflush(stdout);
     Connection  conn;
     const char *Name;
     Quark       QSite;
@@ -831,6 +885,7 @@ Connection Connect(const char *Site, int Port)
             conn->QuitTimeOut = conn->ReconnectTimeOut = conn->TimeOut = 0;
         conn->AvgRoundTripTime  = INITIALAVGROUNDTRIP * RESOLUTION;
         conn->LastRoundTripTime = conn->RoundTripTime = -1;
+        conn->adapter = adapter_init();
         if (ConnectWidget) {
             SetWidgetProperty(ConnectWidget, XtNlabel, XtCLabel,
                               ConnectionNameFun, (XtPointer) conn);
@@ -959,8 +1014,31 @@ static void SendWorkProc(XtPointer ClientData, int *fid, XtInputId *Id)
     length = strlen(Send);
 
     Send[length] = '\n';
-    rc = write(conn->Socket, Send, length+1);
+    
+    /* Process outgoing data through IGS protocol adapter */
+    char *adapted_send = Send;
+    int adapted_length = length + 1;
+    char *allocated_send = NULL;
+    
+    if (conn->adapter) {
+        int output_len = 0;
+        allocated_send = adapter_process_client_data(conn->adapter, Send, length + 1, &output_len);
+        if (allocated_send && output_len > 0) {
+            adapted_send = allocated_send;
+            adapted_length = output_len;
+            printf("ADAPTER: Adapted client command from %d to %d bytes\n", length + 1, output_len);
+            fflush(stdout);
+        }
+    }
+    
+    rc = write(conn->Socket, adapted_send, adapted_length);
     err = errno;
+    
+    /* Clean up allocated memory */
+    if (allocated_send) {
+        myfree(allocated_send);
+    }
+    
     Send[length] = 0;
 
     if (DebugFile) {

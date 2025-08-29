@@ -29,6 +29,8 @@ int GotTell(Player *player, const char *message) { (void)player; (void)message; 
 /* Modern connection stubs that delegate to original functions */
 Connection ModernConnect_Wrapper(const char *site, int port) { 
     extern Connection Connect(const char *Site, int Port);
+    printf("DEBUG: ModernConnect_Wrapper called with site=%s port=%d\n", site, port);
+    fflush(stdout);
     return Connect(site, port);
 }
 int IsModernConnectionActive(void) { return 0; }

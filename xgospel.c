@@ -1480,7 +1480,11 @@ int main(int argc, char **argv)
         RealQuit = 0;
         Entered  = 0;
         do {
+            printf("DEBUG: About to call IgsYYparse()\n");
+            fflush(stdout);
             IgsYYparse();
+            printf("DEBUG: IgsYYparse() returned\n");
+            fflush(stdout);
 	    /* Return here either for a closed connexion (IgsInput returns 0)
 	     * or for a bad IGS password.
 	     */

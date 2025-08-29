@@ -48,6 +48,7 @@ $CC $CFLAGS $INCLUDES -c match.c || exit 1
 $CC $CFLAGS $INCLUDES -c event_stubs.c || exit 1
 $CC $CFLAGS $INCLUDES -c utils.c || exit 1
 $CC $CFLAGS $INCLUDES -c SmeBell.c || exit 1
+$CC $CFLAGS $INCLUDES -c igs_protocol_adapter.c || exit 1
 
 echo "Building support libraries..."
 # Build my library

@@ -44,7 +44,7 @@ extern char       *MyPassword;
 extern int         SetServerTime;
 extern struct tm   LocalTime, ServerTime;
 
-static int Passed, eEmpty, PreEmpty, SeenAdd, gamesSeen;
+static int Passed, eEmpty, PreEmpty, SeenAdd, gamesSeen, RegisteredUserSent;
 
 /*
 static int WhoseMove(NameVal *moves);
@@ -141,6 +141,8 @@ start       : session
 
 session     : session loginmessages pass inputs INVALIDPASSWORD
                 {
+                    printf("DEBUG: yacc parser active - processing session rule\n");
+                    fflush(stdout);
 #ifndef __STDC__
 # ifdef const
 #  undef const
@@ -152,9 +154,12 @@ session     : session loginmessages pass inputs INVALIDPASSWORD
                     myfree(MyName);
                     MyName = NULL;
                     Passed = 0;
+                    RegisteredUserSent = 0;
                 }
             |
                 {
+                    printf("DEBUG: yacc parser active - empty session rule triggered\n");
+                    fflush(stdout);
                     Passed = 0;
                 }
             ;
@@ -176,6 +181,8 @@ pass        : PASSWORD
               loginmessages enterorfail
             | GUEST
                 {
+                    printf("DEBUG: GUEST token received in yacc parser\n");
+                    fflush(stdout);
                     myfree(MyName);
                     MyName = $1;
                 }
@@ -216,8 +223,39 @@ loginmessage: NAME
                 }
             | LUSER
                 {
-                    if (MyName) ForceCommand(NULL, MyName);
-                    else ForceCommand(NULL, "guest");
+                    printf("DEBUG: LUSER token received - login prompt detected\n");
+                    fflush(stdout);
+                    if (MyName) {
+                        if (strcmp(MyName, "guest") == 0) {
+                            printf("DEBUG: Sending username: %s\n", MyName);
+                            fflush(stdout);
+                            ForceCommand(NULL, MyName);
+                        } else {
+                            /* Registered user - check if we already sent username */
+                            if (RegisteredUserSent) {
+                                printf("DEBUG: Already sent registered username, ignoring duplicate LUSER\n");
+                                fflush(stdout);
+                            } else {
+                                /* First time - send registered username */
+                                if (MyPassword) {
+                                    printf("DEBUG: Sending registered username: %s\n", MyName);
+                                    fflush(stdout);
+                                    ForceCommand(NULL, MyName);
+                                    RegisteredUserSent = 1;
+                                } else {
+                                    printf("DEBUG: Registered user %s needs password\n", MyName);
+                                    fflush(stdout);
+                                    AskString(toplevel, EnterString,
+                                              (XtPointer) &MyPassword, "Enter password",
+                                              "password", &MyPassword, NULL, NULL);
+                                }
+                            }
+                        }
+                    } else {
+                        printf("DEBUG: No username set, sending 'guest'\n");
+                        fflush(stdout);
+                        ForceCommand(NULL, "guest");
+                    }
                 }
             | SERVERFULL
                 {

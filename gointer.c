@@ -114,7 +114,7 @@ extern char       *MyPassword;
 extern int         SetServerTime;
 extern struct tm   LocalTime, ServerTime;
 
-static int Passed, eEmpty, PreEmpty, SeenAdd, gamesSeen;
+static int Passed, eEmpty, PreEmpty, SeenAdd, gamesSeen, RegisteredUserSent;
 
 /*
 static int WhoseMove(NameVal *moves);
@@ -1389,48 +1389,48 @@ static const IgsYYtype_uint8 IgsYYtranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const IgsYYtype_int16 IgsYYrline[] =
 {
-       0,   138,   138,   139,   142,   157,   162,   170,   169,   178,
-     177,   191,   190,   199,   202,   203,   206,   211,   217,   222,
-     230,   231,   234,   240,   247,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   367,   368,   369,
-     370,   371,   372,   373,   374,   375,   376,   377,   378,   379,
-     380,   381,   386,   389,   412,   418,   435,   436,   437,   440,
-     447,   452,   461,   472,   482,   491,   502,   516,   532,   537,
-     544,   551,   555,   561,   568,   574,   579,   586,   598,   612,
-     618,   625,   631,   637,   644,   650,   657,   663,   669,   676,
-     685,   686,   687,   688,   691,   703,   710,   723,   736,   743,
-     750,   758,   764,   770,   781,   792,   799,   802,   805,   832,
-     842,   855,   864,   870,   875,   876,   879,   900,   912,   920,
-     933,   948,   955,   957,   971,   988,   997,  1006,  1035,  1036,
-    1040,  1039,  1049,  1052,  1069,  1077,  1087,  1088,  1091,  1117,
-    1152,  1153,  1156,  1159,  1165,  1172,  1179,  1190,  1199,  1205,
-    1208,  1230,  1252,  1253,  1292,  1301,  1313,  1323,  1335,  1339,
-    1345,  1351,  1358,  1366,  1376,  1389,  1404,  1407,  1415,  1432,
-    1444,  1461,  1464,  1474,  1480,  1493,  1501,  1507,  1520,  1533,
-    1538,  1543,  1549,  1552,  1556,  1563,  1572,  1579,  1589,  1596,
-    1602,  1608,  1616,  1623,  1625,  1630,  1642,  1655,  1659,  1654,
-    1665,  1691,  1708,  1721,  1728,  1735,  1743,  1755,  1761,  1764,
-    1780,  1801,  1808,  1809,  1812,  1820,  1826,  1832,  1841,  1844,
-    1848,  1856,  1861,  1869,  1875,  1881,  1886,  1893,  1900,  1907,
-    1914,  1920,  1936,  1941,  1952,  1957,  1964,  1971,  1977,  1983,
-    1989,  1995,  2002,  2008,  2014,  2020,  2028,  2036,  2044,  2052,
-    2061,  2090,  2102,  2116,  2132,  2141,  2142,  2145,  2150,  2156,
-    2163,  2177,  2184,  2196,  2206,  2207,  2208,  2212,  2223,  2232,
-    2241,  2246,  2251,  2256,  2261,  2266,  2271,  2276,  2281,  2286,
-    2291,  2296,  2301,  2306,  2311,  2316,  2325,  2334,  2339,  2348,
-    2357,  2362,  2367,  2374,  2375,  2379,  2378,  2385,  2386,  2389,
-    2393,  2399,  2405,  2411,  2418,  2427,  2432,  2441,  2446,  2453,
-    2460,  2465,  2476,  2486,  2495,  2505,  2506,  2509,  2510,  2517,
-    2518,  2521,  2548
+       0,   138,   138,   139,   142,   160,   167,   175,   174,   183,
+     182,   198,   197,   206,   209,   210,   213,   218,   224,   260,
+     268,   269,   272,   278,   285,   298,   299,   300,   301,   302,
+     303,   304,   305,   306,   307,   308,   309,   310,   311,   312,
+     313,   314,   315,   316,   317,   318,   319,   320,   321,   322,
+     323,   324,   325,   326,   327,   328,   329,   330,   331,   332,
+     333,   334,   335,   336,   337,   338,   339,   340,   341,   342,
+     343,   344,   345,   346,   347,   348,   349,   350,   351,   352,
+     353,   354,   355,   356,   357,   358,   359,   360,   361,   362,
+     363,   364,   365,   366,   367,   368,   369,   370,   371,   372,
+     373,   374,   375,   376,   377,   378,   379,   380,   381,   382,
+     383,   384,   385,   386,   387,   388,   389,   390,   391,   392,
+     393,   394,   395,   396,   397,   398,   399,   405,   406,   407,
+     408,   409,   410,   411,   412,   413,   414,   415,   416,   417,
+     418,   419,   424,   427,   450,   456,   473,   474,   475,   478,
+     485,   490,   499,   510,   520,   529,   540,   554,   570,   575,
+     582,   589,   593,   599,   606,   612,   617,   624,   636,   650,
+     656,   663,   669,   675,   682,   688,   695,   701,   707,   714,
+     723,   724,   725,   726,   729,   741,   748,   761,   774,   781,
+     788,   796,   802,   808,   819,   830,   837,   840,   843,   870,
+     880,   893,   902,   908,   913,   914,   917,   938,   950,   958,
+     971,   986,   993,   995,  1009,  1026,  1035,  1044,  1073,  1074,
+    1078,  1077,  1087,  1090,  1107,  1115,  1125,  1126,  1129,  1155,
+    1190,  1191,  1194,  1197,  1203,  1210,  1217,  1228,  1237,  1243,
+    1246,  1268,  1290,  1291,  1330,  1339,  1351,  1361,  1373,  1377,
+    1383,  1389,  1396,  1404,  1414,  1427,  1442,  1445,  1453,  1470,
+    1482,  1499,  1502,  1512,  1518,  1531,  1539,  1545,  1558,  1571,
+    1576,  1581,  1587,  1590,  1594,  1601,  1610,  1617,  1627,  1634,
+    1640,  1646,  1654,  1661,  1663,  1668,  1680,  1693,  1697,  1692,
+    1703,  1729,  1746,  1759,  1766,  1773,  1781,  1793,  1799,  1802,
+    1818,  1839,  1846,  1847,  1850,  1858,  1864,  1870,  1879,  1882,
+    1886,  1894,  1899,  1907,  1913,  1919,  1924,  1931,  1938,  1945,
+    1952,  1958,  1974,  1979,  1990,  1995,  2002,  2009,  2015,  2021,
+    2027,  2033,  2040,  2046,  2052,  2058,  2066,  2074,  2082,  2090,
+    2099,  2128,  2140,  2154,  2170,  2179,  2180,  2183,  2188,  2194,
+    2201,  2215,  2222,  2234,  2244,  2245,  2246,  2250,  2261,  2270,
+    2279,  2284,  2289,  2294,  2299,  2304,  2309,  2314,  2319,  2324,
+    2329,  2334,  2339,  2344,  2349,  2354,  2363,  2372,  2377,  2386,
+    2395,  2400,  2405,  2412,  2413,  2417,  2416,  2423,  2424,  2427,
+    2431,  2437,  2443,  2449,  2456,  2465,  2470,  2479,  2484,  2491,
+    2498,  2503,  2514,  2524,  2533,  2543,  2544,  2547,  2548,  2555,
+    2556,  2559,  2586
 };
 #endif
 
@@ -2557,6 +2557,8 @@ IgsYYreduce:
   case 4: /* session: session loginmessages pass inputs INVALIDPASSWORD  */
 #line 143 "gointer.y"
                 {
+                    printf("DEBUG: yacc parser active - processing session rule\n");
+                    fflush(stdout);
 #ifndef __STDC__
 # ifdef const
 #  undef const
@@ -2568,61 +2570,66 @@ IgsYYreduce:
                     myfree(MyName);
                     MyName = NULL;
                     Passed = 0;
+                    RegisteredUserSent = 0;
                 }
-#line 2573 "y.tab.c"
+#line 2576 "y.tab.c"
     break;
 
   case 5: /* session: %empty  */
-#line 157 "gointer.y"
+#line 160 "gointer.y"
                 {
+                    printf("DEBUG: yacc parser active - empty session rule triggered\n");
+                    fflush(stdout);
                     Passed = 0;
                 }
-#line 2581 "y.tab.c"
+#line 2586 "y.tab.c"
     break;
 
   case 6: /* pass: PASSWORD  */
-#line 163 "gointer.y"
+#line 168 "gointer.y"
                 {
                     if (MyPassword) ForceCommand(NULL, MyPassword);
                     else AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
                 }
-#line 2592 "y.tab.c"
+#line 2597 "y.tab.c"
     break;
 
   case 7: /* $@1: %empty  */
-#line 170 "gointer.y"
+#line 175 "gointer.y"
                 {
                     if (MyPassword) ForceCommand(NULL, MyPassword);
                     else AskString(toplevel, EnterString,
                                    (XtPointer) &MyPassword, "Enter password",
                                    "password", &MyPassword, NULL, NULL);
                 }
-#line 2603 "y.tab.c"
+#line 2608 "y.tab.c"
     break;
 
   case 9: /* $@2: %empty  */
-#line 178 "gointer.y"
+#line 183 "gointer.y"
                 {
+                    printf("DEBUG: GUEST token received in yacc parser\n");
+                    fflush(stdout);
                     myfree(MyName);
                     MyName = (IgsYYvsp[0].Name);
                 }
-#line 2612 "y.tab.c"
+#line 2619 "y.tab.c"
     break;
 
   case 10: /* pass: GUEST $@2 loginmessages enterorfail  */
-#line 183 "gointer.y"
+#line 190 "gointer.y"
                 {
                     Outputf("This is a guest account. Please see "
                             "'help register' to register.\n"
                             "Your account name is %s\n", (IgsYYvsp[-3].Name));
                 }
-#line 2622 "y.tab.c"
+#line 2629 "y.tab.c"
     break;
 
   case 11: /* $@3: %empty  */
-#line 191 "gointer.y"
+#line 198 "gointer.y"
                 {
                     if (!Passed) {
                         Passed = 1;
@@ -2630,80 +2637,111 @@ IgsYYreduce:
                     }
                     ForceCommand(NULL, "toggle client on");
                 }
-#line 2634 "y.tab.c"
+#line 2641 "y.tab.c"
     break;
 
   case 16: /* loginmessage: NAME  */
-#line 207 "gointer.y"
+#line 214 "gointer.y"
                 {
                     Outputf("%s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 2643 "y.tab.c"
+#line 2650 "y.tab.c"
     break;
 
   case 17: /* loginmessage: WELCOME  */
-#line 212 "gointer.y"
+#line 219 "gointer.y"
                 {
                     Outputf("          Welcome to IGS at %s ", (IgsYYvsp[0].Name));
                     SiteLogon(NULL, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 2653 "y.tab.c"
+#line 2660 "y.tab.c"
     break;
 
   case 18: /* loginmessage: LUSER  */
-#line 218 "gointer.y"
+#line 225 "gointer.y"
                 {
-                    if (MyName) ForceCommand(NULL, MyName);
-                    else ForceCommand(NULL, "guest");
+                    printf("DEBUG: LUSER token received - login prompt detected\n");
+                    fflush(stdout);
+                    if (MyName) {
+                        if (strcmp(MyName, "guest") == 0) {
+                            printf("DEBUG: Sending username: %s\n", MyName);
+                            fflush(stdout);
+                            ForceCommand(NULL, MyName);
+                        } else {
+                            /* Registered user - check if we already sent username */
+                            if (RegisteredUserSent) {
+                                printf("DEBUG: Already sent registered username, ignoring duplicate LUSER\n");
+                                fflush(stdout);
+                            } else {
+                                /* First time - send registered username */
+                                if (MyPassword) {
+                                    printf("DEBUG: Sending registered username: %s\n", MyName);
+                                    fflush(stdout);
+                                    ForceCommand(NULL, MyName);
+                                    RegisteredUserSent = 1;
+                                } else {
+                                    printf("DEBUG: Registered user %s needs password\n", MyName);
+                                    fflush(stdout);
+                                    AskString(toplevel, EnterString,
+                                              (XtPointer) &MyPassword, "Enter password",
+                                              "password", &MyPassword, NULL, NULL);
+                                }
+                            }
+                        }
+                    } else {
+                        printf("DEBUG: No username set, sending 'guest'\n");
+                        fflush(stdout);
+                        ForceCommand(NULL, "guest");
+                    }
                 }
-#line 2662 "y.tab.c"
+#line 2700 "y.tab.c"
     break;
 
   case 19: /* loginmessage: SERVERFULL  */
-#line 223 "gointer.y"
+#line 261 "gointer.y"
                 {
                     ServerMessage("%s\n", (IgsYYvsp[0].Name));
                     Outputf("%s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 2672 "y.tab.c"
+#line 2710 "y.tab.c"
     break;
 
   case 20: /* inputs: inputs moreinput  */
-#line 230 "gointer.y"
+#line 268 "gointer.y"
                                 { eEmpty = 0; }
-#line 2678 "y.tab.c"
+#line 2716 "y.tab.c"
     break;
 
   case 21: /* inputs: %empty  */
-#line 231 "gointer.y"
+#line 269 "gointer.y"
                                 { eEmpty = PreEmpty = 0; }
-#line 2684 "y.tab.c"
+#line 2722 "y.tab.c"
     break;
 
   case 22: /* prompt: PROMPT  */
-#line 235 "gointer.y"
+#line 273 "gointer.y"
                 {
                     PreEmpty = 0;
                     SeenAdd = 0;
                     (IgsYYval.Value) = (IgsYYvsp[0].Value);
                 }
-#line 2694 "y.tab.c"
+#line 2732 "y.tab.c"
     break;
 
   case 23: /* prompt: SEMIPROMPT  */
-#line 241 "gointer.y"
+#line 279 "gointer.y"
                 {
                     PreEmpty = eEmpty;
                     (IgsYYval.Value) = 0;
                 }
-#line 2703 "y.tab.c"
+#line 2741 "y.tab.c"
     break;
 
   case 24: /* moreinput: input prompt  */
-#line 248 "gointer.y"
+#line 286 "gointer.y"
                 {
                     if (!Passed && (IgsYYvsp[0].Value)) {
                         Passed = 1;
@@ -2714,228 +2752,228 @@ IgsYYreduce:
                         ResyncCommand(NULL);
                     }
                 }
-#line 2718 "y.tab.c"
+#line 2756 "y.tab.c"
     break;
 
   case 26: /* input: servermessages  */
-#line 261 "gointer.y"
+#line 299 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2724 "y.tab.c"
+#line 2762 "y.tab.c"
     break;
 
   case 27: /* input: xshout  */
-#line 262 "gointer.y"
+#line 300 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2730 "y.tab.c"
+#line 2768 "y.tab.c"
     break;
 
   case 28: /* input: infomessage  */
-#line 263 "gointer.y"
+#line 301 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2736 "y.tab.c"
+#line 2774 "y.tab.c"
     break;
 
   case 29: /* input: beeping  */
-#line 264 "gointer.y"
+#line 302 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2742 "y.tab.c"
+#line 2780 "y.tab.c"
     break;
 
   case 32: /* input: tell  */
-#line 267 "gointer.y"
+#line 305 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2748 "y.tab.c"
+#line 2786 "y.tab.c"
     break;
 
   case 33: /* input: broadcast  */
-#line 268 "gointer.y"
+#line 306 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2754 "y.tab.c"
+#line 2792 "y.tab.c"
     break;
 
   case 34: /* input: kibitz  */
-#line 269 "gointer.y"
+#line 307 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2760 "y.tab.c"
+#line 2798 "y.tab.c"
     break;
 
   case 36: /* input: yell  */
-#line 271 "gointer.y"
+#line 309 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2766 "y.tab.c"
+#line 2804 "y.tab.c"
     break;
 
   case 37: /* input: join  */
-#line 272 "gointer.y"
+#line 310 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2772 "y.tab.c"
+#line 2810 "y.tab.c"
     break;
 
   case 38: /* input: leave  */
-#line 273 "gointer.y"
+#line 311 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2778 "y.tab.c"
+#line 2816 "y.tab.c"
     break;
 
   case 39: /* input: newtitle  */
-#line 274 "gointer.y"
+#line 312 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2784 "y.tab.c"
+#line 2822 "y.tab.c"
     break;
 
   case 46: /* input: matchrequest  */
-#line 281 "gointer.y"
+#line 319 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2790 "y.tab.c"
+#line 2828 "y.tab.c"
     break;
 
   case 50: /* input: freemessage  */
-#line 285 "gointer.y"
+#line 323 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2796 "y.tab.c"
+#line 2834 "y.tab.c"
     break;
 
   case 71: /* input: mustpass  */
-#line 306 "gointer.y"
+#line 344 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2802 "y.tab.c"
+#line 2840 "y.tab.c"
     break;
 
   case 73: /* input: opponentdisagreeremove  */
-#line 308 "gointer.y"
+#line 346 "gointer.y"
                                      { ChangeCommand(NULL, -1); }
-#line 2808 "y.tab.c"
+#line 2846 "y.tab.c"
     break;
 
   case 75: /* input: doneopponentobserve  */
-#line 310 "gointer.y"
+#line 348 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2814 "y.tab.c"
+#line 2852 "y.tab.c"
     break;
 
   case 76: /* input: opponentobserve  */
-#line 311 "gointer.y"
+#line 349 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2820 "y.tab.c"
+#line 2858 "y.tab.c"
     break;
 
   case 77: /* input: betresult  */
-#line 312 "gointer.y"
+#line 350 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2826 "y.tab.c"
+#line 2864 "y.tab.c"
     break;
 
   case 79: /* input: opponentrestart  */
-#line 314 "gointer.y"
+#line 352 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2832 "y.tab.c"
+#line 2870 "y.tab.c"
     break;
 
   case 81: /* input: newmatch1  */
-#line 316 "gointer.y"
+#line 354 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2838 "y.tab.c"
+#line 2876 "y.tab.c"
     break;
 
   case 84: /* input: opponentdispute  */
-#line 319 "gointer.y"
+#line 357 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2844 "y.tab.c"
+#line 2882 "y.tab.c"
     break;
 
   case 88: /* input: opponentundid  */
-#line 323 "gointer.y"
+#line 361 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2850 "y.tab.c"
+#line 2888 "y.tab.c"
     break;
 
   case 89: /* input: undo  */
-#line 324 "gointer.y"
+#line 362 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2856 "y.tab.c"
+#line 2894 "y.tab.c"
     break;
 
   case 100: /* input: lostconnection  */
-#line 335 "gointer.y"
+#line 373 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2862 "y.tab.c"
+#line 2900 "y.tab.c"
     break;
 
   case 103: /* input: adjournsentrequest  */
-#line 338 "gointer.y"
+#line 376 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2868 "y.tab.c"
+#line 2906 "y.tab.c"
     break;
 
   case 104: /* input: adjournrequest  */
-#line 339 "gointer.y"
+#line 377 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2874 "y.tab.c"
+#line 2912 "y.tab.c"
     break;
 
   case 105: /* input: oppadjourn  */
-#line 340 "gointer.y"
+#line 378 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2880 "y.tab.c"
+#line 2918 "y.tab.c"
     break;
 
   case 106: /* input: declineadjourn  */
-#line 341 "gointer.y"
+#line 379 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2886 "y.tab.c"
+#line 2924 "y.tab.c"
     break;
 
   case 107: /* input: resign  */
-#line 342 "gointer.y"
+#line 380 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2892 "y.tab.c"
+#line 2930 "y.tab.c"
     break;
 
   case 108: /* input: playeron  */
-#line 343 "gointer.y"
+#line 381 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2898 "y.tab.c"
+#line 2936 "y.tab.c"
     break;
 
   case 109: /* input: removegamefile  */
-#line 344 "gointer.y"
+#line 382 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2904 "y.tab.c"
+#line 2942 "y.tab.c"
     break;
 
   case 126: /* input: uptime  */
-#line 362 "gointer.y"
+#line 400 "gointer.y"
                 {
                     if (!Entered) {
                         Entering();
                     }
                 }
-#line 2914 "y.tab.c"
+#line 2952 "y.tab.c"
     break;
 
   case 137: /* input: EMPTY  */
-#line 377 "gointer.y"
+#line 415 "gointer.y"
                                   { ChangeCommand(NULL, -1); }
-#line 2920 "y.tab.c"
+#line 2958 "y.tab.c"
     break;
 
   case 141: /* input: error  */
-#line 382 "gointer.y"
+#line 420 "gointer.y"
                 {
                     /* 1 in case next token is SEMIPROMPT */
                     SetCommand(NULL, 1);
                 }
-#line 2929 "y.tab.c"
+#line 2967 "y.tab.c"
     break;
 
   case 142: /* input: %empty  */
-#line 386 "gointer.y"
+#line 424 "gointer.y"
                                   { eEmpty = 1; }
-#line 2935 "y.tab.c"
+#line 2973 "y.tab.c"
     break;
 
   case 143: /* textfile: TEXTFILE names END  */
-#line 390 "gointer.y"
+#line 428 "gointer.y"
                 {
                     NameList   *Names;
                     const char *User;
@@ -2956,19 +2994,19 @@ IgsYYreduce:
                         FreeNameList((IgsYYvsp[-1].Namelist));
                     }
                 }
-#line 2960 "y.tab.c"
+#line 2998 "y.tab.c"
     break;
 
   case 144: /* erase: ERASE  */
-#line 413 "gointer.y"
+#line 451 "gointer.y"
                 {
                     Output("Please erase your messages (see help erase)\n");
                 }
-#line 2968 "y.tab.c"
+#line 3006 "y.tab.c"
     break;
 
   case 145: /* igsentry: IGSENTRY NAME  */
-#line 419 "gointer.y"
+#line 457 "gointer.y"
                 {
                     char *ptr;
 
@@ -2983,46 +3021,46 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Dummy));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 2987 "y.tab.c"
+#line 3025 "y.tab.c"
     break;
 
   case 148: /* servermessages: EMPTY servermessage  */
-#line 437 "gointer.y"
+#line 475 "gointer.y"
                                   {}
-#line 2993 "y.tab.c"
+#line 3031 "y.tab.c"
     break;
 
   case 149: /* servermessage: SERVERMESSAGE NAME  */
-#line 441 "gointer.y"
+#line 479 "gointer.y"
                 {
                     ServerMessage("%s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3002 "y.tab.c"
+#line 3040 "y.tab.c"
     break;
 
   case 150: /* xshout: XSHOUT NAME  */
-#line 448 "gointer.y"
+#line 486 "gointer.y"
                 {
                     ServerMessage("%s: %s\n", PlayerString((IgsYYvsp[-1].Person)), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3011 "y.tab.c"
+#line 3049 "y.tab.c"
     break;
 
   case 151: /* xshout: XSHOUT2 NAME  */
-#line 453 "gointer.y"
+#line 491 "gointer.y"
                 {
 		    /* dummy player name such as "*8^)*" */
                     ServerMessage("%s: %s\n", (IgsYYvsp[-1].Name), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3022 "y.tab.c"
+#line 3060 "y.tab.c"
     break;
 
   case 152: /* infomessage: INFOMESSAGE NAME '[' NAME ']' NAME NAME '}' END  */
-#line 462 "gointer.y"
+#line 500 "gointer.y"
                 {
                     /* A Connect */
                     if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "connected."))
@@ -3033,11 +3071,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3037 "y.tab.c"
+#line 3075 "y.tab.c"
     break;
 
   case 153: /* infomessage: INFOMESSAGE NAME NAME NAME '}' END  */
-#line 473 "gointer.y"
+#line 511 "gointer.y"
                 {
                     /* A disconnect */
                     if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "disconnected"))
@@ -3047,11 +3085,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3051 "y.tab.c"
+#line 3089 "y.tab.c"
     break;
 
   case 154: /* infomessage: INFOMESSAGE NAME NAME ':' player NAME player '}' END  */
-#line 483 "gointer.y"
+#line 521 "gointer.y"
                 {
                     /* A new match, format with game number */
                     if (strcmp((IgsYYvsp[-3].Name), "vs.") || strcmp((IgsYYvsp[-7].Name), "Match")) YYERROR;
@@ -3060,11 +3098,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-6].Name));
                     myfree((IgsYYvsp[-3].Name));
                 }
-#line 3064 "y.tab.c"
+#line 3102 "y.tab.c"
     break;
 
   case 155: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME ':' names '}' END  */
-#line 492 "gointer.y"
+#line 530 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-5].Name), "vs") || strcmp((IgsYYvsp[-9].Name), "Game")) YYERROR;
                     GameInfo(atoi((IgsYYvsp[-8].Name)), (IgsYYvsp[-4].Name), (IgsYYvsp[-6].Name), (IgsYYvsp[-2].Namelist));
@@ -3075,11 +3113,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-4].Name));
                     FreeNameList((IgsYYvsp[-2].Namelist));
                 }
-#line 3079 "y.tab.c"
+#line 3117 "y.tab.c"
     break;
 
   case 156: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME '@' NAME NAME '}' END  */
-#line 503 "gointer.y"
+#line 541 "gointer.y"
                 {
                     /* Resume */
                     if (strcmp((IgsYYvsp[-10].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs") ||
@@ -3093,11 +3131,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3097 "y.tab.c"
+#line 3135 "y.tab.c"
     break;
 
   case 157: /* infomessage: INFOMESSAGE NAME NAME ':' NAME NAME NAME NAME NAME '}' END  */
-#line 517 "gointer.y"
+#line 555 "gointer.y"
                 {
                     /* Adjourn */
                     if (strcmp((IgsYYvsp[-3].Name), "has") || strcmp((IgsYYvsp[-2].Name), "adjourned.") ||
@@ -3111,88 +3149,88 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3115 "y.tab.c"
+#line 3153 "y.tab.c"
     break;
 
   case 158: /* tell: TELL NAME  */
-#line 533 "gointer.y"
+#line 571 "gointer.y"
                 {
                     ReceivedTell((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3124 "y.tab.c"
+#line 3162 "y.tab.c"
     break;
 
   case 159: /* tell: OBSERVE SEMIPROMPT TELL NAME  */
-#line 538 "gointer.y"
+#line 576 "gointer.y"
                 {
                     ReceivedTell((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3133 "y.tab.c"
+#line 3171 "y.tab.c"
     break;
 
   case 160: /* playeron: PLAYERON optobserve  */
-#line 545 "gointer.y"
+#line 583 "gointer.y"
                 {
                     ReceivedTell((IgsYYvsp[-1].Person), "is now on.");
                 }
-#line 3141 "y.tab.c"
+#line 3179 "y.tab.c"
     break;
 
   case 161: /* beeping: OBSERVE BEEPING  */
-#line 552 "gointer.y"
+#line 590 "gointer.y"
                 {
                     Beeping((IgsYYvsp[0].Person));
                 }
-#line 3149 "y.tab.c"
+#line 3187 "y.tab.c"
     break;
 
   case 162: /* beeping: BEEPING  */
-#line 556 "gointer.y"
+#line 594 "gointer.y"
                 {
                     Beeping((IgsYYvsp[0].Person));
                 }
-#line 3157 "y.tab.c"
+#line 3195 "y.tab.c"
     break;
 
   case 163: /* idle: IDLE NAME  */
-#line 562 "gointer.y"
+#line 600 "gointer.y"
                 {
 		    Idle((IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3166 "y.tab.c"
+#line 3204 "y.tab.c"
     break;
 
   case 164: /* stored: STORED STOREDNUM  */
-#line 569 "gointer.y"
+#line 607 "gointer.y"
                 {
 		    StoredNum((IgsYYvsp[-1].Person), (IgsYYvsp[0].Value));
                 }
-#line 3174 "y.tab.c"
+#line 3212 "y.tab.c"
     break;
 
   case 165: /* broadcast: BROADCAST NAME  */
-#line 575 "gointer.y"
+#line 613 "gointer.y"
                 {
                     ShowBroadcast((IgsYYvsp[-1].Person), ":", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3183 "y.tab.c"
+#line 3221 "y.tab.c"
     break;
 
   case 166: /* broadcast: ITBROADCAST NAME  */
-#line 580 "gointer.y"
+#line 618 "gointer.y"
                 {
                     ShowBroadcast((IgsYYvsp[-1].Person), "", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3192 "y.tab.c"
+#line 3230 "y.tab.c"
     break;
 
   case 167: /* kibitz: OBSERVE SEMIPROMPT KIBITZ player ':' NAME NAME NAME NAME '[' NAME ']' END NAME  */
-#line 588 "gointer.y"
+#line 626 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-8].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs")) YYERROR;
                     ReceivedKibitz((IgsYYvsp[-10].Person), atoi((IgsYYvsp[-3].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-7].Name), (IgsYYvsp[0].Name), strlen((IgsYYvsp[0].Name)));
@@ -3203,11 +3241,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3207 "y.tab.c"
+#line 3245 "y.tab.c"
     break;
 
   case 168: /* kibitz: KIBITZ player ':' NAME NAME NAME NAME '[' NAME ']' END NAME  */
-#line 600 "gointer.y"
+#line 638 "gointer.y"
                   {
                     if (strcmp((IgsYYvsp[-8].Name), "Game") || strcmp((IgsYYvsp[-6].Name), "vs")) YYERROR;
                     ReceivedKibitz((IgsYYvsp[-10].Person), atoi((IgsYYvsp[-3].Name)), (IgsYYvsp[-5].Name), (IgsYYvsp[-7].Name), (IgsYYvsp[0].Name), strlen((IgsYYvsp[0].Name)));
@@ -3218,130 +3256,130 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[0].Name));
                   }
-#line 3222 "y.tab.c"
+#line 3260 "y.tab.c"
     break;
 
   case 169: /* messages: MESSAGES  */
-#line 613 "gointer.y"
+#line 651 "gointer.y"
                 {
                     Outputf("You have %d line%s of messages\n",
                             (IgsYYvsp[0].Value), (IgsYYvsp[0].Value)==1 ? "" : "s");
                 }
-#line 3231 "y.tab.c"
+#line 3269 "y.tab.c"
     break;
 
   case 170: /* yell: CHANNEL YELL NAME  */
-#line 619 "gointer.y"
+#line 657 "gointer.y"
                 {
                     ShowYell((IgsYYvsp[-2].Value), (IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3240 "y.tab.c"
+#line 3278 "y.tab.c"
     break;
 
   case 171: /* join: CHANNEL JOIN  */
-#line 626 "gointer.y"
+#line 664 "gointer.y"
                 {
                     ChannelJoin((IgsYYvsp[-1].Value), (IgsYYvsp[0].Person));
                 }
-#line 3248 "y.tab.c"
+#line 3286 "y.tab.c"
     break;
 
   case 172: /* leave: CHANNEL LEAVE  */
-#line 632 "gointer.y"
+#line 670 "gointer.y"
                 {
                     ChannelLeave((IgsYYvsp[-1].Value), (IgsYYvsp[0].Person));
                 }
-#line 3256 "y.tab.c"
+#line 3294 "y.tab.c"
     break;
 
   case 173: /* newtitle: CHANNEL NEWTITLE NAME  */
-#line 638 "gointer.y"
+#line 676 "gointer.y"
                 {
                     ChannelTitle((IgsYYvsp[-2].Value), (IgsYYvsp[-1].Person), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3265 "y.tab.c"
+#line 3303 "y.tab.c"
     break;
 
   case 174: /* changechannel: CHANGECHANNEL  */
-#line 645 "gointer.y"
+#line 683 "gointer.y"
                 {
                     JoinChannel((IgsYYvsp[0].Value));
                 }
-#line 3273 "y.tab.c"
+#line 3311 "y.tab.c"
     break;
 
   case 175: /* wrongchannel: WRONGCHANNEL NAME  */
-#line 651 "gointer.y"
+#line 689 "gointer.y"
                 {
                     WrongChannel((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3282 "y.tab.c"
+#line 3320 "y.tab.c"
     break;
 
   case 176: /* matchopen: MATCHOPEN  */
-#line 658 "gointer.y"
+#line 696 "gointer.y"
                 {
                     Output("Setting you open for matches\n");
                 }
-#line 3290 "y.tab.c"
+#line 3328 "y.tab.c"
     break;
 
   case 177: /* matchclosed: MATCHCLOSED  */
-#line 664 "gointer.y"
+#line 702 "gointer.y"
                 {
                     Output("You are not open for matches\n");
                 }
-#line 3298 "y.tab.c"
+#line 3336 "y.tab.c"
     break;
 
   case 178: /* automatchrequest: AUTOMATCHREQUEST names END  */
-#line 670 "gointer.y"
+#line 708 "gointer.y"
                 {
                     AutoMatchRequest((IgsYYvsp[-1].Namelist));
                     FreeNameList((IgsYYvsp[-1].Namelist));
                 }
-#line 3307 "y.tab.c"
+#line 3345 "y.tab.c"
     break;
 
   case 179: /* automatchdispute: AUTOMATCHDISPUTE names  */
-#line 677 "gointer.y"
+#line 715 "gointer.y"
                 {
                     AutoMatchDispute((IgsYYvsp[-1].Name), (IgsYYvsp[0].Namelist));
                     myfree((IgsYYvsp[-1].Name));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 3317 "y.tab.c"
+#line 3355 "y.tab.c"
     break;
 
   case 180: /* ruledmatchrequest: MATCHREQUEST  */
-#line 685 "gointer.y"
+#line 723 "gointer.y"
                                         { (IgsYYval.Value) = 'I'; }
-#line 3323 "y.tab.c"
+#line 3361 "y.tab.c"
     break;
 
   case 181: /* ruledmatchrequest: GOEMATCHREQUEST  */
-#line 686 "gointer.y"
+#line 724 "gointer.y"
                                         { (IgsYYval.Value) = 'G'; }
-#line 3329 "y.tab.c"
+#line 3367 "y.tab.c"
     break;
 
   case 182: /* ruledmatchrequest: TOURNAMENTMATCHREQUEST  */
-#line 687 "gointer.y"
+#line 725 "gointer.y"
                                         { (IgsYYval.Value) = 'i'; }
-#line 3335 "y.tab.c"
+#line 3373 "y.tab.c"
     break;
 
   case 183: /* ruledmatchrequest: TOURNAMENTGOEMATCHREQUEST  */
-#line 688 "gointer.y"
+#line 726 "gointer.y"
                                         { (IgsYYval.Value) = 'g'; }
-#line 3341 "y.tab.c"
+#line 3379 "y.tab.c"
     break;
 
   case 184: /* matchrequest: ruledmatchrequest names '>' NAME '<' names '>' names END optobserve  */
-#line 693 "gointer.y"
+#line 731 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-6].Name), "or")) YYERROR;
                     MatchRequest((IgsYYvsp[-9].Value), (IgsYYvsp[-8].Namelist));
@@ -3350,20 +3388,20 @@ IgsYYreduce:
                     FreeNameList((IgsYYvsp[-4].Namelist));
                     FreeNameList((IgsYYvsp[-2].Namelist));
                 }
-#line 3354 "y.tab.c"
+#line 3392 "y.tab.c"
     break;
 
   case 185: /* requestingmatch: REQUESTINGMATCH  */
-#line 704 "gointer.y"
+#line 742 "gointer.y"
                 {
                     /* Outputf("%s\n", $1); */
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3363 "y.tab.c"
+#line 3401 "y.tab.c"
     break;
 
   case 186: /* komirequest: KOMIREQUEST NAME  */
-#line 711 "gointer.y"
+#line 749 "gointer.y"
                 {
                     char *Ptr;
 
@@ -3374,11 +3412,11 @@ IgsYYreduce:
                     if (WhatCommand(NULL, "komi") < 0) ChangeCommand(NULL, -1);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3378 "y.tab.c"
+#line 3416 "y.tab.c"
     break;
 
   case 187: /* komiset: KOMISET NAME  */
-#line 724 "gointer.y"
+#line 762 "gointer.y"
                 {
                     char *Ptr;
 
@@ -3389,56 +3427,56 @@ IgsYYreduce:
                     if (WhatCommand(NULL, "komi") < 0) ChangeCommand(NULL, -1);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3393 "y.tab.c"
+#line 3431 "y.tab.c"
     break;
 
   case 188: /* freemessage: FREE OBSERVE  */
-#line 737 "gointer.y"
+#line 775 "gointer.y"
                 {
                     Outputf("Game will %scount towards ratings\n",
                             (IgsYYvsp[-1].Value) ? "not" : "");
                 }
-#line 3402 "y.tab.c"
+#line 3440 "y.tab.c"
     break;
 
   case 189: /* freeconfirm: FREE  */
-#line 744 "gointer.y"
+#line 782 "gointer.y"
                 {
                     Outputf("Game will %scount towards ratings\n",
                             (IgsYYvsp[0].Value) ? "not " : "");
                 }
-#line 3411 "y.tab.c"
+#line 3449 "y.tab.c"
     break;
 
   case 190: /* latefree: LATEFREE NAME  */
-#line 751 "gointer.y"
+#line 789 "gointer.y"
                 {
                     Outputf("You cannot change into a free game after %s\n",
                             (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 3421 "y.tab.c"
+#line 3459 "y.tab.c"
     break;
 
   case 191: /* noplay: NOPLAY  */
-#line 759 "gointer.y"
+#line 797 "gointer.y"
                 {
                     Output("You are not playing a game\n");
                 }
-#line 3429 "y.tab.c"
+#line 3467 "y.tab.c"
     break;
 
   case 192: /* noload: OPPONENTNOTON NOLOAD  */
-#line 765 "gointer.y"
+#line 803 "gointer.y"
                 {
                     Output("Your opponent is not on currently. "
                            "Game failed to load\n");
                 }
-#line 3438 "y.tab.c"
+#line 3476 "y.tab.c"
     break;
 
   case 193: /* titleset: TITLESET  */
-#line 771 "gointer.y"
+#line 809 "gointer.y"
                 {
                     const char *title;
 
@@ -3447,11 +3485,11 @@ IgsYYreduce:
                     else Warning("Title set, but I "
                                  "can't remember to what....\n");
                 }
-#line 3451 "y.tab.c"
+#line 3489 "y.tab.c"
     break;
 
   case 194: /* statsentry: STATSENTRY NAME  */
-#line 782 "gointer.y"
+#line 820 "gointer.y"
                 {
                     NameVal *nameval;
 
@@ -3460,34 +3498,34 @@ IgsYYreduce:
                     nameval->Name  = (IgsYYvsp[-1].Name);
                     nameval->Value = (IgsYYvsp[0].Name);
                 }
-#line 3464 "y.tab.c"
+#line 3502 "y.tab.c"
     break;
 
   case 195: /* statsentries: statsentries statsentry  */
-#line 793 "gointer.y"
+#line 831 "gointer.y"
                 {
                     (IgsYYval.Nameval) = (IgsYYvsp[-1].Nameval);
                     (IgsYYvsp[0].Nameval)->Previous = (IgsYYvsp[-1].Nameval)->Previous;
                     (IgsYYvsp[0].Nameval)->Next     = (IgsYYvsp[-1].Nameval);
                     (IgsYYvsp[0].Nameval)->Previous->Next = (IgsYYvsp[0].Nameval)->Next->Previous = (IgsYYvsp[0].Nameval);
                 }
-#line 3475 "y.tab.c"
+#line 3513 "y.tab.c"
     break;
 
   case 196: /* statsentries: statsentry  */
-#line 799 "gointer.y"
+#line 837 "gointer.y"
                          { (IgsYYval.Nameval) = (IgsYYvsp[0].Nameval); }
-#line 3481 "y.tab.c"
+#line 3519 "y.tab.c"
     break;
 
   case 197: /* extendstatsentry: EXTSTATSENTRY names END  */
-#line 802 "gointer.y"
+#line 840 "gointer.y"
                                           { (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist); }
-#line 3487 "y.tab.c"
+#line 3525 "y.tab.c"
     break;
 
   case 198: /* optextend: extendstatsentry extendstatsentry  */
-#line 806 "gointer.y"
+#line 844 "gointer.y"
                 {
                     NameVal *nameval;
                     NameList *Pos1, *Pos2;
@@ -3513,11 +3551,11 @@ IgsYYreduce:
                     FreeNameList(Pos1);
                     FreeNameList(Pos2);
                 }
-#line 3517 "y.tab.c"
+#line 3555 "y.tab.c"
     break;
 
   case 199: /* optextend: %empty  */
-#line 832 "gointer.y"
+#line 870 "gointer.y"
                 {
                     NameVal *nameval;
 
@@ -3526,11 +3564,11 @@ IgsYYreduce:
                     nameval->Name = nameval->Value = NULL;
                     (IgsYYval.Nameval) = nameval;
                 }
-#line 3530 "y.tab.c"
+#line 3568 "y.tab.c"
     break;
 
   case 200: /* stats: statsentries optextend  */
-#line 843 "gointer.y"
+#line 881 "gointer.y"
                 {
                     NameVal *ext;
 
@@ -3541,51 +3579,51 @@ IgsYYreduce:
                     ShowStats((IgsYYvsp[0].Nameval), ext);
                     FreeNameValList((IgsYYvsp[0].Nameval));
                 }
-#line 3545 "y.tab.c"
+#line 3583 "y.tab.c"
     break;
 
   case 201: /* betentry: PERSON NATURAL ':' NATURAL  */
-#line 856 "gointer.y"
+#line 894 "gointer.y"
                 {
                     (IgsYYval.Bet) = mynew(BetDesc);
                     (IgsYYval.Bet)->Who  = (IgsYYvsp[-3].Person);
                     (IgsYYval.Bet)->Wins = (IgsYYvsp[-2].Value);
                     (IgsYYval.Bet)->Bets = (IgsYYvsp[0].Value);
                 }
-#line 3556 "y.tab.c"
+#line 3594 "y.tab.c"
     break;
 
   case 202: /* betentries: betentries betentry  */
-#line 865 "gointer.y"
+#line 903 "gointer.y"
                 {
                     (IgsYYvsp[0].Bet)->Next = (IgsYYvsp[-1].Bet);
                     (IgsYYval.Bet) = (IgsYYvsp[0].Bet);
                 }
-#line 3565 "y.tab.c"
+#line 3603 "y.tab.c"
     break;
 
   case 203: /* betentries: %empty  */
-#line 870 "gointer.y"
+#line 908 "gointer.y"
                 {
                     (IgsYYval.Bet) = NULL;
                 }
-#line 3573 "y.tab.c"
+#line 3611 "y.tab.c"
     break;
 
   case 204: /* optmybet: MYBET  */
-#line 875 "gointer.y"
+#line 913 "gointer.y"
                     { (IgsYYval.Name) = (IgsYYvsp[0].Name);   }
-#line 3579 "y.tab.c"
+#line 3617 "y.tab.c"
     break;
 
   case 205: /* optmybet: %empty  */
-#line 876 "gointer.y"
+#line 914 "gointer.y"
                     { (IgsYYval.Name) = NULL; }
-#line 3585 "y.tab.c"
+#line 3623 "y.tab.c"
     break;
 
   case 206: /* bet: BETWINNERS betentries BETEVEN betentries BETLOSERS betentries optmybet  */
-#line 881 "gointer.y"
+#line 919 "gointer.y"
                 {
                     BetDesc *Here, *Next;
 
@@ -3603,11 +3641,11 @@ IgsYYreduce:
                         myfree(Here);
                     }
                 }
-#line 3607 "y.tab.c"
+#line 3645 "y.tab.c"
     break;
 
   case 207: /* toggle: TOGGLE NAME NAME NAME NAME optname END  */
-#line 901 "gointer.y"
+#line 939 "gointer.y"
                 {
                     /* -Ton remove the optname */
                     /* eg: Set | verbose to be True. */
@@ -3617,21 +3655,21 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3621 "y.tab.c"
+#line 3659 "y.tab.c"
     break;
 
   case 208: /* channelentry: NEWCHANNEL names END namesset  */
-#line 913 "gointer.y"
+#line 951 "gointer.y"
                 {
                     (IgsYYvsp[-2].Namelist)->Name = (char *) (IgsYYvsp[0].Namelist);
                     (IgsYYvsp[0].Namelist)->Name = (IgsYYvsp[-3].Name);
                     (IgsYYval.Namelist) = (IgsYYvsp[-2].Namelist);
                 }
-#line 3631 "y.tab.c"
+#line 3669 "y.tab.c"
     break;
 
   case 209: /* channelentries: channelentries channelentry  */
-#line 921 "gointer.y"
+#line 959 "gointer.y"
                 {
                     NameList *Names;
 
@@ -3644,11 +3682,11 @@ IgsYYreduce:
                     Names->Name = NULL;
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 3648 "y.tab.c"
+#line 3686 "y.tab.c"
     break;
 
   case 210: /* channelentries: channelentry  */
-#line 934 "gointer.y"
+#line 972 "gointer.y"
                 {
                     NameList *Names;
 
@@ -3661,26 +3699,26 @@ IgsYYreduce:
                     Names->Name = NULL;
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 3665 "y.tab.c"
+#line 3703 "y.tab.c"
     break;
 
   case 211: /* channels: channelentries  */
-#line 949 "gointer.y"
+#line 987 "gointer.y"
                 {
                     ChannelList((IgsYYvsp[0].Channeldata));
                     CloseChannelData((IgsYYvsp[0].Channeldata));
                 }
-#line 3674 "y.tab.c"
+#line 3712 "y.tab.c"
     break;
 
   case 212: /* observerentries: namesset  */
-#line 955 "gointer.y"
+#line 993 "gointer.y"
                           { (IgsYYval.Namelist) = (IgsYYvsp[0].Namelist); }
-#line 3680 "y.tab.c"
+#line 3718 "y.tab.c"
     break;
 
   case 213: /* observers: OBSERVERS NAME '(' NAME NAME NAME ')' ':' END observerentries  */
-#line 959 "gointer.y"
+#line 997 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-5].Name), "vs.")) YYERROR;
                     ShowObservers(atoi((IgsYYvsp[-8].Name)), (IgsYYvsp[-4].Name), (IgsYYvsp[-6].Name), (IgsYYvsp[0].Namelist));
@@ -3691,11 +3729,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-4].Name));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 3695 "y.tab.c"
+#line 3733 "y.tab.c"
     break;
 
   case 214: /* gamenotfound: GAMENOTFOUND  */
-#line 972 "gointer.y"
+#line 1010 "gointer.y"
                 {
                     const char *arg;
 
@@ -3710,31 +3748,31 @@ IgsYYreduce:
 			Output("Game not found.\n");
 		    }
                 }
-#line 3714 "y.tab.c"
+#line 3752 "y.tab.c"
     break;
 
   case 215: /* nomoremoves: NOMOREMOVES  */
-#line 989 "gointer.y"
+#line 1027 "gointer.y"
                 {
 		    const char *msg = "There are no more moves";
 		    StopMyGameForward(msg);
                     MyGameMessage(msg);
                 }
-#line 3724 "y.tab.c"
+#line 3762 "y.tab.c"
     break;
 
   case 216: /* notrequestgame: NOTREQUESTGAME  */
-#line 998 "gointer.y"
+#line 1036 "gointer.y"
                 {
 		    const char *msg = "This teach game is not a request game";
 		    StopMyGameForward(msg);
                     MyGameMessage(msg);
                 }
-#line 3734 "y.tab.c"
+#line 3772 "y.tab.c"
     break;
 
   case 217: /* gamesline: GAMES player NAME player '(' NAME NAME NAME NAME NAME NAME names ')' '(' NAME ')' END  */
-#line 1008 "gointer.y"
+#line 1046 "gointer.y"
                 {
                     int    Mode, Rules;
                     size_t size;
@@ -3760,45 +3798,45 @@ IgsYYreduce:
                     FreeNameList((IgsYYvsp[-5].Namelist));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3764 "y.tab.c"
+#line 3802 "y.tab.c"
     break;
 
   case 218: /* gameslines: gameslines gamesline  */
-#line 1035 "gointer.y"
+#line 1073 "gointer.y"
                                    { (IgsYYval.Value) = (IgsYYvsp[-1].Value)+1; gamesSeen++; }
-#line 3770 "y.tab.c"
+#line 3808 "y.tab.c"
     break;
 
   case 219: /* gameslines: %empty  */
-#line 1036 "gointer.y"
+#line 1074 "gointer.y"
                                    { (IgsYYval.Value) = 0; gamesSeen = 0; }
-#line 3776 "y.tab.c"
+#line 3814 "y.tab.c"
     break;
 
   case 220: /* $@4: %empty  */
-#line 1040 "gointer.y"
+#line 1078 "gointer.y"
                 {
                     AssertGamesDeleted();
                 }
-#line 3784 "y.tab.c"
+#line 3822 "y.tab.c"
     break;
 
   case 221: /* games: GAMES $@4 gameslines  */
-#line 1044 "gointer.y"
+#line 1082 "gointer.y"
                 {
                     TestGamesDeleted(gamesSeen);
                 }
-#line 3792 "y.tab.c"
+#line 3830 "y.tab.c"
     break;
 
   case 222: /* remove: REMOVE  */
-#line 1049 "gointer.y"
+#line 1087 "gointer.y"
                      { UnObserve((IgsYYvsp[0].Value)); }
-#line 3798 "y.tab.c"
+#line 3836 "y.tab.c"
     break;
 
   case 223: /* move: MOVE NAME  */
-#line 1053 "gointer.y"
+#line 1091 "gointer.y"
                 {
                     char     Num[20], *ptr;
                     NameVal *nameval;
@@ -3813,22 +3851,22 @@ IgsYYreduce:
                     if (ptr-(IgsYYvsp[0].Name) <= 3) *ptr = 0;
                     nameval->Value = (IgsYYvsp[0].Name);
                 }
-#line 3817 "y.tab.c"
+#line 3855 "y.tab.c"
     break;
 
   case 224: /* movelist: movelist move  */
-#line 1070 "gointer.y"
+#line 1108 "gointer.y"
                 {
                     (IgsYYval.Nameval) = (IgsYYvsp[-1].Nameval);
                     (IgsYYvsp[0].Nameval)->Previous = (IgsYYvsp[-1].Nameval)->Previous;
                     (IgsYYvsp[0].Nameval)->Next     = (IgsYYvsp[-1].Nameval);
                     (IgsYYvsp[0].Nameval)->Previous->Next = (IgsYYvsp[0].Nameval)->Next->Previous = (IgsYYvsp[0].Nameval);
                 }
-#line 3828 "y.tab.c"
+#line 3866 "y.tab.c"
     break;
 
   case 225: /* movelist: %empty  */
-#line 1077 "gointer.y"
+#line 1115 "gointer.y"
                 {
                     NameVal *nameval;
 
@@ -3837,23 +3875,23 @@ IgsYYreduce:
                     nameval->Name  = NULL;
                     nameval->Value = NULL;
                 }
-#line 3841 "y.tab.c"
+#line 3879 "y.tab.c"
     break;
 
   case 226: /* optgamesaved: gamesaved  */
-#line 1087 "gointer.y"
+#line 1125 "gointer.y"
                         {}
-#line 3847 "y.tab.c"
+#line 3885 "y.tab.c"
     break;
 
   case 227: /* optgamesaved: %empty  */
-#line 1088 "gointer.y"
+#line 1126 "gointer.y"
               {}
-#line 3853 "y.tab.c"
+#line 3891 "y.tab.c"
     break;
 
   case 228: /* gamedesc: GAME NAME '(' NAME NAME NAME ')' NAME NAME '(' NAME NAME NAME ')' END  */
-#line 1093 "gointer.y"
+#line 1131 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-7].Name), "vs")) YYERROR;
 
@@ -3877,11 +3915,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 3881 "y.tab.c"
+#line 3919 "y.tab.c"
     break;
 
   case 229: /* gamedesc: GAME NAME '(' NAME NAME NAME ')' NAME NAME '(' NAME NAME NAME ')' END TEAMGAME NAME NAME NAME NAME END  */
-#line 1120 "gointer.y"
+#line 1158 "gointer.y"
                 {
 		    Game *game;
                     if (strcmp((IgsYYvsp[-13].Name), "vs")) YYERROR;
@@ -3912,55 +3950,55 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-4].Name));
                     myfree((IgsYYvsp[-3].Name));
                 }
-#line 3916 "y.tab.c"
+#line 3954 "y.tab.c"
     break;
 
   case 230: /* optgametitle: GAMETITLE NAME  */
-#line 1152 "gointer.y"
+#line 1190 "gointer.y"
                              { (IgsYYval.Name) = (IgsYYvsp[0].Name); }
-#line 3922 "y.tab.c"
-    break;
-
-  case 231: /* optgametitle: %empty  */
-#line 1153 "gointer.y"
-                             { (IgsYYval.Name) = 0;  }
-#line 3928 "y.tab.c"
-    break;
-
-  case 232: /* add: ADD  */
-#line 1156 "gointer.y"
-                  { SeenAdd = 1; }
-#line 3934 "y.tab.c"
-    break;
-
-  case 233: /* doneobserve: DONE observe  */
-#line 1160 "gointer.y"
-                {
-                    Done();
-                }
-#line 3942 "y.tab.c"
-    break;
-
-  case 234: /* mustpass: MUSTPASS  */
-#line 1166 "gointer.y"
-                {
-                    MyGameMessage((IgsYYvsp[0].Name));
-                    myfree((IgsYYvsp[0].Name));
-                }
-#line 3951 "y.tab.c"
-    break;
-
-  case 235: /* oppmustpass: OPPMUSTPASS  */
-#line 1173 "gointer.y"
-                {
-                    MyGameMessage((IgsYYvsp[0].Name));
-                    myfree((IgsYYvsp[0].Name));
-                }
 #line 3960 "y.tab.c"
     break;
 
+  case 231: /* optgametitle: %empty  */
+#line 1191 "gointer.y"
+                             { (IgsYYval.Name) = 0;  }
+#line 3966 "y.tab.c"
+    break;
+
+  case 232: /* add: ADD  */
+#line 1194 "gointer.y"
+                  { SeenAdd = 1; }
+#line 3972 "y.tab.c"
+    break;
+
+  case 233: /* doneobserve: DONE observe  */
+#line 1198 "gointer.y"
+                {
+                    Done();
+                }
+#line 3980 "y.tab.c"
+    break;
+
+  case 234: /* mustpass: MUSTPASS  */
+#line 1204 "gointer.y"
+                {
+                    MyGameMessage((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3989 "y.tab.c"
+    break;
+
+  case 235: /* oppmustpass: OPPMUSTPASS  */
+#line 1211 "gointer.y"
+                {
+                    MyGameMessage((IgsYYvsp[0].Name));
+                    myfree((IgsYYvsp[0].Name));
+                }
+#line 3998 "y.tab.c"
+    break;
+
   case 236: /* disagreeremove: DISAGREEREMOVE  */
-#line 1180 "gointer.y"
+#line 1218 "gointer.y"
                 {
                     MyGameMessage("There is a disagreement about the "
                                   "life/death of that stone. "
@@ -3969,32 +4007,32 @@ IgsYYreduce:
                     MyGameMessage("Board is restored to what it was"
                                   " before you started scoring");
                 }
-#line 3973 "y.tab.c"
+#line 4011 "y.tab.c"
     break;
 
   case 237: /* opponentdisagreeremove: OPPDISAGREEREMOVE  */
-#line 1191 "gointer.y"
+#line 1229 "gointer.y"
                 {
                     MyGameMessage("There is a disagreement about the "
                                   "life/death of that stone. "
                                   "The game will resume.");
                     RestoreFromScoring();
                 }
-#line 3984 "y.tab.c"
+#line 4022 "y.tab.c"
     break;
 
   case 238: /* optnotreviewing: NOTREVIEWING  */
-#line 1200 "gointer.y"
+#line 1238 "gointer.y"
                     { /* teach invalid-game. The gamdesc will force "games"
                        * since teaching games are not announced.
                        */
 		      Output("Game not found\n");
                     }
-#line 3994 "y.tab.c"
+#line 4032 "y.tab.c"
     break;
 
   case 240: /* observe: gamedesc movelist optgametitle optgamesaved optnotreviewing  */
-#line 1209 "gointer.y"
+#line 1247 "gointer.y"
                 {
                     Game *game;
                     int   Nr;
@@ -4015,11 +4053,11 @@ IgsYYreduce:
                     FreeGameDesc((IgsYYvsp[-4].Gamedesc));
                     FreeNameValList((IgsYYvsp[-3].Nameval));
                 }
-#line 4019 "y.tab.c"
+#line 4057 "y.tab.c"
     break;
 
   case 241: /* observe: gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optobserve optgametitle optgamesaved  */
-#line 1232 "gointer.y"
+#line 1270 "gointer.y"
                 {
                     Game *game;
                     int   Nr;
@@ -4038,34 +4076,34 @@ IgsYYreduce:
                     FreeGameDesc((IgsYYvsp[-10].Gamedesc));
                     FreeNameValList((IgsYYvsp[-9].Nameval));
                 }
-#line 4042 "y.tab.c"
+#line 4080 "y.tab.c"
     break;
 
   case 242: /* optfirst: FIRSTREMOVE  */
-#line 1252 "gointer.y"
+#line 1290 "gointer.y"
                           { (IgsYYval.Value) = (IgsYYvsp[0].Value); }
-#line 4048 "y.tab.c"
+#line 4086 "y.tab.c"
     break;
 
   case 243: /* optfirst: %empty  */
-#line 1253 "gointer.y"
+#line 1291 "gointer.y"
                           { (IgsYYval.Value) = Empty; }
-#line 4054 "y.tab.c"
+#line 4092 "y.tab.c"
     break;
 
   case 244: /* doneopponentobserve: DONE optfirst SEMIPROMPT opponentoptobserve  */
-#line 1293 "gointer.y"
+#line 1331 "gointer.y"
                 {
                     Done();
                     if ((IgsYYvsp[-2].Value) != Empty)
                         MyGameMessage("%s needs to remove a group first.",
                                       (IgsYYvsp[-2].Value) == White ? "White" : "Black");
                 }
-#line 4065 "y.tab.c"
+#line 4103 "y.tab.c"
     break;
 
   case 245: /* opponentobserve: gamedesc movelist optgametitle OBSERVE optgamesaved  */
-#line 1302 "gointer.y"
+#line 1340 "gointer.y"
                 {
                     Game *game;
 
@@ -4075,11 +4113,11 @@ IgsYYreduce:
                     if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4079 "y.tab.c"
+#line 4117 "y.tab.c"
     break;
 
   case 246: /* opponentoptobserve: gamedesc movelist optgametitle OBSERVE optgamesaved  */
-#line 1314 "gointer.y"
+#line 1352 "gointer.y"
                 {
                     Game *game;
 
@@ -4089,11 +4127,11 @@ IgsYYreduce:
                     if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4093 "y.tab.c"
+#line 4131 "y.tab.c"
     break;
 
   case 247: /* opponentoptobserve: gamedesc movelist optgametitle SEMIPROMPT optgamesaved  */
-#line 1324 "gointer.y"
+#line 1362 "gointer.y"
                 {
                     Game *game;
 
@@ -4103,68 +4141,68 @@ IgsYYreduce:
                     if (game) SetGameTitle(game, (IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4107 "y.tab.c"
+#line 4145 "y.tab.c"
     break;
 
   case 248: /* betresult: BETRESULT opponentobserve  */
-#line 1336 "gointer.y"
+#line 1374 "gointer.y"
                 {
                     AutoCommand(NULL, "%%bet bet");
                 }
-#line 4115 "y.tab.c"
+#line 4153 "y.tab.c"
     break;
 
   case 249: /* betresult: BETRESULT observe  */
-#line 1340 "gointer.y"
+#line 1378 "gointer.y"
                 {
                     AutoCommand(NULL, "%%bet bet");
                 }
-#line 4123 "y.tab.c"
+#line 4161 "y.tab.c"
     break;
 
   case 250: /* undidlist: undidlist UNDID NAME  */
-#line 1346 "gointer.y"
+#line 1384 "gointer.y"
                 {
                     /* undo of multiple moves allowed in a teaching game */
 		    MyGameUndo((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4133 "y.tab.c"
+#line 4171 "y.tab.c"
     break;
 
   case 251: /* undidlist: UNDID NAME  */
-#line 1352 "gointer.y"
+#line 1390 "gointer.y"
                 {
 		    MyGameUndo((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4142 "y.tab.c"
+#line 4180 "y.tab.c"
     break;
 
   case 252: /* undid: undidlist gamedesc movelist optgametitle optgamesaved  */
-#line 1360 "gointer.y"
+#line 1398 "gointer.y"
                 {
                     FreeGameDesc((IgsYYvsp[-3].Gamedesc));
                     FreeNameValList((IgsYYvsp[-2].Nameval));
                     /* if (game) SetGameTitle(game, $4); */
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4153 "y.tab.c"
+#line 4191 "y.tab.c"
     break;
 
   case 253: /* undid: undidlist gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgametitle optgamesaved  */
-#line 1368 "gointer.y"
+#line 1406 "gointer.y"
                 {
                     FreeGameDesc((IgsYYvsp[-9].Gamedesc));
                     FreeNameValList((IgsYYvsp[-8].Nameval));
                     /* if (game) SetGameTitle(game, $10); */
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4164 "y.tab.c"
+#line 4202 "y.tab.c"
     break;
 
   case 254: /* opponentundid: UNDID NAME OBSERVE gamedesc movelist optgamesaved  */
-#line 1378 "gointer.y"
+#line 1416 "gointer.y"
                 {
                     char *ptr;
 
@@ -4176,11 +4214,11 @@ IgsYYreduce:
                     FreeGameDesc((IgsYYvsp[-2].Gamedesc));
                     FreeNameValList((IgsYYvsp[-1].Nameval));
                 }
-#line 4180 "y.tab.c"
+#line 4218 "y.tab.c"
     break;
 
   case 255: /* opponentundid: UNDID NAME OBSERVE gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgamesaved  */
-#line 1391 "gointer.y"
+#line 1429 "gointer.y"
                 {
                     char *ptr;
 
@@ -4192,17 +4230,17 @@ IgsYYreduce:
                     FreeGameDesc((IgsYYvsp[-8].Gamedesc));
                     FreeNameValList((IgsYYvsp[-7].Nameval));
                 }
-#line 4196 "y.tab.c"
+#line 4234 "y.tab.c"
     break;
 
   case 256: /* restore: RESTORE  */
-#line 1404 "gointer.y"
+#line 1442 "gointer.y"
                       {}
-#line 4202 "y.tab.c"
+#line 4240 "y.tab.c"
     break;
 
   case 257: /* opponentrestart: RESTART gamedesc movelist OBSERVE  */
-#line 1408 "gointer.y"
+#line 1446 "gointer.y"
                 {
                     Resume((IgsYYvsp[-2].Gamedesc)->Id, (IgsYYvsp[-2].Gamedesc)->BlackName, (IgsYYvsp[-2].Gamedesc)->WhiteName,
                            (IgsYYvsp[-1].Nameval)->Previous->Name ?
@@ -4210,11 +4248,11 @@ IgsYYreduce:
                     FreeGameDesc((IgsYYvsp[-2].Gamedesc));
                     FreeNameValList((IgsYYvsp[-1].Nameval));
                 }
-#line 4214 "y.tab.c"
+#line 4252 "y.tab.c"
     break;
 
   case 258: /* opponentrestart: RESTART gamedesc movelist RESTARTTEAMGAME NAME NAME NAME NAME END OBSERVE  */
-#line 1417 "gointer.y"
+#line 1455 "gointer.y"
                 {
                     Game *game;
 		    /* We must create the game now, since the "games Id"
@@ -4228,11 +4266,11 @@ IgsYYreduce:
                     FreeNameValList((IgsYYvsp[-7].Nameval));
                     myfree((IgsYYvsp[0].Dummy));
                 }
-#line 4232 "y.tab.c"
+#line 4270 "y.tab.c"
     break;
 
   case 259: /* restart: RESTART gamedesc movelist optgametitle  */
-#line 1433 "gointer.y"
+#line 1471 "gointer.y"
                 {
                     Game *game;
 
@@ -4244,11 +4282,11 @@ IgsYYreduce:
                     FreeNameValList((IgsYYvsp[-1].Nameval));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4248 "y.tab.c"
+#line 4286 "y.tab.c"
     break;
 
   case 260: /* restart: RESTART gamedesc movelist RESTARTTEAMGAME NAME NAME NAME NAME END optgametitle  */
-#line 1446 "gointer.y"
+#line 1484 "gointer.y"
                 {
                     Game *game;
 		    /* We must create the game now, since the "games Id"
@@ -4262,17 +4300,17 @@ IgsYYreduce:
                     FreeNameValList((IgsYYvsp[-7].Nameval));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4266 "y.tab.c"
+#line 4304 "y.tab.c"
     break;
 
   case 261: /* newmatch1: OBSERVE newmatch2  */
-#line 1461 "gointer.y"
+#line 1499 "gointer.y"
                                 {}
-#line 4272 "y.tab.c"
+#line 4310 "y.tab.c"
     break;
 
   case 262: /* newmatch2: gamedesc NEWMATCH  */
-#line 1465 "gointer.y"
+#line 1503 "gointer.y"
                 {
                     SendCommand(NULL, INT_TO_XTPOINTER((IgsYYvsp[-1].Gamedesc)->Id+1),
 				"games %d", (IgsYYvsp[-1].Gamedesc)->Id);
@@ -4280,19 +4318,19 @@ IgsYYreduce:
                      in AssertGamesDeleted() */
                     FreeGameDesc((IgsYYvsp[-1].Gamedesc));
                 }
-#line 4284 "y.tab.c"
+#line 4322 "y.tab.c"
     break;
 
   case 263: /* decline: DECLINE  */
-#line 1475 "gointer.y"
+#line 1513 "gointer.y"
                 {
                     Decline((IgsYYvsp[0].Person));
                 }
-#line 4292 "y.tab.c"
+#line 4330 "y.tab.c"
     break;
 
   case 264: /* disputeline: PERSON GAMECOLOR NAME GAMESECONDS BYOYOMI END  */
-#line 1481 "gointer.y"
+#line 1519 "gointer.y"
                 {
                     (IgsYYval.Disputedesc) = mynew(DisputeDesc);
                     (IgsYYval.Disputedesc)->Player = (IgsYYvsp[-5].Person);
@@ -4303,31 +4341,31 @@ IgsYYreduce:
                     (IgsYYval.Disputedesc)->ByoYomi= (IgsYYvsp[-1].Value);
                     myfree((IgsYYvsp[-3].Name));
                 }
-#line 4307 "y.tab.c"
+#line 4345 "y.tab.c"
     break;
 
   case 265: /* disputelines: disputelines disputeline  */
-#line 1494 "gointer.y"
+#line 1532 "gointer.y"
                 {
                     (IgsYYvsp[0].Disputedesc)->Next     = (IgsYYvsp[-1].Disputedesc);
                     (IgsYYvsp[0].Disputedesc)->Previous = (IgsYYvsp[-1].Disputedesc)->Previous;
                     (IgsYYvsp[0].Disputedesc)->Next->Previous = (IgsYYvsp[0].Disputedesc)->Previous->Next = (IgsYYvsp[0].Disputedesc);
                     (IgsYYval.Disputedesc) = (IgsYYvsp[-1].Disputedesc);
                 }
-#line 4318 "y.tab.c"
+#line 4356 "y.tab.c"
     break;
 
   case 266: /* disputelines: %empty  */
-#line 1501 "gointer.y"
+#line 1539 "gointer.y"
                 {
                     (IgsYYval.Disputedesc) = mynew(DisputeDesc);
                     (IgsYYval.Disputedesc)->Next = (IgsYYval.Disputedesc)->Previous = (IgsYYval.Disputedesc);
                 }
-#line 4327 "y.tab.c"
+#line 4365 "y.tab.c"
     break;
 
   case 267: /* opponentdispute: OPPONENTDISPUTE disputelines  */
-#line 1508 "gointer.y"
+#line 1546 "gointer.y"
                 {
                     DisputeDesc *Here, *Next;
 
@@ -4338,11 +4376,11 @@ IgsYYreduce:
                     }
                     myfree((IgsYYvsp[0].Disputedesc));
                 }
-#line 4342 "y.tab.c"
+#line 4380 "y.tab.c"
     break;
 
   case 268: /* dispute: DISPUTE disputelines  */
-#line 1521 "gointer.y"
+#line 1559 "gointer.y"
                 {
                     DisputeDesc *Here, *Next;
 
@@ -4353,111 +4391,111 @@ IgsYYreduce:
                     }
                     myfree((IgsYYvsp[0].Disputedesc));
                 }
-#line 4357 "y.tab.c"
+#line 4395 "y.tab.c"
     break;
 
   case 269: /* matchtypes: matchtypes MATCHTYPE  */
-#line 1534 "gointer.y"
+#line 1572 "gointer.y"
                 {
                     (IgsYYval.Value) = (IgsYYvsp[-1].Value) | (IgsYYvsp[0].Value);
                 }
-#line 4365 "y.tab.c"
+#line 4403 "y.tab.c"
     break;
 
   case 270: /* matchtypes: %empty  */
-#line 1538 "gointer.y"
+#line 1576 "gointer.y"
                 {
                     (IgsYYval.Value) = 0;
                 }
-#line 4373 "y.tab.c"
+#line 4411 "y.tab.c"
     break;
 
   case 271: /* disputematchtype: DISPUTEMATCHTYPE matchtypes END  */
-#line 1544 "gointer.y"
+#line 1582 "gointer.y"
                 {
                     WantMatchType((IgsYYvsp[-2].Person), (IgsYYvsp[-1].Value));
                 }
-#line 4381 "y.tab.c"
+#line 4419 "y.tab.c"
     break;
 
   case 272: /* optobserve: OBSERVE  */
-#line 1550 "gointer.y"
+#line 1588 "gointer.y"
                 {
                 }
-#line 4388 "y.tab.c"
+#line 4426 "y.tab.c"
     break;
 
   case 274: /* undolist: undolist optobserve UNDO NAME NAME NAME  */
-#line 1557 "gointer.y"
+#line 1595 "gointer.y"
                 {             /* gameid white black move */
 		    Undo(0, (IgsYYvsp[-3].Value), (IgsYYvsp[-1].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4399 "y.tab.c"
+#line 4437 "y.tab.c"
     break;
 
   case 275: /* undolist: UNDO NAME NAME NAME  */
-#line 1564 "gointer.y"
+#line 1602 "gointer.y"
                 {
 		    Undo(0, (IgsYYvsp[-3].Value), (IgsYYvsp[-1].Name), (IgsYYvsp[-2].Name), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4410 "y.tab.c"
+#line 4448 "y.tab.c"
     break;
 
   case 276: /* undo: undolist optobserve gamedesc movelist optgametitle  */
-#line 1573 "gointer.y"
+#line 1611 "gointer.y"
                 {
                     FreeGameDesc((IgsYYvsp[-2].Gamedesc));
                     FreeNameValList((IgsYYvsp[-1].Nameval));
                     /* if (game && $5) SetGameTitle(game, $5); */
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4421 "y.tab.c"
+#line 4459 "y.tab.c"
     break;
 
   case 277: /* undo: undolist optobserve gamedesc movelist OBSERVETEAM NAME NAME NAME NAME END optgametitle  */
-#line 1581 "gointer.y"
+#line 1619 "gointer.y"
                 {
                     FreeGameDesc((IgsYYvsp[-8].Gamedesc));
                     FreeNameValList((IgsYYvsp[-7].Nameval));
                     /* if (game && $11) SetGameTitle(game, $11); */
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4432 "y.tab.c"
+#line 4470 "y.tab.c"
     break;
 
   case 278: /* watching: WATCHING names END  */
-#line 1590 "gointer.y"
+#line 1628 "gointer.y"
                 {
                     Watching((IgsYYvsp[-1].Namelist));
                     FreeNameList((IgsYYvsp[-1].Namelist));
                 }
-#line 4441 "y.tab.c"
+#line 4479 "y.tab.c"
     break;
 
   case 279: /* overobserve: OVEROBSERVE  */
-#line 1597 "gointer.y"
+#line 1635 "gointer.y"
                 {
                     OverObserve((IgsYYvsp[0].Value));
                 }
-#line 4449 "y.tab.c"
+#line 4487 "y.tab.c"
     break;
 
   case 280: /* observewhileplay: OBSERVEWHILEPLAY  */
-#line 1603 "gointer.y"
+#line 1641 "gointer.y"
                 {
                     ObserveWhilePlaying();
                 }
-#line 4457 "y.tab.c"
+#line 4495 "y.tab.c"
     break;
 
   case 281: /* playerline: PLAYERS NAME NAME NAME NAME END  */
-#line 1609 "gointer.y"
+#line 1647 "gointer.y"
                 {
                     FindPlayer((IgsYYvsp[-3].Name), (IgsYYvsp[-1].Name), (IgsYYvsp[-4].Name), (IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-4].Name));
@@ -4465,28 +4503,28 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4469 "y.tab.c"
+#line 4507 "y.tab.c"
     break;
 
   case 282: /* playerline: PLAYERS NAME END  */
-#line 1617 "gointer.y"
+#line 1655 "gointer.y"
                 {
                     FindPlayer((IgsYYvsp[-1].Name), "???", "?????  ???", UNKNOWN);
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4478 "y.tab.c"
+#line 4516 "y.tab.c"
     break;
 
   case 284: /* playerlines: %empty  */
-#line 1625 "gointer.y"
+#line 1663 "gointer.y"
                 {
 
                 }
-#line 4486 "y.tab.c"
+#line 4524 "y.tab.c"
     break;
 
   case 285: /* playersstatusline: NAME '(' NAME ')' NAME NAME NAME NAME NAME NAME END  */
-#line 1631 "gointer.y"
+#line 1669 "gointer.y"
                 {
                     PlayerStatusLine(atoi((IgsYYvsp[-10].Name)), atoi((IgsYYvsp[-8].Name)), atoi((IgsYYvsp[-4].Name)));
                     myfree((IgsYYvsp[-10].Name));
@@ -4498,11 +4536,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4502 "y.tab.c"
+#line 4540 "y.tab.c"
     break;
 
   case 286: /* playersstatusline: NAME NAME NAME NAME NAME NAME END  */
-#line 1643 "gointer.y"
+#line 1681 "gointer.y"
                 {
                     PlayerStatusLine(atoi((IgsYYvsp[-6].Name)), -1, atoi((IgsYYvsp[-4].Name)));
                     myfree((IgsYYvsp[-6].Name));
@@ -4512,27 +4550,27 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4516 "y.tab.c"
+#line 4554 "y.tab.c"
     break;
 
   case 287: /* $@5: %empty  */
-#line 1655 "gointer.y"
+#line 1693 "gointer.y"
                 {
                     AssertPlayersDeleted();
                 }
-#line 4524 "y.tab.c"
+#line 4562 "y.tab.c"
     break;
 
   case 288: /* $@6: %empty  */
-#line 1659 "gointer.y"
+#line 1697 "gointer.y"
                 {
                     TestPlayersDeleted();
                 }
-#line 4532 "y.tab.c"
+#line 4570 "y.tab.c"
     break;
 
   case 290: /* userline: names END  */
-#line 1666 "gointer.y"
+#line 1704 "gointer.y"
                 {
                     NameList *Here;
                     int n;
@@ -4558,11 +4596,11 @@ IgsYYreduce:
                         (IgsYYval.Namelist) = NULL;
                     }
                 }
-#line 4562 "y.tab.c"
+#line 4600 "y.tab.c"
     break;
 
   case 291: /* userline: names FAIL  */
-#line 1692 "gointer.y"
+#line 1730 "gointer.y"
                 {
                     NameList *Here;
 
@@ -4577,11 +4615,11 @@ IgsYYreduce:
                     FreeNameList((IgsYYvsp[-1].Namelist));
                     (IgsYYval.Namelist) = NULL;
                 }
-#line 4581 "y.tab.c"
+#line 4619 "y.tab.c"
     break;
 
   case 292: /* userlines: userlines userline  */
-#line 1709 "gointer.y"
+#line 1747 "gointer.y"
                 {
                     if ((IgsYYvsp[0].Namelist)) {
                         NameListList *Last;
@@ -4593,40 +4631,40 @@ IgsYYreduce:
                     }
                     (IgsYYval.NameListlist) = (IgsYYvsp[-1].NameListlist);
                 }
-#line 4597 "y.tab.c"
+#line 4635 "y.tab.c"
     break;
 
   case 293: /* userlines: %empty  */
-#line 1721 "gointer.y"
+#line 1759 "gointer.y"
                 {
                     (IgsYYval.NameListlist) = mynew(NameListList);
                     (IgsYYval.NameListlist)->Previous = (IgsYYval.NameListlist)->Next = (IgsYYval.NameListlist);
                     (IgsYYval.NameListlist)->Names = NULL;
                 }
-#line 4607 "y.tab.c"
+#line 4645 "y.tab.c"
     break;
 
   case 294: /* users: USER userlines  */
-#line 1729 "gointer.y"
+#line 1767 "gointer.y"
                 {
                     UserData((IgsYYvsp[0].NameListlist));
                     FreeNameListList((IgsYYvsp[0].NameListlist));
                 }
-#line 4616 "y.tab.c"
+#line 4654 "y.tab.c"
     break;
 
   case 295: /* player: NAME '[' NAME ']'  */
-#line 1736 "gointer.y"
+#line 1774 "gointer.y"
                 {
                     (IgsYYval.Person) = FindPlayerByNameAndStrength((IgsYYvsp[-3].Name), (IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[-3].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4626 "y.tab.c"
+#line 4664 "y.tab.c"
     break;
 
   case 296: /* playertime: NAME ':' NAME  */
-#line 1744 "gointer.y"
+#line 1782 "gointer.y"
                 {
                     int sec;
 
@@ -4636,27 +4674,27 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4640 "y.tab.c"
+#line 4678 "y.tab.c"
     break;
 
   case 297: /* optbyo: '(' NAME ')' NAME  */
-#line 1756 "gointer.y"
+#line 1794 "gointer.y"
                 {
                     (IgsYYval.Value) = atoi((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4650 "y.tab.c"
+#line 4688 "y.tab.c"
     break;
 
   case 298: /* optbyo: %empty  */
-#line 1761 "gointer.y"
+#line 1799 "gointer.y"
                 { (IgsYYval.Value) = -1; }
-#line 4656 "y.tab.c"
+#line 4694 "y.tab.c"
     break;
 
   case 299: /* gametime: GAMETIME NAME ':' NAME END GAMETIME NAME '(' NAME ')' ':' playertime optbyo END GAMETIME NAME '(' NAME ')' ':' playertime optbyo END  */
-#line 1767 "gointer.y"
+#line 1805 "gointer.y"
                 {
                     if (strcmp((IgsYYvsp[-21].Name), "Game") ||
                         strcmp((IgsYYvsp[-16].Name), "White") || strcmp((IgsYYvsp[-7].Name), "Black")) YYERROR;
@@ -4668,11 +4706,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-7].Name));
                     myfree((IgsYYvsp[-5].Name));
                 }
-#line 4672 "y.tab.c"
+#line 4710 "y.tab.c"
     break;
 
   case 300: /* gamescore: CURRENTSCORE NAME FINALSCORE NAME  */
-#line 1781 "gointer.y"
+#line 1819 "gointer.y"
                 {
                     int Nr;
                     Game     *game;
@@ -4691,162 +4729,162 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4695 "y.tab.c"
+#line 4733 "y.tab.c"
     break;
 
   case 301: /* translation: TRANSLATION NAME  */
-#line 1802 "gointer.y"
+#line 1840 "gointer.y"
                 {
                     Outputf("%s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4704 "y.tab.c"
+#line 4742 "y.tab.c"
     break;
 
   case 304: /* byoyomi: ENTERBYOYOMI GIVEBYOYOMI  */
-#line 1813 "gointer.y"
+#line 1851 "gointer.y"
                 {
                     MyGameMessage("%s is now in byo-yomi, having %s",
                                   PlayerString((IgsYYvsp[-1].Person)), (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4714 "y.tab.c"
+#line 4752 "y.tab.c"
     break;
 
   case 305: /* notime: NOTIME  */
-#line 1821 "gointer.y"
+#line 1859 "gointer.y"
                 {
                     MyGameMessage("%s has run out of time.", PlayerString((IgsYYvsp[0].Person)));
                 }
-#line 4722 "y.tab.c"
+#line 4760 "y.tab.c"
     break;
 
   case 306: /* lostconnection: LOSTCONNECTION MYADJOURN optgamesaved  */
-#line 1827 "gointer.y"
+#line 1865 "gointer.y"
                 {
                     MyGameMessage("Your opponent has lost his connection.");
                 }
-#line 4730 "y.tab.c"
+#line 4768 "y.tab.c"
     break;
 
   case 307: /* gamesaved: GAMESAVED NAME optobserve  */
-#line 1833 "gointer.y"
+#line 1871 "gointer.y"
                 {
 		    if (appdata.WantVerbose) {
                         MyGameMessage("Game saved.%s", (IgsYYvsp[-1].Name));
 		    }
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4741 "y.tab.c"
+#line 4779 "y.tab.c"
     break;
 
   case 308: /* optadjourn: MYADJOURN  */
-#line 1842 "gointer.y"
+#line 1880 "gointer.y"
                 {
                 }
-#line 4748 "y.tab.c"
+#line 4786 "y.tab.c"
     break;
 
   case 310: /* adjourn: MYADJOURN optadjourn GAMESAVED NAME optgamesaved  */
-#line 1849 "gointer.y"
+#line 1887 "gointer.y"
                 {
                     MyGameMessage("Game has been adjourned.");
                     MyGameMessage("Game saved.%s", (IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4758 "y.tab.c"
+#line 4796 "y.tab.c"
     break;
 
   case 311: /* adjournsentrequest: ADJOURNSENTREQUEST  */
-#line 1857 "gointer.y"
+#line 1895 "gointer.y"
                 {
                 }
-#line 4765 "y.tab.c"
+#line 4803 "y.tab.c"
     break;
 
   case 312: /* adjournrequest: ADJOURNREQUEST  */
-#line 1862 "gointer.y"
+#line 1900 "gointer.y"
                 {
                     MyGameMessage("Your opponent requests an adjournment");
                     MyGameMessage("Use the <adjourn> or <decline adjourn> "
                                   "entries in the commands menu.");
                 }
-#line 4775 "y.tab.c"
+#line 4813 "y.tab.c"
     break;
 
   case 313: /* oppadjourn: MYADJOURN  */
-#line 1870 "gointer.y"
+#line 1908 "gointer.y"
                 {
                     MyGameMessage("Game has been adjourned.");
                 }
-#line 4783 "y.tab.c"
+#line 4821 "y.tab.c"
     break;
 
   case 314: /* declineadjourn: DECLINEADJOURN  */
-#line 1876 "gointer.y"
+#line 1914 "gointer.y"
                 {
                     MyGameMessage("Your opponent declines to adjourn.");
                 }
-#line 4791 "y.tab.c"
+#line 4829 "y.tab.c"
     break;
 
   case 315: /* resign: RESIGN  */
-#line 1882 "gointer.y"
+#line 1920 "gointer.y"
                 {
                     MyGameMessage("%s has resigned the game.",
                                   PlayerString((IgsYYvsp[0].Person)));
                 }
-#line 4800 "y.tab.c"
+#line 4838 "y.tab.c"
     break;
 
   case 316: /* resign: RESIGN RESIGN  */
-#line 1887 "gointer.y"
+#line 1925 "gointer.y"
                 { /* Double message in teaching game --Ton */
                     MyGameMessage("%s has resigned the game.",
                                   PlayerString((IgsYYvsp[-1].Person)));
                 }
-#line 4809 "y.tab.c"
+#line 4847 "y.tab.c"
     break;
 
   case 317: /* mailed: MAILED MAILED  */
-#line 1894 "gointer.y"
+#line 1932 "gointer.y"
                {
                    Mailed((IgsYYvsp[-1].Name));
                    Mailed((IgsYYvsp[0].Name));
                    myfree((IgsYYvsp[-1].Name));
                    myfree((IgsYYvsp[0].Name));
                }
-#line 4820 "y.tab.c"
+#line 4858 "y.tab.c"
     break;
 
   case 318: /* mailed: MAILED  */
-#line 1901 "gointer.y"
+#line 1939 "gointer.y"
                {
                    Mailed((IgsYYvsp[0].Name));
                    myfree((IgsYYvsp[0].Name));
                }
-#line 4829 "y.tab.c"
+#line 4867 "y.tab.c"
     break;
 
   case 319: /* removegamefile: REMOVEGAMEFILE  */
-#line 1908 "gointer.y"
+#line 1946 "gointer.y"
                {
                    RemoveGameFile((IgsYYvsp[0].Name));
                    myfree((IgsYYvsp[0].Name));
                }
-#line 4838 "y.tab.c"
+#line 4876 "y.tab.c"
     break;
 
   case 320: /* notelltarget: NOTELLTARGET  */
-#line 1915 "gointer.y"
+#line 1953 "gointer.y"
                 {
                     NoTell();
                 }
-#line 4846 "y.tab.c"
+#line 4884 "y.tab.c"
     break;
 
   case 321: /* telltarget: TELLTARGET NAME END  */
-#line 1921 "gointer.y"
+#line 1959 "gointer.y"
                 {
                     /* Kludge to stop bell/raise at telltarget change --Ton */
                     int OldEntered;
@@ -4860,18 +4898,18 @@ IgsYYreduce:
                     Entered = OldEntered;
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 4864 "y.tab.c"
+#line 4902 "y.tab.c"
     break;
 
   case 322: /* telldone: TELLDONE  */
-#line 1937 "gointer.y"
+#line 1975 "gointer.y"
                 {
                 }
-#line 4871 "y.tab.c"
+#line 4909 "y.tab.c"
     break;
 
   case 323: /* telloff: TELLOFF names  */
-#line 1942 "gointer.y"
+#line 1980 "gointer.y"
                 {
                     NameList *Here;
 
@@ -4880,156 +4918,156 @@ IgsYYreduce:
                         Outputf("%s\n", Here->Name);
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 4884 "y.tab.c"
+#line 4922 "y.tab.c"
     break;
 
   case 324: /* illegalmove: ILLEGALMOVE  */
-#line 1953 "gointer.y"
+#line 1991 "gointer.y"
                 {
                     MyGameMessage("Illegal move: %s", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4893 "y.tab.c"
+#line 4931 "y.tab.c"
     break;
 
   case 325: /* illegalmove: ILLEGALMOVE OBSERVE optobserve  */
-#line 1958 "gointer.y"
+#line 1996 "gointer.y"
                 {
                     MyGameMessage("Illegal move: %s", (IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-2].Name));
                 }
-#line 4902 "y.tab.c"
+#line 4940 "y.tab.c"
     break;
 
   case 326: /* illegalundo: ILLEGALUNDO  */
-#line 1965 "gointer.y"
+#line 2003 "gointer.y"
                 {
                     MyGameMessage("Cannot undo: %s", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4911 "y.tab.c"
+#line 4949 "y.tab.c"
     break;
 
   case 327: /* noturn: NOTURN  */
-#line 1972 "gointer.y"
+#line 2010 "gointer.y"
                 {
                     MyGameMessage("It isn't your turn");
                 }
-#line 4919 "y.tab.c"
+#line 4957 "y.tab.c"
     break;
 
   case 328: /* noremoveturn: NOREMOVETURN  */
-#line 1978 "gointer.y"
+#line 2016 "gointer.y"
                 {
                     MyGameMessage("It is not your turn to remove a group");
                 }
-#line 4927 "y.tab.c"
+#line 4965 "y.tab.c"
     break;
 
   case 329: /* useresign: USERESIGN  */
-#line 1984 "gointer.y"
+#line 2022 "gointer.y"
                 {
                     MyGameMessage("To resign, please use 'resign'");
                 }
-#line 4935 "y.tab.c"
+#line 4973 "y.tab.c"
     break;
 
   case 330: /* removeliberty: REMOVELIBERTY  */
-#line 1990 "gointer.y"
+#line 2028 "gointer.y"
                 {
                     MyGameMessage("You cannot remove liberties.");
                 }
-#line 4943 "y.tab.c"
+#line 4981 "y.tab.c"
     break;
 
   case 331: /* removegroup: REMOVEGROUP  */
-#line 1996 "gointer.y"
+#line 2034 "gointer.y"
                 {
                     RemoveGroup((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 4952 "y.tab.c"
+#line 4990 "y.tab.c"
     break;
 
   case 332: /* restorescoring: RESTORESCORING  */
-#line 2003 "gointer.y"
+#line 2041 "gointer.y"
                 {
                     RestoreScoring();
                 }
-#line 4960 "y.tab.c"
+#line 4998 "y.tab.c"
     break;
 
   case 333: /* pleaseredone: PLEASEREDONE  */
-#line 2009 "gointer.y"
+#line 2047 "gointer.y"
                 {
                     MyGameMessage("Please repeat 'done'");
                 }
-#line 4968 "y.tab.c"
+#line 5006 "y.tab.c"
     break;
 
   case 334: /* statusheader: STATUSHEADER names END  */
-#line 2015 "gointer.y"
+#line 2053 "gointer.y"
                 {
                     (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
                 }
-#line 4976 "y.tab.c"
+#line 5014 "y.tab.c"
     break;
 
   case 335: /* statusline: STATUSLINE NAME  */
-#line 2021 "gointer.y"
+#line 2059 "gointer.y"
                 {
                     (IgsYYval.Numval) = mynew(NumVal);
                     (IgsYYval.Numval)->Num   = (IgsYYvsp[-1].Value);
                     (IgsYYval.Numval)->Value = (IgsYYvsp[0].Name);
                 }
-#line 4986 "y.tab.c"
+#line 5024 "y.tab.c"
     break;
 
   case 336: /* statuslines: statuslines statusline  */
-#line 2029 "gointer.y"
+#line 2067 "gointer.y"
                 {
                     (IgsYYvsp[0].Numval)->Next = (IgsYYvsp[-1].Numval);
                     (IgsYYvsp[0].Numval)->Previous = (IgsYYvsp[-1].Numval)->Previous;
                     (IgsYYvsp[0].Numval)->Next->Previous = (IgsYYvsp[0].Numval)->Previous->Next = (IgsYYvsp[0].Numval);
                     (IgsYYval.Numval) = (IgsYYvsp[-1].Numval);
                 }
-#line 4997 "y.tab.c"
+#line 5035 "y.tab.c"
     break;
 
   case 337: /* statuslines: %empty  */
-#line 2036 "gointer.y"
+#line 2074 "gointer.y"
                 {
                     (IgsYYval.Numval) = mynew(NumVal);
                     (IgsYYval.Numval)->Next  = (IgsYYval.Numval)->Previous = (IgsYYval.Numval);
                     (IgsYYval.Numval)->Num   = -1;
                     (IgsYYval.Numval)->Value = NULL;
                 }
-#line 5008 "y.tab.c"
+#line 5046 "y.tab.c"
     break;
 
   case 338: /* resultline: RESULTLINE  */
-#line 2045 "gointer.y"
+#line 2083 "gointer.y"
                 {
 	            /* 20 jl (W:O):  2.5 to jloup (B:#):  3.0 */
                     MyGameMessage("%s", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5018 "y.tab.c"
+#line 5056 "y.tab.c"
     break;
 
   case 339: /* status: statusheader statusheader statuslines  */
-#line 2053 "gointer.y"
+#line 2091 "gointer.y"
                 {
                     if (GamePosition((IgsYYvsp[-1].Namelist), (IgsYYvsp[-2].Namelist), (IgsYYvsp[0].Numval))) ChangeCommand(NULL, 1);
                     FreeNameList((IgsYYvsp[-2].Namelist));
                     FreeNameList((IgsYYvsp[-1].Namelist));
                     FreeNumValList((IgsYYvsp[0].Numval));
                 }
-#line 5029 "y.tab.c"
+#line 5067 "y.tab.c"
     break;
 
   case 340: /* date: NAME NAME NAME NAME ':' NAME ':' NAME NAME  */
-#line 2062 "gointer.y"
+#line 2100 "gointer.y"
                 {
                     struct tm *FullTime;
                     int        i;
@@ -5056,11 +5094,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5060 "y.tab.c"
+#line 5098 "y.tab.c"
     break;
 
   case 341: /* uptimeentry: GMTTIME date END  */
-#line 2091 "gointer.y"
+#line 2129 "gointer.y"
                 {
                     char *ptr;
                     int   Length;
@@ -5072,11 +5110,11 @@ IgsYYreduce:
 		    }
                     myfree((IgsYYvsp[-1].Dummy));
                 }
-#line 5076 "y.tab.c"
+#line 5114 "y.tab.c"
     break;
 
   case 342: /* uptimeentry: LOCALTIME date END  */
-#line 2103 "gointer.y"
+#line 2141 "gointer.y"
                 {
                     char *ptr;
                     int   Length;
@@ -5090,11 +5128,11 @@ IgsYYreduce:
 		    }
                     myfree((IgsYYvsp[-1].Dummy));
                 }
-#line 5094 "y.tab.c"
+#line 5132 "y.tab.c"
     break;
 
   case 343: /* uptimeentry: SERVERUP NAME NAME NAME NAME NAME NAME END  */
-#line 2117 "gointer.y"
+#line 2155 "gointer.y"
                 {
                     long Uptime;
 
@@ -5110,48 +5148,48 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-2].Name));
                     myfree((IgsYYvsp[-1].Name));
                 }
-#line 5114 "y.tab.c"
+#line 5152 "y.tab.c"
     break;
 
   case 344: /* uptimeentry: UPTIMEENTRY NAME  */
-#line 2133 "gointer.y"
+#line 2171 "gointer.y"
                 {
 		    if (appdata.WantVerbose) {
 			Outputf("%s\n", (IgsYYvsp[0].Name));
 		    }
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5125 "y.tab.c"
+#line 5163 "y.tab.c"
     break;
 
   case 347: /* sgflist: SGFLIST names END  */
-#line 2146 "gointer.y"
+#line 2184 "gointer.y"
                 {
                     SgfList((IgsYYvsp[-1].Namelist));
                     FreeNameList((IgsYYvsp[-1].Namelist));
                 }
-#line 5134 "y.tab.c"
+#line 5172 "y.tab.c"
     break;
 
   case 348: /* sgflist: SGFLIST NOSGF  */
-#line 2151 "gointer.y"
+#line 2189 "gointer.y"
                 {
                     Output("sgf needs arguments\n");
                 }
-#line 5142 "y.tab.c"
+#line 5180 "y.tab.c"
     break;
 
   case 349: /* reviewlist: REVIEWLIST names  */
-#line 2157 "gointer.y"
+#line 2195 "gointer.y"
                 {
                     ReviewList((IgsYYvsp[0].Namelist));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5151 "y.tab.c"
+#line 5189 "y.tab.c"
     break;
 
   case 350: /* reviewvariations: REVIEWVARIATIONS names  */
-#line 2164 "gointer.y"
+#line 2202 "gointer.y"
                 {
 /* For the moment we just ignore the variations list
                     NameList *Here;
@@ -5163,20 +5201,20 @@ IgsYYreduce:
 */
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5167 "y.tab.c"
+#line 5205 "y.tab.c"
     break;
 
   case 351: /* reviewstart: REVIEWSTART  */
-#line 2178 "gointer.y"
+#line 2216 "gointer.y"
                 {
                     ReviewStart((IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5176 "y.tab.c"
+#line 5214 "y.tab.c"
     break;
 
   case 352: /* reviewliterals: reviewliterals REVLITERAL  */
-#line 2185 "gointer.y"
+#line 2223 "gointer.y"
                 {
                     NameList *names;
 
@@ -5187,11 +5225,11 @@ IgsYYreduce:
                     names->Next->Previous = names->Previous->Next = names;
                     (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
                 }
-#line 5191 "y.tab.c"
+#line 5229 "y.tab.c"
     break;
 
   case 353: /* reviewliterals: %empty  */
-#line 2196 "gointer.y"
+#line 2234 "gointer.y"
                 {
                     NameList *header;
 
@@ -5200,31 +5238,31 @@ IgsYYreduce:
                     header->Next = header->Previous = header;
                     (IgsYYval.Namelist) = header;
                 }
-#line 5204 "y.tab.c"
+#line 5242 "y.tab.c"
     break;
 
   case 354: /* reviewentry: '('  */
-#line 2206 "gointer.y"
+#line 2244 "gointer.y"
                   { ReviewOpenVariation(); }
-#line 5210 "y.tab.c"
+#line 5248 "y.tab.c"
     break;
 
   case 355: /* reviewentry: ')'  */
-#line 2207 "gointer.y"
+#line 2245 "gointer.y"
                   { ReviewCloseVariation(); }
-#line 5216 "y.tab.c"
+#line 5254 "y.tab.c"
     break;
 
   case 356: /* reviewentry: REVNODE  */
-#line 2209 "gointer.y"
+#line 2247 "gointer.y"
                 {
                     ReviewNewNode();
                 }
-#line 5224 "y.tab.c"
+#line 5262 "y.tab.c"
     break;
 
   case 357: /* reviewentry: REVUNKNOWN reviewliterals  */
-#line 2213 "gointer.y"
+#line 2251 "gointer.y"
                 {
                     NameList *Here;
 
@@ -5235,11 +5273,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Name));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5239 "y.tab.c"
+#line 5277 "y.tab.c"
     break;
 
   case 358: /* reviewentry: REVNODENAME REVLITERAL  */
-#line 2224 "gointer.y"
+#line 2262 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5248,11 +5286,11 @@ IgsYYreduce:
                     ReviewLocalProperty(retNODENAME, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5252 "y.tab.c"
+#line 5290 "y.tab.c"
     break;
 
   case 359: /* reviewentry: REVCOMMENT REVLITERAL  */
-#line 2233 "gointer.y"
+#line 2271 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5261,146 +5299,146 @@ IgsYYreduce:
                     ReviewLocalProperty(retCOMMENT, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5265 "y.tab.c"
+#line 5303 "y.tab.c"
     break;
 
   case 360: /* reviewentry: REVKOMI REVLITERAL  */
-#line 2242 "gointer.y"
+#line 2280 "gointer.y"
                 {
                     ReviewGlobalProperty(retKOMI, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5274 "y.tab.c"
+#line 5312 "y.tab.c"
     break;
 
   case 361: /* reviewentry: REVHANDICAP REVLITERAL  */
-#line 2247 "gointer.y"
+#line 2285 "gointer.y"
                 {
                     ReviewGlobalProperty(retHANDICAP, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5283 "y.tab.c"
+#line 5321 "y.tab.c"
     break;
 
   case 362: /* reviewentry: REVUSER REVLITERAL  */
-#line 2252 "gointer.y"
+#line 2290 "gointer.y"
                 {
                     ReviewGlobalProperty(retENTEREDBY, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5292 "y.tab.c"
+#line 5330 "y.tab.c"
     break;
 
   case 363: /* reviewentry: REVCOPYRIGHT REVLITERAL  */
-#line 2257 "gointer.y"
+#line 2295 "gointer.y"
                 {
                     ReviewGlobalProperty(retCOPYRIGHT, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5301 "y.tab.c"
+#line 5339 "y.tab.c"
     break;
 
   case 364: /* reviewentry: REVPLACE REVLITERAL  */
-#line 2262 "gointer.y"
+#line 2300 "gointer.y"
                 {
                     ReviewGlobalProperty(retPLACE, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5310 "y.tab.c"
+#line 5348 "y.tab.c"
     break;
 
   case 365: /* reviewentry: REVDATE REVLITERAL  */
-#line 2267 "gointer.y"
+#line 2305 "gointer.y"
                 {
                     ReviewGlobalProperty(retDATE, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5319 "y.tab.c"
+#line 5357 "y.tab.c"
     break;
 
   case 366: /* reviewentry: REVRESULT REVLITERAL  */
-#line 2272 "gointer.y"
+#line 2310 "gointer.y"
                 {
                     ReviewGlobalProperty(retRESULT, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5328 "y.tab.c"
+#line 5366 "y.tab.c"
     break;
 
   case 367: /* reviewentry: REVEVENT REVLITERAL  */
-#line 2277 "gointer.y"
+#line 2315 "gointer.y"
                 {
                     ReviewGlobalProperty(retTOURNAMENT, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5337 "y.tab.c"
+#line 5375 "y.tab.c"
     break;
 
   case 368: /* reviewentry: REVGAMENAME REVLITERAL  */
-#line 2282 "gointer.y"
+#line 2320 "gointer.y"
                 {
                     ReviewGlobalProperty(retNAME, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5346 "y.tab.c"
+#line 5384 "y.tab.c"
     break;
 
   case 369: /* reviewentry: REVWHITERANK REVLITERAL  */
-#line 2287 "gointer.y"
+#line 2325 "gointer.y"
                 {
                     ReviewGlobalProperty(retWHITESTRENGTH, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5355 "y.tab.c"
+#line 5393 "y.tab.c"
     break;
 
   case 370: /* reviewentry: REVBLACKRANK REVLITERAL  */
-#line 2292 "gointer.y"
+#line 2330 "gointer.y"
                 {
                     ReviewGlobalProperty(retBLACKSTRENGTH, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5364 "y.tab.c"
+#line 5402 "y.tab.c"
     break;
 
   case 371: /* reviewentry: REVWHITENAME REVLITERAL  */
-#line 2297 "gointer.y"
+#line 2335 "gointer.y"
                 {
                     ReviewGlobalProperty(retWHITENAME, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5373 "y.tab.c"
+#line 5411 "y.tab.c"
     break;
 
   case 372: /* reviewentry: REVBLACKNAME REVLITERAL  */
-#line 2302 "gointer.y"
+#line 2340 "gointer.y"
                 {
                     ReviewGlobalProperty(retBLACKNAME, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5382 "y.tab.c"
+#line 5420 "y.tab.c"
     break;
 
   case 373: /* reviewentry: REVSIZE REVLITERAL  */
-#line 2307 "gointer.y"
+#line 2345 "gointer.y"
                 {
                     ReviewGlobalProperty(retSIZE, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5391 "y.tab.c"
+#line 5429 "y.tab.c"
     break;
 
   case 374: /* reviewentry: REVGAME REVLITERAL  */
-#line 2312 "gointer.y"
+#line 2350 "gointer.y"
                 {
                     ReviewGlobalProperty(retGAME, (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5400 "y.tab.c"
+#line 5438 "y.tab.c"
     break;
 
   case 375: /* reviewentry: REVWHITE REVLITERAL  */
-#line 2317 "gointer.y"
+#line 2355 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5409,11 +5447,11 @@ IgsYYreduce:
                     ReviewLocalProperty(retWHITE, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5413 "y.tab.c"
+#line 5451 "y.tab.c"
     break;
 
   case 376: /* reviewentry: REVBLACK REVLITERAL  */
-#line 2326 "gointer.y"
+#line 2364 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5422,20 +5460,20 @@ IgsYYreduce:
                     ReviewLocalProperty(retBLACK, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5426 "y.tab.c"
+#line 5464 "y.tab.c"
     break;
 
   case 377: /* reviewentry: REVLETTERS reviewliterals  */
-#line 2335 "gointer.y"
+#line 2373 "gointer.y"
                 {
                     ReviewLocalProperty(retLETTERS, (IgsYYvsp[0].Namelist));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5435 "y.tab.c"
+#line 5473 "y.tab.c"
     break;
 
   case 378: /* reviewentry: REVWHITETIME REVLITERAL  */
-#line 2340 "gointer.y"
+#line 2378 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5444,11 +5482,11 @@ IgsYYreduce:
                     ReviewLocalProperty(retWHITETIME, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5448 "y.tab.c"
+#line 5486 "y.tab.c"
     break;
 
   case 379: /* reviewentry: REVBLACKTIME REVLITERAL  */
-#line 2349 "gointer.y"
+#line 2387 "gointer.y"
                 {
                     NameList Entry;
 
@@ -5457,87 +5495,87 @@ IgsYYreduce:
                     ReviewLocalProperty(retBLACKTIME, &Entry);
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5461 "y.tab.c"
+#line 5499 "y.tab.c"
     break;
 
   case 380: /* reviewentry: REVADDBLACK reviewliterals  */
-#line 2358 "gointer.y"
+#line 2396 "gointer.y"
                 {
                     ReviewLocalProperty(retBLACKSET, (IgsYYvsp[0].Namelist));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5470 "y.tab.c"
+#line 5508 "y.tab.c"
     break;
 
   case 381: /* reviewentry: REVADDWHITE reviewliterals  */
-#line 2363 "gointer.y"
+#line 2401 "gointer.y"
                 {
                     ReviewLocalProperty(retWHITESET, (IgsYYvsp[0].Namelist));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5479 "y.tab.c"
+#line 5517 "y.tab.c"
     break;
 
   case 382: /* reviewentry: REVADDEMPTY reviewliterals  */
-#line 2368 "gointer.y"
+#line 2406 "gointer.y"
                 {
                     ReviewLocalProperty(retEMPTYSET, (IgsYYvsp[0].Namelist));
                     FreeNameList((IgsYYvsp[0].Namelist));
                 }
-#line 5488 "y.tab.c"
+#line 5526 "y.tab.c"
     break;
 
   case 385: /* $@7: %empty  */
-#line 2379 "gointer.y"
+#line 2417 "gointer.y"
                 {
                     ReviewEntryBegin((IgsYYvsp[0].Value));
                 }
-#line 5496 "y.tab.c"
+#line 5534 "y.tab.c"
     break;
 
   case 389: /* reviews: auxreviews  */
-#line 2390 "gointer.y"
+#line 2428 "gointer.y"
                 {
                     ReviewEnd(0);
                 }
-#line 5504 "y.tab.c"
+#line 5542 "y.tab.c"
     break;
 
   case 390: /* reviews: auxreviews REVIEWEND  */
-#line 2394 "gointer.y"
+#line 2432 "gointer.y"
                 {
                     ReviewEnd(1);
                 }
-#line 5512 "y.tab.c"
+#line 5550 "y.tab.c"
     break;
 
   case 391: /* reviewstop: REVIEWSTOP  */
-#line 2400 "gointer.y"
+#line 2438 "gointer.y"
                 {
                     ReviewStop();
                 }
-#line 5520 "y.tab.c"
+#line 5558 "y.tab.c"
     break;
 
   case 392: /* noreview: NOREVIEW  */
-#line 2406 "gointer.y"
+#line 2444 "gointer.y"
                 {
                     ReviewNotFound();
                 }
-#line 5528 "y.tab.c"
+#line 5566 "y.tab.c"
     break;
 
   case 393: /* throwcopy: THROWCOPY  */
-#line 2412 "gointer.y"
+#line 2450 "gointer.y"
                 {
                     Output("You are already logged on. "
                            "Throwing other copy out\n");
                 }
-#line 5537 "y.tab.c"
+#line 5575 "y.tab.c"
     break;
 
   case 394: /* proba: PROBA RATING RATING NAME NAME NAME  */
-#line 2419 "gointer.y"
+#line 2457 "gointer.y"
                 { /* my rating, their rating, handicap,
                    * proba lose as white, proba lose as black
                    */
@@ -5546,18 +5584,18 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5550 "y.tab.c"
+#line 5588 "y.tab.c"
     break;
 
   case 395: /* proba: PROBA END  */
-#line 2428 "gointer.y"
+#line 2466 "gointer.y"
                 { /* other player does not have a rating */
                 }
-#line 5557 "y.tab.c"
+#line 5595 "y.tab.c"
     break;
 
   case 396: /* setproba: SETPROBA RATING RATING NAME NAME NAME  */
-#line 2433 "gointer.y"
+#line 2471 "gointer.y"
                 { /* my rating, their rating, handicap,
                    * proba lose as white, proba lose as black
                    */
@@ -5566,43 +5604,43 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5570 "y.tab.c"
+#line 5608 "y.tab.c"
     break;
 
   case 397: /* setproba: SETPROBA END  */
-#line 2442 "gointer.y"
+#line 2480 "gointer.y"
                 { /* I do not have a rating */
                 }
-#line 5577 "y.tab.c"
+#line 5615 "y.tab.c"
     break;
 
   case 398: /* sorry: SORRY  */
-#line 2447 "gointer.y"
+#line 2485 "gointer.y"
                 {
                     if (ArgsCommand(NULL, ";")) ChannelDisallowed();
                     else Output("Sorry.\n");
                 }
-#line 5586 "y.tab.c"
+#line 5624 "y.tab.c"
     break;
 
   case 399: /* invalid: INVALID  */
-#line 2454 "gointer.y"
+#line 2492 "gointer.y"
                 {
                     Outputf("Unknown command %s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5595 "y.tab.c"
+#line 5633 "y.tab.c"
     break;
 
   case 400: /* unknown: UNKNOWNANSWER literallines  */
-#line 2461 "gointer.y"
+#line 2499 "gointer.y"
                 {
                 }
-#line 5602 "y.tab.c"
+#line 5640 "y.tab.c"
     break;
 
   case 401: /* names: names NAME  */
-#line 2466 "gointer.y"
+#line 2504 "gointer.y"
                 {
                     NameList *names;
 
@@ -5613,11 +5651,11 @@ IgsYYreduce:
                     names->Next->Previous = names->Previous->Next = names;
                     (IgsYYval.Namelist) = (IgsYYvsp[-1].Namelist);
                 }
-#line 5617 "y.tab.c"
+#line 5655 "y.tab.c"
     break;
 
   case 402: /* names: %empty  */
-#line 2476 "gointer.y"
+#line 2514 "gointer.y"
                 {
                     NameList *header;
 
@@ -5626,11 +5664,11 @@ IgsYYreduce:
                     header->Next = header->Previous = header;
                     (IgsYYval.Namelist) = header;
                 }
-#line 5630 "y.tab.c"
+#line 5668 "y.tab.c"
     break;
 
   case 403: /* namesset: namesset names END  */
-#line 2487 "gointer.y"
+#line 2525 "gointer.y"
                 {
                     (IgsYYvsp[-2].Namelist)->Previous->Next = (IgsYYvsp[-1].Namelist)->Next;
                     (IgsYYvsp[-1].Namelist)->Next->Previous = (IgsYYvsp[-2].Namelist)->Previous;
@@ -5639,11 +5677,11 @@ IgsYYreduce:
                     myfree((IgsYYvsp[-1].Namelist));
                     (IgsYYval.Namelist) = (IgsYYvsp[-2].Namelist);
                 }
-#line 5643 "y.tab.c"
+#line 5681 "y.tab.c"
     break;
 
   case 404: /* namesset: %empty  */
-#line 2495 "gointer.y"
+#line 2533 "gointer.y"
                 {
                     NameList *header;
 
@@ -5652,38 +5690,38 @@ IgsYYreduce:
                     header->Next = header->Previous = header;
                     (IgsYYval.Namelist) = header;
                 }
-#line 5656 "y.tab.c"
+#line 5694 "y.tab.c"
     break;
 
   case 407: /* promptname: OLDPROMPT  */
-#line 2509 "gointer.y"
+#line 2547 "gointer.y"
                               {}
-#line 5662 "y.tab.c"
+#line 5700 "y.tab.c"
     break;
 
   case 408: /* promptname: NAME  */
-#line 2511 "gointer.y"
+#line 2549 "gointer.y"
                 {
                     Outputf("%s\n", (IgsYYvsp[0].Name));
                     myfree((IgsYYvsp[0].Name));
                 }
-#line 5671 "y.tab.c"
+#line 5709 "y.tab.c"
     break;
 
   case 409: /* optname: NAME  */
-#line 2517 "gointer.y"
+#line 2555 "gointer.y"
                    { (IgsYYval.Name) = (IgsYYvsp[0].Name);   }
-#line 5677 "y.tab.c"
+#line 5715 "y.tab.c"
     break;
 
   case 410: /* optname: %empty  */
-#line 2518 "gointer.y"
+#line 2556 "gointer.y"
                    { (IgsYYval.Name) = NULL; }
-#line 5683 "y.tab.c"
+#line 5721 "y.tab.c"
     break;
 
   case 411: /* literallines: literallines NAME  */
-#line 2522 "gointer.y"
+#line 2560 "gointer.y"
                 {
                     char *ptr;
 
@@ -5710,11 +5748,11 @@ IgsYYreduce:
 # endif /* calloc */
 # define calloc(m, n) mycalloc(m, n)
                 }
-#line 5714 "y.tab.c"
+#line 5752 "y.tab.c"
     break;
 
 
-#line 5718 "y.tab.c"
+#line 5756 "y.tab.c"
 
       default: break;
     }
@@ -5907,7 +5945,7 @@ IgsYYreturnlab:
   return IgsYYresult;
 }
 
-#line 2550 "gointer.y"
+#line 2588 "gointer.y"
 
 /* Kludge in case bison template defined const to nothing */
 #ifndef __cplusplus

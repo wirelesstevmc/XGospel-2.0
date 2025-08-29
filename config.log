@@ -226,7 +226,7 @@ configure:3820: $? = 0
 configure:3849: result: no
 configure:3910: checking whether your compiler really does something
 configure:3933: gcc -o conftest -m32 -O2  -m32 conftest.c  >&5
-/usr/bin/ld: /tmp/cczNHsPC.o: in function `main':
+/usr/bin/ld: /tmp/ccuatgpR.o: in function `main':
 conftest.c:(.text.startup+0x7): undefined reference to `goldfish_does_blub'
 collect2: error: ld returned 1 exit status
 configure:3933: $? = 1
@@ -317,7 +317,7 @@ configure:4622: $? = 0
 configure:4636: result: none needed
 configure:4652: checking for library containing yywrap
 configure:4688: gcc -o conftest -m32 -O2  -m32 conftest.c  >&5
-/usr/bin/ld: /tmp/cc6FcVkK.o: in function `main':
+/usr/bin/ld: /tmp/ccjzu1pM.o: in function `main':
 conftest.c:(.text.startup+0x7): undefined reference to `yywrap'
 collect2: error: ld returned 1 exit status
 configure:4688: $? = 1
