@@ -1,5 +1,11 @@
 #include "TearofMenP.h"
 #include <X11/StringDefs.h>
+#include <X11/Xaw/Sme.h>
+#include <X11/Xaw/SmeP.h>
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/SimpleMenP.h>
+#include <X11/CompositeP.h>
+#include <stdio.h>
 
 static void Highlight( Widget w, XEvent * event, String *params, Cardinal *n);
 static void TearofDone(Widget w, XEvent * event, String *params, Cardinal *n);
@@ -169,9 +175,43 @@ static void TearofDone(Widget w, XEvent *event, String *params, Cardinal *n)
           case SIMPLEMENUSTATE:
             XtPopdown(popup_shell);
           case POPUPMENUSTATE:
-            XtGetActionList(simpleMenuWidgetClass, &Actions, &NrActions);
-            (*Actions[1].proc)(w, event, params, n); /* notify      */
-            (*Actions[2].proc)(w, event, params, n); /* unhighlight */
+            /* Try to get the currently selected entry from the SimpleMenu */
+            if (XtIsSubclass(popup_shell, simpleMenuWidgetClass)) {
+                SimpleMenuWidget smw = (SimpleMenuWidget) popup_shell;
+                Widget entry = (Widget) smw->simple_menu.entry_set;
+                
+                if (entry && XtIsSubclass(entry, smeObjectClass)) {
+                    /* Call the menu entry's notify method directly */
+                    SmeObjectClass entry_class = (SmeObjectClass) entry->core.widget_class;
+                    if (entry_class->sme_class.notify) {
+                        (entry_class->sme_class.notify)(entry);
+                    }
+                } else {
+                    /* Try to find the menu entry at the mouse coordinates */
+                    if (event && event->type == ButtonRelease) {
+                        XButtonEvent *button_event = (XButtonEvent *)event;
+                        
+                        /* Look through menu children to find the one at these coordinates */
+                        CompositeWidget comp = (CompositeWidget) popup_shell;
+                        for (Cardinal i = 0; i < comp->composite.num_children; i++) {
+                            Widget child = comp->composite.children[i];
+                            if (XtIsSubclass(child, smeObjectClass)) {
+                                /* Check if coordinates are within this child's bounds */
+                                if (button_event->y >= child->core.y && 
+                                    button_event->y < (child->core.y + child->core.height)) {
+                                    
+                                    SmeObjectClass entry_class = (SmeObjectClass) child->core.widget_class;
+                                    if (entry_class->sme_class.notify) {
+                                        (entry_class->sme_class.notify)(child);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            XtPopdown(popup_shell);
             break;
           case BEINGTEAREDSTATE:
             Highlight(popup_shell, event, NULL, &m);

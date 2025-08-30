@@ -1,0 +1,427 @@
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+Warning: Cannot convert string "pixmap(xearth.xpm)" to type Pixmap
+Warning: Cannot convert string "pixmap(board.xpm)" to type Pixmap
+Warning: Cannot convert string "pixmap(pagoda.xpm)" to type Pixmap
+DEBUG: ModernConnect_Wrapper called with site=igs.joyjoy.net port=6969
+DEBUG: Connect() called with Site=igs.joyjoy.net Port=6969
+ADAPTER: Initialized - waiting for IGS banner end
+DEBUG: Attempting to connect to igs.joyjoy.net 6969
+DEBUG: About to call IgsYYparse()
+DEBUG: IgsInput processing 504 bytes of server data
+ADAPTER: Buffering 504 bytes, total buffer now 504 bytes
+DEBUG: yacc parser active - empty session rule triggered
+DEBUG: IgsYYparse() returned
+DEBUG: About to call IgsYYparse()
+DEBUG: IgsInput processing 512 bytes of server data
+ADAPTER: Buffering 512 bytes, total buffer now 1016 bytes
+ADAPTER: Large buffer (1016 bytes), looking for banner end pattern...
+ADAPTER: Last 50 bytes as hex:
+20 20 20 20 20 20 74 68 69 73 20 73 6F 66 74 77 
+61 72 65 2E 0A 20 40 40 20 20 20 20 20 40 40 40 
+40 40 20 20 40 40 20 20 20 20 20 20 40 40 20 20 
+20 20 
+ADAPTER: Banner end detected at position 462
+ADAPTER: Sending only 'Login: ' prompt to parser, ignoring 462 bytes of banner
+ADAPTER: Injected 'Login: ' prompt, state -> INJECTED_LOGIN_PROMPT
+ADAPTER: Forwarded 7 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'Login: '
+DEBUG: yacc parser active - empty session rule triggered
+DEBUG: LUSER token received - login prompt detected
+DEBUG: Sending registered username: wireless
+DEBUG: IgsInput processing 504 bytes of server data
+ADAPTER: Client sent registered username, state -> REGISTERED_USER
+ADAPTER: Adapted client command from 9 to 9 bytes
+DEBUG: IgsInput processing 512 bytes of server data
+ADAPTER: Filtered server data for registered user, state -> PASSTHROUGH
+ADAPTER: Forwarded 512 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '     @@     @   @@ @\x0A @@ @@@@@@@@   @@            \x00\x00\x00\x10e,\x08\x00\x00\x00\x00\x00\x00\x00\x00\xB0\xD5+\x08\x00\x00\x00\x00\x00\x00\x00\x00\x11 \x00\x00                Wel'
+DEBUG: IgsYYparse() returned
+DEBUG: About to call IgsYYparse()
+DEBUG: IgsInput processing 492 bytes of server data
+ADAPTER: Forwarded 492 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '     @  @@@@@@@@@  http://pandanet-igs.com/\x0A @@     @      @@  @@  @@  @@@@@@@@@   @@\x0A @@     @     '
+DEBUG: yacc parser active - empty session rule triggered
+DEBUG: LUSER token received - login prompt detected
+DEBUG: Already sent registered username, ignoring duplicate LUSER
+DEBUG: IgsInput processing 8 bytes of server data
+ADAPTER: Forwarded 8 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\xFF\xFB\x01\x0A1 1\x0A'
+ADAPTER: Adapted client command from 8 to 8 bytes
+DEBUG: IgsInput processing 500 bytes of server data
+ADAPTER: Forwarded 500 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '9 File\x0A\x0A ~~~~~~~~~~~~~~  You have entered IGS at igs.joyjoy.net 6969  ~~~~~~~~~~~~~~~\x0A** "An Introdu'
+DEBUG: IgsInput processing 503 bytes of server data
+ADAPTER: Forwarded 503 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'references'. The windows\x0A   in the single-window mode are 'tear off windows'. The button order\x0A   ca'
+DEBUG: IgsInput processing 418 bytes of server data
+ADAPTER: Forwarded 418 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'jp/English/cornel.html   {o__,   \    {\x0A* Art: http://www.pandanet.co.jp/English/galleryintro.html  '
+DEBUG: IgsInput processing 114 bytes of server data
+ADAPTER: Forwarded 114 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '~~~~~~~~~~  http://www.pandanet.co.jp/English/  ~~~~~~~~~~~~~~~~~~~~\x0A9 File\x0A39 IGS entry on 08 - 29 '
+ADAPTER: Adapted client command from 17 to 17 bytes
+DEBUG: IgsInput processing 29 bytes of server data
+ADAPTER: Forwarded 29 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '9 Set quiet to be False.\x0A1 5\x0A'
+ADAPTER: Adapted client command from 4 to 4 bytes
+DEBUG: IgsInput processing 41 bytes of server data
+ADAPTER: Forwarded 41 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {GORIMUCHU [6k*] has connected.}\x0A1 5\x0A'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank\x0A27     --   90 Pbot7k01  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '5k01    6s     5k*\x0A27   ! --   -- Pbot10k01   6s    11k* |   ! --   -- Pbot3k01   59s     4k*\x0A27    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  |  Q  91   -- guest2371   2m     NR \x0A27   X --   -- steelyDAN   9s     6k* |  QX --   -- shubo1211'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'andaBot2   5s     1p  |     --   80 PandaBot3   5s     1p \x0A27     --   -- PandaBot4   5s     1p  |  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'k*\x0A27  Q  --   -- guest8298  10s     NR  |  Q  --   -- guest9028   4m     NR \x0A27  QX --   -- mozai  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'livegw9    12s     NR \x0A27  QX --   -- livegw8    50s     NR  |  QX --   -- livegw10   19s     NR \x0A27'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  NR  |  QX --   -- guest7285   1s     NR \x0A27   X --   -- ashgoban    2m     3k* |  Q  --  202 kh576'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-- guest8910   2m     NR  |  Q  --   -- dorachan    1m    13k*\x0A27  Q 100   -- kyuuji      4m     9k*'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   5d*\x0A27   ! --   -- smartgo     6s     2d* |  Q  --   -- guest9529  24s     NR \x0A27     --   -- gue'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' -- bonjabonja 27s     3d*\x0A27  Q  --   37 dywgw3pqj  11s     4d* |  Q  --   -- guest438    3m     NR'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 's     2k* |   ! --   -- lkc888      4m     3k*\x0A27  QX --   -- tkato510   23s     7d* |  Q  --   -- g'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-  250 ab1940      2s     3k* |  Q  --   -- suzumaru    4m     6k*\x0A27  Q  --  101 kenroku5   37s    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '0s     5k*\x0A27  Q  --  160 osamu11     1s     8k* |  Q  --  195 G01540594   5s     2k*\x0A27  Q  --   --'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '--  118 hananomich  0s     8k*\x0A27  Q  --   -- sei56       2m     6k* |     --   -- weststar    1m   '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   2m     1k* |  QX --   -- h05911950   1m     1k*\x0A27   X --   -- Gugo2019   20s     1d* |  Q  --  1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' X178   34 mchuang46   6s     7k* |  Q  --   56 Kuma        6s    10k*\x0A27  Q  --  181 ryuo        6s'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '    0s     1k*\x0A27  Q  --   -- guest1923   2m     NR  |     --   -- Mushin     15s     7k*\x0A27  Q  -- '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   117   -- guest1973   1s     NR \x0A27  Q  --   32 m271211     3s     9k* |  QX --   -- haras      49'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'i950   6s    17k* |  Q  --  106 Ycoudai68   2s     1k*\x0A27   X --   -- Ambition   41s     5d* |  Q  -'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '27  Q! --   -- mk1117     11s    11k* |  Q  --   -- amanosanz   4m     4k*\x0A27  QX --   -- zz0001    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 't2111   4m     NR \x0A27  Q  --    6 uro5       24s    16k* |  Q  --   89 youyou17   26s     5k*\x0A27  Q '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '* |  Q  --   -- guest2151   1m     NR \x0A27  Q  --   40 takamaru02 19s     6k* |  QX --   -- ka270204 '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'onezo     59s     2d* |   X --   -- CliffCheng 19s     2k*\x0A27  Q  --   37 m0101      44s     3d* |  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'k*\x0A27  Q  --   25 ISAO130     9s     3k* |  QX 91   -- rakuan      3m     2d*\x0A27  Q 184   -- DeepVal'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'F1          1s     5d*\x0A27   ! --   -- zxcv       47s     1d* |  Q  --   -- tt52026     2m    10k*\x0A27'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  3k* |  Q  --   25 don96       0s     3k*\x0A27   ! --   -- javadesk    2m     4d* |  Q  --   55 ttttt'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-- guest2309   4s     NR  |  Q  --   -- guest2312   1m     NR \x0A27  QX 91   -- k8903       3m     4k*'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   5k*\x0A27  Q  --  152 NewAfn      1m     8k* |   X --  111 jin801      8s     2k*\x0A27  Q  --   -- nin'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' -- nrk         9m    10k*\x0A27   X --   -- overplay7   1m     4d  |  QX --   -- po4321ro   20s     3k'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 's    10k* |  Q  --   -- sugichan   16m     1k*\x0A27  Q  --   -- BAO986016   3m     2d* |   ! --   -- s'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '0   -- hirow       2s     7k* |   ! --   -- wardosama  56s     6k*\x0A27  Q  --  173 kbonsai     8s    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '3s     9k*\x0A27  Q  --  135 RINGO55    22s     2k* |  Q  --   36 xnchh0481  28s     5k*\x0A27  Q  --   --'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '--   26 akio830     2s     3k*\x0A27  Q  --  167 sgo8125     1m     7k* |   ! --   -- MrSilehnce  1m   '
+DEBUG: IgsInput processing 474 bytes of server data
+ADAPTER: Forwarded 474 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   1s     4k* |  Q  --   -- guest2419   4m     NR \x0A27  QX --   -- t1009      24s     4d* |  Q  --   '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' -- dokkoisho   6m     1d*\x0A27  Q  --   -- guest2430   2m     NR  |   X --  157 boyler      5s     4k'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'm     2k* |   ! --   -- napcek     46s     1d*\x0A27  Q  --   -- maruks4302 12m     3d* |   X --   76 J'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-   -- aah        41s     6k* |  Q  --  250 MM620       5s     3k*\x0A27     --  127 Fiasko     24s    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '0s     4k*\x0A27  Q  --   -- meme       13s     7k* |  SX --   55 mchensa     8s     2k*\x0A27  QX --   --'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '--  181 HM121754    1s    12k*\x0A27  Q  --   -- abcd12     45s     9k* |   X --   -- Twisted     3s   '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  40s    11k* |   ! --   -- h88168      1s     2d*\x0A27  Q  --  141 sgi218      9s     8k* |     --  1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'Q  --  123 kinosan8    2s     6k* |  SX --  104 william17   0s     1k*\x0A27     --  231 Zombik     11s'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '    2s     3k*\x0A27  Q  --  135 miruchoko  18s     1k* |  S! --   -- raoul      16s     3d*\x0A27  Q! -- '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' Q  --   65 kazu59     10s     4k*\x0A27  Q  --   68 HAGI       19s     2d* |     --  148 janek      15'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'tani   1s    16k* |  Q  --   65 ryuutalk   24s     4k*\x0A27     --  166 SomTam     16s     8k* |  Q  -'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '27   X --  236 Esparsac   22s     5k* |     --   -- stoney      3m    11k*\x0A27  Q  --  169 nkato300  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 't2493   1m     NR \x0A27   X --  197 baff       10s     4d* |     --  115 luxlenx     7s     2d*\x0A27  Q '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '* |     --  172 vegan       3s    10k*\x0A27   X --   82 SDKW7       9s     3d* |  Q  --   96 nori2211 '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'ucky6      8s     1d* |  Q  --   82 YH71       11s     3d*\x0A27   ! --   -- liyuxin     3m     4d* |  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'k*\x0A27     --  124 cha6906972 13s     3d* |  Q  --  145 Kappav      2s     NR \x0A27  SX --   88 ar09202'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'nusly       3s     9k*\x0A27    184   -- ACT1950    17m     9k* |   X --   -- mojojojo    1m     6k*\x0A27'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  7k* |  Q  --  129 hotaru2     5s     9k*\x0A27  Q  --  191 tsune5     10s    10k* |  Q  --   -- FK200'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-- oze         1s    10k* |     --   -- guest2524  13m     NR \x0A27     --  164 Chou       15s     3d*'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  10k*\x0A27  Q  --   50 mkryoma    16s     1k* |  Q  --  123 R1943       4s     6k*\x0A27  Q  --    1 kob'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' 35 miyo750083  4s     3k*\x0A27  QX --   -- Y1209k6783 57s     3k* |   X --   -- cch726621   1m     2k'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'm    11k* |     --   39 GoWilliam  23s     1d*\x0A27  QX --   -- taiji2022   9s     1d* |   ! --   -- X'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '-  167 rokubee7    1m     6k* |   X --   41 Zicu        1s     9k*\x0A27   X --   67 chanchang2 24s    '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '1s     3k*\x0A27   X --   22 Zoli       12s     1d* |     --   27 TryAgain   26s     5k*\x0A27  QX 91   --'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '--   97 S011882211  4s     2d*\x0A27  Q  --   45 p836mqjf    1m     1k* |   X --   39 alex       15s   '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   2m     1d* |  Q  --   -- tiger88    28s     6k*\x0A27  Q  --   29 YS5100     11s     3d* |  Q  --   '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   --   -- nishiki10   9s     6d  |     91   -- Danigo     12s     3k*\x0A27     --  109 bobelu      3s'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '26  1s     6k*\x0A27     17   -- Goforfun    2m     2d* |     17   -- guest2547   2s     NR \x0A27  Q  -- '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' Q  --   -- zeetee      3m    10d*\x0A27    229   -- guest2550   4s     NR  |   X --  153 plaiza      6'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '2553   2s     NR  |  Q  --  183 k03120723   6s    10k*\x0A27  QX --   -- pasmis     17s    10k* |   X 1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '27   ! 61   -- hullie      1m    12k* |  Q  --   -- guest2554  10s     NR \x0A27   ! --   -- rwd7      '
+DEBUG: IgsInput processing 163 bytes of server data
+ADAPTER: Forwarded 163 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'less    0s     NR \x0A27  Q  --   -- GORIMUCHU   0s     6k* |                                   \x0A27    '
+ADAPTER: Adapted client command from 6 to 6 bytes
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '7 [##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)\x0A7 [ 4]    Hanagusi ['
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '] vs.      OtoMyu [ 3k*] (234   19  0 -5.5 15  I) (  0)\x0A7 [101]    kenroku5 [ 4k*] vs.    hbhb3000 ['
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '] (202   19  0  6.5 10  I) (  0)\x0A7 [94]     shamada [ 7k*] vs.   toshimama [ 7k*] (219   19  0  6.5 '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' I) (  0)\x0A7 [203]    ikuo1106 [ 5k*] vs.      zzeroz [ 5k*] (239   19  0  6.5 10  I) (  0)\x0A7 [184]  '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'kelly47 [10k*] vs.       DDste [11k*] (138   19  0 -5.5 10  I) (  0)\x0A7 [166]    fuitsuku [ 8k*] vs. '
+DEBUG: IgsInput processing 332 bytes of server data
+ADAPTER: Forwarded 332 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '     ch100 [ 6k ] (280   19  2  0.5  5  I) (  0)\x0A7 [229]       haohe [ 3d*] vs.      mulan8 [ 1d*] ('
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' [ 1d*] (136   19  0 -5.5 10  I) (  0)\x0A7 [134]     charley [ 3k*] vs.   a19400416 [ 3k*] (148   19  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  6.5 10  I) (  0)\x0A7 [207]      light3 [ 2k*] vs.   masanori3 [ 2k*] (163   19  0  6.5 10  I) (  0)\x0A'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' [91]     bowhasa [ 7d*] vs.       mesh5 [ 6d*] (143   19  2  0.5 10  I) ( 26)\x0A7 [130]   Ayakomati ['
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'd*] vs.      yonezo [ 2d*] (124   19  0 -5.5 10  I) (  1)\x0A7 [121]      Elwood [ 4k*] vs.   Olivier34'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'R ] (134   19  0 -5.5 10  I) (  0)\x0A7 [15]  mnanba3344 [ 6k*] vs.       wajin [ 6k*] (191   19  0  6.'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  I) (  0)\x0A7 [70]     king007 [ 7k*] vs.      Yanfan [ 7k*] (198   19  0  6.5 10  I) (  1)\x0A7 [193]  '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'order [ 1k*] vs.  sokuriab12 [ 1k*] (179   19  0  6.5 10  I) (  0)\x0A7 [100]        YOSI [ 3d*] vs.   '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '    aiyo [ 6k*] (225   19  0  0.5 10  I) (  0)\x0A7 [223]    NOBO1121 [ 1k*] vs.       coool [ 3k*] (19'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '19  0  6.5 10  I) (  0)\x0A7 [59]    Pbot1d01 [ 1d*] vs.   moto60222 [ 6k*] (229   19  6 -5.5  5  I) ( '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A7 [26]     akio830 [ 3k*] vs.    snb47583 [ 4k*] (177   19  0 -5.5 10  I) (  1)\x0A7 [ 1]    kobak603 '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '[15k*] vs.   Igoigoigo [15k*] (234   19  0  6.5 10  I) (  0)\x0A7 [225]       lin3n [ 5k*] vs.    zliu1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '[ 3k*] (153   19  0 -5.5  5  I) (  1)\x0A7 [32]  kawa221123 [ 8k*] vs.     m271211 [ 9k*] (217   19  0 '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '5 10  I) (  0)\x0A7 [133]     mstkigo [ 5k*] vs.  giantstone [ 5k*] (164   19  0  6.5 10  I) (  0)\x0A7 [1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '0]     osamu11 [ 8k*] vs.       umabo [ 8k*] (134   19  0  6.5 10  I) (  0)\x0A7 [167]    rokubee7 [ 6k'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '.     SaToShi [ 5k*] (168   19  0  0.5 10  I) (  0)\x0A7 [172]  m333355555 [ 7k*] vs.       vegan [10k*'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' 61   19  2  0.5 10  I) (  0)\x0A7 [27]    TryAgain [ 5k*] vs.    Jack1688 [ 5k*] (111   19  0  0.5 10 '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  0)\x0A7 [62]        hyyt [ 8k*] vs.   shima1919 [10k*] (165   19  2  0.5 10  I) (  0)\x0A7 [25]     ISAO'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '[ 2d*] vs.  zin17mizoe [ 2d*] ( 41   19  0  6.5 10  I) (  1)\x0A7 [137]       s0302 [ 6k*] vs.   manmos'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' [ 5k*] (139   19  0  6.5  5  I) (  0)\x0A7 [21]     Kouichi [ 1k*] vs.    godaneri [ 2k*] ( 34   19  0'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '.5 10  I) (  0)\x0A7 [24]   Pbot16k01 [14k*] vs.   nishitani [16k*] ( 81   19  2 -5.5 10  I) (  0)\x0A7 [1'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '    mureken2 [ 4k*] vs.      bobelu [ 6k*] (114   19  2 -5.5 10  I) (  0)\x0A7 [29]      YS5100 [ 3d*] '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '   Totov1 [15k*] ( 39   19  0 -5.5 10 FI) (  0)\x0A7 [105]      emp100 [ 6k*] vs.  DRAGON1626 [ 6k*] ( '
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  19  0  0.5 10  I) (  0)\x0A7 [106]     zat5401 [ 1k*] vs.   Ycoudai68 [ 1k*] ( 42   19  0  6.5 10  I)'
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' 0)\x0A7 [131]  Hiyosimaru [16k*] vs.     Robot78 [17k*] ( 97   19  0  0.5 10  I) (  0)\x0A7 [173]     ama'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): 'o [11k*] vs.  hirose0319 [11k*] ( 29   19  0  6.5 10  I) (  0)\x0A7 [10]       sugwr [ 2d*] vs.   kunim'
+DEBUG: IgsInput processing 506 bytes of server data
+ADAPTER: Forwarded 506 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): ' [ 4k*] ( 28   19  0  6.5 10  I) (  0)\x0A7 [153]      plaiza [ 6k*] vs.   h13042018 [ 7k*] ( 11   19  '
+DEBUG: IgsInput processing 505 bytes of server data
+ADAPTER: Forwarded 505 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '  0.5 10  I) (  0)\x0A7 [197]  PengchunAA [ 4d*] vs.        baff [ 4d*] (  5   19  0  6.5 10  I) (  0)\x0A'
+DEBUG: IgsInput processing 82 bytes of server data
+ADAPTER: Forwarded 82 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '138]      rtb720 [10k*] vs.       rinmu [12k*] (  2   19  2 -5.5 10  I) (  0)\x0A1 5\x0A'
+ADAPTER: Adapted client command from 7 to 7 bytes
+DEBUG: IgsInput processing 500 bytes of server data
+ADAPTER: Forwarded 500 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '9 The current time (GMT) is:  Fri Aug 29 14:39:42 2025\x0A9 The current IGS local time is:  Fri Aug 29 '
+DEBUG: IgsInput processing 149 bytes of server data
+ADAPTER: Forwarded 149 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A9 Players:  1139, Games:  210\x0A9 Max Board Size  19\x0A9 How many days games are stored 15\x0A9 How many d'
+DEBUG: IgsInput processing 57 bytes of server data
+ADAPTER: Forwarded 57 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {Match 139: PandaBot4 [ 1p ] vs. Gobler [10d*] }\x0A1 5\x0A'
+ADAPTER: Adapted client command from 10 to 10 bytes
+DEBUG: IgsInput processing 165 bytes of server data
+ADAPTER: Forwarded 165 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '7 [##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)\x0A7 [139]   PandaBot4 '
+DEBUG: IgsInput processing 61 bytes of server data
+ADAPTER: Forwarded 61 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {Match 143: xdameoyaji [ 3k*] vs. momota731 [ 3k*] }\x0A1 5\x0A'
+ADAPTER: Adapted client command from 10 to 10 bytes
+DEBUG: IgsInput processing 165 bytes of server data
+ADAPTER: Forwarded 165 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '7 [##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)\x0A7 [143]  xdameoyaji '
+DEBUG: IgsInput processing 39 bytes of server data
+ADAPTER: Forwarded 39 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {air2015 [4k*] has connected.}\x0A1 5\x0A'
+DEBUG: IgsInput processing 54 bytes of server data
+ADAPTER: Forwarded 54 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {Game 214: goWind vs Sylvos : White resigns.}\x0A1 5\x0A'
+DEBUG: IgsInput processing 36 bytes of server data
+ADAPTER: Forwarded 36 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {Augusten has disconnected}\x0A1 5\x0A'
+DEBUG: IgsInput processing 33 bytes of server data
+ADAPTER: Forwarded 33 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {t1009 has disconnected}\x0A1 5\x0A'
+DEBUG: IgsInput processing 38 bytes of server data
+ADAPTER: Forwarded 38 bytes to yacc parser
+ADAPTER: Data forwarded to parser (first 100 chars): '\x0A21 {t322152721 has disconnected}\x0A1 5\x0A'
+
+Program received signal SIGSEGV, Segmentation fault.
+0xf7f602b9 in XawPrintActionErrorMsg () from /usr/lib/libXaw.so.7
+#0  0xf7f602b9 in XawPrintActionErrorMsg () from /usr/lib/libXaw.so.7
+#1  0xf7f614e8 in XawSetValuesAction () from /usr/lib/libXaw.so.7
+#2  0x08097a54 in TearofDone ()
+#3  0xf7f11293 in ?? () from /usr/lib/libXt.so.6
+#4  0xf7f11cbe in ?? () from /usr/lib/libXt.so.6
+#5  0xf7f12968 in _XtTranslateEvent () from /usr/lib/libXt.so.6
+#6  0xf7eea9c2 in XtDispatchEventToWidget () from /usr/lib/libXt.so.6
+#7  0xf7eead80 in ?? () from /usr/lib/libXt.so.6
+#8  0xf7eeb19e in XtDispatchEvent () from /usr/lib/libXt.so.6
+#9  0xf7ef6b70 in XtAppProcessEvent () from /usr/lib/libXt.so.6
+#10 0x08057060 in GetInput ()
+#11 0x080685a3 in IgsYY_get_next_buffer ()
+#12 0x080689bc in IgsYYlex ()
+#13 0x08062997 in IgsYYparse ()
+#14 0x0804db71 in main ()
+A debugging session is active.
+
+	Inferior 1 [process 10494] will be killed.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]

@@ -22275,11 +22275,6 @@ int IgsYYwrap(void)
 #include "except.h"
 static void IgsYY_flex_strcpy(char *s1, const char *s2);
 
-/* Stub functions for unused flex state functions */
-static void IgsYY_push_state(int new_state) { (void)new_state; }
-static void IgsYY_pop_state(void) { }
-static int IgsYY_top_state(void) { return 0; }
-
 static void loopy(void)
 {
     IgsYY_flex_strcpy(NULL, NULL);
