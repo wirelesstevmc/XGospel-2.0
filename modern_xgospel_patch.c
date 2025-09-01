@@ -10,6 +10,8 @@
 #include "xgospel.h"
 #include "connect.h"
 #include "utils.h"
+#include "messages.h"
+#include "modern_connect.h"
 
 #include <stdio.h>
 #include <stdlib.h>

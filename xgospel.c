@@ -1,4 +1,5 @@
 #include <X11/Intrinsic.h>
+#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/AsciiText.h>
@@ -1261,6 +1262,7 @@ int main(int argc, char **argv)
 #ifdef HAVE_SOCKS
    SOCKSinit(argv[0]);
 #endif /* HAVE_SOCKS */
+
 
     /* Initialize modern protocol enhancements */
     /* InitModernXGospel(); */

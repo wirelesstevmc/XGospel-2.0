@@ -170,7 +170,9 @@ extern void      Xquit(XtAppContext App, XtPointer status);
 extern XtPointer MyAppMainLoop(XtAppContext app_context);
 extern void      Usage(int argc, char const*const* argv,
                        char const*const*Messages, int NrMessages);
-extern void      GetConverters(void);
+extern void      GetConverters(XtAppContext app_context);
+extern void      MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
+                                         XrmValuePtr fromVal, XrmValuePtr toVal);
 extern void      InitWMProtocol(Widget top);
 extern void      InfoOfWidget(Widget w);
 extern int       FindCallback(Widget w, String CallbackName,

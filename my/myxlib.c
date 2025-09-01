@@ -19,6 +19,29 @@
 extern char *strerror(int err);
 #endif /* HAVE_NO_STRERROR_PROTO */
 
+/* Forward declarations for early converter registration */
+extern Boolean MyCvtStringToPixmap(Display *disp,
+                                   XrmValuePtr args, Cardinal *num_args,
+                                   XrmValuePtr fromVal, XrmValuePtr toVal,
+                                   XtPointer *ConvertData);
+extern void PixmapDestructor(XtAppContext App, XrmValuePtr To,
+                             XtPointer ConvertData,
+                             XrmValuePtr Args, Cardinal *n);
+
+/* Old-style converter for early registration */
+extern void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
+                                   XrmValuePtr fromVal, XrmValuePtr toVal);
+
+/* Converter argument definition for global registration */
+static XtConvertArgRec ScreenConvertArg[] = {
+    {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
+     sizeof(Colormap)},
+    {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.depth),
+     sizeof(Cardinal)}
+};
+
 #define ClassName(x) (((CoreClassPart *)(x))->class_name)
 
 /* #define META   "Mod1"          The modifier you like as META or ALT key */
@@ -1151,6 +1174,36 @@ Widget MyAppInitialize(XtAppContext *app_context,
 
         XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
 
+        /* Register converters globally IMMEDIATELY after toolkit init */
+        printf("DEBUG: Registering global converters immediately after XtToolkitInitialize\n");
+        fflush(stdout);
+        {
+            static XtConvertArgRec ScreenConvertArg[] = {
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
+                 sizeof(Screen *)},
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
+                 sizeof(Colormap)},
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.depth),
+                 sizeof(Cardinal)}
+            };
+            extern void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
+                                               XrmValuePtr fromVal, XrmValuePtr toVal);
+            
+            XtAddConverter(XtRString, XtRPixmap, MyCvtStringToPixmapOld,
+                           ScreenConvertArg, XtNumber(ScreenConvertArg));
+            printf("DEBUG: Global pixmap converter registered before app context creation\n");
+            fflush(stdout);
+        }
+
+        /* Create app context early so we can register converters */
+        app_con = XtCreateApplicationContext();
+        
+        /* Register converters BEFORE _XtAppInit processes fallback resources */
+        printf("DEBUG: Registering converters BEFORE _XtAppInit processes fallback resources\n");
+        fflush(stdout);
+        GetConverters(app_con);
+        MyFixShell();
+
         saved_argc = *argc_in_out;
         dpy = _XtAppInit(&app_con, (String)application_class,
                          options, num_options, argc_in_out, &argv_in_out, fb);
@@ -1161,9 +1214,6 @@ Widget MyAppInitialize(XtAppContext *app_context,
             XtDestroyApplicationContext(app_con);
             Raise(InvalidArgs);
         }
-
-        GetConverters();
-        MyFixShell();
 
         num = 0;
         XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;

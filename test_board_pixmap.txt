@@ -1,0 +1,1 @@
+*test.backgroundPixmap: pixmap(board.xpm)

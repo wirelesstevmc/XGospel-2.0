@@ -17716,7 +17716,7 @@ static const flex_int16_t IgsYY_rule_linenum[375] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *IgsYYtext;
-#line 1 "goserver.l"
+#line 1 "./goserver.l"
 /*
  * From a message sent by Tim Casey to clients@panda-igs.joyjoy.net 25 Nov 1998
  *
@@ -17878,7 +17878,7 @@ char *IgsYYtext;
 
 
 
-#line 165 "goserver.l"
+#line 165 "./goserver.l"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -18240,7 +18240,7 @@ YY_DECL
 
 	{
 /* %% [7.0] user's declarations go here */
-#line 232 "goserver.l"
+#line 232 "./goserver.l"
 
 #line 18245 "lex.IgsYY.c"
 
@@ -18325,17 +18325,17 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 /* rule 1 can match eol */
-#line 234 "goserver.l"
+#line 234 "./goserver.l"
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 234 "goserver.l"
+#line 234 "./goserver.l"
 { BEGIN(ENTEREDLOGIN);
                                   return LUSER; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 236 "goserver.l"
+#line 236 "./goserver.l"
 { char *ptr;
 
                                   ptr = YYTEXT+YYLENG-2;
@@ -18349,7 +18349,7 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 245 "goserver.l"
+#line 245 "./goserver.l"
 { NextState = LOGIN;
                                   IgsYYless(0);
                                   BEGIN(ALLLINE);
@@ -18357,13 +18357,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 250 "goserver.l"
+#line 250 "./goserver.l"
 { break; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 251 "goserver.l"
+#line 251 "./goserver.l"
 { const char *ptr;
 
                                   ptr = YYTEXT+YYLENG-1;
@@ -18375,14 +18375,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 259 "goserver.l"
+#line 259 "./goserver.l"
 { BEGIN(ENTEREDPASSWORD);
                                   return OLDPASSWORD; }
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 261 "goserver.l"
+#line 261 "./goserver.l"
 { char *ptr1, *ptr2;
                                   ptr2 = strrchr(YYTEXT, '.');
                                   ptr1 = ptr2-1;
@@ -18395,16 +18395,16 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
-#line 271 "goserver.l"
+#line 271 "./goserver.l"
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 271 "goserver.l"
+#line 271 "./goserver.l"
 { break; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 272 "goserver.l"
+#line 272 "./goserver.l"
 { /* No \n, forces new line */
                                   BEGIN(0);
                                   return PASSWORD; }
@@ -18412,7 +18412,7 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 275 "goserver.l"
+#line 275 "./goserver.l"
 { NextState = ENTEREDLOGIN;
                                   IgsYYless(0);
                                   BEGIN(ALLLINE);
@@ -18420,7 +18420,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 279 "goserver.l"
+#line 279 "./goserver.l"
 {
                                   ForceCommand(NULL, MyPassword);
                                   break; }
@@ -18428,7 +18428,7 @@ YY_RULE_SETUP
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 282 "goserver.l"
+#line 282 "./goserver.l"
 {
                                   BEGIN(LOGIN);
                                   return(INVALIDPASSWORD); }
@@ -18436,20 +18436,20 @@ YY_RULE_SETUP
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 285 "goserver.l"
+#line 285 "./goserver.l"
 { BEGIN(0);
                                   SetStat("client", 1);
                                   return END; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 288 "goserver.l"
+#line 288 "./goserver.l"
 { return OLDPROMPT; }
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
 YY_RULE_SETUP
-#line 289 "goserver.l"
+#line 289 "./goserver.l"
 { NextState = ENTEREDPASSWORD;
                                   IgsYYless(0);
                                   BEGIN(ALLLINE);
@@ -18457,13 +18457,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 293 "goserver.l"
+#line 293 "./goserver.l"
 { break; }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 295 "goserver.l"
+#line 295 "./goserver.l"
 {
                                   if (YYTEXT[0] == (char) 0xff)
                                       IgsYYlval.Value = atoi(YYTEXT+5);
@@ -18473,57 +18473,57 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 301 "goserver.l"
+#line 301 "./goserver.l"
 { unput('2');
                                   break; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 303 "goserver.l"
+#line 303 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return OBSERVETEAM; }
 	YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 305 "goserver.l"
+#line 305 "./goserver.l"
 { return OBSERVE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 307 "goserver.l"
+#line 307 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return TEAMGAME; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 310 "goserver.l"
+#line 310 "./goserver.l"
 { BEGIN(THELINE);
                                   return SERVERMESSAGE; }
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 313 "goserver.l"
+#line 313 "./goserver.l"
 { break; }
 	YY_BREAK
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 314 "goserver.l"
+#line 314 "./goserver.l"
 { return SORRY; }
 	YY_BREAK
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
-#line 315 "goserver.l"
+#line 315 "./goserver.l"
 { BEGIN(LOGIN);
                                   return INVALIDPASSWORD; }
 	YY_BREAK
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 317 "goserver.l"
+#line 317 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+31);
                                   return OVEROBSERVE; }
@@ -18531,13 +18531,13 @@ YY_RULE_SETUP
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 320 "goserver.l"
+#line 320 "./goserver.l"
 { return OBSERVEWHILEPLAY; }
 	YY_BREAK
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 321 "goserver.l"
+#line 321 "./goserver.l"
 {
                                   BEGIN(DISPUTING);
                                   return YYTEXT[0] == '\n' ?
@@ -18546,7 +18546,7 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 325 "goserver.l"
+#line 325 "./goserver.l"
 { const char *ptr;
                                   ptr = strchr(YYTEXT+18, '\n');
                                   IgsYYlval.Name = mystrndup(ptr+3, (size_t)
@@ -18556,7 +18556,7 @@ YY_RULE_SETUP
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 330 "goserver.l"
+#line 330 "./goserver.l"
 { const char *ptr;
                                   ptr = strchr(YYTEXT+2, '\n');
                                   IgsYYlval.Name = mystrndup(YYTEXT+2, (size_t)
@@ -18566,112 +18566,112 @@ YY_RULE_SETUP
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 335 "goserver.l"
+#line 335 "./goserver.l"
 { return NOREMOVETURN; }
 	YY_BREAK
 case 34:
 /* rule 34 can match eol */
-#line 337 "goserver.l"
+#line 337 "./goserver.l"
 case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
-#line 337 "goserver.l"
+#line 337 "./goserver.l"
 { return NOTURN; }
 	YY_BREAK
 case 36:
 /* rule 36 can match eol */
-#line 339 "goserver.l"
+#line 339 "./goserver.l"
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 339 "goserver.l"
+#line 339 "./goserver.l"
 { return USERESIGN; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 340 "goserver.l"
+#line 340 "./goserver.l"
 {
                                   BEGIN(THELINE);
                                   return LATEFREE; }
 	YY_BREAK
 case 39:
 /* rule 39 can match eol */
-#line 344 "goserver.l"
+#line 344 "./goserver.l"
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 344 "goserver.l"
+#line 344 "./goserver.l"
 { return NOPLAY; }
 	YY_BREAK
 case 41:
 /* rule 41 can match eol */
 YY_RULE_SETUP
-#line 345 "goserver.l"
+#line 345 "./goserver.l"
 { return OPPONENTNOTON; }
 	YY_BREAK
 case 42:
 /* rule 42 can match eol */
 YY_RULE_SETUP
-#line 346 "goserver.l"
+#line 346 "./goserver.l"
 { return NOLOAD; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 347 "goserver.l"
+#line 347 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return MATCHCLOSED; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 349 "goserver.l"
+#line 349 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return MATCHOPEN; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 351 "goserver.l"
+#line 351 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return MATCHOPEN; }
 	YY_BREAK
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 353 "goserver.l"
+#line 353 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+16,YYLENG-17);
                                   return ILLEGALUNDO; }
 	YY_BREAK
 case 47:
 /* rule 47 can match eol */
-#line 356 "goserver.l"
+#line 356 "./goserver.l"
 case 48:
 /* rule 48 can match eol */
 YY_RULE_SETUP
-#line 356 "goserver.l"
+#line 356 "./goserver.l"
 {
                                   return REMOVELIBERTY; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 358 "goserver.l"
+#line 358 "./goserver.l"
 { BEGIN(THELINE);
                                   return WRONGCHANNEL; }
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 360 "goserver.l"
+#line 360 "./goserver.l"
 { break; }
 	YY_BREAK
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
-#line 361 "goserver.l"
+#line 361 "./goserver.l"
 { return NOTELLTARGET; }
 	YY_BREAK
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 362 "goserver.l"
+#line 362 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT+2);
                                    *strchr(IgsYYlval.Name, ':') = 0;
                                   return INVALID; }
@@ -18679,26 +18679,26 @@ YY_RULE_SETUP
 case 53:
 /* rule 53 can match eol */
 YY_RULE_SETUP
-#line 365 "goserver.l"
+#line 365 "./goserver.l"
 {
                                   return NOTREVIEWING; }
 	YY_BREAK
 case 54:
 /* rule 54 can match eol */
 YY_RULE_SETUP
-#line 367 "goserver.l"
+#line 367 "./goserver.l"
 { return GAMENOTFOUND; }
 	YY_BREAK
 case 55:
 /* rule 55 can match eol */
 YY_RULE_SETUP
-#line 368 "goserver.l"
+#line 368 "./goserver.l"
 { return NOMOREMOVES; }
 	YY_BREAK
 case 56:
 /* rule 56 can match eol */
 YY_RULE_SETUP
-#line 369 "goserver.l"
+#line 369 "./goserver.l"
 {
  /* two IGS bugs: "request" spelled "reqeust" and impossibility
   * of reloading teaching games.
@@ -18707,7 +18707,7 @@ YY_RULE_SETUP
 case 57:
 /* rule 57 can match eol */
 YY_RULE_SETUP
-#line 374 "goserver.l"
+#line 374 "./goserver.l"
 {
                                   BEGIN(NUMLINES);
                                   return TELLOFF; }
@@ -18715,12 +18715,12 @@ YY_RULE_SETUP
 case 58:
 /* rule 58 can match eol */
 YY_RULE_SETUP
-#line 377 "goserver.l"
+#line 377 "./goserver.l"
 { return NOREVIEW; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 378 "goserver.l"
+#line 378 "./goserver.l"
 { IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   BEGIN(DISPUTINGMATCHTYPE);
                                   return DISPUTEMATCHTYPE; }
@@ -18728,12 +18728,12 @@ YY_RULE_SETUP
 case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
-#line 382 "goserver.l"
+#line 382 "./goserver.l"
 { return GAMES; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 383 "goserver.l"
+#line 383 "./goserver.l"
 { BEGIN(THENAMES);
                                   IgsYYlval.Value = atoi(YYTEXT+3);
                                   return GAMES; }
@@ -18741,7 +18741,7 @@ YY_RULE_SETUP
 case 62:
 /* rule 62 can match eol */
 YY_RULE_SETUP
-#line 387 "goserver.l"
+#line 387 "./goserver.l"
 { BEGIN(THELINE);
                                   IgsYYlval.Person =
                                       LengthNameToPlayer(YYTEXT+4,
@@ -18750,7 +18750,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 392 "goserver.l"
+#line 392 "./goserver.l"
 { BEGIN(THELINE);
                                   IgsYYlval.Name = mystrndup(YYTEXT+4, YYLENG-8);
                                   return XSHOUT2; }
@@ -18758,7 +18758,7 @@ YY_RULE_SETUP
 case 64:
 /* rule 64 can match eol */
 YY_RULE_SETUP
-#line 395 "goserver.l"
+#line 395 "./goserver.l"
 { BEGIN(THELINE);
                                   IgsYYlval.Person =
                                       LengthNameToPlayer(YYTEXT+5,
@@ -18768,69 +18768,69 @@ YY_RULE_SETUP
 case 65:
 /* rule 65 can match eol */
 YY_RULE_SETUP
-#line 400 "goserver.l"
+#line 400 "./goserver.l"
 { return EMPTY; }
 	YY_BREAK
 case 66:
 /* rule 66 can match eol */
 YY_RULE_SETUP
-#line 401 "goserver.l"
+#line 401 "./goserver.l"
 { IgsYYlval.Value = 1;
                                   return PROMPT; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 403 "goserver.l"
+#line 403 "./goserver.l"
 { BEGIN(THENAMES);
                                   return TOGGLE; }
 	YY_BREAK
 case 68:
 /* rule 68 can match eol */
 YY_RULE_SETUP
-#line 405 "goserver.l"
+#line 405 "./goserver.l"
 { return ADJOURNSENTREQUEST; }
 	YY_BREAK
 case 69:
 /* rule 69 can match eol */
 YY_RULE_SETUP
-#line 406 "goserver.l"
+#line 406 "./goserver.l"
 { return ADJOURNREQUEST; }
 	YY_BREAK
 case 70:
 /* rule 70 can match eol */
 YY_RULE_SETUP
-#line 407 "goserver.l"
+#line 407 "./goserver.l"
 { break; }
 	YY_BREAK
 case 71:
 /* rule 71 can match eol */
 YY_RULE_SETUP
-#line 408 "goserver.l"
+#line 408 "./goserver.l"
 { return DECLINEADJOURN; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 409 "goserver.l"
+#line 409 "./goserver.l"
 { BEGIN(THENAMES);
                                   return TELLTARGET; }
 	YY_BREAK
 case 73:
 /* rule 73 can match eol */
 YY_RULE_SETUP
-#line 411 "goserver.l"
+#line 411 "./goserver.l"
 { BEGIN(NAMELIST);
                                   return CHANNELHEADER; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 413 "goserver.l"
+#line 413 "./goserver.l"
 { NextState = NAMELIST;
                                   BEGIN(ALLNAMES);
                                   return OBSERVERS; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 416 "goserver.l"
+#line 416 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+2, YYLENG-4);
                                   NextState = STATS;
                                   BEGIN(ALLLINE);
@@ -18838,20 +18838,20 @@ YY_RULE_SETUP
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 420 "goserver.l"
+#line 420 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return THROWCOPY; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 422 "goserver.l"
+#line 422 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Value = 1;
                                   return MESSAGES; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 425 "goserver.l"
+#line 425 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Value = atoi(YYTEXT+11);
                                   return MESSAGES; }
@@ -18859,20 +18859,20 @@ YY_RULE_SETUP
 case 79:
 /* rule 79 can match eol */
 YY_RULE_SETUP
-#line 428 "goserver.l"
+#line 428 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+16);
                                   return REMOVE; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 431 "goserver.l"
+#line 431 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return ADD; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 433 "goserver.l"
+#line 433 "./goserver.l"
 {
                                   BEGIN(THENAMES);
                                   return WATCHING; }
@@ -18880,13 +18880,13 @@ YY_RULE_SETUP
 case 82:
 /* rule 82 can match eol */
 YY_RULE_SETUP
-#line 436 "goserver.l"
+#line 436 "./goserver.l"
 { break; }
 	YY_BREAK
 case 83:
 /* rule 83 can match eol */
 YY_RULE_SETUP
-#line 437 "goserver.l"
+#line 437 "./goserver.l"
 {
                                   MyGameMessage("You must PASS during the "
                                                 "handicap plays.");
@@ -18894,33 +18894,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 84:
 /* rule 84 can match eol */
-#line 442 "goserver.l"
+#line 442 "./goserver.l"
 case 85:
 /* rule 85 can match eol */
 YY_RULE_SETUP
-#line 442 "goserver.l"
+#line 442 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+2, YYLENG-3);
                                   return OPPMUSTPASS; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 444 "goserver.l"
+#line 444 "./goserver.l"
 { BEGIN(THELINE);
                                   return GAMETITLE; }
 	YY_BREAK
 case 87:
 /* rule 87 can match eol */
 YY_RULE_SETUP
-#line 446 "goserver.l"
+#line 446 "./goserver.l"
 { return TITLESET; }
 	YY_BREAK
 case 88:
 /* rule 88 can match eol */
-#line 448 "goserver.l"
+#line 448 "./goserver.l"
 case 89:
 /* rule 89 can match eol */
 YY_RULE_SETUP
-#line 448 "goserver.l"
+#line 448 "./goserver.l"
 {
                                   IgsYYlval.Name = mystrndup(YYTEXT+3, YYLENG-4);
                                   return MUSTPASS; }
@@ -18928,7 +18928,7 @@ YY_RULE_SETUP
 case 90:
 /* rule 90 can match eol */
 YY_RULE_SETUP
-#line 451 "goserver.l"
+#line 451 "./goserver.l"
 {
                                   if (YYTEXT[0] == '\n')
                                       return OPPDISAGREEREMOVE;
@@ -18937,7 +18937,7 @@ YY_RULE_SETUP
 case 91:
 /* rule 91 can match eol */
 YY_RULE_SETUP
-#line 455 "goserver.l"
+#line 455 "./goserver.l"
 {
                                   BEGIN(THENAMES);
                                   return AUTOMATCHREQUEST; }
@@ -18945,31 +18945,31 @@ YY_RULE_SETUP
 case 92:
 /* rule 92 can match eol */
 YY_RULE_SETUP
-#line 458 "goserver.l"
+#line 458 "./goserver.l"
 { break; } /* AUTOMATCHREQUEST */
 	YY_BREAK
 case 93:
 /* rule 93 can match eol */
 YY_RULE_SETUP
-#line 459 "goserver.l"
+#line 459 "./goserver.l"
 { break; } /* AUTOMATCHDISPUTE */
 	YY_BREAK
 case 94:
 /* rule 94 can match eol */
 YY_RULE_SETUP
-#line 460 "goserver.l"
+#line 460 "./goserver.l"
 { break; } /* AUTOMATCHDISPUTE */
 	YY_BREAK
 case 95:
 /* rule 95 can match eol */
 YY_RULE_SETUP
-#line 461 "goserver.l"
+#line 461 "./goserver.l"
 { break; } /* AUTOMATCHDISPUTE */
 	YY_BREAK
 case 96:
 /* rule 96 can match eol */
 YY_RULE_SETUP
-#line 463 "goserver.l"
+#line 463 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+9);
                                   return NEWMATCH; }
@@ -18977,44 +18977,44 @@ YY_RULE_SETUP
 case 97:
 /* rule 97 can match eol */
 YY_RULE_SETUP
-#line 466 "goserver.l"
+#line 466 "./goserver.l"
 {
                                   break; }
 	YY_BREAK
 case 98:
 /* rule 98 can match eol */
 YY_RULE_SETUP
-#line 468 "goserver.l"
+#line 468 "./goserver.l"
 { break; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 470 "goserver.l"
+#line 470 "./goserver.l"
 { BEGIN(THENAMES);
                                   return MATCHREQUEST; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 472 "goserver.l"
+#line 472 "./goserver.l"
 { BEGIN(THENAMES);
                                   return TOURNAMENTMATCHREQUEST; }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 474 "goserver.l"
+#line 474 "./goserver.l"
 { BEGIN(THENAMES);
                                   return TOURNAMENTGOEMATCHREQUEST; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 476 "goserver.l"
+#line 476 "./goserver.l"
 { BEGIN(THENAMES);
                                   return GOEMATCHREQUEST; }
 	YY_BREAK
 case 103:
 /* rule 103 can match eol */
 YY_RULE_SETUP
-#line 478 "goserver.l"
+#line 478 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT+2);
                                   IgsYYlval.Name[IgsYYleng-3] = 0;
                                   return REQUESTINGMATCH; }
@@ -19022,7 +19022,7 @@ YY_RULE_SETUP
 case 104:
 /* rule 104 can match eol */
 YY_RULE_SETUP
-#line 481 "goserver.l"
+#line 481 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+18);
                                   return NEWMATCH; }
@@ -19030,14 +19030,14 @@ YY_RULE_SETUP
 case 105:
 /* rule 105 can match eol */
 YY_RULE_SETUP
-#line 484 "goserver.l"
+#line 484 "./goserver.l"
 {
                                   break; }
 	YY_BREAK
 case 106:
 /* rule 106 can match eol */
 YY_RULE_SETUP
-#line 486 "goserver.l"
+#line 486 "./goserver.l"
 {
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   return DECLINE; }
@@ -19045,14 +19045,14 @@ YY_RULE_SETUP
 case 107:
 /* rule 107 can match eol */
 YY_RULE_SETUP
-#line 489 "goserver.l"
+#line 489 "./goserver.l"
 {
                                   BEGIN(THELINE);
                                   return KOMISET; }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 492 "goserver.l"
+#line 492 "./goserver.l"
 {
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   BEGIN(THELINE);
@@ -19061,7 +19061,7 @@ YY_RULE_SETUP
 case 109:
 /* rule 109 can match eol */
 YY_RULE_SETUP
-#line 496 "goserver.l"
+#line 496 "./goserver.l"
 {
                                   IgsYYlval.Value = 0;
                                   return FREE; }
@@ -19069,7 +19069,7 @@ YY_RULE_SETUP
 case 110:
 /* rule 110 can match eol */
 YY_RULE_SETUP
-#line 499 "goserver.l"
+#line 499 "./goserver.l"
 {
                                   IgsYYlval.Value = 1;
                                   return FREE; }
@@ -19077,53 +19077,53 @@ YY_RULE_SETUP
 case 111:
 /* rule 111 can match eol */
 YY_RULE_SETUP
-#line 502 "goserver.l"
+#line 502 "./goserver.l"
 {
                                   return LOSTCONNECTION; }
 	YY_BREAK
 case 112:
 /* rule 112 can match eol */
 YY_RULE_SETUP
-#line 504 "goserver.l"
+#line 504 "./goserver.l"
 {
                                   return MYADJOURN; }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 506 "goserver.l"
+#line 506 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return RESTORE; }
 	YY_BREAK
 case 114:
 /* rule 114 can match eol */
 YY_RULE_SETUP
-#line 508 "goserver.l"
+#line 508 "./goserver.l"
 {
                                   return RESTART; }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 510 "goserver.l"
+#line 510 "./goserver.l"
 { BEGIN(THELINE);
                                   return GAMESAVED; }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 512 "goserver.l"
+#line 512 "./goserver.l"
 { BEGIN(THELINE);
                                   return GAMESAVED; }
 	YY_BREAK
 case 117:
 /* rule 117 can match eol */
 YY_RULE_SETUP
-#line 515 "goserver.l"
+#line 515 "./goserver.l"
 {
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   return RESIGN; }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 518 "goserver.l"
+#line 518 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Name = mystrdup(YYTEXT+20);
                                   strchr(IgsYYlval.Name, ' ')[0] = 0;
@@ -19131,7 +19131,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 522 "goserver.l"
+#line 522 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Name = mystrdup(YYTEXT+7);
                                   strchr(IgsYYlval.Name, ' ')[0] = 0;
@@ -19140,13 +19140,13 @@ YY_RULE_SETUP
 case 120:
 /* rule 120 can match eol */
 YY_RULE_SETUP
-#line 526 "goserver.l"
+#line 526 "./goserver.l"
 { /* no \n? */ return DONE; }
 	YY_BREAK
 case 121:
 /* rule 121 can match eol */
 YY_RULE_SETUP
-#line 527 "goserver.l"
+#line 527 "./goserver.l"
 {
                                   IgsYYlval.Value =
                                       (YYTEXT[2] == 'w' || YYTEXT[2] == 'W') ?
@@ -19155,51 +19155,51 @@ YY_RULE_SETUP
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 532 "goserver.l"
+#line 532 "./goserver.l"
 {  /* No \n -> forces prompt */
                                   IgsYYlval.Name = mystrdup(YYTEXT+13);
                                   return REMOVEGROUP; }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 535 "goserver.l"
+#line 535 "./goserver.l"
 {
                                   /* No \n -> forces prompt */
                                   return RESTORESCORING; }
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 538 "goserver.l"
+#line 538 "./goserver.l"
 { /* No \n -> forces prompt */
                                   MyGameMessage(YYTEXT+2);
                                   break; }
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 541 "goserver.l"
+#line 541 "./goserver.l"
 { /* No \n -> forces prompt */
                                   return PLEASEREDONE; }
 	YY_BREAK
 case 126:
 /* rule 126 can match eol */
 YY_RULE_SETUP
-#line 543 "goserver.l"
+#line 543 "./goserver.l"
 {
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+13);
                                   return ENTERBYOYOMI; }
 	YY_BREAK
 case 127:
-#line 547 "goserver.l"
+#line 547 "./goserver.l"
 case 128:
 YY_RULE_SETUP
-#line 547 "goserver.l"
+#line 547 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Name = mystrdup(YYTEXT+11);
                                   return GIVEBYOYOMI; }
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 550 "goserver.l"
+#line 550 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   return NOTIME; }
@@ -19207,13 +19207,13 @@ YY_RULE_SETUP
 case 130:
 /* rule 130 can match eol */
 YY_RULE_SETUP
-#line 553 "goserver.l"
+#line 553 "./goserver.l"
 {IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   return BEEPING; }
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 555 "goserver.l"
+#line 555 "./goserver.l"
 {
                                   IgsYYlval.Person = IdToPlayer(YYTEXT+2);
                                   BEGIN(THELINE);
@@ -19221,7 +19221,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
-#line 559 "goserver.l"
+#line 559 "./goserver.l"
 { NextState = UPTIME;
                                   BEGIN(ALLNAMES);
                                   return GMTTIME; }
@@ -19229,33 +19229,33 @@ YY_RULE_SETUP
 case 133:
 /* rule 133 can match eol */
 YY_RULE_SETUP
-#line 562 "goserver.l"
+#line 562 "./goserver.l"
 {
                                   return ERASE; }
 	YY_BREAK
 case 134:
 /* rule 134 can match eol */
-#line 565 "goserver.l"
+#line 565 "./goserver.l"
 case 135:
 /* rule 135 can match eol */
 YY_RULE_SETUP
-#line 565 "goserver.l"
+#line 565 "./goserver.l"
 {
                                   BEGIN(REVIEWL);
                                   return REVIEWLIST; }
 	YY_BREAK
 case 136:
 /* rule 136 can match eol */
-#line 569 "goserver.l"
+#line 569 "./goserver.l"
 case 137:
 /* rule 137 can match eol */
 YY_RULE_SETUP
-#line 569 "goserver.l"
+#line 569 "./goserver.l"
 { return REVIEWSTOP; }
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
-#line 570 "goserver.l"
+#line 570 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Name =
                                       mystrndup(YYTEXT+16,
@@ -19266,7 +19266,7 @@ YY_RULE_SETUP
 case 139:
 /* rule 139 can match eol */
 YY_RULE_SETUP
-#line 576 "goserver.l"
+#line 576 "./goserver.l"
 {
                                   BEGIN(NUMLINES);
                                   return REVIEWVARIATIONS; }
@@ -19274,39 +19274,39 @@ YY_RULE_SETUP
 case 140:
 /* rule 140 can match eol */
 YY_RULE_SETUP
-#line 579 "goserver.l"
+#line 579 "./goserver.l"
 {
                                   break; }
 	YY_BREAK
 case 141:
 /* rule 141 can match eol */
 YY_RULE_SETUP
-#line 581 "goserver.l"
+#line 581 "./goserver.l"
 { return REVIEWEND; /* What does this mean ?? -- Ton */ }
 	YY_BREAK
 case 142:
 /* rule 142 can match eol */
 YY_RULE_SETUP
-#line 582 "goserver.l"
+#line 582 "./goserver.l"
 {
                                   return REVIEWEND; }
 	YY_BREAK
 case 143:
 /* rule 143 can match eol */
 YY_RULE_SETUP
-#line 584 "goserver.l"
+#line 584 "./goserver.l"
 { return CURRENTSCORE; }
 	YY_BREAK
 case 144:
 /* rule 144 can match eol */
 YY_RULE_SETUP
-#line 585 "goserver.l"
+#line 585 "./goserver.l"
 { return FINALSCORE; }
 	YY_BREAK
 case 145:
 /* rule 145 can match eol */
 YY_RULE_SETUP
-#line 586 "goserver.l"
+#line 586 "./goserver.l"
 {
                                   IgsYYlval.Name = mystrndup(YYTEXT+2, YYLENG-3);
                                   return NAME; }
@@ -19314,35 +19314,35 @@ YY_RULE_SETUP
 case 146:
 /* rule 146 can match eol */
 YY_RULE_SETUP
-#line 589 "goserver.l"
+#line 589 "./goserver.l"
 { break;
 /* given after GAMETIME for super user, nb of undos left */ }
 	YY_BREAK
 case 147:
 /* rule 147 can match eol */
 YY_RULE_SETUP
-#line 592 "goserver.l"
+#line 592 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+10);
                                   return BETRESULT; }
 	YY_BREAK
 case 148:
 /* rule 148 can match eol */
 YY_RULE_SETUP
-#line 594 "goserver.l"
+#line 594 "./goserver.l"
 { IgsYYlval.Value = -atoi(YYTEXT+11);
                                   return BETRESULT; }
 	YY_BREAK
 case 149:
 /* rule 149 can match eol */
 YY_RULE_SETUP
-#line 596 "goserver.l"
+#line 596 "./goserver.l"
 { IgsYYlval.Value = 0;
                                   return BETRESULT; }
 	YY_BREAK
 case 150:
 /* rule 150 can match eol */
 YY_RULE_SETUP
-#line 599 "goserver.l"
+#line 599 "./goserver.l"
 { AutoCommand(NULL, "time");
                                   MyGameMessage(YYTEXT+2);
                                   break; }
@@ -19350,7 +19350,7 @@ YY_RULE_SETUP
 case 151:
 /* rule 151 can match eol */
 YY_RULE_SETUP
-#line 603 "goserver.l"
+#line 603 "./goserver.l"
 { const char *id = YYTEXT+2;
                                  const char *ptr = strchr(id, ' ');
                                  /* do not use IdToPlayer to avoid warning if
@@ -19363,13 +19363,13 @@ YY_RULE_SETUP
 case 152:
 /* rule 152 can match eol */
 YY_RULE_SETUP
-#line 612 "goserver.l"
+#line 612 "./goserver.l"
 { break; }
 	YY_BREAK
 case 153:
 /* rule 153 can match eol */
 YY_RULE_SETUP
-#line 614 "goserver.l"
+#line 614 "./goserver.l"
 {
   /* missing "are" is bug in IGS, not xgospel */
   /* Display only "You may wish to modify your search to get fewer entries." */
@@ -19378,7 +19378,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 154:
 YY_RULE_SETUP
-#line 620 "goserver.l"
+#line 620 "./goserver.l"
 { const char *ptr;
                                   BEGIN(CHANNELTITLE);
                                   ptr = strchr(YYTEXT, '#')+1;
@@ -19390,38 +19390,38 @@ YY_RULE_SETUP
 	YY_BREAK
 case 155:
 YY_RULE_SETUP
-#line 629 "goserver.l"
+#line 629 "./goserver.l"
 { BEGIN(THENAMES);
                                   return KIBITZ; }
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
-#line 631 "goserver.l"
+#line 631 "./goserver.l"
 { BEGIN(THELINE);
                                   break; }
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
-#line 634 "goserver.l"
+#line 634 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return RESTARTTEAMGAME; }
 	YY_BREAK
 case 158:
 /* rule 158 can match eol */
 YY_RULE_SETUP
-#line 637 "goserver.l"
+#line 637 "./goserver.l"
 { return MESSAGES; }
 	YY_BREAK
 case 159:
 YY_RULE_SETUP
-#line 639 "goserver.l"
+#line 639 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+8);
                                   BEGIN(THENAMES);
                                   return GAME; }
 	YY_BREAK
 case 160:
 YY_RULE_SETUP
-#line 642 "goserver.l"
+#line 642 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+3);
                                   if ((IgsYYlval.Value %2 == 0) ^
                                       (YYTEXT[7] == 'B'))
@@ -19432,25 +19432,25 @@ YY_RULE_SETUP
 	YY_BREAK
 case 161:
 YY_RULE_SETUP
-#line 650 "goserver.l"
+#line 650 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return OBSERVETEAM; }
 	YY_BREAK
 case 162:
 YY_RULE_SETUP
-#line 653 "goserver.l"
+#line 653 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return OBSERVETEAM; }
 	YY_BREAK
 case 163:
 YY_RULE_SETUP
-#line 656 "goserver.l"
+#line 656 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return OBSERVETEAM; }
 	YY_BREAK
 case 164:
 YY_RULE_SETUP
-#line 659 "goserver.l"
+#line 659 "./goserver.l"
 { BEGIN(THELINE);
 /*
 51 Say in game 10
@@ -19464,20 +19464,20 @@ YY_RULE_SETUP
 	YY_BREAK
 case 165:
 YY_RULE_SETUP
-#line 670 "goserver.l"
+#line 670 "./goserver.l"
 { /* No \n -> forces prompt */
                                   IgsYYlval.Name = mystrdup(YYTEXT+3);
                                   return RESULTLINE; }
 	YY_BREAK
 case 166:
 YY_RULE_SETUP
-#line 674 "goserver.l"
+#line 674 "./goserver.l"
 { BEGIN(THENAMES);
                                   return INFOMESSAGE; }
 	YY_BREAK
 case 167:
 YY_RULE_SETUP
-#line 676 "goserver.l"
+#line 676 "./goserver.l"
 { BEGIN(THELINE);
                                   IgsYYlval.Person =
                                       LengthNameToPlayer(YYTEXT+4,
@@ -19486,7 +19486,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 168:
 YY_RULE_SETUP
-#line 681 "goserver.l"
+#line 681 "./goserver.l"
 { BEGIN(THELINE);
                                   IgsYYlval.Person =
                                       LengthNameToPlayer(YYTEXT+7,
@@ -19495,13 +19495,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 169:
 YY_RULE_SETUP
-#line 687 "goserver.l"
+#line 687 "./goserver.l"
 { BEGIN(THENAMES);
                                   return STATUSHEADER; }
 	YY_BREAK
 case 170:
 YY_RULE_SETUP
-#line 689 "goserver.l"
+#line 689 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+3);
                                   NextState = STATUS;
                                   BEGIN(ALLLINE);
@@ -19509,7 +19509,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 171:
 YY_RULE_SETUP
-#line 694 "goserver.l"
+#line 694 "./goserver.l"
 { BEGIN(THELINE);
 /*
 2 
@@ -19524,47 +19524,47 @@ YY_RULE_SETUP
 	YY_BREAK
 case 172:
 YY_RULE_SETUP
-#line 706 "goserver.l"
+#line 706 "./goserver.l"
 { BEGIN(THENAMES);
                                   return GAMETIME; }
 	YY_BREAK
 case 173:
 /* rule 173 can match eol */
-#line 710 "goserver.l"
+#line 710 "./goserver.l"
 case 174:
 /* rule 174 can match eol */
 YY_RULE_SETUP
-#line 710 "goserver.l"
+#line 710 "./goserver.l"
 { return PLAYERS; }
 	YY_BREAK
 case 175:
 YY_RULE_SETUP
-#line 711 "goserver.l"
+#line 711 "./goserver.l"
 { BEGIN(THENAMES);
                                   return END; }
 	YY_BREAK
 case 176:
 YY_RULE_SETUP
-#line 713 "goserver.l"
+#line 713 "./goserver.l"
 { BEGIN(PLAYERENTRY);
                                   return PLAYERS; }
 	YY_BREAK
 case 177:
 /* rule 177 can match eol */
 YY_RULE_SETUP
-#line 715 "goserver.l"
+#line 715 "./goserver.l"
 { break; }
 	YY_BREAK
 case 178:
 /* rule 178 can match eol */
 YY_RULE_SETUP
-#line 717 "goserver.l"
+#line 717 "./goserver.l"
 { break; }
 	YY_BREAK
 case 179:
 /* rule 179 can match eol */
 YY_RULE_SETUP
-#line 719 "goserver.l"
+#line 719 "./goserver.l"
 {
 /* for multiple undo in teach game:
 1 8
@@ -19605,26 +19605,26 @@ with bell on:
 	YY_BREAK
 case 180:
 YY_RULE_SETUP
-#line 756 "goserver.l"
+#line 756 "./goserver.l"
 {
                                   BEGIN(UNDIDLINES);
                                   return UNDID; }
 	YY_BREAK
 case 181:
 YY_RULE_SETUP
-#line 759 "goserver.l"
+#line 759 "./goserver.l"
 { BEGIN(TEAMNAMES);
                                   return OBSERVETEAM; }
 	YY_BREAK
 case 182:
 YY_RULE_SETUP
-#line 763 "goserver.l"
+#line 763 "./goserver.l"
 { BEGIN(THELINE);
                                   return TRANSLATION; }
 	YY_BREAK
 case 183:
 YY_RULE_SETUP
-#line 766 "goserver.l"
+#line 766 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+3);
                                   BEGIN(CHANNELS);
                                   return CHANNEL; }
@@ -19632,7 +19632,7 @@ YY_RULE_SETUP
 case 184:
 /* rule 184 can match eol */
 YY_RULE_SETUP
-#line 769 "goserver.l"
+#line 769 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+25);
                                   return CHANGECHANNEL; }
@@ -19640,13 +19640,13 @@ YY_RULE_SETUP
 case 185:
 /* rule 185 can match eol */
 YY_RULE_SETUP
-#line 772 "goserver.l"
+#line 772 "./goserver.l"
 { break; }
 	YY_BREAK
 case 186:
 /* rule 186 can match eol */
 YY_RULE_SETUP
-#line 774 "goserver.l"
+#line 774 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+8);
                                   BEGIN(REVIEW);
                                   return REVIEWTYPE; }
@@ -19654,7 +19654,7 @@ YY_RULE_SETUP
 case 187:
 /* rule 187 can match eol */
 YY_RULE_SETUP
-#line 778 "goserver.l"
+#line 778 "./goserver.l"
 {
     				  const char *ptr;
 
@@ -19669,7 +19669,7 @@ YY_RULE_SETUP
 case 188:
 /* rule 188 can match eol */
 YY_RULE_SETUP
-#line 789 "goserver.l"
+#line 789 "./goserver.l"
 { /* Here because otherwise File matches */
                                   /*
                                   const char *ptr;
@@ -19686,38 +19686,38 @@ YY_RULE_SETUP
 case 189:
 /* rule 189 can match eol */
 YY_RULE_SETUP
-#line 802 "goserver.l"
+#line 802 "./goserver.l"
 { BEGIN(NUMNAMES);
                                   return SGFLIST; }
 	YY_BREAK
 case 190:
 /* rule 190 can match eol */
 YY_RULE_SETUP
-#line 804 "goserver.l"
+#line 804 "./goserver.l"
 { BEGIN(BET);
                                   return BETWINNERS; }
 	YY_BREAK
 case 191:
 /* rule 191 can match eol */
-#line 807 "goserver.l"
+#line 807 "./goserver.l"
 case 192:
 /* rule 192 can match eol */
 YY_RULE_SETUP
-#line 807 "goserver.l"
+#line 807 "./goserver.l"
 { BEGIN(NONCLIENT);
                                   return UNKNOWNANSWER; }
 	YY_BREAK
 case 193:
 /* rule 193 can match eol */
 YY_RULE_SETUP
-#line 809 "goserver.l"
+#line 809 "./goserver.l"
 { BEGIN(PROB); /* with no-* player only */
                                   return SETPROBA; }
 	YY_BREAK
 case 194:
 /* rule 194 can match eol */
 YY_RULE_SETUP
-#line 811 "goserver.l"
+#line 811 "./goserver.l"
 { const char *id = YYTEXT+8;
                                   const char *ptr = strchr(id, '\n');
                                  /* do not use IdToPlayer to avoid warning if
@@ -19732,7 +19732,7 @@ YY_RULE_SETUP
 case 195:
 /* rule 195 can match eol */
 YY_RULE_SETUP
-#line 822 "goserver.l"
+#line 822 "./goserver.l"
 { const char *id = YYTEXT+9;
                                   const char *ptr = strchr(id, '\n');
                                  /* do not use IdToPlayer to avoid warning if
@@ -19746,24 +19746,24 @@ YY_RULE_SETUP
 	YY_BREAK
 case 196:
 /* rule 196 can match eol */
-#line 834 "goserver.l"
+#line 834 "./goserver.l"
 case 197:
 /* rule 197 can match eol */
 YY_RULE_SETUP
-#line 834 "goserver.l"
+#line 834 "./goserver.l"
 { /* Ignore for the moment */ break; }
 	YY_BREAK
 case 198:
 /* rule 198 can match eol */
 YY_RULE_SETUP
-#line 836 "goserver.l"
+#line 836 "./goserver.l"
 { BEGIN(USERENTRY);
                                   return USER; }
 	YY_BREAK
 case 199:
 /* rule 199 can match eol */
 YY_RULE_SETUP
-#line 839 "goserver.l"
+#line 839 "./goserver.l"
 {
                                   BEGIN(0);
                                   return END; }
@@ -19771,19 +19771,19 @@ YY_RULE_SETUP
 case 200:
 /* rule 200 can match eol */
 YY_RULE_SETUP
-#line 843 "goserver.l"
+#line 843 "./goserver.l"
 { break; } /* game will popup anyway */
 	YY_BREAK
 case 201:
 /* rule 201 can match eol */
 YY_RULE_SETUP
-#line 845 "goserver.l"
+#line 845 "./goserver.l"
 { break; } /* we see this anyway */
 	YY_BREAK
 case 202:
 /* rule 202 can match eol */
 YY_RULE_SETUP
-#line 847 "goserver.l"
+#line 847 "./goserver.l"
 { break;
 /* ??? support multiple play:
 1 6
@@ -19797,7 +19797,7 @@ YY_RULE_SETUP
 case 203:
 /* rule 203 can match eol */
 YY_RULE_SETUP
-#line 856 "goserver.l"
+#line 856 "./goserver.l"
 { break;
 /* ??? support multiple play:
     1 6
@@ -19812,19 +19812,19 @@ YY_RULE_SETUP
 case 204:
 /* rule 204 can match eol */
 YY_RULE_SETUP
-#line 867 "goserver.l"
+#line 867 "./goserver.l"
 { break; /* ??? support multiple play */ }
 	YY_BREAK
 case 205:
 /* rule 205 can match eol */
 YY_RULE_SETUP
-#line 869 "goserver.l"
+#line 869 "./goserver.l"
 { break; /* ??? support multiple play */ }
 	YY_BREAK
 case 206:
 /* rule 206 can match eol */
 YY_RULE_SETUP
-#line 871 "goserver.l"
+#line 871 "./goserver.l"
 { break; /* ??? support multiple play */
 /*
 51 Say in game 10
@@ -19834,21 +19834,21 @@ YY_RULE_SETUP
 case 207:
 /* rule 207 can match eol */
 YY_RULE_SETUP
-#line 877 "goserver.l"
+#line 877 "./goserver.l"
 { BEGIN(FILETEXT);
                                   IgsYYlval.Value = atoi(YYTEXT);
                                   return TEXTFILE; }
 	YY_BREAK
 case 208:
 YY_RULE_SETUP
-#line 882 "goserver.l"
+#line 882 "./goserver.l"
 { BEGIN(INFOLINE); /* avoid parse error */
                                   break; }
 	YY_BREAK
 case 209:
 /* rule 209 can match eol */
 YY_RULE_SETUP
-#line 884 "goserver.l"
+#line 884 "./goserver.l"
 { BEGIN(0);
                                   Outputf("%s", YYTEXT);
                                   break; }
@@ -19856,7 +19856,7 @@ YY_RULE_SETUP
 case 210:
 /* rule 210 can match eol */
 YY_RULE_SETUP
-#line 888 "goserver.l"
+#line 888 "./goserver.l"
 { /* avoid parse error */
                                   Outputf("%s", YYTEXT+3);
                                   break; }
@@ -19864,25 +19864,25 @@ YY_RULE_SETUP
 case 211:
 /* rule 211 can match eol */
 YY_RULE_SETUP
-#line 893 "goserver.l"
+#line 893 "./goserver.l"
 { BEGIN(0);
                                   return SEMIPROMPT; }
 	YY_BREAK
 case 212:
 YY_RULE_SETUP
-#line 895 "goserver.l"
+#line 895 "./goserver.l"
 { break; /* -- Doubt, Doubt --Ton */ }
 	YY_BREAK
 case 213:
 YY_RULE_SETUP
-#line 896 "goserver.l"
+#line 896 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(NONCLIENT);
                                   return UNKNOWNANSWER; }
 	YY_BREAK
 case 214:
 YY_RULE_SETUP
-#line 900 "goserver.l"
+#line 900 "./goserver.l"
 { /* No \n -> forces prompt */
                                   BEGIN(0);
                                   return END; }
@@ -19890,7 +19890,7 @@ YY_RULE_SETUP
 case 215:
 /* rule 215 can match eol */
 YY_RULE_SETUP
-#line 903 "goserver.l"
+#line 903 "./goserver.l"
 { NextState = FILETEXT;
                                   IgsYYless(0);
                                   BEGIN(ALLLINE);
@@ -19898,7 +19898,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 216:
 YY_RULE_SETUP
-#line 908 "goserver.l"
+#line 908 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+3);
                                   NextState = STATUS;
                                   BEGIN(ALLLINE);
@@ -19906,11 +19906,11 @@ YY_RULE_SETUP
 	YY_BREAK
 case 217:
 /* rule 217 can match eol */
-#line 913 "goserver.l"
+#line 913 "./goserver.l"
 case 218:
 /* rule 218 can match eol */
 YY_RULE_SETUP
-#line 913 "goserver.l"
+#line 913 "./goserver.l"
 { IgsYYless(YYLENG-1);
                                   BEGIN(0);
                                   break; }
@@ -19918,31 +19918,31 @@ YY_RULE_SETUP
 case 219:
 /* rule 219 can match eol */
 YY_RULE_SETUP
-#line 917 "goserver.l"
+#line 917 "./goserver.l"
 { break; }
 	YY_BREAK
 case 220:
 /* rule 220 can match eol */
 YY_RULE_SETUP
-#line 918 "goserver.l"
+#line 918 "./goserver.l"
 { BEGIN(0);
 	                          IgsYYlval.Name = mystrndup(YYTEXT+2, YYLENG-3);
                                   return MYBET; }
 	YY_BREAK
 case 221:
 YY_RULE_SETUP
-#line 921 "goserver.l"
+#line 921 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT);
                                   return NATURAL; }
 	YY_BREAK
 case 222:
 YY_RULE_SETUP
-#line 923 "goserver.l"
+#line 923 "./goserver.l"
 { return YYTEXT[0]; }
 	YY_BREAK
 case 223:
 YY_RULE_SETUP
-#line 924 "goserver.l"
+#line 924 "./goserver.l"
 { const char *ptr;
 
                                   ptr = YYTEXT;
@@ -19956,43 +19956,43 @@ YY_RULE_SETUP
 case 224:
 /* rule 224 can match eol */
 YY_RULE_SETUP
-#line 933 "goserver.l"
+#line 933 "./goserver.l"
 { return BETEVEN;   }
 	YY_BREAK
 case 225:
 /* rule 225 can match eol */
 YY_RULE_SETUP
-#line 934 "goserver.l"
+#line 934 "./goserver.l"
 { return BETLOSERS; }
 	YY_BREAK
 case 226:
-#line 937 "goserver.l"
+#line 937 "./goserver.l"
 case 227:
-#line 938 "goserver.l"
+#line 938 "./goserver.l"
 case 228:
-#line 939 "goserver.l"
+#line 939 "./goserver.l"
 case 229:
-#line 940 "goserver.l"
+#line 940 "./goserver.l"
 case 230:
 YY_RULE_SETUP
-#line 940 "goserver.l"
+#line 940 "./goserver.l"
 { break; }
 	YY_BREAK
 case 231:
 /* rule 231 can match eol */
 YY_RULE_SETUP
-#line 941 "goserver.l"
+#line 941 "./goserver.l"
 { return END; }
 	YY_BREAK
 case 232:
 YY_RULE_SETUP
-#line 942 "goserver.l"
+#line 942 "./goserver.l"
 { IgsYYlval.Person = IdToPlayer(YYTEXT);
                                   return PERSON; }
 	YY_BREAK
 case 233:
 YY_RULE_SETUP
-#line 944 "goserver.l"
+#line 944 "./goserver.l"
 { IgsYYlval.Value =
                                       (YYTEXT[0] == 'w' || YYTEXT[0] == 'W') ?
                                           White : Black;
@@ -20000,66 +20000,66 @@ YY_RULE_SETUP
 	YY_BREAK
 case 234:
 YY_RULE_SETUP
-#line 948 "goserver.l"
+#line 948 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+2, YYLENG-3);
                                   return NAME; }
 	YY_BREAK
 case 235:
 YY_RULE_SETUP
-#line 950 "goserver.l"
+#line 950 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT+3) * 60;
                                   return GAMESECONDS; }
 	YY_BREAK
 case 236:
 YY_RULE_SETUP
-#line 952 "goserver.l"
+#line 952 "./goserver.l"
 { IgsYYlval.Value = atoi(YYTEXT);
                                   return BYOYOMI; }
 	YY_BREAK
 case 237:
-#line 956 "goserver.l"
+#line 956 "./goserver.l"
 case 238:
-#line 957 "goserver.l"
+#line 957 "./goserver.l"
 case 239:
 YY_RULE_SETUP
-#line 957 "goserver.l"
+#line 957 "./goserver.l"
 { break; }
 	YY_BREAK
 case 240:
 YY_RULE_SETUP
-#line 958 "goserver.l"
+#line 958 "./goserver.l"
 { /* More types needed here --Ton */
                                   IgsYYlval.Value = TOURNAMENTTYPE;
                                   return MATCHTYPE; }
 	YY_BREAK
 case 241:
 YY_RULE_SETUP
-#line 961 "goserver.l"
+#line 961 "./goserver.l"
 { IgsYYlval.Value = IGSTYPE;
                                   return MATCHTYPE; }
 	YY_BREAK
 case 242:
 /* rule 242 can match eol */
 YY_RULE_SETUP
-#line 963 "goserver.l"
+#line 963 "./goserver.l"
 { BEGIN(0);
                                   return END; }
 	YY_BREAK
 case 243:
 /* rule 243 can match eol */
-#line 967 "goserver.l"
+#line 967 "./goserver.l"
 case 244:
 /* rule 244 can match eol */
-#line 968 "goserver.l"
+#line 968 "./goserver.l"
 case 245:
 /* rule 245 can match eol */
 YY_RULE_SETUP
-#line 968 "goserver.l"
+#line 968 "./goserver.l"
 { break; }
 	YY_BREAK
 case 246:
 YY_RULE_SETUP
-#line 969 "goserver.l"
+#line 969 "./goserver.l"
 {
                                   const char *ptr;
 
@@ -20074,7 +20074,7 @@ YY_RULE_SETUP
 case 247:
 /* rule 247 can match eol */
 YY_RULE_SETUP
-#line 979 "goserver.l"
+#line 979 "./goserver.l"
 { IgsYYless(0);
                                   unput('\n');
                                   BEGIN(0);
@@ -20083,151 +20083,151 @@ YY_RULE_SETUP
 case 248:
 /* rule 248 can match eol */
 YY_RULE_SETUP
-#line 984 "goserver.l"
+#line 984 "./goserver.l"
 {
                                   BEGIN(0);
                                   return END; }
 	YY_BREAK
 case 249:
 YY_RULE_SETUP
-#line 987 "goserver.l"
+#line 987 "./goserver.l"
 { return REVNODE; }
 	YY_BREAK
 case 250:
 YY_RULE_SETUP
-#line 988 "goserver.l"
+#line 988 "./goserver.l"
 { return REVNODENAME; }
 	YY_BREAK
 case 251:
 YY_RULE_SETUP
-#line 989 "goserver.l"
+#line 989 "./goserver.l"
 { return REVBLACK; }
 	YY_BREAK
 case 252:
 YY_RULE_SETUP
-#line 990 "goserver.l"
+#line 990 "./goserver.l"
 { return REVWHITE; }
 	YY_BREAK
 case 253:
 YY_RULE_SETUP
-#line 991 "goserver.l"
+#line 991 "./goserver.l"
 { return REVADDBLACK; }
 	YY_BREAK
 case 254:
 YY_RULE_SETUP
-#line 992 "goserver.l"
+#line 992 "./goserver.l"
 { return REVADDWHITE; }
 	YY_BREAK
 case 255:
 YY_RULE_SETUP
-#line 993 "goserver.l"
+#line 993 "./goserver.l"
 { return REVADDEMPTY; }
 	YY_BREAK
 case 256:
 YY_RULE_SETUP
-#line 994 "goserver.l"
+#line 994 "./goserver.l"
 { return REVBLACKTIME; }
 	YY_BREAK
 case 257:
 YY_RULE_SETUP
-#line 995 "goserver.l"
+#line 995 "./goserver.l"
 { return REVWHITETIME; }
 	YY_BREAK
 case 258:
 YY_RULE_SETUP
-#line 996 "goserver.l"
+#line 996 "./goserver.l"
 { return REVCOPYRIGHT; }
 	YY_BREAK
 case 259:
 YY_RULE_SETUP
-#line 997 "goserver.l"
+#line 997 "./goserver.l"
 { return REVCOMMENT; }
 	YY_BREAK
 case 260:
 YY_RULE_SETUP
-#line 998 "goserver.l"
+#line 998 "./goserver.l"
 { return REVKOMI; }
 	YY_BREAK
 case 261:
 YY_RULE_SETUP
-#line 999 "goserver.l"
+#line 999 "./goserver.l"
 { return REVHANDICAP; }
 	YY_BREAK
 case 262:
 YY_RULE_SETUP
-#line 1000 "goserver.l"
+#line 1000 "./goserver.l"
 { return REVRESULT; }
 	YY_BREAK
 case 263:
 YY_RULE_SETUP
-#line 1001 "goserver.l"
+#line 1001 "./goserver.l"
 { return REVPLACE; }
 	YY_BREAK
 case 264:
 YY_RULE_SETUP
-#line 1002 "goserver.l"
+#line 1002 "./goserver.l"
 { return REVDATE; }
 	YY_BREAK
 case 265:
 YY_RULE_SETUP
-#line 1003 "goserver.l"
+#line 1003 "./goserver.l"
 { return REVUSER; }
 	YY_BREAK
 case 266:
 YY_RULE_SETUP
-#line 1004 "goserver.l"
+#line 1004 "./goserver.l"
 { return REVEVENT; }
 	YY_BREAK
 case 267:
 YY_RULE_SETUP
-#line 1005 "goserver.l"
+#line 1005 "./goserver.l"
 { return REVGAMENAME; }
 	YY_BREAK
 case 268:
 YY_RULE_SETUP
-#line 1006 "goserver.l"
+#line 1006 "./goserver.l"
 { return REVWHITERANK; }
 	YY_BREAK
 case 269:
 YY_RULE_SETUP
-#line 1007 "goserver.l"
+#line 1007 "./goserver.l"
 { return REVBLACKRANK; }
 	YY_BREAK
 case 270:
 YY_RULE_SETUP
-#line 1008 "goserver.l"
+#line 1008 "./goserver.l"
 { return REVWHITENAME; }
 	YY_BREAK
 case 271:
 YY_RULE_SETUP
-#line 1009 "goserver.l"
+#line 1009 "./goserver.l"
 { return REVBLACKNAME; }
 	YY_BREAK
 case 272:
 YY_RULE_SETUP
-#line 1010 "goserver.l"
+#line 1010 "./goserver.l"
 { return REVLETTERS; }
 	YY_BREAK
 case 273:
 YY_RULE_SETUP
-#line 1011 "goserver.l"
+#line 1011 "./goserver.l"
 { return REVSIZE; }
 	YY_BREAK
 case 274:
 YY_RULE_SETUP
-#line 1012 "goserver.l"
+#line 1012 "./goserver.l"
 { return REVGAME; }
 	YY_BREAK
 case 275:
 YY_RULE_SETUP
-#line 1013 "goserver.l"
+#line 1013 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG);
                                   return REVUNKNOWN; }
 	YY_BREAK
 case 276:
 /* rule 276 can match eol */
 YY_RULE_SETUP
-#line 1015 "goserver.l"
+#line 1015 "./goserver.l"
 { /* Eat buggy newline --Ton */
                                   BEGIN(REVIEWLITERAL);
                                   RevBracks = 0;
@@ -20239,19 +20239,19 @@ YY_RULE_SETUP
 	YY_BREAK
 case 277:
 YY_RULE_SETUP
-#line 1023 "goserver.l"
+#line 1023 "./goserver.l"
 { return YYTEXT[0]; }
 	YY_BREAK
 case 278:
 /* rule 278 can match eol */
 YY_RULE_SETUP
-#line 1024 "goserver.l"
+#line 1024 "./goserver.l"
 { break; }
 	YY_BREAK
 case 279:
 /* rule 279 can match eol */
 YY_RULE_SETUP
-#line 1026 "goserver.l"
+#line 1026 "./goserver.l"
 {
                                   char *ptr, *from;
                                   size_t Len;
@@ -20279,36 +20279,36 @@ YY_RULE_SETUP
 case 280:
 /* rule 280 can match eol */
 YY_RULE_SETUP
-#line 1049 "goserver.l"
+#line 1049 "./goserver.l"
 { /* Eat buggy newline --Ton */
                                   TextExtend(YYTEXT, YYLENG-1);
                                   break; }
 	YY_BREAK
 case 281:
 /* rule 281 can match eol */
-#line 1053 "goserver.l"
+#line 1053 "./goserver.l"
 case 282:
 /* rule 282 can match eol */
 YY_RULE_SETUP
-#line 1053 "goserver.l"
+#line 1053 "./goserver.l"
 {
                                   TextExtend(YYTEXT, YYLENG);
                                   break; }
 	YY_BREAK
 case 283:
 YY_RULE_SETUP
-#line 1056 "goserver.l"
+#line 1056 "./goserver.l"
 { RevBracks++;
                                   TextExtend(YYTEXT, YYLENG);
                                   break; }
 	YY_BREAK
 case 284:
 /* rule 284 can match eol */
-#line 1060 "goserver.l"
+#line 1060 "./goserver.l"
 case 285:
 /* rule 285 can match eol */
 YY_RULE_SETUP
-#line 1060 "goserver.l"
+#line 1060 "./goserver.l"
 {
                                   /* Eat mgt assumption --Ton */
                                   TextExtend("\n(see variation)", 16);
@@ -20317,7 +20317,7 @@ YY_RULE_SETUP
 case 286:
 /* rule 286 can match eol */
 YY_RULE_SETUP
-#line 1064 "goserver.l"
+#line 1064 "./goserver.l"
 { /* Eat buggy newline --Ton */
                                   if (--RevBracks < 0) {
                                       TextBuf[TextFill] = 0;
@@ -20332,7 +20332,7 @@ YY_RULE_SETUP
 case 287:
 /* rule 287 can match eol */
 YY_RULE_SETUP
-#line 1074 "goserver.l"
+#line 1074 "./goserver.l"
 { /* Panic exit */
                                   const char *ptr;
 
@@ -20346,73 +20346,73 @@ YY_RULE_SETUP
 	YY_BREAK
 case 288:
 YY_RULE_SETUP
-#line 1085 "goserver.l"
+#line 1085 "./goserver.l"
 { break; }
 	YY_BREAK
 case 289:
 YY_RULE_SETUP
-#line 1086 "goserver.l"
+#line 1086 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG);
                                  return NAME; }
 	YY_BREAK
 case 290:
 /* rule 290 can match eol */
 YY_RULE_SETUP
-#line 1088 "goserver.l"
+#line 1088 "./goserver.l"
 { return END; }
 	YY_BREAK
 case 291:
 YY_RULE_SETUP
-#line 1089 "goserver.l"
+#line 1089 "./goserver.l"
 { break; }
 	YY_BREAK
 case 292:
 YY_RULE_SETUP
-#line 1090 "goserver.l"
+#line 1090 "./goserver.l"
 { break; }
 	YY_BREAK
 case 293:
 YY_RULE_SETUP
-#line 1092 "goserver.l"
+#line 1092 "./goserver.l"
 {
                                   IgsYYlval.Name = mystrndup(YYTEXT, YYLENG-1);
                                   return NAME; }
 	YY_BREAK
 case 294:
 YY_RULE_SETUP
-#line 1095 "goserver.l"
+#line 1095 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG);
                                   return NAME; }
 	YY_BREAK
 case 295:
 YY_RULE_SETUP
-#line 1097 "goserver.l"
+#line 1097 "./goserver.l"
 { break; }
 	YY_BREAK
 case 296:
 YY_RULE_SETUP
-#line 1098 "goserver.l"
+#line 1098 "./goserver.l"
 { unsend("\n27 ");
                                   break; }
 	YY_BREAK
 case 297:
 /* rule 297 can match eol */
 YY_RULE_SETUP
-#line 1100 "goserver.l"
+#line 1100 "./goserver.l"
 { BEGIN(0);
                                   return END; }
 	YY_BREAK
 case 298:
 /* rule 298 can match eol */
 YY_RULE_SETUP
-#line 1102 "goserver.l"
+#line 1102 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINE);
                                   break; }
 	YY_BREAK
 case 299:
 YY_RULE_SETUP
-#line 1106 "goserver.l"
+#line 1106 "./goserver.l"
 { const char *ptr;
                                   BEGIN(USERENTRYINFO);
                                   ptr = YYTEXT+3;
@@ -20425,20 +20425,20 @@ YY_RULE_SETUP
 case 300:
 /* rule 300 can match eol */
 YY_RULE_SETUP
-#line 1114 "goserver.l"
+#line 1114 "./goserver.l"
 { BEGIN(0);
                                   return END; }     
 	YY_BREAK
 case 301:
 /* rule 301 can match eol */
 YY_RULE_SETUP
-#line 1116 "goserver.l"
+#line 1116 "./goserver.l"
 { IgsYYless(0);
                                   return FAIL; }
 	YY_BREAK
 case 302:
 YY_RULE_SETUP
-#line 1118 "goserver.l"
+#line 1118 "./goserver.l"
 { int len;
 
                                   for (len = 13; len>=0; len--)
@@ -20451,45 +20451,45 @@ YY_RULE_SETUP
 case 303:
 /* rule 303 can match eol */
 YY_RULE_SETUP
-#line 1126 "goserver.l"
+#line 1126 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINE);
                                   return FAIL; }
 	YY_BREAK
 case 304:
 YY_RULE_SETUP
-#line 1129 "goserver.l"
+#line 1129 "./goserver.l"
 { break; }
 	YY_BREAK
 case 305:
 YY_RULE_SETUP
-#line 1130 "goserver.l"
+#line 1130 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYTEXT[YYLENG-1] == '/' ? YYLENG-1 : YYLENG);
                                   return NAME; }
 	YY_BREAK
 case 306:
 YY_RULE_SETUP
-#line 1132 "goserver.l"
+#line 1132 "./goserver.l"
 { IgsYYlval.Name = mystrndup("-1", 2);;
                                   return NAME; }
 	YY_BREAK
 case 307:
 YY_RULE_SETUP
-#line 1134 "goserver.l"
+#line 1134 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG);
                                   return NAME; }
 	YY_BREAK
 case 308:
 /* rule 308 can match eol */
 YY_RULE_SETUP
-#line 1136 "goserver.l"
+#line 1136 "./goserver.l"
 { BEGIN(USERENTRY);
                                   return END; }
 	YY_BREAK
 case 309:
 /* rule 309 can match eol */
 YY_RULE_SETUP
-#line 1138 "goserver.l"
+#line 1138 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINE);
                                   return FAIL; }
@@ -20497,7 +20497,7 @@ YY_RULE_SETUP
 case 310:
 /* rule 310 can match eol */
 YY_RULE_SETUP
-#line 1142 "goserver.l"
+#line 1142 "./goserver.l"
 {
 				  BEGIN(0);
                                   IgsYYlval.Value = atoi(YYTEXT+9);
@@ -20507,13 +20507,13 @@ YY_RULE_SETUP
 case 311:
 /* rule 311 can match eol */
 YY_RULE_SETUP
-#line 1147 "goserver.l"
+#line 1147 "./goserver.l"
 { break; }
 	YY_BREAK
 case 312:
 /* rule 312 can match eol */
 YY_RULE_SETUP
-#line 1148 "goserver.l"
+#line 1148 "./goserver.l"
 { IgsYYless(0);
                                    BEGIN(THELINE);
                                    break; }
@@ -20521,7 +20521,7 @@ YY_RULE_SETUP
 case 313:
 /* rule 313 can match eol */
 YY_RULE_SETUP
-#line 1152 "goserver.l"
+#line 1152 "./goserver.l"
 {
 				  BEGIN(0);
 				  return END;
@@ -20530,7 +20530,7 @@ YY_RULE_SETUP
 case 314:
 /* rule 314 can match eol */
 YY_RULE_SETUP
-#line 1156 "goserver.l"
+#line 1156 "./goserver.l"
 {
 				  BEGIN(0);
 				  return END;
@@ -20539,7 +20539,7 @@ YY_RULE_SETUP
 case 315:
 /* rule 315 can match eol */
 YY_RULE_SETUP
-#line 1160 "goserver.l"
+#line 1160 "./goserver.l"
 {
 	                          char *ptr = strrchr(YYTEXT, ':');
                                   IgsYYlval.Value = atoi(ptr+1);
@@ -20547,7 +20547,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 316:
 YY_RULE_SETUP
-#line 1164 "goserver.l"
+#line 1164 "./goserver.l"
 {
                                   IgsYYlval.Value = atoi(YYTEXT+13);
                                   return RATING; }
@@ -20555,7 +20555,7 @@ YY_RULE_SETUP
 case 317:
 /* rule 317 can match eol */
 YY_RULE_SETUP
-#line 1167 "goserver.l"
+#line 1167 "./goserver.l"
 {
 				  IgsYYlval.Name = mystrdup(YYTEXT+13);
                                    *strchr(IgsYYlval.Name, '\n') = 0;
@@ -20564,7 +20564,7 @@ YY_RULE_SETUP
 case 318:
 /* rule 318 can match eol */
 YY_RULE_SETUP
-#line 1171 "goserver.l"
+#line 1171 "./goserver.l"
 {
 	                          char *ptr = strrchr(YYTEXT, '/');
 				  IgsYYlval.Name = mystrdup(ptr+1);
@@ -20574,7 +20574,7 @@ YY_RULE_SETUP
 case 319:
 /* rule 319 can match eol */
 YY_RULE_SETUP
-#line 1176 "goserver.l"
+#line 1176 "./goserver.l"
 {
 	                          char *ptr = strrchr(YYTEXT, '/');
 				  IgsYYlval.Name = mystrdup(ptr+1);
@@ -20585,14 +20585,14 @@ YY_RULE_SETUP
 case 320:
 /* rule 320 can match eol */
 YY_RULE_SETUP
-#line 1182 "goserver.l"
+#line 1182 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINE);
                                   break; }
 	YY_BREAK
 case 321:
 YY_RULE_SETUP
-#line 1186 "goserver.l"
+#line 1186 "./goserver.l"
 {
                                   IgsYYlval.Name = mystrdup("Defaults");
                                   NextState = STATS;
@@ -20601,7 +20601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 322:
 YY_RULE_SETUP
-#line 1191 "goserver.l"
+#line 1191 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT+2);
                                   IgsYYlval.Name[IgsYYleng-4] = 0;
                                   NextState = STATS;
@@ -20610,7 +20610,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 323:
 YY_RULE_SETUP
-#line 1196 "goserver.l"
+#line 1196 "./goserver.l"
 { NextState = STATS;
                                   BEGIN(ALLNAMES);
                                   return EXTSTATSENTRY; }
@@ -20618,42 +20618,42 @@ YY_RULE_SETUP
 case 324:
 /* rule 324 can match eol */
 YY_RULE_SETUP
-#line 1199 "goserver.l"
+#line 1199 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINE);
                                   break; }
 	YY_BREAK
 case 325:
 YY_RULE_SETUP
-#line 1203 "goserver.l"
+#line 1203 "./goserver.l"
 {
                                   BEGIN(ALLNAMES);
                                   return LOCALTIME; }
 	YY_BREAK
 case 326:
 YY_RULE_SETUP
-#line 1206 "goserver.l"
+#line 1206 "./goserver.l"
 {
                                   BEGIN(ALLNAMES);
                                   return SERVERUP; }
 	YY_BREAK
 case 327:
 YY_RULE_SETUP
-#line 1209 "goserver.l"
+#line 1209 "./goserver.l"
 { BEGIN(ALLLINE);
                                   return UPTIMEENTRY; }
 	YY_BREAK
 case 328:
 /* rule 328 can match eol */
 YY_RULE_SETUP
-#line 1211 "goserver.l"
+#line 1211 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINES);
                                   return UNKNOWNANSWER; }
 	YY_BREAK
 case 329:
 YY_RULE_SETUP
-#line 1215 "goserver.l"
+#line 1215 "./goserver.l"
 { IgsYYlval.Person =
                                       LengthNameToPlayer
                                           (YYTEXT,
@@ -20664,7 +20664,7 @@ YY_RULE_SETUP
 case 330:
 /* rule 330 can match eol */
 YY_RULE_SETUP
-#line 1221 "goserver.l"
+#line 1221 "./goserver.l"
 {
                                   IgsYYlval.Person =
                                       LengthNameToPlayer
@@ -20675,7 +20675,7 @@ YY_RULE_SETUP
 case 331:
 /* rule 331 can match eol */
 YY_RULE_SETUP
-#line 1227 "goserver.l"
+#line 1227 "./goserver.l"
 { IgsYYlval.Person = IdToPlayer(YYTEXT);
                                   BEGIN(0);
                                   return JOIN; }
@@ -20683,7 +20683,7 @@ YY_RULE_SETUP
 case 332:
 /* rule 332 can match eol */
 YY_RULE_SETUP
-#line 1230 "goserver.l"
+#line 1230 "./goserver.l"
 {
                                   IgsYYlval.Person =
                                       LengthNameToPlayer
@@ -20694,14 +20694,14 @@ YY_RULE_SETUP
 case 333:
 /* rule 333 can match eol */
 YY_RULE_SETUP
-#line 1236 "goserver.l"
+#line 1236 "./goserver.l"
 { IgsYYlval.Person = IdToPlayer(YYTEXT);
                                   BEGIN(0);
                                   return LEAVE; }
 	YY_BREAK
 case 334:
 YY_RULE_SETUP
-#line 1239 "goserver.l"
+#line 1239 "./goserver.l"
 {
                                   IgsYYlval.Person =
                                       LengthNameToPlayer
@@ -20712,20 +20712,20 @@ YY_RULE_SETUP
 case 335:
 /* rule 335 can match eol */
 YY_RULE_SETUP
-#line 1245 "goserver.l"
+#line 1245 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(THELINES);
                                   return UNKNOWNANSWER; }
 	YY_BREAK
 case 336:
 YY_RULE_SETUP
-#line 1249 "goserver.l"
+#line 1249 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+1, YYLENG-2);
                                   return NAME; }
 	YY_BREAK
 case 337:
 YY_RULE_SETUP
-#line 1251 "goserver.l"
+#line 1251 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT+1, YYLENG-5);
                                   NextState = NEWCHANNELS;
                                   BEGIN(ALLNAMES);
@@ -20733,7 +20733,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 338:
 YY_RULE_SETUP
-#line 1255 "goserver.l"
+#line 1255 "./goserver.l"
 { IgsYYless(0);
                                   unput(' ');
                                   IgsYYlval.Name = NULL;
@@ -20741,7 +20741,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 339:
 YY_RULE_SETUP
-#line 1260 "goserver.l"
+#line 1260 "./goserver.l"
 { NextState = NEWCHANNELS;
                                   BEGIN(ALLNAMES);
                                   break; }
@@ -20749,59 +20749,59 @@ YY_RULE_SETUP
 case 340:
 /* rule 340 can match eol */
 YY_RULE_SETUP
-#line 1263 "goserver.l"
+#line 1263 "./goserver.l"
 { break; }
 	YY_BREAK
 case 341:
 YY_RULE_SETUP
-#line 1265 "goserver.l"
+#line 1265 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT);
                                   return NAME; }
 	YY_BREAK
 case 342:
 YY_RULE_SETUP
-#line 1267 "goserver.l"
+#line 1267 "./goserver.l"
 { break; }
 	YY_BREAK
 case 343:
 /* rule 343 can match eol */
 YY_RULE_SETUP
-#line 1268 "goserver.l"
+#line 1268 "./goserver.l"
 { BEGIN(0);
                                   return END; }
 	YY_BREAK
 case 344:
 YY_RULE_SETUP
-#line 1270 "goserver.l"
+#line 1270 "./goserver.l"
 { return YYTEXT[0]; }
 	YY_BREAK
 case 345:
 YY_RULE_SETUP
-#line 1272 "goserver.l"
+#line 1272 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT);
                                   return NAME; }
 	YY_BREAK
 case 346:
 YY_RULE_SETUP
-#line 1274 "goserver.l"
+#line 1274 "./goserver.l"
 { break; }
 	YY_BREAK
 case 347:
 /* rule 347 can match eol */
 YY_RULE_SETUP
-#line 1275 "goserver.l"
+#line 1275 "./goserver.l"
 { BEGIN(0);
                                   return END; }
 	YY_BREAK
 case 348:
 YY_RULE_SETUP
-#line 1277 "goserver.l"
+#line 1277 "./goserver.l"
 { return YYTEXT[0]; }
 	YY_BREAK
 case 349:
 /* rule 349 can match eol */
 YY_RULE_SETUP
-#line 1279 "goserver.l"
+#line 1279 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG-1);
                                   BEGIN(0);
                                   return NAME; }
@@ -20809,7 +20809,7 @@ YY_RULE_SETUP
 case 350:
 /* rule 350 can match eol */
 YY_RULE_SETUP
-#line 1283 "goserver.l"
+#line 1283 "./goserver.l"
 { char *ptr = strchr(YYTEXT, ')');
                                   IgsYYlval.Name = mystrndup(YYTEXT, ptr-YYTEXT);
                                   BEGIN(0);
@@ -20818,7 +20818,7 @@ YY_RULE_SETUP
 case 351:
 /* rule 351 can match eol */
 YY_RULE_SETUP
-#line 1288 "goserver.l"
+#line 1288 "./goserver.l"
 {char *ptr = strchr(YYTEXT, ')');
                                   IgsYYlval.Name = mystrndup(YYTEXT, ptr-YYTEXT);
                                   BEGIN(0);
@@ -20826,46 +20826,46 @@ YY_RULE_SETUP
 	YY_BREAK
 case 352:
 YY_RULE_SETUP
-#line 1293 "goserver.l"
+#line 1293 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT+2);
                                   BEGIN(UNDOBLACK);
                                   return NAME; }
 	YY_BREAK
 case 353:
 YY_RULE_SETUP
-#line 1297 "goserver.l"
+#line 1297 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT+4);
                                   BEGIN(UNDOMOVE);
                                   return NAME; }
 	YY_BREAK
 case 354:
 YY_RULE_SETUP
-#line 1301 "goserver.l"
+#line 1301 "./goserver.l"
 { break; }
 	YY_BREAK
 case 355:
 YY_RULE_SETUP
-#line 1302 "goserver.l"
+#line 1302 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT);
 		                   return NAME; }
 	YY_BREAK
 case 356:
 /* rule 356 can match eol */
 YY_RULE_SETUP
-#line 1304 "goserver.l"
+#line 1304 "./goserver.l"
 { BEGIN(0);
 	                           break; }
 	YY_BREAK
 case 357:
 /* rule 357 can match eol */
 YY_RULE_SETUP
-#line 1307 "goserver.l"
+#line 1307 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG-1);
                                   return NAME; }
 	YY_BREAK
 case 358:
 YY_RULE_SETUP
-#line 1310 "goserver.l"
+#line 1310 "./goserver.l"
 { IgsYYlval.Value = -1;
                                   BEGIN(0);
                                   return PROMPT; }
@@ -20873,7 +20873,7 @@ YY_RULE_SETUP
 case 359:
 /* rule 359 can match eol */
 YY_RULE_SETUP
-#line 1313 "goserver.l"
+#line 1313 "./goserver.l"
 { IgsYYless(0);
                                   NextState = NONCLIENT;
                                   BEGIN(ALLLINE);
@@ -20882,7 +20882,7 @@ YY_RULE_SETUP
 case 360:
 /* rule 360 can match eol */
 YY_RULE_SETUP
-#line 1318 "goserver.l"
+#line 1318 "./goserver.l"
 { char *ptr;
                                   ptr = strchr(YYTEXT, ' ')+1;
                                   IgsYYlval.Name =
@@ -20892,32 +20892,32 @@ YY_RULE_SETUP
 case 361:
 /* rule 361 can match eol */
 YY_RULE_SETUP
-#line 1323 "goserver.l"
+#line 1323 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(0);
                                   break; }
 	YY_BREAK
 case 362:
 /* rule 362 can match eol */
-#line 1328 "goserver.l"
+#line 1328 "./goserver.l"
 case 363:
 /* rule 363 can match eol */
-#line 1329 "goserver.l"
+#line 1329 "./goserver.l"
 case 364:
 /* rule 364 can match eol */
 YY_RULE_SETUP
-#line 1329 "goserver.l"
+#line 1329 "./goserver.l"
 { break; }
 	YY_BREAK
 case 365:
 YY_RULE_SETUP
-#line 1330 "goserver.l"
+#line 1330 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT);
                                   return NAME; }
 	YY_BREAK
 case 366:
 YY_RULE_SETUP
-#line 1332 "goserver.l"
+#line 1332 "./goserver.l"
 { IgsYYless(0);
                                   BEGIN(0);
                                   break; }
@@ -20925,7 +20925,7 @@ YY_RULE_SETUP
 case 367:
 /* rule 367 can match eol */
 YY_RULE_SETUP
-#line 1335 "goserver.l"
+#line 1335 "./goserver.l"
 {
                                   BEGIN(0);
                                   return END; }
@@ -20933,7 +20933,7 @@ YY_RULE_SETUP
 case 368:
 /* rule 368 can match eol */
 YY_RULE_SETUP
-#line 1338 "goserver.l"
+#line 1338 "./goserver.l"
 {
                                   BEGIN(0);
                                   return NOSGF; }
@@ -20941,37 +20941,37 @@ YY_RULE_SETUP
 case 369:
 /* rule 369 can match eol */
 YY_RULE_SETUP
-#line 1342 "goserver.l"
+#line 1342 "./goserver.l"
 { IgsYYlval.Name = mystrndup(YYTEXT, YYLENG-1);
                                   BEGIN(NextState);
                                   return NAME; }
 	YY_BREAK
 case 370:
 YY_RULE_SETUP
-#line 1346 "goserver.l"
+#line 1346 "./goserver.l"
 { IgsYYlval.Name = mystrdup(YYTEXT);
                                   return NAME; }
 	YY_BREAK
 case 371:
 YY_RULE_SETUP
-#line 1348 "goserver.l"
+#line 1348 "./goserver.l"
 { break; }
 	YY_BREAK
 case 372:
 /* rule 372 can match eol */
 YY_RULE_SETUP
-#line 1349 "goserver.l"
+#line 1349 "./goserver.l"
 { BEGIN(NextState);
                                   return END; }
 	YY_BREAK
 case 373:
 YY_RULE_SETUP
-#line 1351 "goserver.l"
+#line 1351 "./goserver.l"
 { return YYTEXT[0]; }
 	YY_BREAK
 case 374:
 YY_RULE_SETUP
-#line 1353 "goserver.l"
+#line 1353 "./goserver.l"
 {
                                   IgsYYless(0);
                                   unput('\n');
@@ -20980,7 +20980,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 375:
 YY_RULE_SETUP
-#line 1358 "goserver.l"
+#line 1358 "./goserver.l"
 ECHO;
 	YY_BREAK
 #line 20986 "lex.IgsYY.c"
@@ -22172,7 +22172,7 @@ void IgsYYfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 1358 "goserver.l"
+#line 1358 "./goserver.l"
 
 
 static Player *IdToPlayer(const char *From)
@@ -22284,13 +22284,13 @@ static void IgsYY_flex_strcpy(char *s1, const char *s2)
 {
     Raise1(AssertException, "flex kludge function called");
 #ifndef YY_NO_PUSH_STATE
-    IgsYY_push_state(s1 == s2);
+    /* IgsYY_push_state(s1 == s2); */
 #endif
 #ifndef YY_NO_POP_STATE
-    IgsYY_pop_state();
+    /* IgsYY_pop_state(); */
 #endif
 #ifndef YY_NO_TOP_STATE
-    IgsYY_top_state();
+    /* IgsYY_top_state(); */
 #endif
     loopy();
 }

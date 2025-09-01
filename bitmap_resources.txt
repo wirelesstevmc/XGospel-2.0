@@ -1,0 +1,10 @@
+! XGospel X Resources using X11 bitmap files instead of XPM
+*Command.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm
+*test.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm
+xgospel*board.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm
+xgospel.games.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm
+xgospel.main.collect.info*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth.xbm
+xgospel.players.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/pagoda.xbm
+xgospel.stats*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth.xbm
+xgospel.stats.collect.playerObserve*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm
+xgospel.stats.collect.playerObserve*borderPixmap: /home/cahill/Claude_Projects/fresh-start/board.xbm

@@ -1,0 +1,2 @@
+*Command.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+*test.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)

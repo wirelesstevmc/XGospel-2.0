@@ -306,15 +306,27 @@ MyContext YShellContext(Widget w)
 /*********************************************************************/
 #include <X11/Xmu/Converters.h>
 
+/* Forward declaration for our custom converter - old style signature for XtAddConverter */
+extern void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
+                                   XrmValuePtr fromVal, XrmValuePtr toVal);
+
 static void MyVendorShellClassInitialize(void)
 {
     static XtConvertArgRec ScreenConvertArg[] = {
         {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
-	     sizeof(Screen *)}
+	     sizeof(Screen *)},
+        {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
+	     sizeof(Colormap)},
+        {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.depth),
+	     sizeof(Cardinal)}
     };
 
     XtAddConverter(XtRString, XtRCursor, XmuCvtStringToCursor,
-		   ScreenConvertArg, XtNumber(ScreenConvertArg));
+		   ScreenConvertArg, 1);
+
+    /* Pixmap converter now registered in GetConverters() - skip duplicate registration */
+    printf("DEBUG: MyVendorShellClassInitialize - skipping pixmap converter (already registered)\n");
+    fflush(stdout);
 /*
     XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		   ScreenConvertArg, XtNumber(ScreenConvertArg));

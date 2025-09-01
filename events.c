@@ -207,12 +207,12 @@ static int MatchPlayer(XtPointer Pattern, XtPointer player)
 
 int Logon(const Player *player)
 {
-    return MatchEvent(Logon, MatchPlayer, (XtPointer) &player, sizeof(player));
+    return MatchEvent((EventFunPtr)Logon, MatchPlayer, (XtPointer) &player, sizeof(player));
 }
 
 int Logoff(const Player *player)
 {
-    return MatchEvent(Logoff,MatchPlayer, (XtPointer) &player, sizeof(player));
+    return MatchEvent((EventFunPtr)Logoff, MatchPlayer, (XtPointer) &player, sizeof(player));
 }
 
 typedef struct {
@@ -242,7 +242,7 @@ int GotTell(Player *player, const char *Message)
         Communication->player  = player;
         Communication->Length  = Length;
         memcpy(Communication->Message, Message, Length+1);
-        rc = MatchEvent(GotTell, MatchTell, (XtPointer) Communication, Size);
+        rc = MatchEvent((EventFunPtr)GotTell, MatchTell, (XtPointer) Communication, Size);
     } ON_UNWIND {
         myfree(Communication);
     } END_UNWIND;
@@ -262,7 +262,7 @@ int GotNoTell(Player *player, const char *Message)
         Communication->player  = player;
         Communication->Length  = Length;
         memcpy(Communication->Message, Message, Length+1);
-        rc = MatchEvent(GotNoTell, MatchTell, (XtPointer) Communication, Size);
+        rc = MatchEvent((EventFunPtr)GotNoTell, MatchTell, (XtPointer) Communication, Size);
     } ON_UNWIND {
         myfree(Communication);
     } END_UNWIND;
@@ -290,12 +290,12 @@ int GotStats(const Player *player, const NameVal *stats)
 
     Stats.player = player;
     Stats.stats  = (NameVal *) stats;
-    return MatchEvent(GotStats, MatchStats, (XtPointer) &Stats, sizeof(Stats));
+    return MatchEvent((EventFunPtr)GotStats, MatchStats, (XtPointer) &Stats, sizeof(Stats));
 }
 
 int EnterServer(const Player *player)
 {
-    return MatchEvent(EnterServer, MatchPlayer,
+    return MatchEvent((EventFunPtr)EnterServer, MatchPlayer,
                       (XtPointer) &player, sizeof(player)); 
 }
 
@@ -371,7 +371,7 @@ static void XgospelCheck(Action action, EventFunPtr Fun, XtPointer FunArgs,
 
     if (name && *name) {
         SharedLastCommand(NULL, "stats %s", name);
-        event = AddEvent(GotStats, (XtPointer) name, FREENULL);
+        event = AddEvent((EventFunPtr)GotStats, (XtPointer) name, FREENULL);
         AddAction(event, 0, XgospelStats, NULL, FREENULL);
         AddAction(event, 0, SelfRemove, NULL, FREENULL);
     }
@@ -463,7 +463,7 @@ static int XgospelMessage(Player *player, const char *Message)
     }
 
     if (*User != XGOSPELUSER) {
-        event = AddEvent(Logoff, (XtPointer) Name, FREENULL);
+        event = AddEvent((EventFunPtr)Logoff, (XtPointer) Name, FREENULL);
         AddAction(event, 0, XgospelUnmessage, NULL, FREENULL);
         AddAction(event, 0, SelfRemove, NULL, FREENULL);
     }
@@ -545,13 +545,13 @@ void InitEvents(Widget TopLevel)
     CleanEvents();
     Version = mystrdup(appdata.Version);
     if (appdata.Maintainer && *appdata.Maintainer) {
-        event = AddEvent(Logon, appdata.Maintainer, FREENULL);
+        event = AddEvent((EventFunPtr)Logon, appdata.Maintainer, FREENULL);
         AddAction(event, LOGONWAIT, XgospelReport, NULL, FREENULL);
-        event = AddEvent(GotTell, NULL, FREENULL);
+        event = AddEvent((EventFunPtr)GotTell, NULL, FREENULL);
         AddAction(event, 0, GetEscaped, NULL, FREENULL);
-        event = AddEvent(EnterServer, (XtPointer) "*", FREENULL);
+        event = AddEvent((EventFunPtr)EnterServer, (XtPointer) "*", FREENULL);
         AddAction(event, LOGONWAIT, XgospelCheck, NULL, FREENULL);
-        AddEvent(GotNoTell, NULL, FREENULL); /* Just to stop message */
+        AddEvent((EventFunPtr)GotNoTell, NULL, FREENULL); /* Just to stop message */
 
         EventsRoot = MyVaCreateManagedWidget("events", TopLevel, NULL);
 

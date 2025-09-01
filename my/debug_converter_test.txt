@@ -1,0 +1,397 @@
+Warning: Cannot convert string "pixmap(/home/cahill/xearth.xpm)" to type Pixmap
+Initializing XGospel-2.0 with modern protocol support...
+Modern features initialized successfully
+XGospel-2.0 ready - preparing to connect to Go server
+Setting up X11 widget dimensions...
+Realizing X11 widgets...
+X11 widgets realized successfully
+Attempting immediate connection...
+DelayedConnect called - connecting to igs.joyjoy.net:7777
+DEBUG: ReConnect called for igs.joyjoy.net:7777
+DEBUG: Attempting socket connection to igs.joyjoy.net:7777
+DEBUG: Socket connect returned -1 (errno=115)
+DEBUG: Connection in progress, setting up write callback
+DEBUG: Setting up read callback
+DEBUG: Connection setup complete, socket=5
+Connection established successfully!
+Connection attempt completed, entering X11 event loop...
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 512 bytes (errno=11)
+DEBUG: Data received (512 bytes): '                Welcome to IGS at igs.joyjoy.net 6969 (9.0)\r\n                   Copyright(c) 1992-2024 PANDANET Inc.\r\n                                  @@\r\n            @@@@       @@         @@@     Th...'
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 8 bytes (errno=11)
+DEBUG: Data received (8 bytes): '  @@    '
+DEBUG: Skipping welcome banner line: '                Welcome to IGS at igs.joyjoy.net 6'
+                Welcome to IGS at igs.joyjoy.net 6969 (9.0)
+
+DEBUG: Skipping welcome banner line: '                   Copyright(c) 1992-2024 PANDANET'
+                   Copyright(c) 1992-2024 PANDANET Inc.
+
+DEBUG: Skipping welcome banner line: '                                  @@
+'
+                                  @@
+
+DEBUG: Skipping welcome banner line: '            @@@@       @@         @@@     There is'
+            @@@@       @@         @@@     There is no expectation of privacy
+
+DEBUG: Skipping welcome banner line: '@@@@@@@@@@@@@@@@@@     @@@        @@@     on this '
+@@@@@@@@@@@@@@@@@@     @@@        @@@     on this server. There is no warranty
+
+DEBUG: Skipping welcome banner line: ' @@@@@ @@      @@@     @@@   @@   @@      implied '
+ @@@@@ @@      @@@     @@@   @@   @@      implied or expressed, provided with
+
+DEBUG: Skipping welcome banner line: ' @@    @@@     @@      @@    @@@  @@      this sof'
+ @@    @@@     @@      @@    @@@  @@      this software.
+
+DEBUG: Skipping welcome banner line: ' @@     @@@@@  @@      @@     @   @@ @
+'
+ @@     @@@@@  @@      @@     @   @@ @
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 483 bytes (errno=11)
+DEBUG: Data received (483 bytes): ' @   @@@@@   If you are new to IGS, you need to\r\n @@     @      @@      @@@@ @@@@@@@@      type  guest  when you see the Login\r\n @@     @@@@   @@    @@@@@@ @@@   @@      prompt. You will be given a gu...'
+DEBUG: Skipping welcome banner line: ' @@ @@@@@@@@   @@      @@     @   @@@@@   If you a'
+ @@ @@@@@@@@   @@      @@     @   @@@@@   If you are new to IGS, you need to
+
+DEBUG: Skipping welcome banner line: ' @@     @      @@      @@@@ @@@@@@@@      type  gu'
+ @@     @      @@      @@@@ @@@@@@@@      type  guest  when you see the Login
+
+DEBUG: Skipping welcome banner line: ' @@     @@@@   @@    @@@@@@ @@@   @@      prompt. '
+ @@     @@@@   @@    @@@@@@ @@@   @@      prompt. You will be given a guest
+
+DEBUG: Skipping welcome banner line: ' @@  @@@@@     @@  @@@@@@     @ @ @@      account '
+ @@  @@@@@     @@  @@@@@@     @ @ @@      account with limited access.
+
+DEBUG: Skipping welcome banner line: ' @@     @  @@@ @@      @@     @@@ @@
+'
+ @@     @  @@@ @@      @@     @@@ @@
+
+DEBUG: Skipping welcome banner line: ' @@    @@@@@@@ @@     @@@     @   @@      To regis'
+ @@    @@@@@@@ @@     @@@     @   @@      To register, please visit the IGS
+
+DEBUG: Skipping welcome banner line: ' @@@@@@@@   @@ @@     @@@@@   @@@@@@      home pag'
+ @@@@@@@@   @@ @@     @@@@@   @@@@@@      home page located at:
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 486 bytes (errno=11)
+DEBUG: Data received (486 bytes): '@   @@@ @@\r\n @@     @  @@  @@ @ @@ @@     @  @@@@@@@@@  http://pandanet-igs.com/\r\n @@     @      @@  @@  @@  @@@@@@@@@   @@\r\n @@     @      @@  @   @@ @@@             Online help is available after yo...'
+DEBUG: Skipping welcome banner line: ' @@     @   @  @@    @@@@@@   @@@ @@
+'
+ @@     @   @  @@    @@@@@@   @@@ @@
+
+DEBUG: Skipping welcome banner line: ' @@     @  @@  @@ @ @@ @@     @  @@@@@@@@@  http:/'
+ @@     @  @@  @@ @ @@ @@     @  @@@@@@@@@  http://pandanet-igs.com/
+
+DEBUG: Skipping welcome banner line: ' @@     @      @@  @@  @@  @@@@@@@@@   @@
+'
+ @@     @      @@  @@  @@  @@@@@@@@@   @@
+
+DEBUG: Skipping welcome banner line: ' @@     @      @@  @   @@ @@@             Online h'
+ @@     @      @@  @   @@ @@@             Online help is available after you
+
+DEBUG: Skipping welcome banner line: ' @@@@@@@@@@@@@@@@      @@    @@@  @       enter IG'
+ @@@@@@@@@@@@@@@@      @@    @@@  @       enter IGS.  For help, enter:  help
+
+DEBUG: Skipping welcome banner line: '@@@@@@@@@@    @@@      @@    @@@  @@@@
+'
+@@@@@@@@@@    @@@      @@    @@@  @@@@
+
+DEBUG: Skipping welcome banner line: ' @@           @@@      @@    @@    @@@@   If you r'
+ @@           @@@      @@    @@    @@@@   If you require further help, please
+
+DEBUG: Skipping welcome banner line: ' @             @@      @@   @@      @@@   send ema'
+ @             @@      @@   @@      @@@   send email to:
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 51 bytes (errno=11)
+DEBUG: Data received (51 bytes): '@        @@   igs-adm@panda-igs.joyjoy.net\r\nLogin: '
+DEBUG: Skipping welcome banner line: '               @@      @   @@        @@   igs-adm@'
+               @@      @   @@        @@   igs-adm@panda-igs.joyjoy.net
+
+DEBUG: Found Login prompt in partial data, triggering authentication
+DEBUG: Sending username: wireless
+DEBUG: ForceCommand called with: '%s'
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 10 bytes (errno=11)
+DEBUG: Data received (10 bytes): '\xff\xfb\x01\r\n1 1\r\n'
+DEBUG: Skipping welcome banner line: 'ÿû
+'
+ÿû
+
+DEBUG: Found password prompt (1 1), sending password
+DEBUG: Sending password for registered account
+DEBUG: ForceCommand called with: '%s'
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 512 bytes (errno=11)
+DEBUG: Data received (512 bytes): '9 File\r\n\r\n ~~~~~~~~~~~~~~  You have entered IGS at igs.joyjoy.net 6969  ~~~~~~~~~~~~~~~\r\n** "An Introduction To Go"\r\n    http://www.pandanet.co.jp/English/learning_go/learning_go_1.html\r\n\r\n** The 'und...'
+DEBUG: Skipping welcome banner line: '9 File
+'
+9 File
+
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: ' ~~~~~~~~~~~~~~  You have entered IGS at igs.joyjo'
+ ~~~~~~~~~~~~~~  You have entered IGS at igs.joyjoy.net 6969  ~~~~~~~~~~~~~~~
+
+DEBUG: Skipping welcome banner line: '** "An Introduction To Go"
+'
+** "An Introduction To Go"
+
+DEBUG: Skipping welcome banner line: '    http://www.pandanet.co.jp/English/learning_go/'
+    http://www.pandanet.co.jp/English/learning_go/learning_go_1.html
+
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '** The 'undo' and 'stored' functions have changed.'
+** The 'undo' and 'stored' functions have changed.
+
+DEBUG: Skipping welcome banner line: '   See   help undoplease     help stored
+'
+   See   help undoplease     help stored
+
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '** glGo is available for Windows, Macintosh OS X, '
+** glGo is available for Windows, Macintosh OS X, and Linux.
+
+DEBUG: Skipping welcome banner line: '      http://www.pandanet.co.jp/English/glgo/
+'
+      http://www.pandanet.co.jp/English/glgo/
+
+DEBUG: Skipping welcome banner line: '   The default setting is a single window mode, bu'
+   The default setting is a single window mode, but if you prefer the
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 465 bytes (errno=11)
+DEBUG: Data received (465 bytes): 'references'. The windows\r\n   in the single-window mode are 'tear off windows'. The button order\r\n   can be changed with right clicks. See the 'changelog' for more info!\r\n\r\n** The 15th Pandanet Cup\r\n  ...'
+DEBUG: Skipping welcome banner line: '   multi-window mode, make the switch in the 'Pref'
+   multi-window mode, make the switch in the 'Preferences'. The windows
+
+DEBUG: Skipping welcome banner line: '   in the single-window mode are 'tear off windows'
+   in the single-window mode are 'tear off windows'. The button order
+
+DEBUG: Skipping welcome banner line: '   can be changed with right clicks. See the 'chan'
+   can be changed with right clicks. See the 'changelog' for more info!
+
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '** The 15th Pandanet Cup
+'
+** The 15th Pandanet Cup
+
+DEBUG: Skipping welcome banner line: '   http://www.pandanet.co.jp/event/iwag2010/e/
+'
+   http://www.pandanet.co.jp/event/iwag2010/e/
+
+DEBUG: Skipping welcome banner line: '                                                  '
+                                                                       _ _
+
+DEBUG: Skipping welcome banner line: '* IGS Magazine, pro commentary on games played on '
+* IGS Magazine, pro commentary on games played on IGS       |\__/|  .~    ~.
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 447 bytes (errno=11)
+DEBUG: Data received (447 bytes): '`./      .'\r\n* Lessons: http://www.pandanet.co.jp/English/cornel.html   {o__,   \    {\r\n* Art: http://www.pandanet.co.jp/English/galleryintro.html   / .  . )    \\r\n       __                           ...'
+DEBUG: Skipping welcome banner line: '  http://www.pandanet.co.jp/English/members/mailma'
+  http://www.pandanet.co.jp/English/members/mailmaga/       /o=o'`./      .'
+
+DEBUG: Skipping welcome banner line: '* Lessons: http://www.pandanet.co.jp/English/corne'
+* Lessons: http://www.pandanet.co.jp/English/cornel.html   {o__,   \    {
+
+DEBUG: Skipping welcome banner line: '* Art: http://www.pandanet.co.jp/English/galleryin'
+* Art: http://www.pandanet.co.jp/English/galleryintro.html   / .  . )    \
+
+DEBUG: Skipping welcome banner line: '       __                                         '
+       __                                                    `-` '-' \    }
+
+DEBUG: Skipping welcome banner line: '     ^/..\^     New Players, try:   mail me start '
+     ^/..\^     New Players, try:   mail me start           .(   _(   )_.'
+
+DEBUG: Skipping welcome banner line: '  --m( 00 )m--                                    '
+  --m( 00 )m--                                             '---.~_ _ _|
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 142 bytes (errno=11)
+DEBUG: Data received (142 bytes): 'h/sintro1.html\r\n~~~~~~~~~~~~~~~~~~  http://www.pandanet.co.jp/English/  ~~~~~~~~~~~~~~~~~~~~\r\n9 File\r\n39 IGS entry on 08 - 31 - 2025\r\n\xff\xfc\x011 5\r\n'
+DEBUG: Skipping welcome banner line: '* A Brief Introduction:  http://www.pandanet.co.jp'
+* A Brief Introduction:  http://www.pandanet.co.jp/English/sintro1.html
+
+DEBUG: Skipping welcome banner line: '~~~~~~~~~~~~~~~~~~  http://www.pandanet.co.jp/Engl'
+~~~~~~~~~~~~~~~~~~  http://www.pandanet.co.jp/English/  ~~~~~~~~~~~~~~~~~~~~
+
+DEBUG: Skipping welcome banner line: '9 File
+'
+9 File
+
+DEBUG: Skipping welcome banner line: '39 IGS entry on 08 - 31 - 2025
+'
+39 IGS entry on 08 - 31 - 2025
+
+DEBUG: Skipping welcome banner line: 'ÿü1 5
+'
+ÿü1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 43 bytes (errno=11)
+DEBUG: Data received (43 bytes): '\r\n21 {isfadm03 [2k ] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {isfadm03 [2k ] has connected.}
+'
+21 {isfadm03 [2k ] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 39 bytes (errno=11)
+DEBUG: Data received (39 bytes): '\r\n21 {isfadm03 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {isfadm03 has disconnected}
+'
+21 {isfadm03 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 40 bytes (errno=11)
+DEBUG: Data received (40 bytes): '\r\n21 {guest6807 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {guest6807 has disconnected}
+'
+21 {guest6807 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 40 bytes (errno=11)
+DEBUG: Data received (40 bytes): '\r\n21 {santi [2d*] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {santi [2d*] has connected.}
+'
+21 {santi [2d*] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 41 bytes (errno=11)
+DEBUG: Data received (41 bytes): '\r\n21 {obamboul25 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {obamboul25 has disconnected}
+'
+21 {obamboul25 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 43 bytes (errno=11)
+DEBUG: Data received (43 bytes): '\r\n21 {isfadm01 [2k ] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {isfadm01 [2k ] has connected.}
+'
+21 {isfadm01 [2k ] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 40 bytes (errno=11)
+DEBUG: Data received (40 bytes): '\r\n21 {mtczq [3k*] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {mtczq [3k*] has connected.}
+'
+21 {mtczq [3k*] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 39 bytes (errno=11)
+DEBUG: Data received (39 bytes): '\r\n21 {isfadm01 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {isfadm01 has disconnected}
+'
+21 {isfadm01 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 43 bytes (errno=11)
+DEBUG: Data received (43 bytes): '\r\n21 {JamesBot [NR ] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {JamesBot [NR ] has connected.}
+'
+21 {JamesBot [NR ] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 39 bytes (errno=11)
+DEBUG: Data received (39 bytes): '\r\n21 {JamesBot has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {JamesBot has disconnected}
+'
+21 {JamesBot has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 40 bytes (errno=11)
+DEBUG: Data received (40 bytes): '\r\n21 {guest6733 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {guest6733 has disconnected}
+'
+21 {guest6733 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 44 bytes (errno=11)
+DEBUG: Data received (44 bytes): '\r\n21 {guest6809 [NR ] has connected.}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {guest6809 [NR ] has connected.}
+'
+21 {guest6809 [NR ] has connected.}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 56 bytes (errno=11)
+DEBUG: Data received (56 bytes): '\r\n21 {Match 99: Pbot5k01 [ 4k*] vs. JK38 [ 6k*] }\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {Match 99: Pbot5k01 [ 4k*] vs. JK38 [ 6k*] }
+'
+21 {Match 99: Pbot5k01 [ 4k*] vs. JK38 [ 6k*] }
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+
+DEBUG: IgsInput called for socket 5
+DEBUG: read() returned 40 bytes (errno=11)
+DEBUG: Data received (40 bytes): '\r\n21 {guest6742 has disconnected}\r\n1 5\r\n'
+DEBUG: Skipping empty line
+DEBUG: Skipping welcome banner line: '21 {guest6742 has disconnected}
+'
+21 {guest6742 has disconnected}
+
+DEBUG: Skipping welcome banner line: '1 5
+'
+1 5
+

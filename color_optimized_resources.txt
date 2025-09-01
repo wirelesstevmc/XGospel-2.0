@@ -1,0 +1,10 @@
+! XGospel X Resources using 256-color optimized XPM files
+*Command.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+*test.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+xgospel*board.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+xgospel.games.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+xgospel.main.collect.info*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth_256.xpm
+xgospel.players.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/pagoda_256.xpm
+xgospel.stats*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth_256.xpm
+xgospel.stats.collect.playerObserve*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+xgospel.stats.collect.playerObserve*borderPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm

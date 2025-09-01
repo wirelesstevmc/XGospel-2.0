@@ -257,13 +257,13 @@ static void yy_flex_strcpy(char *s1, const char *s2)
 {
     Raise1(AssertException, "flex kludge function called");
 #ifndef YY_NO_PUSH_STATE
-    yy_push_state(s1 == s2);
+    /* yy_push_state(s1 == s2); */
 #endif
 #ifndef YY_NO_POP_STATE
-    yy_pop_state();
+    /* yy_pop_state(); */
 #endif
 #ifndef YY_NO_TOP_STATE
-    yy_top_state();
+    /* yy_top_state(); */
 #endif
     unput(' ');
     loopy();

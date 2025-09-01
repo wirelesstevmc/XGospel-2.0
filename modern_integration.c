@@ -11,6 +11,7 @@
 #include "gointer.h"
 #include "utils.h"
 #include "xgospel.h"
+#include "messages.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,0 +1,10 @@
+! XGospel X Resources with correct pixmap paths
+*Command.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+*test.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+xgospel*board.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+xgospel.games.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+xgospel.main.collect.info*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/xearth.xpm)
+xgospel.players.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/pagoda.xpm)
+xgospel.stats*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/xearth.xpm)
+xgospel.stats.collect.playerObserve*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)
+xgospel.stats.collect.playerObserve*borderPixmap: pixmap(/home/cahill/Claude_Projects/fresh-start/board.xpm)

@@ -334,7 +334,46 @@ static const char *PixmapFromName(Pixmap *pixmap,
                     goto converted;
                 } else return "Pixmap: could not find builtin bitmap";
             } else return "Pixmap: could not find closing ')'";
-        } else return "Pixmap: unknown function"; 
+        } else if (memcmp(Name, "pixmap", 6) == 0) {
+            OpenBrace++;
+            CloseBrace = strrchr(OpenBrace, ')'); /* Use strrchr to find last ) */
+            if (CloseBrace) {
+                Len = CloseBrace-OpenBrace;
+                char inner_content[512];
+                if (Len >= sizeof(inner_content)) return "Pixmap: content too long";
+                memcpy(inner_content, OpenBrace, Len);
+                inner_content[Len] = '\0';
+                printf("DEBUG: Processing pixmap content: '%s'\n", inner_content);
+                fflush(stdout);
+                
+                /* Check if it's a nested builtin() call */
+                if (memcmp(inner_content, "builtin(", 8) == 0) {
+                    printf("DEBUG: Handling nested builtin call\n");
+                    fflush(stdout);
+                    /* Recursively call PixmapFromName with the builtin content */
+                    const char *error = PixmapFromName(&temp, screen, inner_content);
+                    if (error == NULL) {
+                        rc = XpmSuccess;
+                        goto converted;
+                    } else {
+                        return error;
+                    }
+                } else {
+                    /* Treat as filename */
+                    printf("DEBUG: Loading XPM file: '%s'\n", inner_content);
+                    fflush(stdout);
+                    rc = XpmReadFileToPixmap(dpy, RootWindowOfScreen(screen), inner_content, &temp,
+                                             NULL, NULL);
+                    printf("DEBUG: XpmReadFileToPixmap result: %d\n", rc);
+                    fflush(stdout);
+                    goto converted;
+                }
+            } else return "Pixmap: could not find closing ')'";
+        } else {
+            printf("DEBUG: Unknown function in pixmap string: '%.20s'\n", Name);
+            fflush(stdout);
+            return "Pixmap: unknown function";
+        } 
     }
 
 #ifndef   R4
@@ -378,6 +417,8 @@ static Boolean MyCvtStringToPixmap(Display *disp,
                                    XrmValuePtr fromVal, XrmValuePtr toVal,
                                    XtPointer *ConvertData)
 {
+    printf("DEBUG: MyCvtStringToPixmap called with: '%s'\n", (char*)fromVal->addr);
+    fflush(stdout);
     Pixmap         pixmap;
     Pixel          fg, bg;
     char          *name, myname[100], *ptr1, *ptr2, *ptr3, *ptr4;
@@ -738,14 +779,56 @@ void XmuCvtStringToWidget(XrmValuePtr args, Cardinal *num_args,
 #endif /* NOSTRINGTOWIDGET */
 
 /*****************************************************************************/
+/* Old-style converter for early registration with XtAddConverter           */
+/*****************************************************************************/
+
+/* ARGSUSED */
+void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
+                            XrmValuePtr fromVal, XrmValuePtr toVal)
+{
+    printf("DEBUG: MyCvtStringToPixmapOld called with: '%s'\n", (char*)fromVal->addr);
+    fflush(stdout);
+    
+    static Pixmap pixmap;
+    Screen *screen;
+    const char *ErrorMessage;
+    char *name;
+
+    name = (char *) fromVal->addr;
+    if (*num_args != 3) {
+        XtStringConversionWarning(name, XtRPixmap);
+        return;
+    }
+
+    screen = *(Screen **) args[0].addr;
+    ErrorMessage = PixmapFromName(&pixmap, screen, name);
+    if (ErrorMessage == NULL) {
+        toVal->size = sizeof(Pixmap);
+        toVal->addr = (XtPointer) &pixmap;
+        return;
+    }
+    
+    XtStringConversionWarning(name, XtRPixmap);
+    toVal->addr = NULL;
+    toVal->size = 0;
+}
+
+/*****************************************************************************/
 /* Make all converters available                                             */
 /*****************************************************************************/
 
-void GetConverters(void)
+void GetConverters(XtAppContext app_context)
 {
+    printf("DEBUG: GetConverters called, using XtSetTypeConverter to override built-in converters\n");
+    fflush(stdout);
+    
+    /* Use XtSetTypeConverter with XtCacheNone to forcibly override the built-in String->Pixmap converter */
     XtSetTypeConverter(XtRString, XtRPixmap, MyCvtStringToPixmap,
                        ScreenConvertArg, XtNumber(ScreenConvertArg),
-                       XtCacheByDisplay, PixmapDestructor);
+                       XtCacheNone, PixmapDestructor);
+    
+    printf("DEBUG: Pixmap converter registration completed (XtSetTypeConverter override)\n");
+    fflush(stdout);
     XtSetTypeConverter(XtRString, XtRPixel, MyCvtStringToPixel,
                        ColorConvertArg, XtNumber(ColorConvertArg),
                        XtCacheByDisplay, MyFreePixel);

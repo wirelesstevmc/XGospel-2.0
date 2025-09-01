@@ -1,12 +1,12 @@
 # Generated automatically from Makefile.in by configure.
 srcdir  = .
 
-RM      = $rm -f
+RM      = rm -f
 ARFLAGS = rv
 
 CC   = gcc
 LEX  = flex
-YACC = $bison -y
+YACC = bison -y
 
 SHELL       = /bin/sh
 DEPEND      = :

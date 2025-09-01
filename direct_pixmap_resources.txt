@@ -1,0 +1,10 @@
+! XGospel X Resources using direct XPM file paths (without pixmap() wrapper)
+*Command.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm
+*test.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm
+xgospel*board.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm
+xgospel.games.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm
+xgospel.main.collect.info*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth.xpm
+xgospel.players.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/pagoda.xpm
+xgospel.stats*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth.xpm
+xgospel.stats.collect.playerObserve*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm
+xgospel.stats.collect.playerObserve*borderPixmap: /home/cahill/Claude_Projects/fresh-start/board.xpm

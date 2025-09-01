@@ -1,0 +1,671 @@
+! Merged XGospel X Resources (.Xigs + .Xgospel) with 256-color optimized pixmaps
+! Updated pixmap paths to use 256-color versions for better X11 compatibility
+
+! From .Xigs
+xgospel*site:  igs.joyjoy.net
+xgospel*port:	7777
+
+xgospel*defaultTime: 1
+xgospel*defaultByoYomi: 5
+
+xgospel.main*buttons*borderColor: gold
+xgospel.main*buttons*background: #0c0091
+xgospel.main*buttons*foreground: black
+xgospel.main*buttons*quit.background: Red
+xgospel.main*buttons*quit.foreground: Yellow
+!xgospel.main*buttons*?.foreground:  XtDefaultForeground
+xgospel.main*buttons*?.foreground:  black
+xgospel.main*buttons*?.background:  #edd20d
+xgospel.main.collect.info.Scrollbar*background: cornflowerblue
+xgospel.main.collect.shortHelp*background:  #26bfbf
+xgospel.main.collect.shortHelp*foreground:  MidnightBlue
+!below is tell window color for .Xnngs
+!xgospel.main.collect.shortHelp*background: #98bfa2
+!xgospel.main.collect.shortHelp*backgroundPixmap:  /home/cahill/kdehlpclr.xpm)
+xgospel.main.collect.grip*foreground: gold
+!xgospel.main.collect.info*background:  cyan
+!xgospel.main.collect.info*background:  #ebaa41 (pagoda.xpm -bg)
+!xgospel.main.collect.info*backgroundPixmap:  pixmap(/home/cahill/pagoda.xpm)
+!xgospel.main.collect.info*foreground:  #ffc365 (pagoda.xpm -fg)
+xgospel.main.collect.info*background: #000094
+xgospel.main.collect.info*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth_256.xpm
+!xgospel.main.collect.info*backgroundPixmap:  xearth.xpm
+xgospel.main.collect.info*foreground:  green
+xgospel.main.collect*info.displayCaret:  false
+xgospel.main.collect.input*background:  #98a2bf
+xgospel.main.collect.input*foreground:  black
+xgospel*main.collect.input.height:  50
+xgospel*main.collect.input.borderWidth:  5
+xgospel.main.collect.times*background:  cornflowerblue
+xgospel.main.collect.times.localTime*foreground:  gold
+xgospel.main.collect.times.localTime*background:  MidnightBlue
+xgospel.main.collect.times.universalTime*background:  black
+xgospel.main.collect.times.universalTime*foreground:  green
+xgospel.main.collect.times.serverTime*foreground:  cyan
+xgospel.main.collect.times.serverTime*background:  #98a2bf
+xgospel.main*raise.state: false
+xgospel.games*raise.state: false
+!xgospel*games.?.width:        530
+!xgospel*games.collect.height: 780
+!xgospel*games.collect.viewport.preferredPaneSize: 580
+xgospel*games.collect.viewport.background: blue
+xgospel.games.collect.viewport.vertical*background: cyan
+xgospel.games.collect.viewport.horizontal*background: cornflowerblue
+xgospel.games.collect.stripform.strip*foreground: red
+xgospel.games.collect.stripform.strip*background: black
+xgospel.games.collect.stripform.strip*height: 100
+xgospel.games.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+!xgospel.games.collect.stripform*backgroundPixmap: board.xpm
+!xgospel*games.collect.stripform.strip.height: 90
+!xgospel.games.collect.stripform*height: 100
+xgospel.games.collect.grip*foreground: gold
+xgospel.games.collect.info*background: #0c0091
+!xgospel.games.collect.info*foreround: yellow
+xgospel.games.collect.info.Scrollbar*background: yellow
+xgospel.games*buttons*background: #0c0091
+xgospel.games*buttons*close.background: Red
+xgospel.games*buttons*close.foreground: Yellow
+!xgospel.games*buttons*?.foreground:  XtDefaultForeground
+xgospel.games*buttons*?.foreground:  black
+xgospel.games*buttons*?.background:  cyan
+!xgospel*games.collect.viewport*background: red
+!xgospel*games.collect.set.Toggle.background: DarkSeaGreen
+!xgospel*games.collect.set.gameEntryk.background: #40B040
+!xgospel*games.collect.set.gameEntryd.background: LimeGreen
+!xgospel*games.collect.set.gameEntryp.background: Green
+
+xgospel.players*raise.state: false
+xgospel*players.collect.viewport.background: blue
+xgospel.players.collect.viewport.vertical*background: cyan
+xgospel.players.collect.viewport.horizontal*background: cornflowerblue
+xgospel.players.collect.stats*foreground: cyan
+xgospel.players.collect.stats*background: #98a2bf
+xgospel.players.collect.stripform.strip*foreground: red
+xgospel.players.collect.stripform.strip*background: black
+xgospel.players.collect.stripform.strip*height: 100
+xgospel.players.collect.stripform*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/pagoda_256.xpm
+!xgospel.players.collect.stripform*backgroundPixmap: pagoda.xpm
+!xgospel*players.collect.stripform.strip.height: 90
+!xgospel.players.collect.stripform*height: 100
+xgospel.players.collect.grip*foreground: gold
+xgospel.players.collect.info*background: #0c0091
+!xgospel.players.collect.info*foreround: yellow
+xgospel.players.collect.info.Scrollbar*background: yellow
+xgospel.players*buttons*background: #0c0091
+xgospel.players*buttons*close.background: Red
+xgospel.players*buttons*close.foreground: Yellow
+!xgospel.players*buttons*?.foreground:  XtDefaultForeground
+xgospel.players*buttons*?.foreground:  black
+xgospel.players*buttons*?.background:  cyan
+
+xgospel.events*raise.state: false
+
+xgospel.tell.collect.info.Scrollbar*background: #bf72ac
+xgospel.tell.collect.grip*foreground:  red
+xgospel.tell.collect.info*background:  blue
+xgospel.tell.collect.info*foreground:  yellow
+xgospel.tell.collect.input.borderWidth:  5
+xgospel.tell.collect.input.height: 40
+xgospel.tell.collect.input*background:  cornflowerblue
+xgospel.tell.collect.input*foreground:  black
+xgospel.tell*buttons*background: #0c0091
+xgospel.tell*buttons*close.background: Red
+xgospel.tell*buttons*close.foreground: Yellow
+!xgospel.tell*buttons*?.foreground:  XtDefaultForeground
+xgospel.tell*buttons*?.foreground:  black
+xgospel.tell*buttons*?.background:  Green
+xgospel*tell*raise.state: true
+
+xgospel.stats*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/xearth_256.xpm
+!xgospel.stats*backgroundPixmap: xearth.xpm
+xgospel.stats.collect*foreground: green
+xgospel.stats.collect*background: #000094
+xgospel.stats.collect*borderColor: green
+xgospel.stats.collect.close*background: Red
+xgospel.stats.collect.close*foreground: Yellow
+xgospel.stats.collect.getTell*background: blue
+xgospel.stats.collect.getTell*foreground: Yellow
+xgospel.stats.collect.playerObserve*backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+!xgospel.stats.collect.playerObserve*backgroundPixmap: board.xpm
+
+xgospel.stats.collect.playerObserve*borderPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+!xgospel.stats.collect.playerObserve*borderPixmap: board.xpm
+
+xgospel.stats.collect.playerObserve*foreground:black
+
+! Stats window geometry settings - matched to working screenshot
+xgospel*stats.collect.viewport.preferredPaneSize: 1200
+xgospel*stats.collect.stripform.preferredPaneSize: 500
+xgospel*stats.?.width: 1200
+xgospel*stats.?.height: 300
+xgospel*stats.collect.width: 1150
+xgospel*stats.collect.height: 250
+xgospel*stats.collect*width: 120
+xgospel*stats.collect.stripform*width: 120
+xgospel*stats.collect.stripform.numColumns: 4
+xgospel*stats.collect.stripform.orientation: horizontal
+xgospel*stats*Label.width: 150
+xgospel*stats*Toggle.width: 150
+xgospel*stats*Command.width: 150
+
+xgospel.challenge*buttons*?.foreground: Green
+xgospel.challenge*buttons*?.background: Black
+xgospel.challenge*buttons*ok.background: Yellow
+xgospel.challenge*buttons*ok.foreground: black
+xgospel.challenge*buttons*close.background: Red
+xgospel.challenge*buttons*close.foreground: Yellow
+xgospel.challenge*buttons*getStats.background: Grey
+xgospel.challenge*buttons*getStats.foreground: black
+xgospel.challenge*buttons*decline.background: black
+xgospel.challenge*buttons*decline.foreground: Red
+xgospel.challenge*buttons*getTell.background: blue
+xgospel.challenge*buttons*getTell.foreground: Yellow
+xgospel.challenge*collect*choices*colorWhite.foreground: black
+xgospel.challenge*collect*choices*colorWhite.background: white
+xgospel.challenge*collect*choices*colorBlack.foreground: white
+xgospel.challenge*collect*choices*colorBlack.background: black
+xgospel.challenge*collect*state*stateDispute.background: red
+xgospel.challenge*collect*state*stateDispute.foreground: black
+xgospel.challenge*collect*state*stateDecline.background: black
+xgospel.challenge*collect*state*stateDecline.foreground: red
+xgospel.challenge*collect*state*stateChallengee.foreground: black
+xgospel.challenge*collect*state*stateChallenger.background: black
+xgospel.challenge*collect*state*stateChallenger.foreground: cyan
+xgospel.challenge*collect*state*stateChallengee.background: cyan
+
+xgospel.askString*collect*analyzeSize*analyzeSizeLabel.background: Green
+xgospel.askString*collect*allowSuicide*allowSuicideLabel.background: Green
+xgospel.askString*collect*simpleNames*simpleNamesLabel.background: Green
+xgospel.askString*collect*numberKibitzes*numberKibitzesLabel.background: Green
+xgospel.askString*collect*minSecPerMove*minSecPerMoveLabel.background: Green
+xgospel.askString*collect*minLagMargin*minLagMarginLabel.background: Green
+xgospel.askString*collect*replayTimeout*replayTimeoutLabel.background: Green
+xgospel.askString*collect*whoTimeout*whoTimeoutLabel.background: Green
+xgospel.askString*collect*gamesTimeout*gamesTimeoutLabel.background: Green
+xgospel.askString*collect*clockTimeout*clockTimeoutLabel.background: Green
+xgospel.askString*collect*inactiveTimeout*inactiveTimeoutLabel.background: Green
+xgospel.askString*collect*playersUpdateTimeout*playersUpdateTimeoutLabel.background: Green
+xgospel.askString*collect*gamesUpdateTimeout*gamesUpdateTimeoutLabel.background: Green
+xgospel.askString*collect*serverTimeout*serverTimeoutLabel.background: Green
+xgospel.askString*collect*quitTimeout*quitTimeoutLabel.background: Green
+xgospel.askString*collect*tersePlay*tersePlayLabel.background: Green
+
+xgospel.askString*collect*user*userLabel.background: Green
+xgospel.askString*collect*password*passwordLabel.background: Green
+xgospel.askString*collect*autoReplyMessage*autoReplyMessageLabel.background: Green
+
+
+xgospel.broadcasts.collect.info*background: MidnightBlue
+xgospel.broadcasts.collect.info*foreground: gold
+xgospel.broadcasts.collect.info.Scrollbar*background: red
+xgospel.broadcasts.collect*info.displayCaret:  false
+xgospel.broadcasts.collect.input.borderWidth:  5
+xgospel.broadcasts.collect.input.height: 40
+xgospel.broadcasts.collect.input*background:  cornflowerblue
+xgospel.broadcasts.collect.input*foreground:  black
+xgospel.broadcasts*buttons*background: black
+xgospel.broadcasts*buttons*close.background: Red
+xgospel.broadcasts*buttons*close.foreground: Yellow
+xgospel.broadcasts*buttons*?.foreground:  black
+xgospel.broadcasts*buttons*?.background:  gold
+xgospel.broadcasts*raise.state: false
+
+
+xgospel.yells*background: Grey
+xgospel.yells*foreground: black
+xgospel.yells*buttons*close.background: Red
+xgospel.yells*buttons*close.foreground: Yellow
+xgospel.yells*buttons*?.foreground:  white
+xgospel.yells*buttons*?.background:  darkblue
+
+xgospel.widget*text*foreground:	black
+
+xgospel.analyzer.collect.scrollboard.board*foreground: black
+xgospel.analyzer.collect.scrollboard.scroll*background: gold
+xgospel.analyzer.collect.grip*foreground: cornflowerblue
+xgospel.analyzer*buttons*background: #0c0091
+xgospel.analyzer*buttons*close.background: Red
+xgospel.analyzer*buttons*close.foreground: Yellow
+!xgospel.analyzer*buttons*?.foreground:  XtDefaultForeground
+xgospel.analyzer*buttons*?.foreground:  black
+xgospel.analyzer*buttons*?.background:  #edd20d
+xgospel*analyzer.?.width:      725
+xgospel*analyzer.?.height:	 800
+
+
+
+xgospel.observe.collect.insertPosition: info
+xgospel.observe.collect.scrollboard.scroll*background: gold
+xgospel.observe.collect.grip*foreground: cornflowerblue
+xgospel.observe.collect.info.Scrollbar*background: cornflowerblue
+xgospel.observe.collect.info*background: cyan
+xgospel.observe.collect.info*foreground: black
+xgospel.observe.collect.chatter*background: #98a2bf
+xgospel.observe.collect.chatter*foreground: MidnightBlue
+xgospel.observe.collect.titleObserve*foreground: black
+xgospel.observe.collect.titleObserve*background: #edd20d
+xgospel*playerToWidget:	   ^ *Gospel\\[,        Me\n\
+                           ^ *ozric\\[,         Me\n\
+                           ^ *human\\[,         Me\n\
+                           ^ *Got2Go\\[,        Me\n\
+                           ^ *vector\\[,        Me\n\
+                           ^ *notabot\\[,       Me\n\
+                           ^ *BusyBee\\[,       Me\n\
+                           ^ *Gocycle\\[,       Me\n\
+                           ^ *arcanum\\[,       Me\n\
+                           ^ *Ulysses,          Me\n\
+                           ^ *weakkyu,          Me\n\
+                           ^ *smuggler\\[,      Me\n\
+                           ^ *wireless\\[,      Me\n\
+                           ^ *quietone\\[,      Me\n\
+                           ^ *steelyDAN\\[,     Me\n\
+                           ^ *badcounter\\[,    Me\n\
+                           ^ *LittleWing\\[,    Me\n\
+                           ^ *thirdstone\\[,    Me\n\
+                           ^ *woodnstone\\[,    Me\n\
+                           ^ *xgospel\\[,       Friends\n\
+                           ^ *gotirol\\[,       Friends\n\
+                           ^ *osman\\[,         Friends\n\
+                           ^ *h1029\\[,         Friends\n\
+                           ^ *KajinP\\[,        Friends\n\
+                           ^ *AshaiRey\\[,      Friends\n\
+                           ^ *Quiet1993\\[,     Friends\n\
+                           ^ *maoxiong\\[,      FriendsBusyBee\n\
+                           ^ *brian96225\\[,    FriendsBusyBee\n\
+                           ^ *ofg\\[,           Accept\n\
+                           ^ *KoA\\[,           Accept\n\
+                           ^ *kb43\\[,          Accept\n\
+                           ^ *ktod\\[,          Accept\n\
+                           ^ *Kusu\\[,          Accept\n\
+                           ^ *SBTA\\[,          Accept\n\
+                           ^ *a7111\\[,         Accept\n\
+                           ^ *bunzu\\[,         Accept\n\
+                           ^ *gazel\\[,         Accept\n\
+                           ^ *haras\\[,         Accept\n\
+                           ^ *CORE01\\[,        Accept\n\
+                           ^ *cstone\\[,        Accept\n\
+                           ^ *haruru\\[,        Accept\n\
+                           ^ *KN2014\\[,        Accept\n\
+                           ^ *mm8753\\[,        Accept\n\
+                           ^ *Timama\\[,        Accept\n\
+                           ^ *akio830\\[,       Accept\n\
+                           ^ *AXS91Fr\\[,       Accept\n\
+                           ^ *bmaedoi\\[,       Accept\n\
+                           ^ *Fangary\\[,       Accept\n\
+                           ^ *o960326\\[,       Accept\n\
+                           ^ *ryuujim\\[,       Accept\n\
+                           ^ *aikennka\\[,      Accept\n\
+                           ^ *fuku8900\\[,      Accept\n\
+                           ^ *fuusen22\\[,      Accept\n\
+                           ^ *KAEDE602\\[,      Accept\n\
+                           ^ *kame0426\\[,      Accept\n\
+                           ^ *teramati\\[,      Accept\n\
+                           ^ *smallant\\[,      Accept\n\
+                           ^ *yoshiboy\\[,      Accept\n\
+                           ^ *yoshidtu\\[,      Accept\n\
+                           ^ *a19461217\\[,     Accept\n\
+                           ^ *sbee12344\\[,     Accept\n\
+                           ^ *toshikazu\\[,     Accept\n\
+                           ^ *hageteru22\\[,    Accept\n\
+                           ^ *sada1941jp\\[,    Accept\n\
+                           ^ *souaoi0925\\[,    Accept\n\
+                           ^ *Tadatadata\\[,    Accept\n\
+                           ^ *Dell\\[,          Decliners\n\
+                           ^ *bruce123\\[,      Decliners\n\
+                           ^ *wpak\\[,          Spry\n\
+                           ^ *ishi\\[,          Spry\n\
+                           ^ *Paco\\[,          Trnopps\n\
+                           ^ *jaberwock\\[,     Trnopps\n\
+                           ^ *hankins\\[,       Trnopps\n\
+                           ^ *cdlin\\[,         Trnds\n\
+                           ^ *shaevel\\[,       Trnds\n\
+                           ^ *tweet\\[,         Othrs\n\
+                           ^ *guest,            Othrs\n\
+                           ^ *aep\\[,           Escprs\n\
+                           ^ *pyhapyha\\[,      Escprs\n\
+                           ^ *Aya\\[,           Sbdogs\n\
+                           ^ *i1124\\[,         Sbdogs\n\
+                           ^ *ibeatu\\[,        Sbdogs\n\
+                           ^ *Lionking3\\[,     Sbdogs\n\
+                           ^ *bsm\\[,           Avoid\n\
+                           ^ *DJJ\\[,           Avoid\n\
+                           ^ *MAY\\[,           Avoid\n\
+                           ^ *wjb\\[,           Avoid\n\
+                           ^ *migo\\[,          Avoid\n\
+                           ^ *pesj\\[,          Avoid\n\
+                           ^ *abbey\\[,         Avoid\n\
+                           ^ *nmpc2\\[,         Avoid\n\
+                           ^ *ukkam\\[,         Avoid\n\
+                           ^ *sh1234\\[,        Avoid\n\
+                           ^ *tk3721\\[,        Avoid\n\
+                           ^ *sima130\\[,       Avoid\n\
+                           ^ *Presvis\\[,       Avoid\n\
+                           ^ *tsuzuki\\[,       Avoid\n\
+                           ^ *bogeyken\\[,      Avoid\n\
+                           ^ *hukuhumi\\[,      Avoid\n\
+                           ^ *MUNE3626\\[,      Avoid\n\
+                           ^ *s1949103\\[,      Avoid\n\
+                           ^ *Katumi364\\[,     Avoid\n\
+                           ^ *iwata1970\\[,     Avoid\n\
+                           ^ *lovedance\\[,     Avoid\n\
+                           ^ *tarou1357\\[,     Avoid\n\
+                           ^ *it81100811\\[,    Avoid\n\
+                           ^ *MarsAttack\\[,    Avoid\n\
+                           ^ *lubo1930\\[,      CampersAutoM\n\
+                           ^ *dell\\[,          Programs\n\
+                           ^ *ManyFaces\\[,     Programs\n\
+                           ^ *Slowstart5\\[,    Programs\n\
+                           ^ *Eurochamp,        Pro\n\
+                           ^ *kisei,            Pro\n\
+    -- [1-9 ][0-9 ][0-9],                                                Plyng\n\
+    \\? [1-9 ][0-9 ][0-9],                                               Plyng\n\
+    -- [1-9 ][0-9 ][0-9][0-9],                                           Plyng\n\
+    \\? [1-9 ][0-9 ][0-9[0-9],                                           Plyng\n\
+    \\][ \\*] [ QS][ !X][1-9 ][0-9 ][0-9] [1-9 ][0-9 ][0-9],             ObsPlyng\n\
+    \\][ \\*] [ QS][ !X] [1-9 ][0-9 ][0-9] [1-9 ][0-9 ][0-9],            ObsPlyng\n\
+    \\][ \\*] [ QS][ !X][1-9 ][0-9 ][0-9][0-9] [1-9 ][0-9 ][0-9][0-9],   ObsPlyng\n\
+    \\][ \\*] [ QS]X ,                                                   Clsd\n\
+    \\][ \\*] [ QS]X[1-9],                                               Clsd\n\
+    \\?$,                                                                Unkwn\n\
+    !,                                                                   Lkng\n\
+
+/*  \\][ \\*] [ QS][ !X] -- [1-9 ][0-9 ][0-9],                           Plyng\n\  */
+/*
+    \\[ [56]d\\],                                                        HiDan\n\  
+    \\[ [67890]d\\],                                                     Pro\n\
+    \\[ [1-9]p\\],                                                       Pro\n\
+*/
+/**********************************************************/
+/*                           \\[ [789]k\\], MyStrength\n\ */
+/*Above MyStrength works but I don't like it!             */
+/**********************************************************/
+/*******************Player comments************************/
+/*
+tarou1357[ 1d*] just timed out instead of resigning/finishing
+toshikazu[ 5d*] from Japan. weakkyu dominated even after a blunder when toshikazu finally resigned 06-22-2020. Game saved.
+nmpc2[ 10k] called steelyDAN idiot 7-11-20 so got added to "Avoid"
+ukkam[ 1d] (vs weakkyu) 1-21-21
+    SYSTEM: Game 192 has been adjourned because ukkam requests to judgement by office.
+    SYSTEM: This game will be scored by Pandanet Office.
+This apparently is a feature with GoPanda2 client
+*/
+
+xgospel*gameToWidget:	   ^ *Gospel,        Me\n\
+                           ^ *human,         Me\n\
+                           ^ *ozric,         Me\n\
+                           ^ *Got2Go,        Me\n\
+                           ^ *vector,        Me\n\
+                           ^ *BusyBee,       Me\n\
+                           ^ *Gocycle,       Me\n\
+                           ^ *notabot,       Me\n\
+                           ^ *arcanum,       Me\n\
+                           ^ *Ulysses,       Me\n\
+                           ^ *weakkyu,       Me\n\
+                           ^ *smuggler,      Me\n\
+                           ^ *wireless,      Me\n\
+                           ^ *quietone,      Me\n\
+                           ^ *steelyDAN,     Me\n\
+                           ^ *badcounter,    Me\n\
+                           ^ *LittleWing,    Me\n\
+                           ^ *thirdstone,    Me\n\
+                           ^ *woodnstone,    Me\n\
+                           ^ *xgospel,       Friends\n\
+                           ^ *gotirol,       Friends\n\
+                           ^ *KajinP,        Friends\n\
+                           ^ *osman,         Friends\n\
+                           ^ *h1029,         Friends\n\
+                           ^ *AshaiRey,      Friends\n\
+                           ^ *Quiet1993,     Friends\n\
+                           ^ *maoxiong,      Friends\n\
+                           ^ *ofg,           Accept\n\
+                           ^ *kb43,          Accept\n\
+                           ^ *ktod,          Accept\n\
+                           ^ *Kusu,          Accept\n\
+                           ^ *SBTA,          Accept\n\
+                           ^ *a7111,         Accept\n\
+                           ^ *bunzu,         Accept\n\
+                           ^ *gazel,         Accept\n\
+                           ^ *haras,         Accept\n\
+                           ^ *CORE01,        Accept\n\
+                           ^ *cstone,        Accept\n\
+                           ^ *haruru,        Accept\n\
+                           ^ *KN2014,        Accept\n\
+                           ^ *mm8753,        Accept\n\
+                           ^ *Timama,        Accept\n\
+                           ^ *akio830,       Accept\n\
+                           ^ *AXS91Fr,       Accept\n\
+                           ^ *bmaedoi,       Accept\n\
+                           ^ *Fangary,       Accept\n\
+                           ^ *o960326,       Accept\n\
+                           ^ *ryuujim,       Accept\n\
+                           ^ *aikennka,      Accept\n\
+                           ^ *fuku8900,      Accept\n\
+                           ^ *fuusen22,      Accept\n\
+                           ^ *KAEDE602,      Accept\n\
+                           ^ *kame0426,      Accept\n\
+                           ^ *teramati,      Accept\n\
+                           ^ *smallant,      Accept\n\
+                           ^ *yoshiboy,      Accept\n\
+                           ^ *yoshidtu,      Accept\n\
+                           ^ *a19461217,     Accept\n\
+                           ^ *sbee12344,     Accept\n\
+                           ^ *toshikazu,     Accept\n\
+                           ^ *hageteru22,    Accept\n\
+                           ^ *sada1941jp,    Accept\n\
+                           ^ *souaoi0925,    Accept\n\
+                           ^ *Tadatadata,    Accept\n\
+                           ^ *Dell\\[,          Decliners\n\
+                           ^ *bruce123\\[,      Decliners\n\
+                           ^ *wpak\\[,          Spry\n\
+                           ^ *ishi\\[,          Spry\n\
+                           ^ *Paco\\[,          Trnopps\n\
+                           ^ *jaberwock\\[,     Trnopps\n\
+                           ^ *hankins\\[,       Trnopps\n\
+                           ^ *cdlin\\[,         Trnds\n\
+                           ^ *shaevel\\[,       Trnds\n\
+                           ^ *tweet\\[,         Othrs\n\
+                           ^ *guest,            Othrs\n\
+                           ^ *aep\\[,           Escprs\n\
+                           ^ *pyhapyha\\[,      Escprs\n\
+                           ^ *Aya\\[,           Sbdogs\n\
+                           ^ *i1124\\[,         Sbdogs\n\
+                           ^ *ibeatu\\[,        Sbdogs\n\
+                           ^ *Lionking3\\[,     Sbdogs\n\
+                           ^ *bsm\\[,           Avoid\n\
+                           ^ *DJJ\\[,           Avoid\n\
+                           ^ *MAY\\[,           Avoid\n\
+                           ^ *wjb\\[,           Avoid\n\
+                           ^ *migo\\[,          Avoid\n\
+                           ^ *pesj\\[,          Avoid\n\
+                           ^ *abbey\\[,         Avoid\n\
+                           ^ *nmpc2\\[,         Avoid\n\
+                           ^ *ukkam\\[,         Avoid\n\
+                           ^ *sh1234\\[,        Avoid\n\
+                           ^ *tk3721\\[,        Avoid\n\
+                           ^ *sima130\\[,       Avoid\n\
+                           ^ *Presvis\\[,       Avoid\n\
+                           ^ *tsuzuki\\[,       Avoid\n\
+                           ^ *bogeyken\\[,      Avoid\n\
+                           ^ *hukuhumi\\[,      Avoid\n\
+                           ^ *MUNE3626\\[,      Avoid\n\
+                           ^ *s1949103\\[,      Avoid\n\
+                           ^ *Katumi364\\[,     Avoid\n\
+                           ^ *iwata1970\\[,     Avoid\n\
+                           ^ *lovedance\\[,     Avoid\n\
+                           ^ *tarou1357\\[,     Avoid\n\
+                           ^ *it81100811\\[,    Avoid\n\
+                           ^ *MarsAttack\\[,    Avoid\n\
+                           ^ *lubo1930\\[,      CampersAutoM\n\
+                           ^ *dell\\[,          Programs\n\
+                           ^ *ManyFaces\\[,     Programs\n\
+                           ^ *Slowstart5\\[,    Programs\n\
+                           ^ *Eurochamp,        Pro\n\
+                           ^ *kisei,            Pro\n\
+    -- [1-9 ][0-9 ][0-9],                                                Plyng\n\
+    \\? [1-9 ][0-9 ][0-9],                                               Plyng\n\
+    -- [1-9 ][0-9 ][0-9][0-9],                                           Plyng\n\
+    \\? [1-9 ][0-9 ][0-9[0-9],                                           Plyng\n\
+    \\][ \\*] [ QS][ !X][1-9 ][0-9 ][0-9] [1-9 ][0-9 ][0-9],             ObsPlyng\n\
+    \\][ \\*] [ QS][ !X] [1-9 ][0-9 ][0-9] [1-9 ][0-9 ][0-9],            ObsPlyng\n\
+    \\][ \\*] [ QS][ !X][1-9 ][0-9 ][0-9][0-9] [1-9 ][0-9 ][0-9][0-9],   ObsPlyng\n\
+    \\][ \\*] [ QS]X ,                                                   Clsd\n\
+    \\][ \\*] [ QS]X[1-9],                                               Clsd\n\
+    \\?$,                                                                Unkwn\n\
+    !,                                                                   Lkng\n\
+
+xgospel*players*set*playerEntryLkng.background:	        cyan
+!xgospel*players*set*playerEntryLkng.background:	 #a9f601
+xgospel*players*set*playerEntryLkng.foreground:	        black
+xgospel*players*set*playerEntryMe.foreground:	        cyan
+xgospel*players*set*playerEntryMe.background:	        #98a2bf
+xgospel*players*set*playerEntrySpry.foreground:	        black
+xgospel*players*set*playerEntrySpry.background:	        #98a2bf
+xgospel*players*set*playerEntryOthrs.foreground:	yellow
+xgospel*players*set*playerEntryOthrs.background:	black
+xgospel*players*set*playerEntryEscprs.foreground:	yellow
+xgospel*players*set*playerEntryEscprs.background:	#bf72ac
+xgospel*players*set*playerEntryAvoid.background:	MidnightBlue
+xgospel*players*set*playerEntryAvoid.foreground:	pink
+xgospel*players*set*playerEntryCampersAutoM.background:	MidnightBlue
+xgospel*players*set*playerEntryCampersAutoM.foreground:	yellow
+xgospel*players*set*playerEntryPissedAtMe.background:	#8f0194
+xgospel*players*set*playerEntryPissedAtMe.foreground:	white
+xgospel*players*set*playerEntrySbdogs.foreground:	MidnightBlue
+xgospel*players*set*playerEntrySbdogs.background:	pink
+xgospel*players*set*playerEntryPlyng.foreground:	yellow
+xgospel*players*set*playerEntryPlyng.background:	Red
+xgospel*players*set*playerEntryObsPlyng.foreground:	white
+xgospel*players*set*playerEntryObsPlyng.background:	Red
+xgospel*players*set*playerEntryUnkwn.foreground:	black
+xgospel*players*set*playerEntryUnkwn.background:	#ffa54f
+xgospel*players*set*playerEntryClsd.foreground:	        yellow
+xgospel*players*set*playerEntryClsd.background:	        blue
+xgospel*players*set*playerEntryFriends.foreground:	blue
+xgospel*players*set*playerEntryFriends.background:	yellow
+xgospel*players*set*playerEntryFriendsBusyBee.foreground:	blue
+xgospel*players*set*playerEntryFriendsBusyBee.background:	yellow
+xgospel*players*set*playerEntryAccept.foreground:	blue
+xgospel*players*set*playerEntryAccept.background:	gold
+xgospel*players*set*playerEntryTrnds.foreground:	white
+xgospel*players*set*playerEntryTrnds.background:	black
+xgospel*players*set*playerEntryTrnopps.foreground:	green
+xgospel*players*set*playerEntryTrnopps.background:	black
+xgospel*players*set*playerEntryPrograms.foreground:	sienna
+xgospel*players*set*playerEntryPrograms.background:	#edd20d
+xgospel*players*set*playerEntryMyStrength.foreground:	black
+xgospel*players*set*playerEntryMyStrength.background:	#bf72ac
+xgospel*players*set*playerEntryp.background:            #a4f601 /* #76f602 #b9f700 #7bf204,#c3f205,#0af60a */
+xgospel*players*set*playerEntryPro.background:          #9af602 /* #76f602 #b9f700 #7bf204,#c3f205,#0af60a */
+xgospel*players*set*playerEntryPro.foreground:          black
+xgospel*players*set*playerEntryDecliners.foreground:	MidnightBlue
+xgospel*players*set*playerEntryDecliners.background:	Red
+/* Below is all taken care of in the new development version of xgospel */
+!xgospel*players*set*playerEntryHiDan.background:        #00ff00
+!xgospel*players*set*playerEntryHiDan.foreground:        black
+
+xgospel*set*gameEntryMe.foreground:	        #98a2bf
+xgospel*set*gameEntryMe.background:	        cyan
+xgospel*set*gameEntrySpry.foreground:	        black
+xgospel*set*gameEntrySpry.background:	        #98a2bf
+xgospel*set*gameEntryOthrs.foreground:	        yellow
+xgospel*set*gameEntryOthrs.background:	        black
+xgospel*set*gameEntryFriends.foreground:	blue
+xgospel*set*gameEntryFriends.background:	yellow
+xgospel*set*gameEntryAccept.foreground:		blue
+xgospel*set*gameEntryAccept.background:		gold
+xgospel*set*gameEntryEscprs.foreground:	        yellow
+xgospel*set*gameEntryEscprs.background:	        #bf72ac
+xgospel*set*gameEntryAvoid.foreground:	pink
+xgospel*set*gameEntryAvoid.background:	MidnightBlue
+xgospel*set*gameEntrySbdogs.background:   	pink
+xgospel*set*gameEntrySbdogs.foreground:	 	MidnightBlue
+xgospel*set*gameEntryPrograms.foreground:	sienna
+xgospel*set*gameEntryPrograms.background:	#edd20d
+xgospel*set*gameEntryTrnds.foreground:		white
+xgospel*set*gameEntryTrnds.background:		black
+xgospel*set*gameEntryTrnopps.foreground:	green
+xgospel*set*gameEntryTrnopps.background:	black
+xgospel*set*gameEntryMyStrength.foreground:	black
+xgospel*set*gameEntryMyStrength.background:	#bf72ac
+xgospel*set*gameEntryp.background:    	        #a4f601 /*#0af60a*/
+xgospel*set*gameEntryPro.background:    	#9af602 /*#0af60a*/
+xgospel*set*gameEntryPro.foreground:    	black
+xgospel*set*gameEntryHiDan.background:        	#00ff00
+xgospel*set*gameEntryHiDan.foreground:        	black
+
+! From .Xgospel with updated pixmap paths
+xgospel*main.?.width:      713
+xgospel*main.?.height:      389
+xgospel*tell.?.height:      170
+xgospel*challenge.?.width:  258      /*365*/
+xgospel*challenge*Command.background: #9af602    /* Green */
+xgospel*challenge*Command.foreground: black
+xgospel*challenge.title: %N[%n]%A
+!default Time and ByoYomi in .Xigs - was 1, 6
+!xgospel*defaultTime: 10
+!xgospel*defaultByoYomi: 10
+xgospel*askString*Command.background: #0c0091
+xgospel*askString*Label.background: #0c0091
+xgospel*askString*userLabel.label: WHO do you want to Go today?
+xgospel*askString*passwordLabel.label: If you want to play you gotta pay:
+xgospel*simpleNames: False
+xgospel*moveRaise.state:	False
+xgospel*kibitzRaise.state:	False
+xgospel*board.audioFile:	/dev/audio
+xgospel*board.backgroundPixmap: /home/cahill/Claude_Projects/fresh-start/board_256.xpm
+!xgospel*board.backgroundPixmap: /home/cahill/board.xpm
+xgospel*board.foreground:	black
+xgospel*widgetInfo.foreground:	black
+xgospel.widgetInfo*foreground:	black
+xgospel*SmeBell.state:	False
+xgospel*errorBeep.state:	True
+xgospel*beepBeep.state:	True
+xgospel*inactiveTimeout:	129600
+xgospel*font:	7x13bold
+xgospel*quitTimeout:	1
+xgospel.resourceTree*widgetTree.foreground:             black
+xgospel.resourceTree*widgetTree.collect.buttons.restreeClose.background: Red
+xgospel.resourceTree*widgetTree.collect*Command.background:             Green
+xgospel.resourceTree*widgetInfo.collect.buttons.restreeClose.background: Red
+xgospel.resourceTree*widgetInfo.collect*Command.background:             Green
+xgospel.resourceTree*foreground:                     black
+xgospel.resourceTree*restreeClose.background:        Red
+xgospel.resourceTree*restreeClose.foreground:        Yellow
+xgospel.resourceTree*restreeClose.label:             Close
+xgospel.resourceTree*cancel.background:              Red
+xgospel.resourceTree*cancel.foreground:              Yellow
+xgospel*games.?.width:        530
+xgospel*games.collect.height: 950
+xgospel*games.collect.viewport.preferredPaneSize: 600
+xgospel*games.collect.stripform.preferredPaneSize: 160
+xgospel*games.collect.viewport.set.gameEntryp.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryD.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryd.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryk.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryNR.foreground:  black
+xgospel*players.?.width:      1310 /*1226 pre-expp */
+xgospel*players.collect.height: 818
+xgospel*players.collect.viewport.preferredPaneSize: 668
+xgospel*players.collect.stripform.preferredPaneSize: 40
+xgospel*players.collect.viewport.set.playerEntryp.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryD.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryd.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryk.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryNR.foreground:  black
+xgospel*version:        1.12d
+!xgospel*observe.title: Game %G (White) %W[%w%a] -vs- %B[%b%A] (Black) 
+xgospel*observe.title: Game %G (Black) %B[%b%A] -vs- %W[%w%a] (White) 
+xgospel*observe.collect.scrollboard.board.width: 1004
+xgospel*observe.collect.scrollboard.board.height: 979
+xgospel*observe.?.width:     866
+xgospel*observe.?.height:	 998
+xgospel.observe.collect.scrollboard.board*foreground: black
+xgospel.observe*buttons*background: #0c0091
+xgospel.observe*buttons*foreground: black
+xgospel.observe*buttons*close.background: Red
+xgospel.observe*buttons*close.foreground: Yellow
+!xgospel.observe*buttons*?.foreground:  XtDefaultForeground
+xgospel.observe*buttons*?.foreground:  black
+xgospel.observe*buttons*?.background:  Green
+xgospel*tell*raise.state: true
+xgospel*verbose.state: true

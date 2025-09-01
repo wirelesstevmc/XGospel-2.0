@@ -8,6 +8,7 @@
 #include "modern_parser.h"
 #include "modern_connect.h"
 #include "utils.h"
+#include "messages.h"
 #include "xgospel.h"
 
 #include <stdio.h>

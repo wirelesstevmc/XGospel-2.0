@@ -43,4 +43,9 @@ extern Connection ModernConnect_Wrapper(const char *site, int port);
 extern void SetModernConnection(ModernConnection conn);
 extern ModernConnection GetModernConnection(void);
 
+/* Integration lifecycle functions */
+extern void InitModernConnection(void);
+extern void CleanupModernConnection(void);
+extern void ProcessServerMessage(const char *message);
+
 #endif /* MODERN_INTEGRATION_H */
