@@ -509,8 +509,9 @@ static String myfallback_resources[] = {
     (String) "*resourceTree*info.wrap:                      word",
     (String) "*resourceTree*Paned.?.resizeToPreferred:      True",
     (String) "*resourceTree*background:                     #BFD8D8",
-    (String) "*widgetHelp.translations:                     #override \\n"
-        "<Btn1Up>: MenuPopdown()",
+    /* Disabled problematic MenuPopdown() translation */
+    /* (String) "*widgetHelp.translations:                     #override \\n"
+        "<Btn1Up>: MenuPopdown()", */
 
     (String) "*?*accelerators:                              #augment \\n"
         META "<Key>c: change()  \\n"

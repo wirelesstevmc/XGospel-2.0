@@ -1,7 +1,7 @@
 # Generated automatically from Makefile.in by configure.
 srcdir = .
 
-RM   = $rm -f
+RM   = rm -f
 
 CC   = gcc
 LEX  = flex

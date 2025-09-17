@@ -116,6 +116,11 @@ extern struct tm   LocalTime, ServerTime;
 
 static int Passed, eEmpty, PreEmpty, SeenAdd, gamesSeen, RegisteredUserSent;
 
+/* Function to reset login state for reconnection */
+void ResetLoginState(void) {
+    RegisteredUserSent = 0;
+}
+
 /*
 static int WhoseMove(NameVal *moves);
 */

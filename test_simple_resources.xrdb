@@ -1,0 +1,5 @@
+xgospel*board.backgroundPixmap: board.xpm
+xgospel.main.collect.info*backgroundPixmap: xearth.xpm
+xgospel.games.collect.stripform*backgroundPixmap: board.xpm
+xgospel.players.collect.stripform*backgroundPixmap: pagoda.xpm
+xgospel.stats*backgroundPixmap: xearth.xpm

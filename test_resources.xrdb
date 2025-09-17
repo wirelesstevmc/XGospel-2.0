@@ -1,0 +1,5 @@
+xgospel*board.backgroundPixmap: pixmap(board.xpm)
+xgospel.main.collect.info*backgroundPixmap: pixmap(xearth.xpm)
+xgospel.games.collect.stripform*backgroundPixmap: pixmap(board.xpm)
+xgospel.players.collect.stripform*backgroundPixmap: pixmap(pagoda.xpm)
+xgospel.stats*backgroundPixmap: pixmap(xearth.xpm)

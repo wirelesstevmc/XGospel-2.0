@@ -121,6 +121,8 @@ extern void MyDisplayInstalledAccelerators(Widget widget, XEvent *event,
 # ifndef   HAVE_NO_STDARG_H
 #  include <stdarg.h>
 extern void      RelaxText(Widget w);
+extern void      AutoSizeTextWidth(Widget w);
+extern void      RelaxTextWithAutoSize(Widget w);
 extern void      AddText(Widget w, const char *Format, ...)       __PRINTF2;
 extern size_t    BatchAddText(Widget w, const char *Format, ...)  __PRINTF2;
 extern int       CountVarArgs (va_list var);

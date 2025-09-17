@@ -1,0 +1,3 @@
+! Simple XGospel resource test with proper pixmap() wrapper
+xgospel.main.collect.info*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)
+xgospel.stats*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)

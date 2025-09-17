@@ -532,8 +532,9 @@ static String myfallback_resources[] = {
     (String) "*resourceTree*info.wrap:                      word",
     (String) "*resourceTree*Paned.?.resizeToPreferred:      True",
     (String) "*resourceTree*background:                     #BFD8D8",
-    (String) "*widgetHelp.translations:                     #override \\n"
-        "<Btn1Up>: MenuPopdown()",
+    /* Disabled problematic MenuPopdown() translation that was causing popup widget warnings */
+    /* (String) "*widgetHelp.translations:                     #override \\n"
+        "<Btn1Up>: MenuPopdown()", */
 
     (String) "*?*accelerators:                              #augment \\n"
         META "<Key>c: change()  \\n"
@@ -1174,8 +1175,8 @@ Widget MyAppInitialize(XtAppContext *app_context,
 
         XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
 
-        /* Register converters globally IMMEDIATELY after toolkit init */
-        printf("DEBUG: Registering global converters immediately after XtToolkitInitialize\n");
+        /* CRITICAL: Register converter IMMEDIATELY after toolkit initialization */
+        printf("DEBUG: Registering converter IMMEDIATELY after XtToolkitInitialize\n");
         fflush(stdout);
         {
             static XtConvertArgRec ScreenConvertArg[] = {
@@ -1186,27 +1187,69 @@ Widget MyAppInitialize(XtAppContext *app_context,
                 {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.depth),
                  sizeof(Cardinal)}
             };
+            extern Boolean MyCvtStringToPixmap(Display *disp, XrmValuePtr args, Cardinal *num_args,
+                                               XrmValuePtr fromVal, XrmValuePtr toVal, XtPointer *closure_ret);
+            
+            /* Register both OLD and NEW style converters for maximum compatibility */
             extern void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
                                                XrmValuePtr fromVal, XrmValuePtr toVal);
             
+            /* Try OLD STYLE converter first - might have different precedence */
             XtAddConverter(XtRString, XtRPixmap, MyCvtStringToPixmapOld,
-                           ScreenConvertArg, XtNumber(ScreenConvertArg));
-            printf("DEBUG: Global pixmap converter registered before app context creation\n");
+                          ScreenConvertArg, XtNumber(ScreenConvertArg));
+            printf("DEBUG: OLD STYLE converter registered GLOBALLY immediately after XtToolkitInitialize\n");
+            fflush(stdout);
+            
+            /* Then register NEW STYLE converter */
+            XtSetTypeConverter(XtRString, XtRPixmap, MyCvtStringToPixmap,
+                              ScreenConvertArg, XtNumber(ScreenConvertArg),
+                              XtCacheNone, NULL);
+            printf("DEBUG: NEW STYLE converter registered GLOBALLY immediately after XtToolkitInitialize\n");
             fflush(stdout);
         }
 
         /* Create app context early so we can register converters */
         app_con = XtCreateApplicationContext();
         
-        /* Register converters BEFORE _XtAppInit processes fallback resources */
-        printf("DEBUG: Registering converters BEFORE _XtAppInit processes fallback resources\n");
+        /* CRITICAL: Register NEW STYLE converter BEFORE _XtAppInit processes resources */
+        printf("DEBUG: Registering NEW STYLE converter BEFORE _XtAppInit processes resources\n");
         fflush(stdout);
+        {
+            static XtConvertArgRec ScreenConvertArg[] = {
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
+                 sizeof(Screen *)},
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
+                 sizeof(Colormap)},
+                {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.depth),
+                 sizeof(Cardinal)}
+            };
+            extern Boolean MyCvtStringToPixmap(Display *disp, XrmValuePtr args, Cardinal *num_args,
+                                               XrmValuePtr fromVal, XrmValuePtr toVal, XtPointer *closure_ret);
+            
+            /* Register BOTH globally and with app context BEFORE _XtAppInit */
+            XtSetTypeConverter(XtRString, XtRPixmap, MyCvtStringToPixmap,
+                              ScreenConvertArg, XtNumber(ScreenConvertArg),
+                              XtCacheNone, NULL);
+            printf("DEBUG: NEW STYLE converter registered GLOBALLY BEFORE _XtAppInit\n");
+            fflush(stdout);
+            
+            XtAppSetTypeConverter(app_con, XtRString, XtRPixmap, MyCvtStringToPixmap,
+                                 ScreenConvertArg, XtNumber(ScreenConvertArg),
+                                 XtCacheNone, NULL);
+            printf("DEBUG: NEW STYLE converter registered with app context BEFORE _XtAppInit\n");
+            fflush(stdout);
+        }
+        
+        /* Register other converters and fix shell */
         GetConverters(app_con);
         MyFixShell();
 
         saved_argc = *argc_in_out;
         dpy = _XtAppInit(&app_con, (String)application_class,
                          options, num_options, argc_in_out, &argv_in_out, fb);
+        
+        printf("DEBUG: Skipping post-_XtAppInit converter registration - already registered before resource processing\n");
+        fflush(stdout);
         if (*argc_in_out != 1) {
             Usage(*argc_in_out, (char const * const *) argv_in_out,
                   Messages, NrMessages);

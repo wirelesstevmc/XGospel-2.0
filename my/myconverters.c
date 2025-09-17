@@ -412,12 +412,13 @@ static const char *PixmapFromName(Pixmap *pixmap,
 
 /* ConvertData is used completely incorrectly --Ton */
 /*ARGSUSED*/
-static Boolean MyCvtStringToPixmap(Display *disp,
+Boolean MyCvtStringToPixmap(Display *disp,
                                    XrmValuePtr args, Cardinal *num_args,
                                    XrmValuePtr fromVal, XrmValuePtr toVal,
                                    XtPointer *ConvertData)
 {
-    printf("DEBUG: MyCvtStringToPixmap called with: '%s'\n", (char*)fromVal->addr);
+    printf("DEBUG: MyCvtStringToPixmap NEW STYLE called with: '%s' (length=%ld)\n", 
+           (char*)fromVal->addr, (long)fromVal->size);
     fflush(stdout);
     Pixmap         pixmap;
     Pixel          fg, bg;
@@ -786,7 +787,7 @@ void XmuCvtStringToWidget(XrmValuePtr args, Cardinal *num_args,
 void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
                             XrmValuePtr fromVal, XrmValuePtr toVal)
 {
-    printf("DEBUG: MyCvtStringToPixmapOld called with: '%s'\n", (char*)fromVal->addr);
+    printf("DEBUG: MyCvtStringToPixmapOld OLD STYLE called with: '%s'\n", (char*)fromVal->addr);
     fflush(stdout);
     
     static Pixmap pixmap;
@@ -796,18 +797,26 @@ void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
 
     name = (char *) fromVal->addr;
     if (*num_args != 3) {
+        printf("DEBUG: MyCvtStringToPixmapOld - wrong number of args: %d (expected 3)\n", *num_args);
+        fflush(stdout);
         XtStringConversionWarning(name, XtRPixmap);
         return;
     }
 
     screen = *(Screen **) args[0].addr;
+    printf("DEBUG: MyCvtStringToPixmapOld - calling PixmapFromName with: '%s'\n", name);
+    fflush(stdout);
     ErrorMessage = PixmapFromName(&pixmap, screen, name);
     if (ErrorMessage == NULL) {
+        printf("DEBUG: MyCvtStringToPixmapOld - SUCCESS: pixmap loaded for '%s'\n", name);
+        fflush(stdout);
         toVal->size = sizeof(Pixmap);
         toVal->addr = (XtPointer) &pixmap;
         return;
     }
     
+    printf("DEBUG: MyCvtStringToPixmapOld - FAILED: %s for '%s'\n", ErrorMessage, name);
+    fflush(stdout);
     XtStringConversionWarning(name, XtRPixmap);
     toVal->addr = NULL;
     toVal->size = 0;
@@ -819,16 +828,10 @@ void MyCvtStringToPixmapOld(XrmValuePtr args, Cardinal *num_args,
 
 void GetConverters(XtAppContext app_context)
 {
-    printf("DEBUG: GetConverters called, using XtSetTypeConverter to override built-in converters\n");
+    printf("DEBUG: GetConverters called - skipping pixmap converter (will be handled by app context registration)\n");
     fflush(stdout);
     
-    /* Use XtSetTypeConverter with XtCacheNone to forcibly override the built-in String->Pixmap converter */
-    XtSetTypeConverter(XtRString, XtRPixmap, MyCvtStringToPixmap,
-                       ScreenConvertArg, XtNumber(ScreenConvertArg),
-                       XtCacheNone, PixmapDestructor);
-    
-    printf("DEBUG: Pixmap converter registration completed (XtSetTypeConverter override)\n");
-    fflush(stdout);
+    /* Skip pixmap converter registration here - it will be done with app context */
     XtSetTypeConverter(XtRString, XtRPixel, MyCvtStringToPixel,
                        ColorConvertArg, XtNumber(ColorConvertArg),
                        XtCacheByDisplay, MyFreePixel);

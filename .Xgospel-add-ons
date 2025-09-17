@@ -1,0 +1,20 @@
+! XGospel resource add-ons for 64-bit build
+! Pixmap backgrounds for main window and stats windows
+
+! Main window background - xearth.xpm
+xgospel.main.collect.info*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)
+
+! Stats window background - xearth.xpm  
+xgospel.stats*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)
+
+! Board background - board.xpm
+xgospel*board.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)
+
+! Games window background - board.xpm
+xgospel.games.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)
+
+! Players window background - pagoda.xpm
+xgospel.players.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/pagoda.xpm)
+
+! Stats player observe background - board.xpm
+xgospel.stats.collect.playerObserve*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)

@@ -60,6 +60,9 @@
 #include <myxlib.h>
 #include "igs_protocol_adapter.h"
 
+/* External functions from yacc parser */
+extern void ResetLoginState(void);
+
 #ifdef index
 # undef index
 #endif /* index */
@@ -323,14 +326,27 @@ void UserActive(Connection conn)
 
 static void AutoReconnect(Connection conn)
 {
-    if (Me && GuestP(Me)) conn->ReconnectTimeOut = 0;
-    else                  conn->ReconnectTimeOut = appdata.ReconnectTimeout;
+    if (Me && GuestP(Me)) {
+        printf("DEBUG: AutoReconnect() - guest user, no auto-reconnect\n");
+        fflush(stdout);
+        conn->ReconnectTimeOut = 0;
+    } else {
+        printf("DEBUG: AutoReconnect() - setting timeout to %d\n", appdata.ReconnectTimeout);
+        fflush(stdout);
+        conn->ReconnectTimeOut = appdata.ReconnectTimeout;
+        printf("DEBUG: AutoReconnect() - ReconnectTimeOut set to %d\n", conn->ReconnectTimeOut);
+        fflush(stdout);
+    }
 }
 
 static void CloseConnection(Connection conn)
 {
     CommandEntry *lastCommand;
 
+    printf("DEBUG: CloseConnection() called for %s:%d, Socket=%d\n", 
+           conn->Name, conn->Port, conn->Socket);
+    fflush(stdout);
+    
     if (DebugFile) {
         fprintf(DebugFile, "Connection with %s %d closed\n",
                 conn->Name, conn->Port);
@@ -383,11 +399,7 @@ static void CloseConnection(Connection conn)
     conn->Sent    =  0;
     conn->Used    =  0;
 
-    /* Clean up protocol adapter */
-    if (conn->adapter) {
-        adapter_free(conn->adapter);
-        conn->adapter = NULL;
-    }
+    /* Keep protocol adapter for potential reconnection - only freed in CleanConnection */
 
     Outputf("Connection with %s %d closed\n", conn->Name, conn->Port);
     AutoReconnect(conn);
@@ -487,7 +499,10 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
     From = conn->Line+conn->Used;
     rc = read(*fid, From, sizeof(conn->Line) - conn->Used);
     if (rc <= 0) {
-        if (rc < 0)
+        if (rc < 0) {
+            printf("DEBUG: IgsInput() - read error: rc=%d, errno=%d (%s)\n", 
+                   rc, errno, strerrno());
+            fflush(stdout);
 	    switch(errno) {
 #ifdef ETIMEDOUT
 	      case ETIMEDOUT:
@@ -504,17 +519,23 @@ static void IgsInput(XtPointer ClientData, int *fid, XtInputId *Id)
 #ifdef ECONNRESET
 	      case ECONNRESET:
 #endif /* ECONNRESET */
+                printf("DEBUG: IgsInput() - fatal read error, closing connection\n");
+                fflush(stdout);
                 ServerMessage("Warning: bad read error on connection with "
 			      "%.200s %d: %s. Closing connection\n",
 			      conn->Name, conn->Port, strerrno());
                 CloseConnection(conn);
 		break;
 	      default:
+                printf("DEBUG: IgsInput() - non-fatal read error\n");
+                fflush(stdout);
                 ServerMessage("Warning: read error on connection with %.200s %d"
                               ": %s\n", conn->Name, conn->Port, strerrno());
 		break;
 	    }
-        else if (rc == 0) {
+        } else if (rc == 0) {
+            printf("DEBUG: IgsInput() - connection closed by foreign host\n");
+            fflush(stdout);
             ServerMessage("Connection with %.200s %d closed by foreign host\n",
                           conn->Name, conn->Port);
             CloseConnection(conn);
@@ -667,6 +688,12 @@ static void CleanConnection(Connection conn)
     Outputf("Cleaning up connection %.200s %d\n", conn->Name, conn->Port);
     CloseConnection(conn);
 
+    /* Clean up protocol adapter when permanently destroying connection */
+    if (conn->adapter) {
+        adapter_free(conn->adapter);
+        conn->adapter = NULL;
+    }
+
     conn->Previous->Next = conn->Next;
     conn->Next->Previous = conn->Previous;
     if (Conn == conn) Conn = NULL;
@@ -715,8 +742,15 @@ void ReConnect(Connection conn)
         conn = Connections.Next;
         if (conn == &Connections) Raise(NoConnection);
     }
+    
+    printf("DEBUG: ReConnect() called for %s:%d, current Socket=%d\n", 
+           conn->Name, conn->Port, conn->Socket);
+    fflush(stdout);
+    
     if (conn->Socket >=0) {
         /* Maybe should make this fatal. It shouldn't happen -Ton */
+        printf("DEBUG: ReConnect() - already connected, aborting reconnect\n");
+        fflush(stdout);
         ServerMessage("Attempt to reconnect to %.200s %d, but you are "
                       "already connected\n", conn->Name, conn->Port);
         return;
@@ -726,6 +760,23 @@ void ReConnect(Connection conn)
     if (conn->WriteId) Raise1(AssertException,
                               "unexpected pending connect");
     conn->ReconnectTimeOut = 0;
+    
+    // Reset the IGS protocol adapter and parser state for the new connection
+    if (conn->adapter) {
+        printf("DEBUG: ReConnect() - resetting adapter to initial state\n");
+        fflush(stdout);
+        adapter_reset(conn->adapter);
+    } else {
+        printf("DEBUG: ReConnect() - no adapter found, creating new one\n");
+        fflush(stdout);
+        conn->adapter = adapter_init();
+    }
+    
+    // Reset login state for reconnection
+    ResetLoginState();
+    printf("DEBUG: ReConnect() - reset RegisteredUserSent flag for new login\n");
+    fflush(stdout);
+    
     context = XtWidgetToApplicationContext(toplevel);
 #ifdef HAVE_TERM
     if (appdata.UseTerm != False) {
@@ -796,11 +847,17 @@ void ReConnect(Connection conn)
                 conn->Socket      = sock;
                 conn->QuitTimeOut = conn->InactiveTimeOut = 0;
                 return;
-            } else ServerMessage("Connecting to %.200s %d: %s\n",
+            } else {
+            printf("DEBUG: ReConnect() - connect() failed: %s\n", strerrno());
+            fflush(stdout);
+            ServerMessage("Connecting to %.200s %d: %s\n",
                                  conn->Name, conn->Port, strerrno());
+        }
         }
     }
   fail:
+    printf("DEBUG: ReConnect() - connection failed, closing socket %d\n", sock);
+    fflush(stdout);
     close(sock);
     AutoReconnect(conn);
     if (conn->IsConnected)
@@ -812,8 +869,19 @@ static void CallIsConnect(Widget w, XtPointer clientdata, XtPointer calldata)
     Connection conn;
 
     conn = (Connection) clientdata;
-    if (False == (Boolean) XTPOINTER_TO_INT(calldata)) CloseConnection(conn);
-    else ReConnect(conn);
+    printf("DEBUG: CallIsConnect() called with state=%s\n", 
+           (Boolean) XTPOINTER_TO_INT(calldata) ? "True" : "False");
+    fflush(stdout);
+    
+    if (False == (Boolean) XTPOINTER_TO_INT(calldata)) {
+        printf("DEBUG: CallIsConnect() - calling CloseConnection()\n");
+        fflush(stdout);
+        CloseConnection(conn);
+    } else {
+        printf("DEBUG: CallIsConnect() - calling ReConnect()\n");
+        fflush(stdout);
+        ReConnect(conn);
+    }
 }
 
 static void CallWantConnect(Widget w, XtPointer clientdata, XtPointer calldata)
@@ -821,13 +889,25 @@ static void CallWantConnect(Widget w, XtPointer clientdata, XtPointer calldata)
     Connection conn;
 
     conn = (Connection) clientdata;
+    printf("DEBUG: CallWantConnect() called with state=%s, current Socket=%d\n", 
+           (Boolean) XTPOINTER_TO_INT(calldata) ? "True" : "False", conn->Socket);
+    fflush(stdout);
+    
     if (False == (Boolean) XTPOINTER_TO_INT(calldata)) {
+        printf("DEBUG: CallWantConnect() - disconnecting\n");
+        fflush(stdout);
         if (conn->Socket >= 0) {
             UserCommand(conn, "quit");
             conn->QuitTimeOut = appdata.QuitTimeout;
+            printf("DEBUG: CallWantConnect() - set QuitTimeOut to %ld\n", conn->QuitTimeOut);
+            fflush(stdout);
         }
-        conn->ReconnectTimeOut = 0;
-    } else if (conn->Socket < 0) ReConnect(conn);
+        // Don't reset ReconnectTimeOut - allow auto-reconnect after manual disconnection
+    } else if (conn->Socket < 0) {
+        printf("DEBUG: CallWantConnect() - attempting reconnect\n");
+        fflush(stdout);
+        ReConnect(conn);
+    }
 }
 
 static char *ConnectionNameFun(const char *Pattern, XtPointer Closure)
@@ -1101,8 +1181,20 @@ static void SendWorkProc(XtPointer ClientData, int *fid, XtInputId *Id)
 void ConnectTime(unsigned long Diff)
 {
     Connection conn;
+    static int debug_count = 0;
+    
+    debug_count++;
+    if (debug_count % 10 == 0) {
+        printf("DEBUG: ConnectTime() - scanning connections...\n");
+        fflush(stdout);
+    }
 
     for (conn = Connections.Next; conn != &Connections; conn = conn->Next) {
+        if (debug_count % 10 == 0) {
+            printf("DEBUG: ConnectTime() - checking connection %s:%d, Socket=%d, ReconnectTimeOut=%d\n", 
+                   conn->Name, conn->Port, conn->Socket, conn->ReconnectTimeOut);
+            fflush(stdout);
+        }
         if (conn->TimeOut) {
             conn->TimeOut -= Diff;
             if (conn->TimeOut <= 0) {
@@ -1153,20 +1245,36 @@ void ConnectTime(unsigned long Diff)
         }
         if (conn->RoundTripTime >= 0) conn->RoundTripTime++;
         if (conn->ReconnectTimeOut) {
+            printf("DEBUG: ConnectTime() - ReconnectTimeOut=%d, decrementing by %lu\n", 
+                   conn->ReconnectTimeOut, Diff);
+            fflush(stdout);
             conn->ReconnectTimeOut -= Diff;
             if (conn->ReconnectTimeOut <= 0) {
+                printf("DEBUG: ConnectTime() - auto-reconnect timeout reached\n");
+                fflush(stdout);
                 conn->ReconnectTimeOut = 0;
                 ReConnect(conn);
+            } else {
+                printf("DEBUG: ConnectTime() - ReconnectTimeOut now=%d (still waiting)\n", 
+                       conn->ReconnectTimeOut);
+                fflush(stdout);
             }
         }
         if (conn->QuitTimeOut) {
+            printf("DEBUG: ConnectTime() - QuitTimeOut=%ld, decrementing by %lu\n", 
+                   conn->QuitTimeOut, Diff);
+            fflush(stdout);
             conn->QuitTimeOut -= Diff;
             if (conn->QuitTimeOut <= 0) {
                 conn->QuitTimeOut = 0;
+                printf("DEBUG: ConnectTime() - quit timeout expired, forcing close\n");
+                fflush(stdout);
                 ServerMessage("Quit does not seem to get through. "
                               "Cutting connection\n");
                 CloseConnection(conn);
-                conn->ReconnectTimeOut = 0;
+                // Don't reset ReconnectTimeOut - let AutoReconnect decide based on user type
+                printf("DEBUG: ConnectTime() - keeping ReconnectTimeOut for potential auto-reconnect\n");
+                fflush(stdout);
             } else if (RealQuit) {
                 char Buffer[80];
 
@@ -1229,7 +1337,7 @@ static void TryCommand(Connection conn)
         if (strcmp(command->Command, "quit") == 0) {
             /* "quit" sent successfully, avoid verbose IGS output now: */ 
             CloseConnection(conn);
-            conn->ReconnectTimeOut = 0;
+            // Don't reset ReconnectTimeOut - let AutoReconnect decide based on user type
         }
         myfree(command->Command);
         myfree(command);

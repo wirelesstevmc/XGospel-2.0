@@ -1,0 +1,26 @@
+! Fix stats window text widget auto-sizing
+! Remove the width=1 constraint that prevents horizontal auto-sizing
+
+! Allow text widgets to auto-size horizontally based on content
+*stats*Text.width:
+*stats*info.width:
+*stats*results.width:
+
+! Ensure text widgets can resize both horizontally and vertically
+*stats*Text.resize: both
+*stats*info.resize: both  
+*stats*results.resize: both
+
+! Set reasonable minimum widths instead of fixed width=1
+*stats*Text.minimumWidth: 200
+*stats*info.minimumWidth: 300
+*stats*results.minimumWidth: 300
+
+! Ensure proper text wrapping behavior
+*stats*Text.wrap: word
+*stats*info.wrap: word
+*stats*results.wrap: word
+
+! Allow horizontal scrolling when needed
+*stats*info.scrollHorizontal: whenNeeded
+*stats*results.scrollHorizontal: whenNeeded

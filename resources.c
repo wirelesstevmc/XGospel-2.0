@@ -732,7 +732,7 @@ String fallback_resources[] = {
 #endif /* XAW3D */
     (String) "*stats*Text.resize:                  both",
     (String) "*stats*info.scrollVertical:          never",
-    (String) "*stats*Text.width:                   1",
+/*  (String) "*stats*Text.width:                   100", */
     (String) "*stats*Text.wrap:                    never",
     (String) "*stats*Text.displayCaret:            False",
     (String) "*stats*Text.translations:            #override\\n"
@@ -797,6 +797,8 @@ String fallback_resources[] = {
         "<EnterWindow>: helpup(stats_open,"
             "\"Toggle open.\")\\n"
         "<LeaveWindow>: helpdown(stats_open)",
+    /* Removed comprehensive overrides that were interfering with spring-loaded popup behavior */
+
     (String) "*stats*statsLooking.translations:      #override\\n"
         "Shift<Btn1Down>: help(stats_looking)\\n"
         "<EnterWindow>: helpup(stats_looking,"
@@ -1558,28 +1560,28 @@ String fallback_resources[] = {
     (String) "*pass.label:                         Pass",
     (String) "*done.label:                         Done",
     (String) "*save.label:                         Save",
-    (String) "*options.translations:               #override\\n"
-        "~Shift<Btn1Down>: reset() popupmenu(optionMenu)\\n"
-        "~Shift<Btn3Down>: reset() popupmenu(optionMenu, 1)\\n"
+    (String) "*main*options.translations:           #override\\n"
+        "<Btn1Down>: reset() popupmenu(optionMenu)\\n"
+        "<Btn3Down>: reset() popupmenu(optionMenu, 1)\\n"
         " Shift<Btn1Down>: help(help_options)\\n"
         "<EnterWindow>: helpup(help_options,"
             "\"Press left mouse button for a menu with options.\")\\n"
         "<LeaveWindow>: helpdown(help_options)",
-    (String) "*commands.translations:              #override\\n"
-        "~Shift<Btn1Down>: reset() popupmenu(commandMenu)\\n"
-        "~Shift<Btn3Down>: reset() popupmenu(commandMenu, 1)\\n"
+    (String) "*main*commands.translations:          #override\\n"
+        "<Btn1Down>: reset() popupmenu(commandMenu)\\n"
+        "<Btn3Down>: reset() popupmenu(commandMenu, 1)\\n"
         " Shift<Btn1Down>: help(help_commands)\\n"
         "<EnterWindow>: helpup(help_commands,"
             "\"Press left mouse button for a menu with commands.\")\\n"
         "<LeaveWindow>: helpdown(help_commands)",
-    (String) "*kCom.translations:              #override\\n"
-        "~Shift<Btn1Down>: reset() popupmenu(commandMenu)\\n"
-        "~Shift<Btn3Down>: reset() popupmenu(commandMenu, 1)\\n"
+    (String) "*main*kCom.translations:          #override\\n"
+        "<Btn1Down>: reset() popupmenu(commandMenu)\\n"
+        "<Btn3Down>: reset() popupmenu(commandMenu, 1)\\n"
         " Shift<Btn1Down>: help(help_commands)\\n"
         "<EnterWindow>: helpup(help_commands,"
             "\"Press left mouse button for a menu with commands.\")\\n"
         "<LeaveWindow>: helpdown(help_commands)",
-    (String) "*hCom.translations:              #override\\n"
+    (String) "*main*hCom.translations:          #override\\n"
         "~Shift<Btn1Down>: reset() popupmenu(commandMenu)\\n"
         "~Shift<Btn3Down>: reset() popupmenu(commandMenu, 1)\\n"
         " Shift<Btn1Down>: help(help_commands)\\n"

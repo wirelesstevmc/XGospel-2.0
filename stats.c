@@ -299,7 +299,7 @@ void ShowStats(NameVal *nameval, NameVal *extstats)
                                             "text",(XtArgVal) Buffer,
                                             "name",(XtArgVal)&LocalName[1],
                                             NULL);
-                RelaxText(Text);
+                RelaxTextWithAutoSize(Text);
             }
 	    /* Insert a "stored games" widget after "Reg date": */
    	    if (!strcmp(Nameval->Name, "Reg date")) {
@@ -320,7 +320,7 @@ void ShowStats(NameVal *nameval, NameVal *extstats)
 			       "name",(XtArgVal)&LocalName[1],
 			       NULL);
 		}
-		RelaxText(Text);
+		RelaxTextWithAutoSize(Text);
 	    }
         }
         Lines = PlayerToResults(Person);
@@ -350,7 +350,7 @@ void ShowStats(NameVal *nameval, NameVal *extstats)
             }
             *--ptr = 0;
             AddText(Text, Buffer);
-            RelaxText(Text);
+            RelaxTextWithAutoSize(Text);
         }
         Collect = XtNameToWidget(Root, "*collect");
         Info    = XtNameToWidget(Root, "*statsInfo");
@@ -391,7 +391,7 @@ void RefreshRating(const Player *player)
     if (strcmp(oldRating, Buffer)) {
 	XtVaSetValues(Text, XtNstring,
 		      (XtArgVal) Buffer, NULL);
-	RelaxText(Text);
+	RelaxTextWithAutoSize(Text);
     }
     /* XtPopup(stats->Root, XtGrabNone); */
 }
@@ -423,7 +423,7 @@ void RefreshStored(const Player *player)
     if (strcmp(oldStored, Buffer)) {
 	XtVaSetValues(Text, XtNstring,
 		      (XtArgVal) Buffer, NULL);
-	RelaxText(Text);
+	RelaxTextWithAutoSize(Text);
     }
     /* XtPopup(stats->Root, XtGrabNone); */
 }

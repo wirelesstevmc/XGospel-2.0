@@ -189,6 +189,44 @@ void RelaxText(Widget w)
                   NULL);
 }
 
+/* Calculate optimal width for Text widget based on actual text content and font */
+void AutoSizeTextWidth(Widget w)
+{
+    String text;
+    XFontStruct *font;
+    Dimension optimal_width, left_margin, right_margin;
+    int text_width;
+    
+    /* Get the current text content and font from the widget */
+    XtVaGetValues(w,
+                  XtNstring, (XtArgVal) &text,
+                  XtNfont, (XtArgVal) &font,
+                  XtNleftMargin, (XtArgVal) &left_margin,
+                  XtNrightMargin, (XtArgVal) &right_margin,
+                  NULL);
+    
+    if (!text || !font) return; /* Safety check */
+    
+    /* Calculate the pixel width of the text using the widget's font */
+    text_width = XTextWidth(font, text, strlen(text));
+    
+    /* Add margins and a small buffer for better appearance */
+    optimal_width = text_width + left_margin + right_margin + 4; /* +4 for slight padding */
+    
+    /* Set the calculated width */
+    XtVaSetValues(w, XtNwidth, (XtArgVal) optimal_width, NULL);
+}
+
+/* Enhanced RelaxText that also auto-sizes width to content */
+void RelaxTextWithAutoSize(Widget w)
+{
+    /* First do the original RelaxText behavior */
+    RelaxText(w);
+    
+    /* Then calculate and set optimal width */
+    AutoSizeTextWidth(w);
+}
+
 static void FreeBatchWidget(BatchWidget *w);
 static void CallDestroyBatchWidget(Widget w,
                                    XtPointer clientdata, XtPointer calldata)

@@ -38,6 +38,15 @@ void adapter_free(IGSProtocolAdapter *adapter) {
     }
 }
 
+void adapter_reset(IGSProtocolAdapter *adapter) {
+    if (adapter) {
+        adapter->state = ADAPTER_WAITING_FOR_BANNER_END;
+        adapter->buffer_len = 0;
+        adapter->banner_complete = 0;
+        ADAPTER_DEBUG("Reset to initial state - waiting for IGS banner end");
+    }
+}
+
 static void ensure_buffer_capacity(IGSProtocolAdapter *adapter, int needed_size) {
     if (adapter->buffer_capacity < needed_size) {
         int new_capacity = needed_size * 2;

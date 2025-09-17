@@ -31,6 +31,9 @@ IGSProtocolAdapter* adapter_init(void);
 /* Free the protocol adapter */
 void adapter_free(IGSProtocolAdapter *adapter);
 
+/* Reset the protocol adapter to initial state */
+void adapter_reset(IGSProtocolAdapter *adapter);
+
 /* Process incoming data from IGS server, return adapted data for yacc parser */
 char* adapter_process_server_data(IGSProtocolAdapter *adapter, const char *raw_data, 
                                   int raw_len, int *output_len);

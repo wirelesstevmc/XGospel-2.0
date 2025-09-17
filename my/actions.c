@@ -167,6 +167,14 @@ static void PopupMenu(Widget w, XEvent *evnt, String *str, Cardinal *n)
 {
     Widget      menu, temp, last;
     int         menu_x, menu_y, menu_width, menu_height, tear;
+    
+    printf("DEBUG: PopupMenu action called! Widget=%p, n=%d\n", (void*)w, *n);
+    if (*n > 0) printf("DEBUG: PopupMenu menu name: '%s'\n", str[0]);
+    if (evnt && evnt->type == ButtonPress) {
+        XButtonEvent *btn = (XButtonEvent*)evnt;
+        printf("DEBUG: PopupMenu button=%d, state=%d\n", btn->button, btn->state);
+    }
+    fflush(stdout);
     Position    button_x, button_y;
     const char *Name;
     XtPointer   data;
@@ -1104,10 +1112,14 @@ static XtActionsRec actionTable[] = {
 
 void InitWMProtocol(Widget top)
 {
+    printf("DEBUG: InitWMProtocol() - Registering actions including popupmenu\n");
+    fflush(stdout);
     XtRegisterGrabAction(PopupMenu, True, ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
     XtAppAddActions(XtWidgetToApplicationContext(top),
                     actionTable, XtNumber(actionTable));
+    printf("DEBUG: Actions registered - popupmenu should now be available\n");
+    fflush(stdout);
     ProtocolList[0] = GetAtom(top, "WM_DELETE_WINDOW");
     DELETE          = GetAtom(top, "DELETE");
 }

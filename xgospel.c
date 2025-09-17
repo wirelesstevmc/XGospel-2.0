@@ -271,6 +271,11 @@ static void HelpUp(Widget w, XEvent *event,
  * display the short help in *shortHelp, and popup the long_help in help mode.
  */
 {
+    printf("DEBUG: HelpUp action called! Widget=%p, n=%d\n", (void*)w, *n);
+    if (*n > 0) printf("DEBUG: HelpUp arg0: '%s'\n", string[0]);
+    if (*n > 1) printf("DEBUG: HelpUp arg1: '%s'\n", string[1]);
+    fflush(stdout);
+    
     const char *str[2];
     Boolean help;
 
@@ -516,6 +521,13 @@ static void HeartBeat(XtPointer closure, XtIntervalId *id)
 {
     unsigned long Diff;
     time_t        NewTime;
+    static int heartbeat_count = 0;
+    
+    heartbeat_count++;
+    if (heartbeat_count % 10 == 0) {
+        printf("DEBUG: HeartBeat() running - count=%d\n", heartbeat_count);
+        fflush(stdout);
+    }
 
     if (++UniversalTime.tm_sec < 60) {
         Diff = 1;
@@ -535,6 +547,10 @@ static void HeartBeat(XtPointer closure, XtIntervalId *id)
         GamesTime(Diff);
         ReviewsTime(Diff);
         AnalyzeTime(Diff);
+        if (heartbeat_count % 10 == 0) {
+            printf("DEBUG: HeartBeat() calling ConnectTime(%lu)\n", Diff);
+            fflush(stdout);
+        }
         ConnectTime(Diff);
 
         if (SetServerTime && (ServerTime.tm_sec += Diff) >= 60)

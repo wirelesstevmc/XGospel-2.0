@@ -1,0 +1,7 @@
+! Fix pixmap paths to use pixmap() function syntax like old code
+xgospel.main.collect.info*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)
+xgospel*board.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)
+xgospel.games.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)
+xgospel.players.collect.stripform*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/pagoda.xpm)
+xgospel.stats*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/xearth.xpm)
+xgospel.stats.collect.playerObserve*backgroundPixmap: pixmap(/home/cahill/Claude_Projects/64-bit/board.xpm)

@@ -1,0 +1,77 @@
+
+
+xgospel*main.?.width:      713
+xgospel*main.?.height:      389
+xgospel*tell.?.height:      170
+xgospel*challenge.?.width:  258      /*365*/
+xgospel*challenge*Command.background: #9af602    /* Green */
+xgospel*challenge*Command.foreground: black
+xgospel*challenge.title: %N[%n]%A
+!default Time and ByoYomi in .Xigs - was 1, 6
+!xgospel*defaultTime: 10
+!xgospel*defaultByoYomi: 10
+xgospel*askString*Command.background: #0c0091
+xgospel*askString*Label.background: #0c0091
+xgospel*askString*userLabel.label: WHO do you want to Go today?
+xgospel*askString*passwordLabel.label: If you want to play you gotta pay:
+xgospel*simpleNames: False
+xgospel*moveRaise.state:	False
+xgospel*kibitzRaise.state:	False
+xgospel*board.audioFile:	/dev/audio
+xgospel*board.backgroundPixmap: pixmap(/home/cahill/Claude_Projects/32-bit/board.xpm)
+!xgospel*board.backgroundPixmap: /home/cahill/board.xpm
+xgospel*board.foreground:	black
+xgospel*widgetInfo.foreground:	black
+xgospel.widgetInfo*foreground:	black
+xgospel*SmeBell.state:	False
+xgospel*errorBeep.state:	True
+xgospel*beepBeep.state:	True
+xgospel*inactiveTimeout:	129600
+xgospel*font:	7x13bold
+xgospel*quitTimeout:	1
+xgospel.resourceTree*widgetTree.foreground:             black
+xgospel.resourceTree*widgetTree.collect.buttons.restreeClose.background: Red
+xgospel.resourceTree*widgetTree.collect*Command.background:             Green
+xgospel.resourceTree*widgetInfo.collect.buttons.restreeClose.background: Red
+xgospel.resourceTree*widgetInfo.collect*Command.background:             Green
+xgospel.resourceTree*foreground:                     black
+xgospel.resourceTree*restreeClose.background:        Red
+xgospel.resourceTree*restreeClose.foreground:        Yellow
+xgospel.resourceTree*restreeClose.label:             Close
+xgospel.resourceTree*cancel.background:              Red
+xgospel.resourceTree*cancel.foreground:              Yellow
+xgospel*games.?.width:        530
+xgospel*games.collect.height: 950
+xgospel*games.collect.viewport.preferredPaneSize: 600
+xgospel*games.collect.stripform.preferredPaneSize: 160
+xgospel*games.collect.viewport.set.gameEntryp.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryD.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryd.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryk.foreground:  black
+xgospel*games.collect.viewport.set.gameEntryNR.foreground:  black
+xgospel*players.?.width:      1310 /*1226 pre-expp */
+xgospel*players.collect.height: 818
+xgospel*players.collect.viewport.preferredPaneSize: 668
+xgospel*players.collect.stripform.preferredPaneSize: 40
+xgospel*players.collect.viewport.set.playerEntryp.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryD.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryd.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryk.foreground:  black
+xgospel*players.collect.viewport.set.playerEntryNR.foreground:  black
+xgospel*version:        1.12d
+!xgospel*observe.title: Game %G (White) %W[%w%a] -vs- %B[%b%A] (Black) 
+xgospel*observe.title: Game %G (Black) %B[%b%A] -vs- %W[%w%a] (White) 
+xgospel*observe.collect.scrollboard.board.width: 1004
+xgospel*observe.collect.scrollboard.board.height: 979
+xgospel*observe.?.width:     866
+xgospel*observe.?.height:	 998
+xgospel.observe.collect.scrollboard.board*foreground: black
+xgospel.observe*buttons*background: #0c0091
+xgospel.observe*buttons*foreground: black
+xgospel.observe*buttons*close.background: Red
+xgospel.observe*buttons*close.foreground: Yellow
+!xgospel.observe*buttons*?.foreground:  XtDefaultForeground
+xgospel.observe*buttons*?.foreground:  black
+xgospel.observe*buttons*?.background:  Green
+xgospel*tell*raise.state: true
+xgospel*verbose.state: true
