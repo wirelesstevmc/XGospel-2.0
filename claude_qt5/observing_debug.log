@@ -1,0 +1,2118 @@
+>>> AUTO_LAUNCH_FUNC: Called with buffered_game_lines.size()= 0
+NEWRATING STATE CHANGE: Players window newrating_enabled = false
+MAIN WINDOW: Setting newrating_enabled = true
+NEWRATING STATE CHANGE: Players window newrating_enabled = true
+[STATS-DEBUG] *** RAW Command 9 line: "9 File"
+[STATS-DEBUG] *** RAW Command 9 line: "9 File"
+[STATS-DEBUG] *** RAW Command 9 line: "9 xgospel2 1.0"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Set newrating to be True."
+DETECTED: Server set newrating to TRUE
+NEWRATING STATE CHANGE: Players window newrating_enabled = true
+[STATS-DEBUG] *** RAW Command 9 line: "9 Set nmatch to be True."
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 287
+[GAME] Game 287 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 132
+[GAME] Game 132 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 421
+[GAME] Game 421 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 370
+[GAME] Game 370 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 74
+[GAME] Game 74 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 652
+[GAME] Game 652 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 578
+[GAME] Game 578 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 679
+[GAME] Game 679 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 682
+[GAME] Game 682 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 230
+[GAME] Game 230 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 343
+[GAME] Game 343 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 111
+[GAME] Game 111 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 250
+[GAME] Game 250 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 297
+[GAME] Game 297 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 81
+[GAME] Game 81 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 294
+[GAME] Game 294 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 428
+[GAME] Game 428 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 2
+[GAME] Game 2 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 19
+[GAME] Game 19 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 255
+[GAME] Game 255 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 113
+[GAME] Game 113 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 69
+[GAME] Game 69 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 140
+[GAME] Game 140 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 602
+[GAME] Game 602 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 422
+[GAME] Game 422 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 496
+[GAME] Game 496 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 577
+[GAME] Game 577 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 168
+[GAME] Game 168 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 155
+[GAME] Game 155 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 339
+[GAME] Game 339 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 360
+[GAME] Game 360 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 31
+[GAME] Game 31 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 523
+[GAME] Game 523 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 124
+[GAME] Game 124 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 555
+[GAME] Game 555 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 568
+[GAME] Game 568 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 526
+[GAME] Game 526 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 108
+[GAME] Game 108 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 608
+[GAME] Game 608 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 654
+[GAME] Game 654 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 138
+[GAME] Game 138 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 490
+[GAME] Game 490 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 235
+[GAME] Game 235 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 58
+[GAME] Game 58 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 135
+[GAME] Game 135 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 400
+[GAME] Game 400 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 379
+[GAME] Game 379 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 395
+[GAME] Game 395 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 560
+[GAME] Game 560 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 486
+[GAME] Game 486 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 507
+[GAME] Game 507 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 16
+[GAME] Game 16 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 6
+[GAME] Game 6 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 197
+[GAME] Game 197 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 225
+[GAME] Game 225 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 647
+[GAME] Game 647 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 33
+[GAME] Game 33 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 525
+[GAME] Game 525 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 565
+[GAME] Game 565 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 166
+[GAME] Game 166 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 92
+[GAME] Game 92 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 224
+[GAME] Game 224 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 100
+[GAME] Game 100 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 411
+[GAME] Game 411 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 414
+[GAME] Game 414 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 286
+[GAME] Game 286 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 341
+[GAME] Game 341 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 461
+[GAME] Game 461 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 149
+[GAME] Game 149 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 541
+[GAME] Game 541 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 551
+[GAME] Game 551 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 569
+[GAME] Game 569 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 253
+[GAME] Game 253 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 91
+[GAME] Game 91 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 301
+[GAME] Game 301 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 304
+[GAME] Game 304 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 591
+[GAME] Game 591 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 15
+[GAME] Game 15 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 7
+[GAME] Game 7 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 220
+[GAME] Game 220 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 130
+[GAME] Game 130 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 308
+[GAME] Game 308 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 348
+[GAME] Game 348 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 424
+[GAME] Game 424 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 436
+[GAME] Game 436 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 449
+[GAME] Game 449 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 96
+[GAME] Game 96 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 274
+[GAME] Game 274 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 537
+[GAME] Game 537 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 549
+[GAME] Game 549 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 564
+[GAME] Game 564 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 82
+[GAME] Game 82 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 12
+[GAME] Game 12 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 1
+[GAME] Game 1 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 219
+[GAME] Game 219 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 437
+[GAME] Game 437 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 497
+[GAME] Game 497 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 293
+[GAME] Game 293 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 509
+[GAME] Game 509 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 510
+[GAME] Game 510 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 319
+[GAME] Game 319 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 501
+[GAME] Game 501 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 240
+[GAME] Game 240 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 271
+[GAME] Game 271 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 448
+[GAME] Game 448 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 435
+[GAME] Game 435 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 53
+[GAME] Game 53 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 342
+[GAME] Game 342 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 24
+[GAME] Game 24 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 545
+[GAME] Game 545 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 254
+[GAME] Game 254 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 261
+[GAME] Game 261 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 320
+[GAME] Game 320 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 354
+[GAME] Game 354 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 332
+[GAME] Game 332 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 357
+[GAME] Game 357 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 391
+[GAME] Game 391 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 257
+[GAME] Game 257 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 443
+[GAME] Game 443 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 542
+[GAME] Game 542 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 213
+[GAME] Game 213 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 123
+[GAME] Game 123 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 202
+[GAME] Game 202 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 167
+[GAME] Game 167 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 171
+[GAME] Game 171 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 210
+[GAME] Game 210 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 256
+[GAME] Game 256 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 43
+[GAME] Game 43 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 451
+[GAME] Game 451 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 467
+[GAME] Game 467 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 109
+[GAME] Game 109 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 147
+[GAME] Game 147 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 310
+[GAME] Game 310 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 573
+[GAME] Game 573 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 588
+[GAME] Game 588 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 245
+[GAME] Game 245 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 175
+[GAME] Game 175 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 238
+[GAME] Game 238 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 398
+[GAME] Game 398 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 189
+[GAME] Game 189 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 466
+[GAME] Game 466 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 384
+[GAME] Game 384 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 30
+[GAME] Game 30 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 182
+[GAME] Game 182 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 244
+[GAME] Game 244 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 10
+[GAME] Game 10 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 73
+[GAME] Game 73 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 139
+[GAME] Game 139 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 162
+[GAME] Game 162 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 199
+[GAME] Game 199 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 179
+[GAME] Game 179 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 328
+[GAME] Game 328 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 185
+[GAME] Game 185 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 133
+[GAME] Game 133 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 36
+[GAME] Game 36 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 450
+[GAME] Game 450 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 416
+[GAME] Game 416 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 472
+[GAME] Game 472 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 504
+[GAME] Game 504 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 119
+[GAME] Game 119 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 94
+[GAME] Game 94 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 300
+[GAME] Game 300 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 381
+[GAME] Game 381 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 423
+[GAME] Game 423 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 38
+[GAME] Game 38 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 78
+[GAME] Game 78 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 440
+[GAME] Game 440 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 457
+[GAME] Game 457 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 514
+[GAME] Game 514 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 389
+[GAME] Game 389 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 35
+[GAME] Game 35 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 40
+[GAME] Game 40 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 125
+[GAME] Game 125 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 242
+[GAME] Game 242 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 173
+[GAME] Game 173 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 295
+[GAME] Game 295 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 392
+[GAME] Game 392 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 264
+[GAME] Game 264 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 41
+[GAME] Game 41 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 129
+[GAME] Game 129 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 154
+[GAME] Game 154 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 223
+[GAME] Game 223 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 207
+[GAME] Game 207 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 233
+[GAME] Game 233 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 353
+[GAME] Game 353 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 455
+[GAME] Game 455 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 477
+[GAME] Game 477 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 227
+[GAME] Game 227 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 439
+[GAME] Game 439 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 487
+[GAME] Game 487 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 475
+[GAME] Game 475 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 494
+[GAME] Game 494 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 502
+[GAME] Game 502 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 28
+[GAME] Game 28 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 330
+[GAME] Game 330 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 516
+[GAME] Game 516 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 380
+[GAME] Game 380 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 188
+[GAME] Game 188 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 46
+[GAME] Game 46 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 356
+[GAME] Game 356 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 368
+[GAME] Game 368 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 386
+[GAME] Game 386 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 221
+[GAME] Game 221 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 484
+[GAME] Game 484 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 71
+[GAME] Game 71 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 95
+[GAME] Game 95 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 75
+[GAME] Game 75 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 150
+[GAME] Game 150 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 144
+[GAME] Game 144 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 190
+[GAME] Game 190 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 62
+[GAME] Game 62 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 393
+[GAME] Game 393 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 336
+[GAME] Game 336 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 402
+[GAME] Game 402 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 174
+[GAME] Game 174 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 429
+[GAME] Game 429 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 376
+[GAME] Game 376 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 52
+[GAME] Game 52 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 208
+[GAME] Game 208 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 283
+[GAME] Game 283 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 292
+[GAME] Game 292 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 318
+[GAME] Game 318 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 445
+[GAME] Game 445 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 177
+[GAME] Game 177 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 8
+[GAME] Game 8 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 216
+[GAME] Game 216 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 246
+[GAME] Game 246 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 453
+[GAME] Game 453 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 378
+[GAME] Game 378 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 187
+[GAME] Game 187 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 503
+[GAME] Game 503 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 17
+[GAME] Game 17 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 98
+[GAME] Game 98 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 114
+[GAME] Game 114 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 4
+[GAME] Game 4 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 59
+[GAME] Game 59 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 47
+[GAME] Game 47 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 76
+[GAME] Game 76 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 79
+[GAME] Game 79 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 60
+[GAME] Game 60 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 110
+[GAME] Game 110 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 88
+[GAME] Game 88 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 181
+[GAME] Game 181 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 105
+[GAME] Game 105 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 186
+[GAME] Game 186 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 196
+[GAME] Game 196 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 158
+[GAME] Game 158 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 178
+[GAME] Game 178 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 200
+[GAME] Game 200 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 237
+[GAME] Game 237 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 44
+[GAME] Game 44 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 14
+[GAME] Game 14 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 55
+[GAME] Game 55 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 291
+[GAME] Game 291 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 77
+[GAME] Game 77 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 65
+[GAME] Game 65 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 243
+[GAME] Game 243 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 266
+[GAME] Game 266 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 296
+[GAME] Game 296 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 305
+[GAME] Game 305 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 49
+[GAME] Game 49 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 326
+[GAME] Game 326 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 198
+[GAME] Game 198 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 67
+[GAME] Game 67 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 335
+[GAME] Game 335 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 344
+[GAME] Game 344 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 359
+[GAME] Game 359 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 375
+[GAME] Game 375 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 143
+[GAME] Game 143 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 148
+[GAME] Game 148 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 134
+[GAME] Game 134 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 260
+[GAME] Game 260 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 309
+[GAME] Game 309 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 337
+[GAME] Game 337 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 358
+[GAME] Game 358 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 407
+[GAME] Game 407 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 410
+[GAME] Game 410 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 418
+[GAME] Game 418 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 426
+[GAME] Game 426 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 120
+[GAME] Game 120 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 97
+[GAME] Game 97 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 346
+[GAME] Game 346 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 367
+[GAME] Game 367 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 116
+[GAME] Game 116 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 195
+[GAME] Game 195 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 259
+[GAME] Game 259 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 268
+[GAME] Game 268 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 373
+[GAME] Game 373 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 18
+[GAME] Game 18 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 365
+[GAME] Game 365 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 333
+[GAME] Game 333 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 383
+[GAME] Game 383 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 273
+[GAME] Game 273 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 303
+[GAME] Game 303 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 239
+[GAME] Game 239 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 412
+[GAME] Game 412 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 452
+[GAME] Game 452 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 5
+[GAME] Game 5 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 25
+[GAME] Game 25 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 9
+[GAME] Game 9 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 72
+[GAME] Game 72 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 115
+[GAME] Game 115 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 146
+[GAME] Game 146 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 298
+[GAME] Game 298 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 314
+[GAME] Game 314 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 340
+[GAME] Game 340 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 371
+[GAME] Game 371 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 459
+[GAME] Game 459 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 469
+[GAME] Game 469 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 234
+[GAME] Game 234 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 269
+[GAME] Game 269 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 288
+[GAME] Game 288 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 90
+[GAME] Game 90 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 142
+[GAME] Game 142 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 126
+[GAME] Game 126 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 86
+[GAME] Game 86 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 205
+[GAME] Game 205 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 32
+[GAME] Game 32 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 131
+[GAME] Game 131 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 232
+[GAME] Game 232 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 206
+[GAME] Game 206 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 289
+[GAME] Game 289 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 45
+[GAME] Game 45 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 324
+[GAME] Game 324 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 364
+[GAME] Game 364 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 29
+[GAME] Game 29 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 107
+[GAME] Game 107 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 193
+[GAME] Game 193 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 203
+[GAME] Game 203 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 322
+[GAME] Game 322 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 390
+[GAME] Game 390 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 419
+[GAME] Game 419 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 468
+[GAME] Game 468 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 50
+[GAME] Game 50 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 70
+[GAME] Game 70 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 21
+[GAME] Game 21 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 374
+[GAME] Game 374 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 401
+[GAME] Game 401 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 470
+[GAME] Game 470 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 280
+[GAME] Game 280 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 473
+[GAME] Game 473 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 56
+[GAME] Game 56 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 137
+[GAME] Game 137 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 352
+[GAME] Game 352 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 315
+[GAME] Game 315 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 430
+[GAME] Game 430 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 363
+[GAME] Game 363 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 480
+[GAME] Game 480 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 482
+[GAME] Game 482 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 483
+[GAME] Game 483 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 485
+[GAME] Game 485 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 446
+[GAME] Game 446 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 192
+[GAME] Game 192 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 161
+[GAME] Game 161 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 169
+[GAME] Game 169 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 267
+[GAME] Game 267 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 54
+[GAME] Game 54 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 278
+[GAME] Game 278 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 302
+[GAME] Game 302 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 325
+[GAME] Game 325 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 349
+[GAME] Game 349 - Type from flags [ "FI" ] ->  "Free"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 492
+[GAME] Game 492 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 495
+[GAME] Game 495 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 128
+[GAME] Game 128 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 252
+[GAME] Game 252 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 258
+[GAME] Game 258 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 377
+[GAME] Game 377 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 64
+[GAME] Game 64 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 399
+[GAME] Game 399 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 432
+[GAME] Game 432 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 433
+[GAME] Game 433 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 434
+[GAME] Game 434 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 145
+[GAME] Game 145 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 465
+[GAME] Game 465 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 499
+[GAME] Game 499 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 500
+[GAME] Game 500 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 505
+[GAME] Game 505 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 201
+[GAME] Game 201 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 275
+[GAME] Game 275 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 299
+[GAME] Game 299 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 63
+[GAME] Game 63 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 413
+[GAME] Game 413 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 184
+[GAME] Game 184 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 176
+[GAME] Game 176 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 362
+[GAME] Game 362 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 417
+[GAME] Game 417 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 431
+[GAME] Game 431 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 454
+[GAME] Game 454 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 471
+[GAME] Game 471 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 489
+[GAME] Game 489 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 236
+[GAME] Game 236 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 420
+[GAME] Game 420 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 464
+[GAME] Game 464 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 479
+[GAME] Game 479 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 493
+[GAME] Game 493 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 276
+[GAME] Game 276 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 506
+[GAME] Game 506 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 508
+[GAME] Game 508 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 511
+[GAME] Game 511 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 66
+[GAME] Game 66 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 27
+[GAME] Game 27 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 122
+[GAME] Game 122 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 209
+[GAME] Game 209 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 102
+[GAME] Game 102 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 48
+[GAME] Game 48 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 93
+[GAME] Game 93 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 204
+[GAME] Game 204 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 136
+[GAME] Game 136 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 159
+[GAME] Game 159 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 247
+[GAME] Game 247 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 164
+[GAME] Game 164 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 194
+[GAME] Game 194 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 163
+[GAME] Game 163 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 217
+[GAME] Game 217 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 229
+[GAME] Game 229 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 345
+[GAME] Game 345 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 404
+[GAME] Game 404 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 406
+[GAME] Game 406 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 372
+[GAME] Game 372 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 387
+[GAME] Game 387 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 80
+[GAME] Game 80 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 141
+[GAME] Game 141 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 211
+[GAME] Game 211 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 334
+[GAME] Game 334 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 442
+[GAME] Game 442 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 22
+[GAME] Game 22 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 218
+[GAME] Game 218 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 103
+[GAME] Game 103 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 151
+[GAME] Game 151 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 160
+[GAME] Game 160 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 39
+[GAME] Game 39 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 263
+[GAME] Game 263 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 20
+[GAME] Game 20 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 13
+[GAME] Game 13 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 89
+[GAME] Game 89 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 42
+[GAME] Game 42 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 172
+[GAME] Game 172 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 285
+[GAME] Game 285 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 351
+[GAME] Game 351 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 405
+[GAME] Game 405 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 214
+[GAME] Game 214 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 270
+[GAME] Game 270 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 425
+[GAME] Game 425 - Type from flags [ "FI" ] ->  "Free"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 456
+[GAME] Game 456 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 180
+[GAME] Game 180 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 462
+[GAME] Game 462 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 277
+[GAME] Game 277 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 396
+[GAME] Game 396 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 463
+[GAME] Game 463 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 106
+[GAME] Game 106 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 444
+[GAME] Game 444 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 476
+[GAME] Game 476 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 481
+[GAME] Game 481 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 491
+[GAME] Game 491 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 512
+[GAME] Game 512 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 517
+[GAME] Game 517 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 281
+[GAME] Game 281 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 515
+[GAME] Game 515 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 518
+[GAME] Game 518 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 520
+[GAME] Game 520 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 68
+[GAME] Game 68 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 85
+[GAME] Game 85 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 118
+[GAME] Game 118 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 212
+[GAME] Game 212 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 272
+[GAME] Game 272 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 307
+[GAME] Game 307 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 311
+[GAME] Game 311 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 350
+[GAME] Game 350 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 249
+[GAME] Game 249 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 3
+[GAME] Game 3 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 61
+[GAME] Game 61 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 101
+[GAME] Game 101 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 215
+[GAME] Game 215 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 329
+[GAME] Game 329 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 262
+[GAME] Game 262 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 231
+[GAME] Game 231 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 228
+[GAME] Game 228 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 312
+[GAME] Game 312 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 327
+[GAME] Game 327 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 282
+[GAME] Game 282 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 347
+[GAME] Game 347 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 355
+[GAME] Game 355 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 385
+[GAME] Game 385 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 87
+[GAME] Game 87 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 121
+[GAME] Game 121 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 248
+[GAME] Game 248 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 11
+[GAME] Game 11 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 51
+[GAME] Game 51 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 99
+[GAME] Game 99 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 117
+[GAME] Game 117 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 127
+[GAME] Game 127 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 156
+[GAME] Game 156 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 57
+[GAME] Game 57 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 34
+[GAME] Game 34 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 104
+[GAME] Game 104 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 152
+[GAME] Game 152 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 157
+[GAME] Game 157 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 222
+[GAME] Game 222 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 251
+[GAME] Game 251 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 265
+[GAME] Game 265 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 84
+[GAME] Game 84 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 37
+[GAME] Game 37 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 191
+[GAME] Game 191 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 226
+[GAME] Game 226 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 279
+[GAME] Game 279 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 290
+[GAME] Game 290 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 313
+[GAME] Game 313 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 321
+[GAME] Game 321 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 23
+[GAME] Game 23 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 26
+[GAME] Game 26 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 83
+[GAME] Game 83 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 317
+[GAME] Game 317 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 323
+[GAME] Game 323 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 331
+[GAME] Game 331 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 369
+[GAME] Game 369 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 338
+[GAME] Game 338 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 170
+[GAME] Game 170 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 366
+[GAME] Game 366 - Type from flags [ "I" ] ->  "Rated"
+[STATS-DEBUG] *** RAW Command 9 line: "9                 ******** 1778 Players 526 Total Games ********"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 287
+[GAME] Game 287 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 132
+[GAME] Game 132 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 421
+[GAME] Game 421 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 370
+[GAME] Game 370 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 74
+[GAME] Game 74 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 652
+[GAME] Game 652 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 578
+[GAME] Game 578 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 679
+[GAME] Game 679 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 682
+[GAME] Game 682 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 230
+[GAME] Game 230 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 343
+[GAME] Game 343 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 111
+[GAME] Game 111 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 250
+[GAME] Game 250 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 297
+[GAME] Game 297 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 81
+[GAME] Game 81 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 294
+[GAME] Game 294 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 428
+[GAME] Game 428 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 2
+[GAME] Game 2 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 255
+[GAME] Game 255 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 113
+[GAME] Game 113 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 69
+[GAME] Game 69 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 140
+[GAME] Game 140 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 602
+[GAME] Game 602 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 422
+[GAME] Game 422 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 496
+[GAME] Game 496 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 577
+[GAME] Game 577 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 168
+[GAME] Game 168 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 155
+[GAME] Game 155 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 339
+[GAME] Game 339 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 360
+[GAME] Game 360 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 31
+[GAME] Game 31 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 523
+[GAME] Game 523 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 124
+[GAME] Game 124 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 555
+[GAME] Game 555 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 568
+[GAME] Game 568 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 526
+[GAME] Game 526 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 108
+[GAME] Game 108 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 608
+[GAME] Game 608 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 654
+[GAME] Game 654 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 138
+[GAME] Game 138 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 490
+[GAME] Game 490 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 235
+[GAME] Game 235 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 58
+[GAME] Game 58 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 135
+[GAME] Game 135 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 400
+[GAME] Game 400 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 379
+[GAME] Game 379 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 395
+[GAME] Game 395 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 560
+[GAME] Game 560 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 486
+[GAME] Game 486 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 507
+[GAME] Game 507 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 16
+[GAME] Game 16 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 6
+[GAME] Game 6 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 197
+[GAME] Game 197 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 225
+[GAME] Game 225 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 647
+[GAME] Game 647 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 33
+[GAME] Game 33 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 525
+[GAME] Game 525 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 565
+[GAME] Game 565 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 166
+[GAME] Game 166 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 92
+[GAME] Game 92 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 224
+[GAME] Game 224 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 100
+[GAME] Game 100 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 411
+[GAME] Game 411 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 414
+[GAME] Game 414 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 286
+[GAME] Game 286 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 341
+[GAME] Game 341 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 461
+[GAME] Game 461 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 149
+[GAME] Game 149 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 541
+[GAME] Game 541 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 551
+[GAME] Game 551 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 569
+[GAME] Game 569 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 253
+[GAME] Game 253 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 91
+[GAME] Game 91 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 301
+[GAME] Game 301 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 304
+[GAME] Game 304 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 591
+[GAME] Game 591 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 15
+[GAME] Game 15 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 7
+[GAME] Game 7 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 220
+[GAME] Game 220 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 130
+[GAME] Game 130 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 308
+[GAME] Game 308 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 348
+[GAME] Game 348 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 424
+[GAME] Game 424 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 436
+[GAME] Game 436 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 96
+[GAME] Game 96 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 274
+[GAME] Game 274 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 537
+[GAME] Game 537 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 549
+[GAME] Game 549 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 564
+[GAME] Game 564 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 82
+[GAME] Game 82 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 12
+[GAME] Game 12 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 1
+[GAME] Game 1 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 219
+[GAME] Game 219 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 437
+[GAME] Game 437 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 497
+[GAME] Game 497 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 293
+[GAME] Game 293 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 509
+[GAME] Game 509 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 510
+[GAME] Game 510 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 319
+[GAME] Game 319 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 501
+[GAME] Game 501 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 240
+[GAME] Game 240 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 271
+[GAME] Game 271 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 448
+[GAME] Game 448 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 435
+[GAME] Game 435 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 53
+[GAME] Game 53 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 342
+[GAME] Game 342 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 24
+[GAME] Game 24 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 545
+[GAME] Game 545 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 254
+[GAME] Game 254 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 261
+[GAME] Game 261 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 320
+[GAME] Game 320 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 354
+[GAME] Game 354 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 332
+[GAME] Game 332 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 357
+[GAME] Game 357 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 391
+[GAME] Game 391 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 257
+[GAME] Game 257 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 443
+[GAME] Game 443 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 542
+[GAME] Game 542 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 213
+[GAME] Game 213 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 123
+[GAME] Game 123 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 202
+[GAME] Game 202 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 167
+[GAME] Game 167 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 171
+[GAME] Game 171 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 210
+[GAME] Game 210 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 256
+[GAME] Game 256 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 43
+[GAME] Game 43 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 451
+[GAME] Game 451 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 467
+[GAME] Game 467 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 109
+[GAME] Game 109 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 147
+[GAME] Game 147 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 310
+[GAME] Game 310 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 573
+[GAME] Game 573 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 588
+[GAME] Game 588 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 245
+[GAME] Game 245 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 175
+[GAME] Game 175 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 238
+[GAME] Game 238 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 398
+[GAME] Game 398 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 189
+[GAME] Game 189 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 466
+[GAME] Game 466 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 384
+[GAME] Game 384 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 30
+[GAME] Game 30 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 182
+[GAME] Game 182 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 244
+[GAME] Game 244 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 10
+[GAME] Game 10 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 73
+[GAME] Game 73 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 139
+[GAME] Game 139 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 162
+[GAME] Game 162 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 199
+[GAME] Game 199 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 179
+[GAME] Game 179 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 328
+[GAME] Game 328 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 185
+[GAME] Game 185 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 133
+[GAME] Game 133 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 36
+[GAME] Game 36 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 450
+[GAME] Game 450 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 416
+[GAME] Game 416 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 472
+[GAME] Game 472 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 504
+[GAME] Game 504 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 119
+[GAME] Game 119 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 94
+[GAME] Game 94 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 300
+[GAME] Game 300 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 381
+[GAME] Game 381 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 423
+[GAME] Game 423 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 38
+[GAME] Game 38 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 78
+[GAME] Game 78 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 440
+[GAME] Game 440 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 457
+[GAME] Game 457 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 514
+[GAME] Game 514 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 389
+[GAME] Game 389 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 35
+[GAME] Game 35 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 125
+[GAME] Game 125 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 242
+[GAME] Game 242 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 173
+[GAME] Game 173 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 295
+[GAME] Game 295 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 392
+[GAME] Game 392 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 264
+[GAME] Game 264 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 41
+[GAME] Game 41 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 129
+[GAME] Game 129 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 154
+[GAME] Game 154 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 223
+[GAME] Game 223 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 207
+[GAME] Game 207 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 233
+[GAME] Game 233 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 353
+[GAME] Game 353 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 455
+[GAME] Game 455 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 477
+[GAME] Game 477 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 227
+[GAME] Game 227 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 439
+[GAME] Game 439 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 487
+[GAME] Game 487 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 475
+[GAME] Game 475 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 494
+[GAME] Game 494 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 502
+[GAME] Game 502 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 28
+[GAME] Game 28 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 330
+[GAME] Game 330 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 516
+[GAME] Game 516 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 380
+[GAME] Game 380 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 188
+[GAME] Game 188 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 46
+[GAME] Game 46 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 356
+[GAME] Game 356 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 368
+[GAME] Game 368 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 386
+[GAME] Game 386 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 221
+[GAME] Game 221 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 484
+[GAME] Game 484 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 71
+[GAME] Game 71 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 95
+[GAME] Game 95 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 75
+[GAME] Game 75 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 150
+[GAME] Game 150 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 144
+[GAME] Game 144 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 190
+[GAME] Game 190 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 62
+[GAME] Game 62 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 393
+[GAME] Game 393 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 336
+[GAME] Game 336 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 402
+[GAME] Game 402 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 174
+[GAME] Game 174 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 429
+[GAME] Game 429 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 376
+[GAME] Game 376 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 52
+[GAME] Game 52 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 208
+[GAME] Game 208 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 283
+[GAME] Game 283 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 292
+[GAME] Game 292 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 318
+[GAME] Game 318 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 445
+[GAME] Game 445 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 177
+[GAME] Game 177 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 8
+[GAME] Game 8 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 216
+[GAME] Game 216 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 246
+[GAME] Game 246 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 453
+[GAME] Game 453 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 378
+[GAME] Game 378 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 187
+[GAME] Game 187 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 503
+[GAME] Game 503 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 17
+[GAME] Game 17 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 98
+[GAME] Game 98 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 114
+[GAME] Game 114 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 4
+[GAME] Game 4 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 59
+[GAME] Game 59 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 47
+[GAME] Game 47 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 76
+[GAME] Game 76 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 79
+[GAME] Game 79 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 60
+[GAME] Game 60 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 110
+[GAME] Game 110 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 88
+[GAME] Game 88 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 181
+[GAME] Game 181 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 105
+[GAME] Game 105 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 186
+[GAME] Game 186 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 196
+[GAME] Game 196 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 158
+[GAME] Game 158 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 178
+[GAME] Game 178 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 200
+[GAME] Game 200 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 237
+[GAME] Game 237 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 44
+[GAME] Game 44 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 14
+[GAME] Game 14 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 55
+[GAME] Game 55 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 291
+[GAME] Game 291 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 77
+[GAME] Game 77 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 65
+[GAME] Game 65 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 243
+[GAME] Game 243 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 266
+[GAME] Game 266 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 296
+[GAME] Game 296 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 305
+[GAME] Game 305 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 49
+[GAME] Game 49 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 326
+[GAME] Game 326 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 198
+[GAME] Game 198 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 67
+[GAME] Game 67 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 335
+[GAME] Game 335 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 344
+[GAME] Game 344 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 359
+[GAME] Game 359 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 375
+[GAME] Game 375 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 143
+[GAME] Game 143 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 148
+[GAME] Game 148 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 134
+[GAME] Game 134 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 260
+[GAME] Game 260 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 309
+[GAME] Game 309 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 337
+[GAME] Game 337 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 358
+[GAME] Game 358 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 407
+[GAME] Game 407 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 410
+[GAME] Game 410 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 418
+[GAME] Game 418 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 426
+[GAME] Game 426 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 120
+[GAME] Game 120 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 97
+[GAME] Game 97 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 346
+[GAME] Game 346 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 367
+[GAME] Game 367 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 116
+[GAME] Game 116 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 195
+[GAME] Game 195 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 259
+[GAME] Game 259 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 268
+[GAME] Game 268 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 373
+[GAME] Game 373 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 18
+[GAME] Game 18 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 365
+[GAME] Game 365 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 333
+[GAME] Game 333 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 383
+[GAME] Game 383 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 273
+[GAME] Game 273 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 303
+[GAME] Game 303 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 239
+[GAME] Game 239 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 412
+[GAME] Game 412 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 452
+[GAME] Game 452 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 5
+[GAME] Game 5 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 25
+[GAME] Game 25 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 9
+[GAME] Game 9 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 72
+[GAME] Game 72 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 115
+[GAME] Game 115 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 146
+[GAME] Game 146 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 298
+[GAME] Game 298 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 314
+[GAME] Game 314 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 340
+[GAME] Game 340 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 371
+[GAME] Game 371 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 459
+[GAME] Game 459 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 469
+[GAME] Game 469 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 234
+[GAME] Game 234 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 269
+[GAME] Game 269 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 288
+[GAME] Game 288 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 90
+[GAME] Game 90 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 142
+[GAME] Game 142 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 126
+[GAME] Game 126 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 86
+[GAME] Game 86 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 205
+[GAME] Game 205 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 32
+[GAME] Game 32 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 131
+[GAME] Game 131 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 232
+[GAME] Game 232 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 206
+[GAME] Game 206 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 289
+[GAME] Game 289 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 45
+[GAME] Game 45 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 324
+[GAME] Game 324 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 364
+[GAME] Game 364 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 29
+[GAME] Game 29 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 107
+[GAME] Game 107 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 193
+[GAME] Game 193 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 203
+[GAME] Game 203 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 322
+[GAME] Game 322 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 390
+[GAME] Game 390 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 419
+[GAME] Game 419 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 468
+[GAME] Game 468 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 50
+[GAME] Game 50 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 70
+[GAME] Game 70 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 21
+[GAME] Game 21 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 374
+[GAME] Game 374 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 401
+[GAME] Game 401 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 470
+[GAME] Game 470 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 280
+[GAME] Game 280 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 473
+[GAME] Game 473 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 56
+[GAME] Game 56 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 137
+[GAME] Game 137 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 352
+[GAME] Game 352 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 315
+[GAME] Game 315 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 430
+[GAME] Game 430 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 363
+[GAME] Game 363 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 480
+[GAME] Game 480 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 482
+[GAME] Game 482 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 483
+[GAME] Game 483 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 485
+[GAME] Game 485 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 446
+[GAME] Game 446 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 192
+[GAME] Game 192 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 161
+[GAME] Game 161 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 169
+[GAME] Game 169 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 267
+[GAME] Game 267 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 54
+[GAME] Game 54 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 278
+[GAME] Game 278 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 302
+[GAME] Game 302 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 325
+[GAME] Game 325 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 349
+[GAME] Game 349 - Type from flags [ "FI" ] ->  "Free"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 492
+[GAME] Game 492 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 495
+[GAME] Game 495 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 128
+[GAME] Game 128 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 252
+[GAME] Game 252 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 258
+[GAME] Game 258 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 377
+[GAME] Game 377 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 64
+[GAME] Game 64 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 399
+[GAME] Game 399 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 432
+[GAME] Game 432 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 433
+[GAME] Game 433 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 434
+[GAME] Game 434 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 145
+[GAME] Game 145 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 465
+[GAME] Game 465 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 499
+[GAME] Game 499 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 500
+[GAME] Game 500 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 505
+[GAME] Game 505 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 201
+[GAME] Game 201 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 275
+[GAME] Game 275 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 299
+[GAME] Game 299 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 63
+[GAME] Game 63 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 413
+[GAME] Game 413 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 184
+[GAME] Game 184 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 176
+[GAME] Game 176 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 362
+[GAME] Game 362 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 417
+[GAME] Game 417 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 431
+[GAME] Game 431 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 454
+[GAME] Game 454 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 471
+[GAME] Game 471 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 489
+[GAME] Game 489 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 236
+[GAME] Game 236 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 420
+[GAME] Game 420 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 464
+[GAME] Game 464 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 479
+[GAME] Game 479 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 493
+[GAME] Game 493 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 276
+[GAME] Game 276 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 506
+[GAME] Game 506 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 508
+[GAME] Game 508 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 511
+[GAME] Game 511 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 66
+[GAME] Game 66 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 27
+[GAME] Game 27 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 122
+[GAME] Game 122 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 209
+[GAME] Game 209 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 102
+[GAME] Game 102 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 48
+[GAME] Game 48 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 93
+[GAME] Game 93 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 204
+[GAME] Game 204 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 136
+[GAME] Game 136 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 159
+[GAME] Game 159 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 247
+[GAME] Game 247 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 164
+[GAME] Game 164 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 194
+[GAME] Game 194 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 163
+[GAME] Game 163 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 217
+[GAME] Game 217 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 229
+[GAME] Game 229 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 345
+[GAME] Game 345 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 404
+[GAME] Game 404 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 406
+[GAME] Game 406 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 372
+[GAME] Game 372 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 387
+[GAME] Game 387 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 80
+[GAME] Game 80 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 141
+[GAME] Game 141 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 211
+[GAME] Game 211 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 334
+[GAME] Game 334 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 442
+[GAME] Game 442 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 22
+[GAME] Game 22 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 218
+[GAME] Game 218 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 103
+[GAME] Game 103 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 151
+[GAME] Game 151 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 160
+[GAME] Game 160 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 39
+[GAME] Game 39 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 263
+[GAME] Game 263 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 20
+[GAME] Game 20 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 13
+[GAME] Game 13 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 89
+[GAME] Game 89 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 42
+[GAME] Game 42 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 172
+[GAME] Game 172 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 285
+[GAME] Game 285 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 351
+[GAME] Game 351 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 405
+[GAME] Game 405 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 214
+[GAME] Game 214 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 270
+[GAME] Game 270 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 425
+[GAME] Game 425 - Type from flags [ "FI" ] ->  "Free"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 456
+[GAME] Game 456 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 180
+[GAME] Game 180 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 462
+[GAME] Game 462 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 277
+[GAME] Game 277 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 396
+[GAME] Game 396 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 463
+[GAME] Game 463 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 106
+[GAME] Game 106 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 444
+[GAME] Game 444 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 476
+[GAME] Game 476 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 481
+[GAME] Game 481 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 491
+[GAME] Game 491 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 512
+[GAME] Game 512 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 517
+[GAME] Game 517 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 281
+[GAME] Game 281 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 515
+[GAME] Game 515 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 518
+[GAME] Game 518 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 520
+[GAME] Game 520 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 68
+[GAME] Game 68 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 85
+[GAME] Game 85 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 118
+[GAME] Game 118 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 212
+[GAME] Game 212 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 272
+[GAME] Game 272 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 307
+[GAME] Game 307 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 311
+[GAME] Game 311 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 350
+[GAME] Game 350 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 249
+[GAME] Game 249 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 3
+[GAME] Game 3 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 61
+[GAME] Game 61 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 101
+[GAME] Game 101 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 215
+[GAME] Game 215 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 329
+[GAME] Game 329 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 262
+[GAME] Game 262 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 231
+[GAME] Game 231 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 228
+[GAME] Game 228 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 312
+[GAME] Game 312 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 327
+[GAME] Game 327 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 282
+[GAME] Game 282 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 347
+[GAME] Game 347 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 355
+[GAME] Game 355 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 385
+[GAME] Game 385 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 87
+[GAME] Game 87 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 121
+[GAME] Game 121 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 248
+[GAME] Game 248 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 11
+[GAME] Game 11 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 51
+[GAME] Game 51 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 99
+[GAME] Game 99 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 117
+[GAME] Game 117 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 127
+[GAME] Game 127 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 156
+[GAME] Game 156 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 57
+[GAME] Game 57 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 34
+[GAME] Game 34 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 104
+[GAME] Game 104 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 152
+[GAME] Game 152 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 157
+[GAME] Game 157 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 222
+[GAME] Game 222 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 251
+[GAME] Game 251 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 265
+[GAME] Game 265 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 84
+[GAME] Game 84 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 37
+[GAME] Game 37 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 191
+[GAME] Game 191 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 226
+[GAME] Game 226 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 279
+[GAME] Game 279 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 290
+[GAME] Game 290 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 313
+[GAME] Game 313 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 321
+[GAME] Game 321 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 23
+[GAME] Game 23 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 26
+[GAME] Game 26 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 83
+[GAME] Game 83 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 317
+[GAME] Game 317 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 323
+[GAME] Game 323 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 331
+[GAME] Game 331 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= -5.5 for game 369
+[GAME] Game 369 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 338
+[GAME] Game 338 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 170
+[GAME] Game 170 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 0.5 for game 366
+[GAME] Game 366 - Type from flags [ "I" ] ->  "Rated"
+*** DEBUG KOMI: Command 7 parsed komi= 6.5 for game 19
+[GAME] Game 19 - Type from flags [ "I" ] ->  "Rated"
+[USER] DOUBLE CLICK: Opening stats dialog for "woodnstone" "4d+"
+[STATS] Requesting stats for player: "woodnstone"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Player:      woodnstone"
+[STATS-DEBUG] Found Player line: "9 Player:      woodnstone"
+[STATS] Parsing stats for player: "woodnstone"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Game:        go (1)"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Language:    default"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Rating:      4d+ 0"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Rated Games:     59"
+[STATS-DEBUG] Found Rated Games line: "9 Rated Games:     59"
+[STATS-DEBUG] Parsed rated: "59"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Rank:  4d+ 52"
+[STATS-DEBUG] *** RAW Command 9 line: "9 BeginnerClassWins:     0"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Wins:        20"
+[STATS-DEBUG] Found Wins line: "9 Wins:        20"
+[STATS-DEBUG] Parsed wins: 20
+[STATS-DEBUG] *** RAW Command 9 line: "9 Losses:       2"
+[STATS-DEBUG] Found Losses line: "9 Losses:       2"
+[STATS-DEBUG] Parsed losses: 2
+[STATS] Got complete stats: "woodnstone" Wins: 20 Losses: 2 Rated: "59"
+[STATS-DEBUG] Number of open dialogs: 1
+[STATS-DEBUG] Checking dialog for player: "woodnstone" against stats player: "woodnstone"
+[STATS] Calling updateStatsData for "woodnstone"
+[STATS-UPDATE] obs_str is empty, keeping observing as: "--"
+[STATS-UPDATE] Updating details label. observing= "--" details_label exists: true
+[STATS-UPDATE] Setting details to: "Country: Spain  |  Status: 0-0  |  Playing: --  |  Observing: --  |  Idle: 3m"
+[STATS] Updated dialog for "woodnstone"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Idle Time:  (On server) 3m"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Observing game:  342 (I)"
+[STATS-DEBUG] Found Observing game line: "9 Observing game:  342 (I)"
+[STATS-DEBUG] Parsed observing game: "342"
+IGS confirmed game observation: "9 Observing game:  342 (I)"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Address:  panda@.jp"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Country:  Spain"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Community:  -"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Reg date: Mon Jan  1 00:00:00 1900"
+[STATS-DEBUG] *** RAW Command 9 line: "9 Info:  1m/5b pls."
+[STATS-DEBUG] *** RAW Command 9 line: "9 Defaults (help defs):  time 1, size 19, byo-yomi time 5, byo-yomi stones 25"
