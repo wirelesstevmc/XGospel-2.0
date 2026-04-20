@@ -1,0 +1,3846 @@
+#include "board_window.h"
+#include "igs_move_parser.h"
+#include "sgf_parser.h"
+#include "settings.h"
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QMessageBox>
+#include <QtGui/QFont>
+#include <QtGui/QCloseEvent>
+#include <QtCore/QDebug>
+#include <QtCore/QFile>
+#include <QtCore/QDir>
+#include <QtCore/QTextStream>
+#include <QtCore/QStack>
+#include <QtCore/QSet>
+#include <QtCore/QTime>
+#include <cmath>
+#include <climits>
+
+// Debug macros - controlled by settings flags (all default to false)
+#define DEBUG_OBSERVATION_STATE if (settings->getDebugObservationState()) qDebug()
+#define DEBUG_MOVE_PROCESSING if (settings->getDebugMoveProcessing()) qDebug()
+#define DEBUG_EDIT_MODE if (settings->getDebugEditMode()) qDebug()
+#define DEBUG_SCORING if (settings->getDebugScoring()) qDebug()
+#define DEBUG_PROTOCOL if (settings->getDebugProtocol()) qDebug()
+#define DEBUG_MATCH if (settings->getDebugMatch()) qDebug()
+
+// GoBoardWidget Implementation
+GoBoardWidget::GoBoardWidget(QWidget *parent)
+ : QFrame(parent), board_size(19), board_state(nullptr), margin(30),
+ cell_size(25), stone_size(24), last_move_x(-1), last_move_y(-1), show_coordinates(true),
+ scoring_mode_enabled(false), game_mode(MODE_NORMAL), mouse_down_x(-1), mouse_down_y(-1),
+ next_player_color(BLACK_STONE)
+{
+ setFrameStyle(QFrame::Sunken | QFrame::Panel);
+ setLineWidth(2);
+ setMinimumSize(500, 500);
+ setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+ // Initialize stone renderer BEFORE setting board size (which calls calculateSizes)
+ stone_renderer = new StoneRenderer();
+
+ // Allocate board state
+ setBoardSize(19);
+
+ // Load board texture from xgospel 1.X
+ QString texture_path = QDir::homePath() + "/board.xpm";
+ if (QFile::exists(texture_path)) {
+ board_texture.load(texture_path);
+ qDebug() << "Board texture loaded successfully from:" << texture_path;
+ } else {
+ qDebug() << "Board texture not found at:" << texture_path << "- using solid color";
+ }
+
+ setStyleSheet(
+ "GoBoardWidget {" " background-color: #F4C542;" // Bright golden yellow fallback
+ " border: 2px inset #8B7355;" "}"
+ );
+}
+
+GoBoardWidget::~GoBoardWidget() {
+ if (board_state) {
+ for (int i = 0; i < board_size; i++) {
+ delete[] board_state[i];
+ }
+ delete[] board_state;
+ }
+ delete stone_renderer;
+}
+
+void GoBoardWidget::setBoardSize(int size) {
+ if (board_state) {
+ for (int i = 0; i < board_size; i++) {
+ delete[] board_state[i];
+ }
+ delete[] board_state;
+ }
+ 
+ board_size = size;
+ board_state = new int*[board_size];
+ for (int i = 0; i < board_size; i++) {
+ board_state[i] = new int[board_size];
+ for (int j = 0; j < board_size; j++) {
+ board_state[i][j] = EMPTY;
+ }
+ }
+ 
+ calculateSizes();
+ update();
+}
+
+void GoBoardWidget::placeMoveAt(int x, int y, StoneColor color) {
+ DEBUG_MOVE_PROCESSING << "GoBoardWidget::placeMoveAt called with x=" << x << "y=" << y << "color=" << color << "board_size=" << board_size;
+
+ if (x >= 0 && x < board_size && y >= 0 && y < board_size) {
+ board_state[x][y] = color;
+ // NOTE: Do NOT call setLastMove() here - it's set explicitly in displayNode()
+ // to mark only the actual move for the current node, not every stone on the board
+ DEBUG_MOVE_PROCESSING << "Stone placed successfully at (" << x << "," << y << ")";
+ update();
+ } else {
+ qDebug() << "ERROR: Invalid coordinates - stone NOT placed!";
+ }
+}
+
+void GoBoardWidget::removeStoneAt(int x, int y) {
+ if (x >= 0 && x < board_size && y >= 0 && y < board_size) {
+ board_state[x][y] = EMPTY;
+ update();
+ }
+}
+
+void GoBoardWidget::clearBoard() {
+ for (int i = 0; i < board_size; i++) {
+ for (int j = 0; j < board_size; j++) {
+ board_state[i][j] = EMPTY;
+ }
+ }
+ last_move_x = last_move_y = -1;
+ update();
+}
+
+void GoBoardWidget::setLastMove(int x, int y) {
+ last_move_x = x;
+ last_move_y = y;
+ update();
+}
+
+StoneColor GoBoardWidget::getBoardState(int x, int y) const {
+ if (x >= 0 && x < board_size && y >= 0 && y < board_size) {
+ return static_cast<StoneColor>(board_state[x][y]);
+ }
+ return EMPTY;
+}
+
+StoneColor GoBoardWidget::getStoneAt(int x, int y) const {
+ return getBoardState(x, y);
+}
+
+void GoBoardWidget::calculateSizes() {
+ // We need to calculate margin dynamically to give proper clearance for coordinates
+ // Margin must accommodate: stone_radius + (0.75 * stone_diameter) clearance + text space
+ //
+ // The edge stones sit at grid intersections which are at distance 'margin' from widget edge
+ // Stone extends 'stone_radius' beyond the intersection toward the edge
+ // We want 0.75 * stone_diameter clearance beyond the stone edge
+ // Plus room for coordinate text
+
+ int base_margin = 50; // Starting estimate
+ int available_width = width() - 2 * base_margin;
+ int available_height = height() - 2 * base_margin;
+ int min_dimension = std::min(available_width, available_height);
+
+ if (board_size > 1) {
+ // First pass: estimate cell_size
+ cell_size = min_dimension / (board_size - 1);
+ cell_size = std::max(cell_size, 15); // Minimum cell size
+
+ // Calculate stone diameter - account for render() pic_radius=0.97 shrinkage
+ // To get 96% visible stone: pixmap_size = (cell_size * 0.96) / 0.97 ≈ 0.99 * cell_size
+ int stone_diameter = static_cast<int>(cell_size * 0.99 + 0.5);
+ int stone_radius = stone_diameter / 2;
+
+ // Required margin = stone_radius + 0.75*stone_diameter + text_space
+ // Text space: ~15px for text height/width + small buffer
+ int clearance = static_cast<int>(0.75 * stone_diameter);
+ int required_margin = stone_radius + clearance + 18;
+ margin = std::max(required_margin, 40); // Minimum 40px margin
+
+ // Second pass: recalculate cell_size with new margin
+ available_width = width() - 2 * margin;
+ available_height = height() - 2 * margin;
+ min_dimension = std::min(available_width, available_height);
+ cell_size = min_dimension / (board_size - 1);
+ cell_size = std::max(cell_size, 15); // Minimum cell size
+
+ // Generate q5Go-style stone pixmaps at the correct size
+ // Account for render() pic_radius=0.97 shrinkage
+ stone_size = static_cast<int>(cell_size * 0.99 + 0.5);
+ stone_renderer->generateStones(stone_size);
+ qDebug() << "=== STONE SIZE DEBUG === cell_size:" << cell_size << "stone_size:" << stone_size << "ratio:" << (double)stone_size/cell_size;
+ }
+}
+
+void GoBoardWidget::paintEvent(QPaintEvent *event) {
+ QFrame::paintEvent(event);
+
+ QPainter painter(this);
+ painter.setRenderHint(QPainter::Antialiasing);
+
+ calculateSizes();
+
+ // Draw tiled board texture if loaded, otherwise use solid background
+ if (!board_texture.isNull()) {
+ // Tile the texture across the widget
+ for (int x = 0; x < width(); x += board_texture.width()) {
+ for (int y = 0; y < height(); y += board_texture.height()) {
+ painter.drawPixmap(x, y, board_texture);
+ }
+ }
+ }
+
+ drawBoard(painter);
+
+ // Draw territory markings in scoring mode (before stones)
+ if (scoring_mode_enabled) {
+ drawTerritoryMarkers(painter);
+ }
+
+ drawStones(painter);
+ if (show_coordinates) {
+ drawCoordinates(painter);
+ }
+ drawLastMoveMarker(painter);
+
+ // Draw dead stone markers on top of stones
+ if (scoring_mode_enabled) {
+ drawDeadStoneMarkers(painter);
+ }
+}
+
+void GoBoardWidget::drawBoard(QPainter &painter) {
+ // Disable antialiasing for crisp black lines (antialiasing was causing gray appearance)
+ painter.setRenderHint(QPainter::Antialiasing, false);
+
+ // Use cosmetic black grid lines (thinnest possible - 1 device pixel, pure black)
+ QPen grid_pen(Qt::black);
+ grid_pen.setWidth(0); // Cosmetic pen - exactly 1 device pixel
+ grid_pen.setCosmetic(true); // Explicitly set cosmetic mode
+ painter.setPen(grid_pen);
+
+ static bool debug_logged = false;
+ if (!debug_logged) {
+ qDebug() << "=== GRID DEBUG === pen color:" << grid_pen.color() << "width:" << grid_pen.width() << "cosmetic:" << grid_pen.isCosmetic();
+ debug_logged = true;
+ }
+
+ // Draw grid lines
+ for (int i = 0; i < board_size; i++) {
+ QPoint start = boardToScreen(i, 0);
+ QPoint end = boardToScreen(i, board_size - 1);
+ painter.drawLine(start, end);
+ 
+ start = boardToScreen(0, i);
+ end = boardToScreen(board_size - 1, i);
+ painter.drawLine(start, end);
+ }
+ 
+ // Draw star points (hoshi) for standard board sizes
+ if (board_size == 19) {
+ int hoshi_points[][2] = {{3,3}, {9,3}, {15,3}, {3,9}, {9,9}, {15,9}, {3,15}, {9,15}, {15,15}};
+ painter.setBrush(Qt::black);
+ for (int i = 0; i < 9; i++) {
+ QPoint center = boardToScreen(hoshi_points[i][0], hoshi_points[i][1]);
+ painter.drawEllipse(center, 3, 3);
+ }
+ } else if (board_size == 13) {
+ int hoshi_points[][2] = {{3,3}, {6,6}, {9,3}, {3,9}, {9,9}};
+ painter.setBrush(Qt::black);
+ for (int i = 0; i < 5; i++) {
+ QPoint center = boardToScreen(hoshi_points[i][0], hoshi_points[i][1]);
+ painter.drawEllipse(center, 3, 3);
+ }
+ }
+}
+
+void GoBoardWidget::drawStones(QPainter &painter) {
+ // Use the actual stone size that was generated (stored in member variable)
+ int stone_radius = stone_size / 2;
+
+ static bool debug_logged = false;
+ if (!debug_logged) {
+ qDebug() << "=== STONE POSITIONING DEBUG === stone_size:" << stone_size << "stone_radius:" << stone_radius
+ << "left_offset:" << stone_radius << "right_offset:" << (stone_size - stone_radius);
+ debug_logged = true;
+ }
+
+ for (int i = 0; i < board_size; i++) {
+ for (int j = 0; j < board_size; j++) {
+ if (board_state[i][j] != EMPTY) {
+ QPoint center = boardToScreen(i, j);
+
+ // Draw shadow first (offset down and left for upper-right light source)
+ // Increased offset to 4 pixels to match q5Go's prominent shadow depth
+ int shadow_offset = 4;
+ QPoint shadow_pos(center.x() - stone_radius - shadow_offset, center.y() - stone_radius + shadow_offset);
+ painter.drawPixmap(shadow_pos, stone_renderer->getShadow());
+
+ // Draw the stone
+ QPoint stone_pos(center.x() - stone_radius, center.y() - stone_radius);
+
+ if (board_state[i][j] == BLACK_STONE) {
+ painter.drawPixmap(stone_pos, stone_renderer->getBlackStone());
+ } else {
+ // Use variation based on board position for natural white stone appearance
+ int variation = (i * 19 + j) % 10; // Pseudo-random variation
+ painter.drawPixmap(stone_pos, stone_renderer->getWhiteStone(variation));
+ }
+ }
+ }
+ }
+}
+
+void GoBoardWidget::drawCoordinates(QPainter &painter) {
+ painter.setPen(Qt::black);
+ QFont font("Arial", 10);
+ painter.setFont(font);
+ QFontMetrics fm(font);
+
+ // Calculate stone radius for proper spacing
+ int stone_radius = cell_size / 2 - 2;
+ int stone_diameter = stone_radius * 2;
+ int clearance = static_cast<int>(0.75 * stone_diameter);
+
+ // Draw letters (A-T skipping I) for columns
+ QString letters = "ABCDEFGHJKLMNOPQRST";
+
+ // Get the top and bottom row positions
+ QPoint top_edge = boardToScreen(0, 0);
+ QPoint bottom_edge = boardToScreen(0, board_size - 1);
+
+ for (int i = 0; i < board_size && i < letters.length(); i++) {
+ QPoint pos = boardToScreen(i, 0);
+ QString letter(letters[i]);
+ int text_width = fm.horizontalAdvance(letter);
+
+ // Top coordinates - positioned above the board with proper clearance
+ // Distance from grid line: stone_radius + (clearance / 2)
+ int top_y = top_edge.y() - stone_radius - clearance / 2;
+ painter.drawText(pos.x() - text_width / 2, top_y, letter);
+
+ // Bottom coordinates - positioned below the board with proper clearance
+ // Distance from grid line: stone_radius + (clearance / 2) + text_height
+ int bottom_y = bottom_edge.y() + stone_radius + clearance / 2 + fm.height();
+ painter.drawText(pos.x() - text_width / 2, bottom_y, letter);
+ }
+
+ // Draw numbers for rows
+ for (int i = 0; i < board_size; i++) {
+ QPoint pos = boardToScreen(0, i);
+ QString num = QString::number(board_size - i);
+ int text_width = fm.horizontalAdvance(num);
+ int text_height = fm.height();
+
+ // Left coordinates - positioned to the left of the board, vertically centered
+ QPoint left_edge = boardToScreen(0, i);
+ painter.drawText(left_edge.x() - margin / 2 - text_width / 2, pos.y() + text_height / 3, num);
+
+ // Right coordinates - positioned to the right of the board, vertically centered
+ QPoint right_edge = boardToScreen(board_size - 1, i);
+ painter.drawText(right_edge.x() + margin / 2 - text_width / 2, pos.y() + text_height / 3, num);
+ }
+}
+
+void GoBoardWidget::drawLastMoveMarker(QPainter &painter) {
+ if (last_move_x >= 0 && last_move_y >= 0) {
+ QPoint center = boardToScreen(last_move_x, last_move_y);
+ painter.setPen(QPen(Qt::red, 3));
+ painter.setBrush(Qt::NoBrush);
+ painter.drawEllipse(center, cell_size/3, cell_size/3);
+ }
+}
+
+void GoBoardWidget::drawTerritoryMarkers(QPainter &painter) {
+ for (auto it = territory_map.begin(); it != territory_map.end(); ++it) {
+ QPair<int, int> pos = it.key();
+ StoneColor owner = it.value();
+
+ QPoint center = boardToScreen(pos.first, pos.second);
+
+ // Draw territory marking like xgospel 1.X - rectangular boxes
+ QColor fill_color;
+ if (owner == WHITE_STONE) {
+ fill_color = QColor(255, 255, 255, 160); // Semi-transparent white
+ } else if (owner == BLACK_STONE) {
+ fill_color = QColor(0, 0, 0, 160); // Semi-transparent black
+ } else {
+ // Dame (neutral/uncounted territory) - draw green rectangle like xgospel 1.X
+ fill_color = QColor(0, 200, 100, 140); // Semi-transparent green
+ }
+
+ // Draw filled rectangle with border
+ int box_size = cell_size / 2; // Half the cell size for nice proportions
+ QRect territory_rect(center.x() - box_size/2, center.y() - box_size/2,
+ box_size, box_size);
+
+ painter.setPen(QPen(fill_color.darker(150), 1)); // Darker border
+ painter.setBrush(fill_color);
+ painter.drawRect(territory_rect);
+ }
+}
+
+void GoBoardWidget::setDeadStones(const QSet<QPair<int, int>> &dead_stones) {
+ qDebug() << "[DEAD-MARKER-DEBUG] setDeadStones called with" << dead_stones.size() << "dead stones";
+ dead_stone_positions = dead_stones;
+ update();
+}
+
+void GoBoardWidget::drawDeadStoneMarkers(QPainter &painter) {
+ qDebug() << "[DEAD-MARKER-DEBUG] drawDeadStoneMarkers called, dead_stone_positions.size() =" << dead_stone_positions.size();
+
+ for (const auto& pos : dead_stone_positions) {
+ QPoint center = boardToScreen(pos.first, pos.second);
+
+ // Get the stone color to determine rectangle color (inverted)
+ StoneColor stone_color = getStoneAt(pos.first, pos.second);
+
+ // Draw inverted rectangle on dead stones (same style as territory markers)
+ // Black stones get white rectangles, white stones get black rectangles
+ QColor fill_color;
+ if (stone_color == BLACK_STONE) {
+ fill_color = QColor(255, 255, 255, 160); // Semi-transparent white
+ } else if (stone_color == WHITE_STONE) {
+ fill_color = QColor(0, 0, 0, 160); // Semi-transparent black
+ } else {
+ continue; // Skip if no stone at this position
+ }
+
+ // Draw filled rectangle with border (same size as territory markers)
+ int box_size = cell_size / 2; // Same size as territory markers
+ QRect dead_rect(center.x() - box_size/2, center.y() - box_size/2,
+ box_size, box_size);
+
+ painter.setPen(QPen(fill_color.darker(150), 1)); // Darker border
+ painter.setBrush(fill_color);
+ painter.drawRect(dead_rect);
+ }
+}
+
+QPoint GoBoardWidget::boardToScreen(int x, int y) {
+ return QPoint(margin + x * cell_size, margin + y * cell_size);
+}
+
+QPoint GoBoardWidget::screenToBoard(int px, int py) {
+ int x = (px - margin + cell_size/2) / cell_size;
+ int y = (py - margin + cell_size/2) / cell_size;
+ 
+ qDebug() << "screenToBoard: pixel(" << px << "," << py << ") -> board(" << x << "," << y << ") [margin=" << margin << ", cell_size=" << cell_size << "]";
+ return QPoint(x, y);
+}
+
+void GoBoardWidget::mousePressEvent(QMouseEvent *event) {
+ // Record mouse down position for anti-clicko
+ QPoint board_pos = screenToBoard(event->x(), event->y());
+ mouse_down_x = board_pos.x();
+ mouse_down_y = board_pos.y();
+}
+
+void GoBoardWidget::mouseReleaseEvent(QMouseEvent *event) {
+ // Anti-clicko: only process if release position matches press position
+ QPoint board_pos = screenToBoard(event->x(), event->y());
+ int x = board_pos.x();
+ int y = board_pos.y();
+
+ if (mouse_down_x == -1 || x != mouse_down_x || y != mouse_down_y) {
+ return; // Click was dragged, ignore
+ }
+
+ // Reset mouse down position
+ mouse_down_x = -1;
+ mouse_down_y = -1;
+
+ // Check valid board position
+ if (x < 0 || x >= board_size || y < 0 || y >= board_size) {
+ return;
+ }
+
+ // Handle edit mode - left click places next player's stone and alternates color
+ if (game_mode == MODE_EDIT) {
+ StoneColor existing_stone = (StoneColor)board_state[x][y];
+
+ if (event->button() == Qt::LeftButton) {
+ // Left click: Place next player's stone, or remove if same color exists
+ if (existing_stone == next_player_color) {
+ // Remove stone of the same color (undo placement)
+ removeStoneAt(x, y);
+ } else if (existing_stone == EMPTY) {
+ // Place stone and alternate color
+ placeMoveAt(x, y, next_player_color);
+ // Alternate to next color
+ next_player_color = (next_player_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+ DEBUG_EDIT_MODE << "Edit mode: Placed stone, next player:"
+ << (next_player_color == BLACK_STONE ? "Black" : "White");
+ } else {
+ // Different color stone exists - replace it with next player's color
+ placeMoveAt(x, y, next_player_color);
+ // Alternate to next color
+ next_player_color = (next_player_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+ DEBUG_EDIT_MODE << "Edit mode: Replaced stone, next player:"
+ << (next_player_color == BLACK_STONE ? "Black" : "White");
+ }
+ } else if (event->button() == Qt::RightButton) {
+ // Right click: Remove any stone (for corrections)
+ if (existing_stone != EMPTY) {
+ removeStoneAt(x, y);
+ DEBUG_EDIT_MODE << "Edit mode: Removed stone with right click";
+ }
+ }
+ return;
+ }
+
+ // Normal mode: emit boardClicked for move handling
+ if (game_mode == MODE_NORMAL && event->button() == Qt::LeftButton) {
+ emit boardClicked(x, y);
+ }
+}
+
+void GoBoardWidget::resizeEvent(QResizeEvent *event) {
+ QFrame::resizeEvent(event);
+ calculateSizes();
+}
+
+// BoardWindow Implementation
+BoardWindow::BoardWindow(QWidget *parent, const QString &username)
+ : QMainWindow(parent), observed_game_id(-1), my_username(username), current_move(0),
+ current_player(BLACK_STONE), is_observing(false), is_playing(false), is_scoring_mode(false), game_mode(MODE_NORMAL),
+ is_edit_window(false), handicap(0), komi(0.5), game_type("Free"), byoyomi_time(0),
+ white_captures(0), black_captures(0), white_byo_moves(0), black_byo_moves(0),
+ white_time_seconds(0), black_time_seconds(0), game_finished(false),
+ white_territory(0), black_territory(0), white_prisoners(0), black_prisoners(0), final_score(0.0),
+ server_white_score(0.0), server_black_score(0.0), has_server_score(false),
+ receiving_territory_data(false), territory_data_row(0),
+ consecutive_passes(0), server_move_count(0), mv_counter(-1), observation_state(NOT_OBSERVING), moves_received_during_live(0),
+ game_root(new GameNode()), current_node(game_root), slider_update_in_progress(false), auto_follow_mode(true)
+{
+ qDebug() << "DEBUG: BoardWindow constructor started";
+ qDebug() << "DEBUG: Window title set";
+ setMinimumSize(800, 700);
+ qDebug() << "DEBUG: Minimum size set";
+ setupUI();
+ qDebug() << "DEBUG: UI setup completed";
+ 
+ // Initialize clock timer for server lag compensation
+ clock_timer = new QTimer(this);
+ qDebug() << "DEBUG: Timer created";
+ connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+ clock_timer->start(1000); // Update every second to compensate for server lag
+ qDebug() << "DEBUG: Timer connected and started";
+ 
+ // Set initial window title
+ updateWindowTitle();
+
+ // Restore window geometry from settings (xgospel1 .Xdefaults style)
+ QRect savedGeometry = settings->loadWindowGeometry("board", QRect(150, 150, 900, 800));
+ setGeometry(savedGeometry);
+
+ qDebug() << "DEBUG: BoardWindow constructor completed";
+}
+
+BoardWindow::~BoardWindow() {
+ delete game_root; // Recursively deletes entire game tree
+}
+
+void BoardWindow::closeEvent(QCloseEvent *event) {
+ // Emit boardClosed signal to trigger unobserve and unhighlight (xgospel1 pattern)
+ // ALWAYS emit if we have a valid game ID, regardless of is_observing flag state
+ if (observed_game_id > 0) {
+     qDebug() << "[BoardWindow::closeEvent] Emitting boardClosed for game" << observed_game_id << ", is_observing=" << is_observing;
+     emit boardClosed(observed_game_id);
+ }
+
+ // Save board window geometry before closing (xgospel1 style)
+ settings->saveWindowGeometry("board", geometry());
+
+ // Save splitter sizes for panel positions
+ if (main_splitter) {
+     settings->saveSplitterSizes("board_main_splitter", main_splitter->sizes());
+ }
+ if (right_splitter) {
+     settings->saveSplitterSizes("board_right_splitter", right_splitter->sizes());
+ }
+ if (info_splitter) {
+     settings->saveSplitterSizes("board_info_splitter", info_splitter->sizes());
+ }
+
+ settings->save();
+ QMainWindow::closeEvent(event);
+}
+
+void BoardWindow::setupUI() {
+ QWidget *central = new QWidget;
+ setCentralWidget(central);
+ 
+ central->setStyleSheet(
+ "QWidget {" " background-" " " "}"
+ );
+ 
+ QHBoxLayout *main_layout = new QHBoxLayout(central);
+ main_layout->setSpacing(10);
+ main_layout->setMargin(10);
+ 
+ // Left side - Board
+ QFrame *board_frame = new QFrame;
+ board_frame->setFrameStyle(QFrame::Raised | QFrame::Panel);
+ board_frame->setLineWidth(3);
+ board_frame->setStyleSheet(
+ "QFrame {" " border: 3px outset #888;" " background-" "}"
+ );
+ 
+ QVBoxLayout *board_layout = new QVBoxLayout(board_frame);
+ board_layout->setMargin(8);
+
+ // Teaching game title label (xgospel style - at top of board frame)
+ // Hidden by default, shown only for teaching games with custom titles
+ teaching_title_label = new QLabel();
+ teaching_title_label->setStyleSheet(
+ "font-size: 10px; font-weight: bold; color: #000; "
+ "background-color: #edd20d; border: 1px solid #ccc; padding: 4px;"
+ );
+ teaching_title_label->setAlignment(Qt::AlignCenter);
+ teaching_title_label->setWordWrap(true);
+ teaching_title_label->setMaximumHeight(60); // Limit height to avoid taking too much space
+ teaching_title_label->hide(); // Hidden by default
+ board_layout->addWidget(teaching_title_label);
+
+ board_widget = new GoBoardWidget;
+ board_layout->addWidget(board_widget);
+ 
+ // Connect board clicks to appropriate handler based on game mode
+ connect(board_widget, &GoBoardWidget::boardClicked, this, &BoardWindow::onBoardClicked);
+ 
+ // Move navigation controls
+ QFrame *nav_frame = new QFrame;
+ nav_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+ nav_frame->setStyleSheet(
+ "QFrame {" " border: 1px inset #666;" " background-" " padding: 5px;" "}"
+ );
+ 
+ QHBoxLayout *nav_layout = new QHBoxLayout(nav_frame);
+ nav_layout->setSpacing(5);
+ nav_layout->setMargin(5);
+ 
+ // Navigation buttons
+ first_move_button = new QPushButton("⏮");
+ first_move_button->setFixedSize(30, 25);
+ first_move_button->setToolTip("Go to first move");
+ 
+ prev_move_button = new QPushButton("⏪");
+ prev_move_button->setFixedSize(30, 25);
+ prev_move_button->setToolTip("Previous move");
+ 
+ next_move_button = new QPushButton("⏩");
+ next_move_button->setFixedSize(30, 25);
+ next_move_button->setToolTip("Next move");
+ 
+ last_move_button = new QPushButton("⏭");
+ last_move_button->setFixedSize(30, 25);
+ last_move_button->setToolTip("Go to last move");
+ 
+ // Move slider and number display
+ move_slider = new QSlider(Qt::Horizontal);
+ move_slider->setMinimum(0);
+ move_slider->setMaximum(0);
+ move_slider->setValue(0);
+ move_slider->setTickPosition(QSlider::TicksBelow);
+ move_slider->setTickInterval(10);
+ 
+ move_number_label = new QLabel("Move: 0/0");
+ move_number_label->setMinimumWidth(80);
+ move_number_label->setAlignment(Qt::AlignCenter);
+ 
+ // Add components to layout
+ nav_layout->addWidget(first_move_button);
+ nav_layout->addWidget(prev_move_button);
+ nav_layout->addWidget(move_slider, 1);
+ nav_layout->addWidget(next_move_button);
+ nav_layout->addWidget(last_move_button);
+ nav_layout->addWidget(move_number_label);
+ 
+ board_layout->addWidget(nav_frame);
+ 
+ // Initialize move navigation
+ current_move_index = 0;
+ 
+ // Connect navigation signals
+ connect(first_move_button, &QPushButton::clicked, this, &BoardWindow::onFirstMoveClicked);
+ connect(prev_move_button, &QPushButton::clicked, this, &BoardWindow::onPreviousMoveClicked);
+ connect(next_move_button, &QPushButton::clicked, this, &BoardWindow::onNextMoveClicked);
+ connect(last_move_button, &QPushButton::clicked, this, &BoardWindow::onLastMoveClicked);
+ connect(move_slider, &QSlider::valueChanged, this, &BoardWindow::onMoveSliderChanged);
+
+ // Create horizontal splitter between board and right panel (using member variable)
+ main_splitter = new QSplitter(Qt::Horizontal);
+ main_splitter->addWidget(board_frame);
+
+ // Right side - Game info and controls with comment panel (using member variable)
+ right_splitter = new QSplitter(Qt::Vertical);
+ 
+ // Top: Game info panel (borderless for maximum space efficiency)
+ QFrame *info_frame = new QFrame;
+ info_frame->setFrameStyle(QFrame::NoFrame);
+ info_frame->setStyleSheet(
+ "QFrame {" " border: 1px solid white;" // Invisible white-on-white border
+ " background-" " padding: 2px;" // Minimal padding
+ "}"
+ );
+
+ // Horizontal splitter for player info (left) vs analysis pane (right)
+ info_splitter = new QSplitter(Qt::Horizontal, info_frame);
+ QHBoxLayout *info_frame_layout = new QHBoxLayout(info_frame);
+ info_frame_layout->setContentsMargins(0, 0, 0, 0);
+ info_frame_layout->addWidget(info_splitter);
+
+ // Create stone renderer for player icons and "to play" indicator (20x20 pixels)
+ StoneRenderer icon_renderer;
+ icon_renderer.generateStones(20);
+
+ // LEFT SIDE: Player info panel
+ QFrame *player_info_panel = new QFrame();
+ player_info_panel->setFrameStyle(QFrame::NoFrame);
+ QVBoxLayout *info_layout = new QVBoxLayout(player_info_panel);
+ info_layout->setSpacing(3); // Reduced spacing for compactness
+ info_layout->setContentsMargins(3, 3, 3, 3); // Minimal margins for space efficiency
+
+ // Game info with dynamic "to play" stone indicator (q5Go style - horizontal layout)
+ QHBoxLayout *game_info_layout = new QHBoxLayout();
+ game_info_layout->setSpacing(6);
+ game_info_layout->setContentsMargins(0, 0, 0, 0);
+ game_info_layout->addStretch();
+
+ game_info_label = new QLabel("Game Info");
+ game_info_label->setStyleSheet("font-size: 11px; font-weight: bold;");
+ game_info_label->setAlignment(Qt::AlignCenter);
+ game_info_label->setWordWrap(false);
+ game_info_label->setFrameStyle(QFrame::NoFrame);
+ game_info_label->setAttribute(Qt::WA_TranslucentBackground);
+ game_info_layout->addWidget(game_info_label);
+
+ // Dynamic "to play" stone icon (starts as black, updated by updateLabels)
+ to_play_stone_icon = new QLabel();
+ to_play_stone_icon->setPixmap(icon_renderer.getBlackStone());
+ to_play_stone_icon->setFixedSize(24, 24);  // Increased from 20x20 to prevent stone clipping
+ to_play_stone_icon->setVisible(false);  // Hidden until game starts
+ to_play_stone_icon->setFrameStyle(QFrame::NoFrame);
+ to_play_stone_icon->setAttribute(Qt::WA_TranslucentBackground);
+ game_info_layout->addWidget(to_play_stone_icon);
+
+ game_info_layout->addStretch();
+ info_layout->addLayout(game_info_layout);
+
+ // Consolidated players group (both white and black in single borderless frame)
+ // Invisible white borders for maximum space efficiency
+ QFrame *players_group = new QFrame();
+ players_group->setFrameStyle(QFrame::NoFrame);
+ players_group->setStyleSheet("QFrame { border: none; background- }");
+ players_group->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+ QVBoxLayout *players_layout = new QVBoxLayout(players_group);
+ players_layout->setSpacing(3); // Minimal spacing between white and black
+ players_layout->setContentsMargins(2, 2, 2, 2); // Minimal margins
+
+ // White player info with stone icon (q5Go style - horizontal layout)
+ QHBoxLayout *white_name_layout = new QHBoxLayout();
+ white_name_layout->setSpacing(4);
+ white_name_layout->setContentsMargins(0, 0, 0, 0);
+
+ // White stone icon (uses icon_renderer created earlier)
+ white_stone_icon = new QLabel();
+ white_stone_icon->setPixmap(icon_renderer.getWhiteStone(0));
+ white_stone_icon->setFixedSize(20, 20);
+ white_name_layout->addWidget(white_stone_icon);
+
+ white_player_label = new QLabel("White");
+ white_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+ white_player_label->setWordWrap(false);
+ white_name_layout->addWidget(white_player_label);
+ white_name_layout->addStretch();
+
+ players_layout->addLayout(white_name_layout);
+
+ white_clock_label = new QLabel("--:--");
+ white_clock_label->setStyleSheet(
+     "font-size: 18px; "
+     "font-weight: bold; "
+     "font-family: monospace; "
+     "padding: 4px; "
+     "background-color: #000000; "  // Black background (xgospel1 style)
+     "color: #00FF00; "              // Bright green text
+     "border: 2px solid #808080; "  // Gray rectangular border
+ );
+ white_clock_label->setAlignment(Qt::AlignCenter);
+ white_clock_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+ players_layout->addWidget(white_clock_label);
+
+ // White captures (borderless, minimal padding, bold)
+ white_captures_label = new QLabel("Captures: 0");
+ white_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+ white_captures_label->setAlignment(Qt::AlignCenter);
+ players_layout->addWidget(white_captures_label);
+
+ // Thin separator line between players
+ QFrame *separator = new QFrame();
+ separator->setFrameShape(QFrame::HLine);
+ separator->setStyleSheet("QFrame { margin: 2px 0px; }");
+ players_layout->addWidget(separator);
+
+ // Black player info with stone icon (q5Go style - horizontal layout)
+ QHBoxLayout *black_name_layout = new QHBoxLayout();
+ black_name_layout->setSpacing(4);
+ black_name_layout->setContentsMargins(0, 0, 0, 0);
+
+ // Generate small black stone icon (20x20 pixels, reuse renderer from white stone)
+ black_stone_icon = new QLabel();
+ black_stone_icon->setPixmap(icon_renderer.getBlackStone());
+ black_stone_icon->setFixedSize(20, 20);
+ black_name_layout->addWidget(black_stone_icon);
+
+ black_player_label = new QLabel("Black");
+ black_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+ black_player_label->setWordWrap(false);
+ black_name_layout->addWidget(black_player_label);
+ black_name_layout->addStretch();
+
+ players_layout->addLayout(black_name_layout);
+
+ black_clock_label = new QLabel("--:--");
+ black_clock_label->setStyleSheet(
+     "font-size: 18px; "
+     "font-weight: bold; "
+     "font-family: monospace; "
+     "padding: 4px; "
+     "background-color: #000000; "  // Black background (xgospel1 style)
+     "color: #00FF00; "              // Bright green text
+     "border: 2px solid #808080; "  // Gray rectangular border
+ );
+ black_clock_label->setAlignment(Qt::AlignCenter);
+ black_clock_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+ players_layout->addWidget(black_clock_label);
+
+ // Black captures (borderless, minimal padding, bold)
+ black_captures_label = new QLabel("Captures: 0");
+ black_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+ black_captures_label->setAlignment(Qt::AlignCenter);
+ players_layout->addWidget(black_captures_label);
+
+ info_layout->addWidget(players_group);
+
+ // Handicap/Komi/Game-type label (borderless, larger font, bold, no redundant captures)
+ handicap_komi_label = new QLabel("Komi: 6.5 Handicap: 0 Free");
+ handicap_komi_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 2px; border: none; background-");
+ handicap_komi_label->setAlignment(Qt::AlignCenter);
+ handicap_komi_label->setWordWrap(false);
+ info_layout->addWidget(handicap_komi_label);
+
+ info_layout->addStretch();
+
+ // Save Game button (q5Go style - green)
+ save_button = new QPushButton("Save Game");
+ save_button->setStyleSheet(
+ "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #27ae60, stop:1 #229954);" " " " border: 2px outset #52be80;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2ecc71, stop:1 #27ae60);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #229954, stop:1 #27ae60);" " border: 2px inset #52be80;" "}"
+ );
+ connect(save_button, &QPushButton::clicked, this, &BoardWindow::saveGame);
+ info_layout->addWidget(save_button);
+
+ // Edit/Analyze button (q5Go style 3D - opens SGF in separate board window)
+ edit_button = new QPushButton("Edit Game");
+ edit_button->setStyleSheet(
+ "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5dade2, stop:1 #2980b9);" " " " border: 2px outset #85c1e9;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #73c2ec, stop:1 #3498db);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2980b9, stop:1 #5dade2);" " border: 2px inset #5dade2;" "}"
+ );
+ connect(edit_button, &QPushButton::clicked, this, &BoardWindow::editGame);
+ info_layout->addWidget(edit_button);
+
+ // Resign button (shown when playing, replaces Close button)
+ resign_button = new QPushButton("Resign");
+ resign_button->setStyleSheet(
+ "QPushButton {" " background-" " " " border: none;" " padding: 8px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ );
+ connect(resign_button, &QPushButton::clicked, this, &BoardWindow::resignGame);
+ resign_button->setVisible(false); // Hidden by default, shown when playing
+ info_layout->addWidget(resign_button);
+
+ // Close button (shown when observing, hidden when playing since window has title bar close)
+ // q5Go style 3D button with gradient
+ close_button = new QPushButton("Close Board");
+ close_button->setStyleSheet(
+ "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef5350, stop:1 #c62828);" " " " border: 2px outset #e57373;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f44336, stop:1 #d32f2f);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c62828, stop:1 #ef5350);" " border: 2px inset #ef5350;" "}"
+ );
+ connect(close_button, &QPushButton::clicked, this, &BoardWindow::closeBoard);
+ info_layout->addWidget(close_button);
+
+ // Add player info panel to left side of info splitter
+ info_splitter->addWidget(player_info_panel);
+
+ // RIGHT SIDE: Analysis pane (placeholder for future engine integration)
+ QFrame *analysis_panel = new QFrame();
+ analysis_panel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+ analysis_panel->setStyleSheet(
+     "QFrame {"
+     "    border: 2px inset #888;"
+     "    background-color: #2c2c2c;"  // Slightly darker background for distinction
+     "    padding: 8px;"
+     "}"
+ );
+
+ QVBoxLayout *analysis_layout = new QVBoxLayout(analysis_panel);
+ analysis_layout->setSpacing(5);
+ analysis_layout->setContentsMargins(8, 8, 8, 8);
+
+ // Analysis title label
+ QLabel *analysis_title = new QLabel("Analysis Mode");
+ analysis_title->setAlignment(Qt::AlignCenter);
+ analysis_title->setStyleSheet(
+     "QLabel {"
+     "    font-weight: bold;"
+     "    font-size: 12px;"
+     "    padding: 5px;"
+     "    border: 1px solid #555;"
+     "    border-radius: 3px;"
+     "}"
+ );
+ analysis_layout->addWidget(analysis_title);
+
+ // Placeholder text for future engine integration
+ QLabel *analysis_placeholder = new QLabel("Engine analysis will appear here\n(KataGo / Leela Zero integration)");
+ analysis_placeholder->setAlignment(Qt::AlignCenter);
+ analysis_placeholder->setStyleSheet("font-size: 10px; color: #888;");
+ analysis_placeholder->setWordWrap(true);
+ analysis_layout->addWidget(analysis_placeholder);
+
+ analysis_layout->addStretch();
+
+ // Add analysis panel to right side of info splitter
+ info_splitter->addWidget(analysis_panel);
+
+ // Set default sizes for info splitter (50/50 split)
+ info_splitter->setSizes({250, 250});
+
+ right_splitter->addWidget(info_frame);
+ 
+ // Bottom: Comment/Kibitz panel
+ QFrame *comment_frame = new QFrame;
+ comment_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+ comment_frame->setLineWidth(2);
+ comment_frame->setStyleSheet(
+ "QFrame {" " border: 2px inset #888;" " background-" " padding: 5px;" "}"
+ );
+ 
+ QVBoxLayout *comment_layout = new QVBoxLayout(comment_frame);
+ comment_layout->setSpacing(5);
+ comment_layout->setMargin(8);
+ 
+ // Comment title
+ QLabel *comment_title = new QLabel("Comments & Kibitz");
+ comment_title->setAlignment(Qt::AlignCenter);
+ comment_title->setStyleSheet(
+ "QLabel {" " font-weight: bold;" " font-size: 12px;" " " " background-" " border: 1px solid #ccc;" " padding: 3px;" "}"
+ );
+ comment_layout->addWidget(comment_title);
+ 
+ // Comment display area (resizable via splitter - no maximum height)
+ comment_display = new QTextEdit;
+ comment_display->setReadOnly(true);
+ comment_display->setStyleSheet(
+ "QTextEdit {" " background-" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 10px;" "}"
+ );
+ comment_display->setPlaceholderText("Comments and kibitz will appear here...");
+ comment_layout->addWidget(comment_display);
+ 
+ // Comment input area
+ comment_input = new QLineEdit;
+ comment_input->setPlaceholderText("Type comment or kibitz...");
+ comment_input->setStyleSheet(
+ "QLineEdit {" " border: 1px solid #ccc;" " padding: 4px;" " font-size: 10px;" "}"
+ );
+ connect(comment_input, &QLineEdit::returnPressed, this, &BoardWindow::onCommentInputReturn);
+ comment_layout->addWidget(comment_input);
+ 
+ // Comment buttons
+ QHBoxLayout *comment_buttons = new QHBoxLayout;
+ comment_buttons->setSpacing(3);
+ 
+ send_comment_button = new QPushButton();
+ updateCommentButtonText(); // Set initial text based on mode
+ send_comment_button->setStyleSheet(
+ "QPushButton {" " background-" " " " border: none;" " padding: 4px 8px;" " font-size: 10px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ );
+ connect(send_comment_button, &QPushButton::clicked, [this]() {
+ qDebug() << "Kibitz button clicked!";
+ sendComment();
+ });
+ comment_buttons->addWidget(send_comment_button);
+ 
+ comment_layout->addLayout(comment_buttons);
+ 
+ right_splitter->addWidget(comment_frame);
+ 
+ // Bottom: Observers panel
+ QFrame *observers_frame = new QFrame;
+ observers_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+ observers_frame->setLineWidth(2);
+ observers_frame->setStyleSheet(
+ "QFrame {" " border: 2px inset #888;" " background-" " padding: 5px;" "}"
+ );
+ 
+ QVBoxLayout *observers_layout = new QVBoxLayout(observers_frame);
+ observers_layout->setSpacing(5);
+ observers_layout->setMargin(8);
+ 
+ // Observers title
+ QLabel *observers_title = new QLabel("Observers");
+ observers_title->setAlignment(Qt::AlignCenter);
+ observers_title->setStyleSheet(
+ "QLabel {" " font-weight: bold;" " font-size: 12px;" " " " background-" " border: 1px solid #ccc;" " padding: 3px;" "}"
+ );
+ observers_layout->addWidget(observers_title);
+ 
+ // Observers list (resizable via splitter - no maximum height)
+ observers_list = new QListWidget;
+ observers_list->setStyleSheet(
+ "QListWidget {" " background-" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 10px;" "}"
+ );
+ observers_layout->addWidget(observers_list);
+ 
+ // Observers refresh button
+ QPushButton *refresh_observers_button = new QPushButton("Refresh Observers");
+ refresh_observers_button->setStyleSheet(
+ "QPushButton {" " background-" " " " border: none;" " padding: 4px 8px;" " font-size: 10px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ );
+ connect(refresh_observers_button, &QPushButton::clicked, this, &BoardWindow::requestObservers);
+ observers_layout->addWidget(refresh_observers_button);
+ 
+ right_splitter->addWidget(observers_frame);
+
+ // Set minimum heights to prevent collapsing (user can resize via splitters)
+ info_frame->setMinimumHeight(320); // game info + 2 player groups (larger) + komi/captures + buttons
+ info_frame->setMaximumHeight(360); // Fixed height (increased for multi-line game statistics)
+ comment_frame->setMinimumHeight(60);  // Reduced minimum - user resizable
+ observers_frame->setMinimumHeight(40); // Reduced minimum - user resizable
+
+ // Add right splitter to main horizontal splitter
+ main_splitter->addWidget(right_splitter);
+
+ // Add the main splitter to the layout
+ main_layout->addWidget(main_splitter, 1);
+
+ // Set default splitter sizes (smaller comments/observers for more board space)
+ right_splitter->setSizes({340, 100, 60}); // Info panel larger, comments/observers smaller (user resizable)
+ main_splitter->setSizes({750, 250});      // Board gets 75%, right panel gets 25%
+
+ // Restore saved splitter sizes (if any) - must be after addWidget
+ QList<int> savedMainSizes = settings->loadSplitterSizes("board_main_splitter");
+ if (!savedMainSizes.isEmpty()) {
+     main_splitter->setSizes(savedMainSizes);
+ }
+
+ QList<int> savedRightSizes = settings->loadSplitterSizes("board_right_splitter");
+ if (!savedRightSizes.isEmpty()) {
+     right_splitter->setSizes(savedRightSizes);
+ }
+
+ QList<int> savedInfoSizes = settings->loadSplitterSizes("board_info_splitter");
+ if (!savedInfoSizes.isEmpty()) {
+     info_splitter->setSizes(savedInfoSizes);
+ }
+}
+
+void BoardWindow::startObserving(int game_id, const QString &white, const QString &black,
+ const QString &w_rank, const QString &b_rank) {
+ observed_game_id = game_id;
+ white_player = white;
+ black_player = black;
+ white_rank = w_rank;
+ black_rank = b_rank;
+ current_move = 0;
+ current_player = BLACK_STONE;
+ is_observing = true;
+ is_playing = false; // Ensure playing is false when observing
+ game_start_time = QDateTime::currentDateTime();
+ 
+ // Initialize observation state for SGF accuracy
+ observation_state = JOINING_GAME;
+ observation_start_time = QDateTime::currentDateTime();
+ moves_received_during_live = 0;
+ 
+ // Update UI elements for observing mode
+ updateCommentButtonText();
+ DEBUG_OBSERVATION_STATE << "🎯 OBSERVATION STATE: Changed to JOINING_GAME for game" << game_id;
+ 
+ // Reset game setup and result info
+ handicap = 0;
+ komi = 0.5; // Will be updated by updateGameSetup() when Command 7 is received
+ time_control = "";
+ game_type = "Free";
+ game_type_locked = false;
+ byoyomi_time = 0;
+ white_captures = 0;
+ black_captures = 0;
+ game_result = "";
+ game_finished = false;
+ move_history.clear();
+ clearObservers();
+
+ board_widget->clearBoard();
+
+ // Reset game tree to fresh root node
+ delete game_root;
+ game_root = new GameNode();
+ current_node = game_root;
+ current_move_index = 0;
+
+ // Initialize group tracking
+ white_groups.clear();
+ black_groups.clear();
+ 
+ updateLabels();
+ updateWindowTitle();
+}
+
+void BoardWindow::loadSGF(GameNode* root, const QString &white, const QString &black,
+ const QString &w_rank, const QString &b_rank,
+ double komi_value, int handicap_value,
+ const QString &result, const QString &filename,
+ const QString &game_name) {
+ qDebug() << ">>> loadSGF called with game_name:" << game_name;
+
+ // Set player information
+ white_player = white;
+ black_player = black;
+ white_rank = w_rank;
+ black_rank = b_rank;
+
+ // Set game setup
+ komi = komi_value;
+ handicap = handicap_value;
+ game_result = result;
+
+ // Set custom game title if provided (for teaching games)
+ if (!game_name.isEmpty()) {
+ qDebug() << ">>> Calling setCustomGameTitle with:" << game_name;
+ setCustomGameTitle(game_name);
+ } else {
+ qDebug() << ">>> game_name is empty, not setting custom title";
+ }
+
+ // Set read-only mode (not observing or playing)
+ is_observing = false;
+ is_playing = false;
+ observed_game_id = -1;
+
+ // Clear any existing game tree
+ delete game_root;
+ game_root = root;
+ current_node = game_root;
+ current_move_index = 0;
+
+ // Clear the board
+ board_widget->clearBoard();
+
+ // Navigate to the first move to display the initial position
+ displayNode(current_node);
+
+ // Update navigation to show full game
+ updateMoveNavigation();
+
+ // Update window title with SGF filename
+ QFileInfo fileInfo(filename);
+ setWindowTitle(QString("SGF: %1 - %2 vs %3")
+ .arg(fileInfo.fileName())
+ .arg(white_player)
+ .arg(black_player));
+
+ // Update labels to show game info
+ updateLabels();
+
+ qDebug() << "Loaded SGF:" << filename
+ << "Moves:" << getTotalMoves()
+ << white_player << "vs" << black_player;
+}
+
+void BoardWindow::stopObserving() {
+ is_observing = false;
+ observed_game_id = -1;
+ observation_state = NOT_OBSERVING;
+ moves_received_during_live = 0;
+ DEBUG_OBSERVATION_STATE << "🎯 OBSERVATION STATE: Changed to NOT_OBSERVING";
+ updateLabels();
+ updateWindowTitle();
+}
+
+void BoardWindow::clearMoveHistoryBeforeMovesCommand() {
+ // CRITICAL FIX: Clear move_history AND game tree before the "moves <game_id>" response arrives
+ // to prevent duplicates of any live moves that arrived during the 1-second delay.
+ //
+ // Background: When observation starts, there's a 1-second delay before sending
+ // "moves <game_id>". During this delay, live moves may arrive and get added to
+ // move_history AND the game tree. Then when "moves" response arrives, it includes
+ // ALL moves (0-N), including those that already arrived live. Without this clear,
+ // we get duplicates.
+ //
+ // Example from game 386:
+ // - Observation starts
+ // - Live move 257 (B12/bh) arrives and gets added to move_history and game tree
+ // - 1 second later, "moves 386" is sent
+ // - IGS sends moves 0-257, including move 257 again
+ // - Result: move 257 appears twice in both structures -> corrupted SGF
+
+ int old_size = move_history.size();
+ move_history.clear();
+ board_widget->clearBoard(); // Also clear visual board to match
+
+ // ALSO CLEAR THE GAME TREE to prevent duplicate nodes
+ delete game_root;
+ game_root = new GameNode();
+ current_node = game_root;
+
+ // Reset mv_counter to -1 (q5Go pattern) to block live moves until history arrives
+ mv_counter = -1;
+
+ qDebug() << "🧹 CLEARED" << old_size << "moves from history AND reset game tree before 'moves' command"
+ << "for game" << observed_game_id << "- set mv_counter = -1 to wait for history";
+}
+
+void BoardWindow::updateObservationState(GameMove &move) {
+ // Algorithm to detect transition from board reconstruction to live moves
+ switch (observation_state) {
+ case NOT_OBSERVING:
+ // Should not happen, but be safe
+ move.is_live_move = false;
+ break;
+ 
+ case JOINING_GAME:
+ // First few moves are likely board reconstruction
+ move.is_live_move = false;
+ observation_state = RECONSTRUCTING;
+ DEBUG_OBSERVATION_STATE << "🎯 OBSERVATION STATE: Changed to RECONSTRUCTING";
+ break;
+ 
+ case RECONSTRUCTING:
+ // Detect pattern that suggests we've reached live moves
+ // Key insight: In live observation, moves come in real-time with delays
+ // In reconstruction, moves come rapidly in sequence
+ 
+ // If we haven't received any moves for a few seconds, next move is likely live
+ if (!observation_start_time.isNull()) {
+ qint64 seconds_since_start = observation_start_time.secsTo(QDateTime::currentDateTime());
+ 
+ // Strategy: If we've been receiving moves for >2 seconds and this move
+ // has a reasonable time gap, consider it live
+ if (seconds_since_start > 2) {
+ observation_state = LIVE_OBSERVATION;
+ moves_received_during_live = 0;
+ move.is_live_move = true;
+ DEBUG_OBSERVATION_STATE << "🎯 OBSERVATION STATE: Changed to LIVE_OBSERVATION - move" << move.move_number << "marked as live";
+ } else {
+ move.is_live_move = false;
+ }
+ } else {
+ move.is_live_move = false;
+ }
+ break;
+ 
+ case LIVE_OBSERVATION:
+ // All moves during live observation are game moves
+ move.is_live_move = true;
+ moves_received_during_live++;
+ DEBUG_OBSERVATION_STATE << "🎯 LIVE MOVE: #" << moves_received_during_live << "move" << move.move_number;
+ break;
+ }
+ 
+ DEBUG_OBSERVATION_STATE << "🎯 MOVE TRACKING: State=" << observation_state << "Move" << move.move_number << "Live=" << move.is_live_move;
+}
+
+void BoardWindow::processMove(const GameMove &move) {
+ qDebug() << "DEBUG: BoardWindow::processMove called - Game:" << move.game_id
+ << "Observing:" << is_observing << "Playing:" << is_playing << "Expected game:" << observed_game_id;
+
+ if ((!is_observing && !is_playing) || move.game_id != observed_game_id) {
+ qDebug() << "DEBUG: Move rejected - not observing/playing or wrong game";
+ return;
+ }
+
+ // CRITICAL: Block ALL moves after entering scoring mode (including regular moves!)
+ // After 3 passes, the game is in counting phase - all subsequent "moves" are
+ // stone-marking interactions, not actual game moves
+ if (is_scoring_mode && !is_playing) {
+ qDebug() << "*** SCORING MODE: Ignoring move" << move.move_number
+ << "- game is in counting phase, not recording stone-marking as moves";
+ return;
+ }
+
+ // q5Go pattern: Skip live moves that arrive before history (mv_counter == -1)
+ // This prevents race condition where live moves arrive before "moves N" response
+ if (mv_counter == -1 && move.move_number > 0) {
+ qDebug() << "[q5Go] SKIPPING live move" << move.move_number
+ << "- waiting for history (mv_counter = -1)";
+ return;
+ }
+
+ // When move 0 arrives (first history move), set mv_counter to 0
+ if (mv_counter == -1 && move.move_number == 0) {
+ mv_counter = 0;
+ qDebug() << "[q5Go] First history move arrived (move 0) - set mv_counter = 0";
+ }
+
+ // Create a mutable copy to track observation state
+ GameMove tracked_move = move;
+ tracked_move.received_time = QDateTime::currentDateTime();
+
+ // Update observation state based on move patterns
+ updateObservationState(tracked_move);
+
+ // Check if this is a handicap stone placement
+ if (move.x == -2) {
+ int handicap_count = move.y;
+ qDebug() << "DEBUG: Placing" << handicap_count << "handicap stones";
+ 
+ // Set handicap info for display
+ handicap = handicap_count;
+ 
+ // Get handicap positions and place stones
+ QList<QPair<int, int>> positions = IGSMoveParser::getHandicapPositions(handicap_count);
+ for (const auto& pos : positions) {
+ board_widget->placeMoveAt(pos.first, pos.second, BLACK_STONE);
+ qDebug() << "DEBUG: Placed handicap stone at (" << pos.first << "," << pos.second << ")";
+ }
+
+ // BUILD GAME TREE: Add handicap as a special node
+ // CRITICAL FIX: Always add to END of active variation
+ GameNode* insertion_point = game_root;
+ while (insertion_point->nextMove()) {
+ insertion_point = insertion_point->nextMove();
+ }
+ GameNode* new_node = insertion_point->addMove(-2, handicap_count, BLACK_STONE);
+
+ // Copy board state with handicap stones to new node
+ GoBoard new_board;
+ new_board.clear();
+ for (int x = 0; x < 19; x++) {
+ for (int y = 0; y < 19; y++) {
+ StoneColor stone = board_widget->getBoardState(x, y);
+ if (stone != EMPTY) {
+ new_board.placeStone(x, y, stone);
+ }
+ }
+ }
+ new_node->setBoard(new_board);
+
+ // AUTO-FOLLOW MODE: Only update display if auto-follow is enabled
+ if (auto_follow_mode) {
+ current_node = new_node;
+ current_move = move.move_number;
+ server_move_count = move.move_number; // Track official server count
+
+ // Increment mv_counter after successfully processing move
+ if (mv_counter >= 0) {
+ mv_counter++;
+ }
+ } else {
+ // Not following - just update server move count
+ server_move_count = move.move_number;
+ qDebug() << "AUTO-FOLLOW: Handicap added to tree (not displayed - viewing earlier position)";
+
+ // Still update the slider maximum so user can see new moves exist
+ int total_moves = getTotalMoves();
+ slider_update_in_progress = true;
+ move_slider->setMaximum(total_moves);
+ slider_update_in_progress = false;
+ }
+
+ // Rebuild groups after handicap placement
+ rebuildAllGroups();
+
+ updateLabels();
+ updateMoveNavigation();
+ return;
+ }
+ 
+ // Handle Pass moves (counting phase)
+ if (tracked_move.x == -1 && tracked_move.y == -1) {
+ qDebug() << "DEBUG: Pass move" << tracked_move.move_number << "by" << (tracked_move.color == BLACK_STONE ? "BLACK" : "WHITE");
+
+ // Track consecutive passes for counting phase detection
+ consecutive_passes++;
+ qDebug() << "*** CONSECUTIVE PASSES COUNT:" << consecutive_passes;
+
+ // q5Go pattern: DO NOT record passes after entering scoring mode
+ // Passes during counting phase are territory-marking interactions, not game moves
+ if (!is_scoring_mode) {
+ // CRITICAL VALIDATION: Ensure pass has valid color
+ if (tracked_move.color != BLACK_STONE && tracked_move.color != WHITE_STONE) {
+ qDebug() << "ERROR: Rejecting PASS with invalid color!" << tracked_move.color
+ << "move number:" << tracked_move.move_number;
+ return;
+ }
+
+ // Store pass move in history (only for actual game passes before scoring)
+ QString move_color_str = (tracked_move.color == BLACK_STONE) ? "B" : "W";
+ qDebug() << "🗂️ MOVE HISTORY: Adding PASS move" << tracked_move.move_number
+ << move_color_str + "[]"
+ << "total moves:" << move_history.size() << "Live=" << tracked_move.is_live_move;
+ move_history.append(tracked_move);
+
+ // BUILD GAME TREE: Add pass move as new node
+ // CRITICAL FIX: Always add to END of active variation
+ GameNode* insertion_point = game_root;
+ while (insertion_point->nextMove()) {
+ insertion_point = insertion_point->nextMove();
+ }
+ GameNode* new_node = insertion_point->addMove(-1, -1, tracked_move.color);
+ new_node->setBoard(insertion_point->getBoard().copy()); // Pass doesn't change board
+
+ // AUTO-FOLLOW MODE: Only update display if auto-follow is enabled
+ if (auto_follow_mode) {
+ // Clear last move marker on pass - matches q5Go behavior (visual update only when following)
+ board_widget->setLastMove(-1, -1);
+
+ current_node = new_node;
+ current_move = move.move_number;
+ server_move_count = move.move_number; // Track official server count
+
+ // Increment mv_counter after successfully processing move
+ if (mv_counter >= 0) {
+ mv_counter++;
+ }
+
+ qDebug() << "*** PASS MOVE PROCESSED: client history size=" << move_history.size() << "server count=" << server_move_count;
+ } else {
+ // Not following - just update server move count
+ server_move_count = move.move_number;
+ qDebug() << "AUTO-FOLLOW: Pass move" << move.move_number << "added to tree (not displayed - viewing earlier position)";
+
+ // Still update the slider maximum so user can see new moves exist
+ int total_moves = getTotalMoves();
+ slider_update_in_progress = true;
+ move_slider->setMaximum(total_moves);
+ slider_update_in_progress = false;
+ }
+ } else {
+ qDebug() << "*** SCORING MODE: Ignoring counting-phase pass (stone-marking interaction, not a game move)";
+ }
+
+ current_player = (move.color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+
+ // CRITICAL FIX: Enter scoring mode after 3 passes to prevent counting-phase passes
+ // from being recorded as game moves in the SGF
+ // We set the internal flag but don't show territory markers until Command 22 arrives
+ if (consecutive_passes >= 3 && !is_scoring_mode) {
+ qDebug() << "*** 3 CONSECUTIVE PASSES DETECTED - entering scoring mode";
+ qDebug() << "*** Territory markers will be shown when Command 22 (score data) arrives";
+ is_scoring_mode = true; // Block further pass moves from being recorded
+ // Note: We don't call board_widget->setScoringMode(true) yet - that happens in receiveScoreBegin()
+ }
+
+ // Reset lag compensation timer when player switches
+ last_time_update = QDateTime::currentDateTime();
+
+ updateLabels();
+ updateMoveNavigation();
+ return;
+ }
+ 
+ qDebug() << "DEBUG: Placing move at (" << tracked_move.x << "," << tracked_move.y << ") color:" << tracked_move.color;
+
+ // CRITICAL VALIDATION: Reject moves with invalid color
+ if (tracked_move.color != BLACK_STONE && tracked_move.color != WHITE_STONE) {
+ qDebug() << "ERROR: Rejecting move with invalid color!" << tracked_move.color
+ << "at (" << tracked_move.x << "," << tracked_move.y << ")";
+ return;
+ }
+
+ // Reset consecutive pass counter for regular moves
+ consecutive_passes = 0;
+ qDebug() << "DEBUG: Regular move - reset consecutive passes counter";
+
+ // Store move in history for SGF saving
+ // Convert coordinates to SGF format for debugging
+ char sgf_col = (tracked_move.x >= 0 && tracked_move.x < 19) ? ('a' + tracked_move.x) : '?';
+ char sgf_row = (tracked_move.y >= 0 && tracked_move.y < 19) ? ('a' + tracked_move.y) : '?';
+ QString move_color_str = (tracked_move.color == BLACK_STONE) ? "B" : "W";
+ qDebug() << "🗂️ MOVE HISTORY: Adding move" << tracked_move.move_number
+ << move_color_str + "[" + QString(sgf_col) + QString(sgf_row) + "]"
+ << "total moves:" << move_history.size() << "Live=" << tracked_move.is_live_move;
+ move_history.append(tracked_move);
+
+ // BUILD GAME TREE: Add regular move as new node with complete board state
+ // CRITICAL FIX: Always add new moves to the END of the active variation,
+ // not to current_node (which may be pointing to an earlier position if user scrolled backward)
+ GameNode* insertion_point = game_root;
+ while (insertion_point->nextMove()) {
+ insertion_point = insertion_point->nextMove();
+ }
+ GameNode* new_node = insertion_point->addMove(tracked_move.x, tracked_move.y, tracked_move.color);
+
+ // CRITICAL FIX: Build new board state from insertion_point (last move), NOT from board_widget
+ // board_widget may be showing an earlier position if user navigated backward!
+ GoBoard new_board = insertion_point->getBoard().copy();
+
+ // Apply the new move to the board
+ new_board.placeStone(tracked_move.x, tracked_move.y, tracked_move.color);
+
+ // Calculate and remove captured stones (Go rules)
+ StoneColor opponent_color = (tracked_move.color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+ int dx[] = {-1, 1, 0, 0};
+ int dy[] = {0, 0, -1, 1};
+
+ // Check all 4 neighbors for captured opponent groups
+ for (int dir = 0; dir < 4; dir++) {
+ int nx = tracked_move.x + dx[dir];
+ int ny = tracked_move.y + dy[dir];
+
+ if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 && new_board.getStone(nx, ny) == opponent_color) {
+ // Check if this opponent group has no liberties
+ if (countLiberties(new_board, nx, ny) == 0) {
+ removeGroup(new_board, nx, ny);
+ }
+ }
+ }
+
+ // Check for suicide (own group has no liberties after placement)
+ if (countLiberties(new_board, tracked_move.x, tracked_move.y) == 0) {
+ removeGroup(new_board, tracked_move.x, tracked_move.y);
+ }
+
+ new_node->setBoard(new_board);
+
+ // AUTO-FOLLOW MODE: Only update display if auto-follow is enabled
+ // New moves are ALWAYS added to tree, but display only updates if following
+ if (auto_follow_mode) {
+ // UPDATE VISUAL DISPLAY: Place the move on the board widget
+ board_widget->placeMoveAt(tracked_move.x, tracked_move.y, tracked_move.color);
+ board_widget->setLastMove(tracked_move.x, tracked_move.y);
+
+ // 🔍 AUDIT: Log this move placement
+ MoveAudit audit;
+ audit.move_number = move.move_number;
+ audit.server_input = QString("Game %1: Move %2").arg(observed_game_id).arg(move.move_number);
+ audit.parsed_coords = QString("%1%2").arg(QChar('A' + move.x + (move.x >= 8 ? 1 : 0))).arg(19 - move.y);
+ audit.final_x = move.x;
+ audit.final_y = move.y;
+ audit.color = move.color;
+ audit.timestamp = QTime::currentTime().toString("hh:mm:ss.zzz");
+ audit.placement_success = (move.x >= 0 && move.y >= 0 && move.x < 19 && move.y < 19);
+
+ // Calculate and execute captures using client-side logic (visual board only)
+ int captured_count = addStoneWithCaptures(move.x, move.y, move.color);
+
+ // Complete audit entry with capture information
+ if (captured_count > 0) {
+ audit.captures = QString("client-captures:%1").arg(captured_count);
+ qDebug() << "DEBUG: Live move captured" << captured_count << "stones";
+ }
+
+ // Also handle server-provided capture data (for counting phase stone removal)
+ if (!move.captured.isEmpty()) {
+ QStringList all_captures = move.captured.split(";");
+ audit.captures += QString(" server-captures:%1").arg(move.captured);
+
+ for (const QString& capture : all_captures) {
+ QStringList cap_coords = capture.split(",");
+ if (cap_coords.size() == 2) {
+ int cap_x = cap_coords[0].toInt();
+ int cap_y = cap_coords[1].toInt();
+
+ // Remove the captured stone from the visual board
+ board_widget->placeMoveAt(cap_x, cap_y, EMPTY);
+ qDebug() << "DEBUG: Server-specified capture - removed stone at (" << cap_x << "," << cap_y << ")";
+ }
+ }
+ qDebug() << "DEBUG: Processed" << all_captures.size() << "server-specified captured stones";
+ }
+
+ // 🔍 AUDIT: Log the completed move audit entry
+ logMoveAudit(audit);
+
+ qDebug() << "DEBUG: Placed move" << move.move_number << "at (" << move.x << "," << move.y << ") color:" << (move.color == BLACK_STONE ? "BLACK" : "WHITE");
+
+ current_node = new_node;
+ current_move = move.move_number;
+ server_move_count = move.move_number; // Track official server count for regular moves too
+
+ // Increment mv_counter after successfully processing move
+ if (mv_counter >= 0) {
+ mv_counter++;
+ }
+
+ current_player = (move.color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+
+ // Reset lag compensation timer when player switches
+ last_time_update = QDateTime::currentDateTime();
+
+ updateLabels();
+
+ // Update move navigation to current move (auto-follow) - use server count
+ current_move_index = server_move_count > 0 ? server_move_count : move_history.size();
+ updateMoveNavigation();
+ } else {
+ // Not following - just update the server move count for accuracy
+ server_move_count = move.move_number;
+ qDebug() << "AUTO-FOLLOW: Move" << move.move_number << "added to tree (not displayed - viewing earlier position)";
+
+ // Still update the slider maximum so user can see new moves exist
+ // But don't change the current position
+ int total_moves = getTotalMoves();
+ slider_update_in_progress = true;
+ move_slider->setMaximum(total_moves);
+ slider_update_in_progress = false;
+ }
+}
+
+void BoardWindow::updateGameInfo(const QString &info) {
+ // Handle any additional game information updates
+ updateLabels();
+}
+
+void BoardWindow::updateTimeInfo(const QString &white_time, const QString &black_time) {
+ if (white_clock_label && black_clock_label) {
+ white_clock_label->setText(white_time);
+ black_clock_label->setText(black_time);
+ }
+}
+
+void BoardWindow::updateByoyomi(int white_time, int black_time, int white_moves, int black_moves) {
+ // Store the time and move data for lag compensation
+ white_time_seconds = white_time;
+ black_time_seconds = black_time; 
+ white_byo_moves = white_moves;
+ black_byo_moves = black_moves;
+ 
+ // Record timestamp for lag compensation
+ last_time_update = QDateTime::currentDateTime();
+ 
+ // Update display immediately with server data
+ updateClockDisplay();
+ 
+ qDebug() << "DEBUG: IGS time update - W:" << white_time << "s (" << white_moves << "moves) B:" << black_time << "s (" << black_moves << "moves)";
+}
+
+void BoardWindow::updateClockDisplay() {
+ if ((!is_observing && !is_playing) || last_time_update.isNull()) {
+ return;
+ }
+ 
+ // Calculate elapsed time since last IGS update
+ qint64 elapsed_ms = last_time_update.msecsTo(QDateTime::currentDateTime());
+ int elapsed_seconds = elapsed_ms / 1000;
+ 
+ // Apply lag compensation - only countdown current player's time
+ int current_white_time = white_time_seconds;
+ int current_black_time = black_time_seconds;
+ 
+ if (current_player == WHITE_STONE) {
+ current_white_time = qMax(0, white_time_seconds - elapsed_seconds);
+ } else if (current_player == BLACK_STONE) {
+ current_black_time = qMax(0, black_time_seconds - elapsed_seconds);
+ }
+ 
+ // Convert time from seconds to MM:SS format like q5Go
+ auto formatTime = [](int seconds) -> QString {
+ int minutes = seconds / 60;
+ int secs = seconds % 60;
+ return QString("%1:%2").arg(minutes).arg(secs, 2, 10, QChar('0'));
+ };
+ 
+ // Format: "7:37 / 15" like in q5Go, or just "5:26" for main time
+ QString white_display, black_display;
+ 
+ if (white_byo_moves >= 0) {
+ // In byoyomi period - show time / moves format
+ white_display = QString("%1 / %2").arg(formatTime(current_white_time)).arg(white_byo_moves);
+ } else {
+ // In main time - show just time
+ white_display = formatTime(current_white_time);
+ }
+ 
+ if (black_byo_moves >= 0) {
+ // In byoyomi period - show time / moves format
+ black_display = QString("%1 / %2").arg(formatTime(current_black_time)).arg(black_byo_moves);
+ } else {
+ // In main time - show just time
+ black_display = formatTime(current_black_time);
+ }
+
+ // Update individual clock labels (q5Go style)
+ if (white_clock_label && black_clock_label) {
+ white_clock_label->setText(white_display);
+ black_clock_label->setText(black_display);
+ }
+}
+
+void BoardWindow::editGame() {
+ if (!is_observing) {
+ QMessageBox::information(this, "Edit Game",
+ "No game currently being observed.\n\n" "Edit Game is available when observing a game.");
+ return;
+ }
+
+ // Generate SGF from current game state
+ QString sgf_content = generateSGF();
+
+ // Create a temporary file to hold the SGF
+ QString temp_filename = QString("/tmp/xgospel2_edit_%1_%2_vs_%3.sgf")
+ .arg(observed_game_id)
+ .arg(white_player)
+ .arg(black_player);
+
+ QFile file(temp_filename);
+ if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+ QMessageBox::warning(this, "Edit Game Error",
+ QString("Failed to create temporary SGF file:\n%1").arg(temp_filename));
+ return;
+ }
+
+ QTextStream out(&file);
+ out << sgf_content;
+ file.close();
+
+ // Parse the SGF back to get a fresh game tree
+ SGFParser parser;
+ QString error;
+ GameNode* root = parser.parseFile(temp_filename, error);
+
+ if (!root) {
+ QMessageBox::warning(this, "Edit Game Error",
+ QString("Failed to parse generated SGF:\n%1").arg(error));
+ return;
+ }
+
+ // Create a new board window for editing/analysis
+ // Use the same parent as this window so it gets tracked properly
+ BoardWindow* edit_board = new BoardWindow(parentWidget(), my_username);
+
+ // Mark this as an edit window and enable edit mode
+ edit_board->is_edit_window = true;
+ edit_board->game_mode = MODE_EDIT;
+ edit_board->board_widget->setGameMode(MODE_EDIT);
+
+ // Load the SGF into the edit window
+ edit_board->loadSGF(root, white_player, black_player,
+ white_rank, black_rank,
+ komi, handicap,
+ game_result, temp_filename);
+
+ // Navigate to the most recent move (instead of starting at move 0)
+ edit_board->goToLastMove();
+
+ // Set the next player color based on current position
+ edit_board->board_widget->setNextPlayerColor(edit_board->current_player);
+
+ // Show the edit window
+ edit_board->show();
+ edit_board->raise();
+ edit_board->activateWindow();
+
+ qDebug() << "Edit window created with edit mode ENABLED";
+
+ DEBUG_EDIT_MODE << "Opened Edit Game window for game #" << observed_game_id
+ << white_player << "vs" << black_player;
+}
+
+void BoardWindow::saveGame() {
+ if (!is_observing) {
+ return;
+ }
+
+ // Get save directory from settings (or use default)
+ QString saveDir = settings->getSaveGameDirectory();
+
+ // Create filename with game info
+ QString filename = QString("%1/game_%2_%3_vs_%4_%5.sgf")
+ .arg(saveDir)
+ .arg(observed_game_id)
+ .arg(white_player)
+ .arg(black_player)
+ .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+
+ QString sgf_content = generateSGF();
+
+ // Save to file
+ QFile file(filename);
+ if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+ QTextStream out(&file);
+ out << sgf_content;
+ file.close();
+
+ if (comment_display) {
+ comment_display->append(QString("✓ Game saved to: %1").arg(filename));
+ }
+ } else {
+ if (comment_display) {
+ comment_display->append(QString("✗ Error saving game to: %1").arg(filename));
+ }
+ }
+}
+
+void BoardWindow::closeBoard() {
+ if (is_observing) {
+ emit boardClosed(observed_game_id);
+ }
+ close();
+}
+
+void BoardWindow::updateLabels() {
+ // Update game info label and dynamic "to play" stone icon (q5Go style)
+ if (game_info_label && to_play_stone_icon) {
+ QString next_player = (current_player == WHITE_STONE) ? "White to Play" : "Black to Play";
+ if (is_observing) {
+ game_info_label->setText(QString("Game #%1 | %2").arg(observed_game_id).arg(next_player));
+
+ // Update dynamic stone icon to match current player
+ StoneRenderer icon_renderer;
+ icon_renderer.generateStones(20);
+ if (current_player == WHITE_STONE) {
+ to_play_stone_icon->setPixmap(icon_renderer.getWhiteStone(0));
+ } else {
+ to_play_stone_icon->setPixmap(icon_renderer.getBlackStone());
+ }
+ to_play_stone_icon->setVisible(true);
+ } else {
+ game_info_label->setText("No game");
+ to_play_stone_icon->setVisible(false);
+ }
+ }
+
+ // Update handicap/komi/game-type label (borderless, larger font, no redundant captures)
+ if (handicap_komi_label) {
+ // game_type is already a QString member variable ("Free", "Rated", or "Teach")
+ QString type_text = game_type.isEmpty() ? "Free" : game_type;
+ handicap_komi_label->setText(QString("Komi: %1 Handicap: %2 %3")
+ .arg(komi, 0, 'f', 1)
+ .arg(handicap)
+ .arg(type_text));
+ }
+
+ // Update individual capture count labels (borderless)
+ if (white_captures_label) {
+ // Check if this is a scored result (not resignation/time/forfeit/adjourn)
+ bool is_scored_result = game_finished &&
+                         !game_result.contains("+R") &&  // Resignation
+                         !game_result.contains("+T") &&  // Time
+                         !game_result.contains("+F") &&  // Forfeit
+                         !game_result.contains("+A");    // Adjourn
+ bool show_stats = is_scoring_mode || is_scored_result;
+
+ if (show_stats) {
+ // q5Go-style scoring statistics (multi-line)
+ // Count stones on board
+ int white_stones = 0;
+ int dead_white_stones = 0;
+ for (int y = 0; y < 19; y++) {
+ for (int x = 0; x < 19; x++) {
+ if (board_widget->getBoardState(x, y) == WHITE_STONE) {
+ white_stones++;
+ }
+ }
+ }
+
+ // Count dead stones
+ // Dead white stones don't count in "Stones:" (matching q5Go behavior)
+ // Dead black stones count as white captures
+ int dead_black_stones = 0;
+ for (const auto &pos : dead_stones) {
+ if (board_widget->getBoardState(pos.first, pos.second) == BLACK_STONE) {
+ dead_black_stones++;
+ } else if (board_widget->getBoardState(pos.first, pos.second) == WHITE_STONE) {
+ dead_white_stones++;
+ }
+ }
+
+ // Subtract dead white stones from count (q5Go only counts living stones)
+ white_stones -= dead_white_stones;
+
+ // Total captures = prisoners taken during play + dead stones marked during scoring
+ int white_total_captures = white_captures + dead_black_stones;
+ double white_total = white_territory + white_total_captures + komi;
+ white_captures_label->setText(QString("Stones: %1\nCap: %2\nTerr: %3\nTotal: %4")
+ .arg(white_stones)
+ .arg(white_total_captures)
+ .arg(white_territory)
+ .arg(white_total, 0, 'f', 1));
+ } else {
+ // Normal mode - just show captures
+ white_captures_label->setText(QString("Captures: %1").arg(white_captures));
+ }
+ }
+ if (black_captures_label) {
+ // Check if this is a scored result (not resignation/time/forfeit/adjourn)
+ bool is_scored_result = game_finished &&
+                         !game_result.contains("+R") &&  // Resignation
+                         !game_result.contains("+T") &&  // Time
+                         !game_result.contains("+F") &&  // Forfeit
+                         !game_result.contains("+A");    // Adjourn
+ bool show_stats = is_scoring_mode || is_scored_result;
+
+ if (show_stats) {
+ // q5Go-style scoring statistics (multi-line)
+ // Count stones on board
+ int black_stones = 0;
+ int dead_black_stones = 0;
+ for (int y = 0; y < 19; y++) {
+ for (int x = 0; x < 19; x++) {
+ if (board_widget->getBoardState(x, y) == BLACK_STONE) {
+ black_stones++;
+ }
+ }
+ }
+
+ // Count dead stones
+ // Dead black stones don't count in "Stones:" (matching q5Go behavior)
+ // Dead white stones count as black captures
+ int dead_white_stones = 0;
+ for (const auto &pos : dead_stones) {
+ if (board_widget->getBoardState(pos.first, pos.second) == WHITE_STONE) {
+ dead_white_stones++;
+ } else if (board_widget->getBoardState(pos.first, pos.second) == BLACK_STONE) {
+ dead_black_stones++;
+ }
+ }
+
+ // Subtract dead black stones from count (q5Go only counts living stones)
+ black_stones -= dead_black_stones;
+
+ // Total captures = prisoners taken during play + dead stones marked during scoring
+ int black_total_captures = black_captures + dead_white_stones;
+ double black_total = black_territory + black_total_captures;
+ black_captures_label->setText(QString("Stones: %1\nCap: %2\nTerr: %3\nTotal: %4")
+ .arg(black_stones)
+ .arg(black_total_captures)
+ .arg(black_territory)
+ .arg(black_total, 0, 'f', 1));
+ } else {
+ // Normal mode - just show captures
+ black_captures_label->setText(QString("Captures: %1").arg(black_captures));
+ }
+ }
+
+ // Update player info groups (q5Go style)
+ updatePlayerInfoGroups();
+}
+
+QString BoardWindow::formatGameInfo() {
+ if (is_observing) {
+ return QString("Game #%1").arg(observed_game_id);
+ }
+ return "No game observed";
+}
+
+void BoardWindow::updatePlayerInfoGroups() {
+ // Safety check - widgets might not be initialized yet
+ if (!white_player_label || !black_player_label) {
+ return;
+ }
+
+ if (is_observing || is_playing) {
+ // Update White player info (name/rank only - stone icon shows color)
+ white_player_label->setText(QString("%1 %2").arg(white_player, white_rank));
+
+ // Update Black player info (name/rank only - stone icon shows color)
+ black_player_label->setText(QString("%1 %2").arg(black_player, black_rank));
+ } else {
+ white_player_label->setText("White");
+ black_player_label->setText("Black");
+ }
+}
+
+QString BoardWindow::formatMoveInfo() {
+ if (is_observing || is_playing) {
+ if (is_scoring_mode) {
+ // Show scoring information - use server scores if available
+ if (has_server_score) {
+ // Display server-provided scores (already includes prisoners + komi)
+ double score_diff = server_black_score - server_white_score;
+ return QString("SCORING MODE\nWhite: %1\nBlack: %2\nScore: %3")
+ .arg(server_white_score, 0, 'f', 1)
+ .arg(server_black_score, 0, 'f', 1)
+ .arg(score_diff > 0 ? QString("B+%1").arg(score_diff, 0, 'f', 1) : QString("W+%1").arg(-score_diff, 0, 'f', 1));
+ } else {
+ // Fallback to client-side calculation if server scores not available
+ return QString("SCORING MODE\nWhite: %1\nBlack: %2\nScore: %3")
+ .arg(white_territory + white_prisoners + komi, 0, 'f', 1)
+ .arg((double)(black_territory + black_prisoners), 0, 'f', 1)
+ .arg(final_score, 0, 'f', 1);
+ }
+ } else {
+ QString next_player = (current_player == BLACK_STONE) ? "Black" : "White";
+ return QString("Move: %1\nNext: %2").arg(current_move).arg(next_player);
+ }
+ }
+ return "";
+}
+
+QString BoardWindow::formatHandicapKomiInfo() {
+ if (is_observing || is_playing) {
+ // Format: "Captures: W/B • H: X • Komi: X.X • Byoyomi: Xs • Type"
+ QStringList details;
+ 
+ // Always show captures
+ details << QString("Captures: %1/%2").arg(white_captures).arg(black_captures);
+ 
+ // Show handicap if > 0
+ if (handicap > 0) {
+ details << QString("H: %1").arg(handicap);
+ }
+ 
+ // Always show komi
+ details << QString("Komi: %1").arg(komi, 0, 'f', 1);
+ 
+ // Show byoyomi if available
+ if (byoyomi_time > 0) {
+ details << QString("Byoyomi: %1s").arg(byoyomi_time);
+ }
+ 
+ // Show game type
+ if (!game_type.isEmpty()) {
+ details << game_type;
+ }
+ 
+ return details.join(" • ");
+ }
+ return "";
+}
+
+void BoardWindow::processComment(const QString &user, const QString &message, bool is_kibitz) {
+ if (!comment_display) return;
+
+ QString formatted_message;
+
+ if (is_kibitz) {
+ // Kibitz messages show move number (matching q5Go format)
+ int move_num = current_node ? current_node->moveNumber() : 0;
+ formatted_message = QString("[%1] KIBITZ %2: %3")
+ .arg(move_num)
+ .arg(user)
+ .arg(message);
+ } else {
+ // Say messages (private) - use timestamp and user
+ QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
+ formatted_message = QString("[%1] %2: %3")
+ .arg(timestamp)
+ .arg(user)
+ .arg(message);
+ }
+
+ comment_display->append(formatted_message);
+
+ // Auto-scroll to bottom
+ QTextCursor cursor = comment_display->textCursor();
+ cursor.movePosition(QTextCursor::End);
+ comment_display->setTextCursor(cursor);
+
+ // q5Go pattern: Save kibitz to game tree for SGF export
+ // Attach comment to current node (the most recent move)
+ if (current_node && is_kibitz) {
+ // Get existing comment if any, and append new kibitz
+ QString existing_comment = current_node->getComment();
+
+ // Format like q5Go: (move_number) user: message
+ int move_num = current_node->moveNumber();
+ QString kibitz_text = QString("(%1) %2: %3").arg(move_num).arg(user).arg(message);
+
+ if (existing_comment.isEmpty()) {
+ current_node->setComment(kibitz_text);
+ } else {
+ // Append to existing comment with newline separator
+ current_node->setComment(existing_comment + "\n" + kibitz_text);
+ }
+
+ qDebug() << "[KIBITZ] Saved to node:" << kibitz_text;
+ }
+}
+
+void BoardWindow::processUndo(int move_number) {
+ if (!is_observing) return;
+ 
+ // Undo moves back to the specified move number
+ // This would require rebuilding the board state from move history
+ // For now, just display a message
+ QString message = QString("Game %1: Undo to move %2").arg(observed_game_id).arg(move_number);
+ processComment("SYSTEM", message, false);
+ 
+ // TODO: Implement actual undo logic by replaying moves from history
+ current_move = move_number;
+ updateLabels();
+}
+
+void BoardWindow::sendComment() {
+ qDebug() << "BoardWindow::sendComment() called";
+ 
+ if (!comment_input) {
+ qDebug() << "ERROR: comment_input is null";
+ // Show error in comment display if possible
+ if (comment_display) {
+ comment_display->append("ERROR: Comment input widget not initialized");
+ }
+ return;
+ }
+ 
+ QString message = comment_input->text().trimmed();
+ qDebug() << "Raw input text:" << comment_input->text();
+ qDebug() << "Trimmed message:" << message;
+ qDebug() << "Message length:" << message.length();
+ qDebug() << "Is observing:" << is_observing;
+ qDebug() << "Game ID:" << observed_game_id;
+ 
+ if (message.isEmpty()) {
+ qDebug() << "ERROR: comment input is empty";
+ if (comment_display) {
+ comment_display->append("ERROR: Please enter a message before clicking Comment");
+ }
+ return;
+ }
+ 
+ comment_input->clear();
+
+ if (is_playing) {
+ // Send "say" command for private player communication
+ qDebug() << "Emitting sayRequested signal with game_id:" << observed_game_id;
+ emit sayRequested(observed_game_id, message);
+ // Show message locally with the logged-in user's name and timestamp
+ if (comment_display) {
+ QString display_name = my_username.isEmpty() ? "You" : my_username;
+ QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
+ comment_display->append(QString("[%1] %2: %3").arg(timestamp).arg(display_name).arg(message));
+ }
+ } else if (is_observing) {
+ // Send "kibitz" command for public observer comments
+ qDebug() << "Emitting commentRequested signal with game_id:" << observed_game_id;
+ emit commentRequested(observed_game_id, message);
+
+ QString display_name = my_username.isEmpty() ? "You" : my_username;
+ int move_num = current_node ? current_node->moveNumber() : 0;
+
+ // Show kibitz message locally with move number (matching q5Go format)
+ if (comment_display) {
+ comment_display->append(QString("[%1] KIBITZ %2: %3").arg(move_num).arg(display_name).arg(message));
+ }
+
+ // Save outgoing kibitz to game tree for SGF export (matching q5Go behavior)
+ if (current_node) {
+ QString existing_comment = current_node->getComment();
+ QString kibitz_text = QString("(%1) %2: %3").arg(move_num).arg(display_name).arg(message);
+
+ if (existing_comment.isEmpty()) {
+ current_node->setComment(kibitz_text);
+ } else {
+ current_node->setComment(existing_comment + "\n" + kibitz_text);
+ }
+
+ qDebug() << "[KIBITZ] Saved outgoing to node:" << kibitz_text;
+ }
+ } else {
+ qDebug() << "ERROR: Not in a game";
+ if (comment_display) {
+ comment_display->append("ERROR: Not currently in a game");
+ }
+ }
+}
+
+
+void BoardWindow::onCommentInputReturn() {
+ // Default to sending as comment when Enter is pressed
+ sendComment();
+}
+
+void BoardWindow::requestObservers() {
+ qDebug() << "*** BUTTON CLICKED - requestObservers() called! ***";
+ qDebug() << "*** is_observing:" << is_observing << "observed_game_id:" << observed_game_id;
+ 
+ // Force add test observer immediately to confirm button works
+ clearObservers();
+ addObserver("BUTTON_TEST", "1k");
+ addObserver("CLICK_WORKS", "2d");
+ 
+ if (comment_display) {
+ comment_display->append("*** BUTTON CLICKED - Test observers added! ***");
+ }
+ 
+ if (is_observing) {
+ qDebug() << "Emitting observersRequested signal for game:" << observed_game_id;
+ emit observersRequested(observed_game_id);
+ 
+ if (comment_display) {
+ comment_display->append(QString(">>> Requesting observers for game %1...").arg(observed_game_id));
+ }
+ } else {
+ qDebug() << "Not observing a game - cannot request observers";
+ if (comment_display) {
+ comment_display->append("ERROR: Not observing a game");
+ }
+ }
+}
+
+void BoardWindow::updateGameSetup(int handicap_stones, double komi_points, const QString &time_ctrl) {
+ qDebug() << "*** DEBUG KOMI: updateGameSetup called with komi=" << komi_points << "handicap=" << handicap_stones;
+ handicap = handicap_stones;
+ komi = komi_points;
+ time_control = time_ctrl;
+ qDebug() << "*** DEBUG KOMI: After assignment, this->komi=" << this->komi;
+ updateLabels();
+}
+
+void BoardWindow::updateGameDetails(const QString &type, int byoyomi_seconds) {
+ // Only update game type if not locked (locked = corrected type applied) 
+ if (!game_type_locked) {
+ // Don't overwrite Teaching type if it was set by custom title
+ if (game_type != "Teaching") {
+ game_type = type;
+ }
+ qDebug() << "updateGameDetails called with type:" << type << "- Updated game_type:" << game_type;
+ } else {
+ qDebug() << "updateGameDetails called with type:" << type << "- IGNORED (locked as:" << game_type << ")";
+ }
+ 
+ byoyomi_time = byoyomi_seconds;
+ updateLabels();
+}
+
+void BoardWindow::lockGameType() {
+ game_type_locked = true;
+ qDebug() << "🔒 GAME TYPE LOCKED:" << game_type;
+}
+
+void BoardWindow::updateCaptures(int white_caps, int black_caps) {
+ white_captures = white_caps;
+ black_captures = black_caps;
+ updateLabels();
+}
+
+void BoardWindow::updateGameResult(const QString &result) {
+ game_result = result;
+ game_finished = true;
+
+ // Display result in comment area (q5Go style)
+ if (comment_display) {
+ QString standard_result = convertIGSResultToStandard(result);
+ QString display_result = result;
+
+ // Improve resign messages to be more readable
+ if (standard_result == "B+R") {
+ display_result = "White resigned.";
+ } else if (standard_result == "W+R") {
+ display_result = "Black resigned.";
+ }
+
+ // Check if this is a scored result (not resignation/time/forfeit/adjourn)
+ bool is_scored_result = !standard_result.contains("+R") &&
+                         !standard_result.contains("+T") &&
+                         !standard_result.contains("+F") &&
+                         !standard_result.contains("+A");
+
+ QString result_message;
+ if (is_scored_result) {
+ // Scored game - show result and score totals
+ // Calculate totals (including dead stones from capture labels)
+ int dead_white_stones = 0;
+ int dead_black_stones = 0;
+ for (const auto &pos : dead_stones) {
+ if (board_widget->getBoardState(pos.first, pos.second) == WHITE_STONE) {
+ dead_white_stones++;
+ } else if (board_widget->getBoardState(pos.first, pos.second) == BLACK_STONE) {
+ dead_black_stones++;
+ }
+ }
+
+ double white_total = white_territory + (white_captures + dead_black_stones) + komi;
+ double black_total = black_territory + (black_captures + dead_white_stones);
+
+ result_message = QString("Game finished: %1\nW %2 B %3")
+ .arg(standard_result)
+ .arg(white_total, 0, 'f', 1)
+ .arg(black_total, 0, 'f', 1);
+ } else {
+ // Non-scored result - keep both readable message and standard notation
+ result_message = QString("Game finished: %1 (%2)").arg(display_result).arg(standard_result);
+ }
+ comment_display->append(result_message);
+ }
+
+ updateLabels();
+
+ // Update window title to show game finished
+ updateWindowTitle();
+}
+
+void BoardWindow::updatePlayerNames(const QString &white, const QString &black) {
+ white_player = white;
+ black_player = black;
+ updateLabels();
+ updateWindowTitle();
+ 
+ qDebug() << "Updated player names: White:" << white_player << "Black:" << black_player;
+}
+
+void BoardWindow::setCustomGameTitle(const QString &title) {
+ custom_game_title = title;
+ qDebug() << ">>> setCustomGameTitle called with:" << title;
+
+ // Teaching games are the only ones with custom titles, so update game type
+ game_type = "Teaching";
+
+ // Display teaching title in dedicated label (xgospel style)
+ if (teaching_title_label) {
+ if (!custom_game_title.isEmpty()) {
+ qDebug() << ">>> Setting teaching title label text and showing it";
+ teaching_title_label->setText(custom_game_title);
+ teaching_title_label->show();
+ } else {
+ qDebug() << ">>> Hiding teaching title label (empty title)";
+ teaching_title_label->hide();
+ }
+ } else {
+ qDebug() << ">>> WARNING: teaching_title_label is NULL!";
+ }
+
+ updateLabels(); // Update labels to show Teaching type
+ updateWindowTitle();
+ qDebug() << "Set custom game title:" << custom_game_title << "- Game type changed to Teaching";
+}
+
+void BoardWindow::updateWindowTitle() {
+ if (!is_observing) {
+ setWindowTitle("XGospel 2.0 - Board Window");
+ return;
+ }
+ 
+ if (game_finished) {
+ setWindowTitle(QString("XGospel 2.0 - Game %1 [FINISHED]").arg(observed_game_id));
+ return;
+ }
+ 
+ // Use custom title if available (for teaching games), otherwise format like q5Go
+ QString title;
+ if (!custom_game_title.isEmpty()) {
+ title = QString("Observe: %1 XGospel 2.0").arg(custom_game_title);
+ } else if (!white_player.isEmpty() && !black_player.isEmpty()) {
+ QString white_info = white_player;
+ if (!white_rank.isEmpty() && white_rank != "?") {
+ white_info += QString(" [%1]").arg(white_rank);
+ }
+ 
+ QString black_info = black_player;
+ if (!black_rank.isEmpty() && black_rank != "?") {
+ black_info += QString(" [%1]").arg(black_rank);
+ }
+ 
+ title = QString("Observe: %1 vs. %2 XGospel 2.0").arg(white_info, black_info);
+ } else {
+ title = QString("XGospel 2.0 - Observing Game %1").arg(observed_game_id);
+ }
+ 
+ setWindowTitle(title);
+}
+
+void BoardWindow::updateCommentButtonText() {
+ if (!send_comment_button || !comment_input) return;
+ 
+ if (is_playing) {
+ // Playing mode - use "Say" for private player communication
+ // Determine opponent's name
+ QString opponent_name;
+ if (!my_username.isEmpty()) {
+ if (white_player.compare(my_username, Qt::CaseInsensitive) == 0) {
+ opponent_name = black_player;
+ } else if (black_player.compare(my_username, Qt::CaseInsensitive) == 0) {
+ opponent_name = white_player;
+ }
+ }
+
+ QString button_text = opponent_name.isEmpty() ? "Say (Enter)" : QString("Say to %1 (Enter)").arg(opponent_name);
+ send_comment_button->setText(button_text);
+ comment_input->setPlaceholderText(opponent_name.isEmpty() ? "Type message to opponent..." : QString("Type message to %1...").arg(opponent_name));
+ send_comment_button->setStyleSheet(
+ "QPushButton {" " background-color: #4CAF50;" // Green for say
+ " "
+ " border: none;" " padding: 4px 8px;" " font-size: 10px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ );
+ } else if (is_observing) {
+ // Observing mode - use "Kibitz" for public observer comments
+ send_comment_button->setText("Kibitz (Enter)");
+ comment_input->setPlaceholderText("Type comment or kibitz...");
+ send_comment_button->setStyleSheet(
+ "QPushButton {" " background-" // Blue for kibitz
+ " "
+ " border: none;" " padding: 4px 8px;" " font-size: 10px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ );
+ } else {
+ // Default state - disabled
+ send_comment_button->setText("Comment");
+ comment_input->setPlaceholderText("Join a game to chat...");
+ send_comment_button->setEnabled(false);
+ }
+}
+
+void BoardWindow::clearObservers() {
+ if (observers_list) {
+ observers_list->clear();
+ }
+}
+
+void BoardWindow::addObserver(const QString &name, const QString &rank) {
+ if (!observers_list) return;
+ 
+ QString observer_text = QString("%1 %2").arg(name, rank);
+ observers_list->addItem(observer_text);
+}
+
+QString BoardWindow::generateSGF() {
+ QString sgf;
+
+ // SGF header - xgospel2 format
+ sgf += "(;FF[4]GM[1]CA[UTF-8]AP[xgospel2:2.0]\n";
+ sgf += "SZ[19]\n";
+ sgf += QString("KM[%1]\n").arg(komi, 0, 'f', 6); // Use q5Go's 6 decimal precision
+
+ if (handicap > 0) {
+ sgf += QString("HA[%1]").arg(handicap);
+ }
+
+ sgf += QString("PW[%1]\n").arg(white_player);
+ sgf += QString("PB[%1]\n").arg(black_player);
+ sgf += QString("WR[%1]\n").arg(white_rank);
+ sgf += QString("BR[%1]\n").arg(black_rank);
+ sgf += QString("DT[%1]\n").arg(game_start_time.toString("yyyy-MM-dd"));
+ sgf += "PC[IGS]\n";
+
+ // Add time control information if available (q5Go style)
+ if (!time_control.isEmpty()) {
+ sgf += QString("TM[%1]\n").arg(time_control);
+ }
+ if (byoyomi_time > 0) {
+ sgf += QString("OT[25/600 Canadian]\n"); // Standard IGS overtime
+ }
+
+ sgf += QString("RE[%1]").arg(game_result.isEmpty() ? "?" : game_result);
+
+ // q5Go pattern: Add handicap stones as AB[] setup properties (not moves!)
+ if (handicap >= 2) {
+ QList<QPair<int, int>> positions = IGSMoveParser::getHandicapPositions(handicap);
+ if (!positions.isEmpty()) {
+ sgf += "PL[W]AB"; // Player to move is White, Add Black setup stones
+ for (const auto& pos : positions) {
+ char col = 'a' + pos.second; // x coordinate
+ char row = 'a' + pos.first; // y coordinate
+ sgf += QString("[%1%2]").arg(col).arg(row);
+ }
+ }
+ }
+
+ // GAME TREE APPROACH: Traverse the game tree instead of using move_history
+ // This eliminates bogus/duplicate pass moves and ensures accuracy
+ QList<GameNode*> move_sequence;
+
+ // Traverse from root to end of main variation
+ GameNode* node = game_root->nextMove(); // Skip root node
+ while (node) {
+ move_sequence.append(node);
+ node = node->nextMove();
+ }
+
+ qDebug() << "📊 SGF: Game tree moves:" << move_sequence.size()
+ << "(Old move_history had:" << move_history.size() << "entries)";
+
+ // Convert game tree moves to SGF format
+ for (GameNode* move_node : move_sequence) {
+ int x = move_node->getX();
+ int y = move_node->getY();
+ StoneColor color = move_node->getColor();
+
+ // CRITICAL FIX: Skip nodes with EMPTY/invalid color (data corruption)
+ // These are bogus nodes that shouldn't be in the game tree
+ if (color != BLACK_STONE && color != WHITE_STONE) {
+ qDebug() << "[SGF] WARNING: Skipping node with invalid color at move" << move_node->moveNumber()
+ << "coords (" << x << "," << y << ") color=" << color;
+ continue;
+ }
+
+ QString move_color = (color == BLACK_STONE) ? "B" : "W";
+
+ // q5Go pattern: Skip handicap nodes - they're already in AB[] setup
+ if (x == -2) {
+ qDebug() << "[SGF] Skipping handicap node (x=-2) - already in AB[] setup";
+ continue;
+ }
+
+ if (x >= 0 && x < 19 && y >= 0 && y < 19) {
+ // Regular move
+ char col = 'a' + x;
+ char row = 'a' + y;
+ sgf += QString(";%1[%2%3]").arg(move_color).arg(col).arg(row);
+ } else if (x == -1 && y == -1) {
+ // Pass move
+ sgf += QString(";%1[]").arg(move_color);
+ }
+
+ // q5Go pattern: Add comment if this node has one (kibitz)
+ QString comment = move_node->getComment();
+ if (!comment.isEmpty()) {
+ // Escape backslashes and closing brackets in comment text
+ QString escaped_comment = comment;
+ escaped_comment.replace("\\", "\\\\");
+ escaped_comment.replace("]", "\\]");
+ sgf += QString("\nC[%1]").arg(escaped_comment);
+ }
+ }
+ 
+ // Add territory information from IGS server data (q5Go style)
+ qDebug() << "🔍 SGF GENERATION: territory_ownership.size() =" << territory_ownership.size();
+
+ if (!territory_ownership.isEmpty()) {
+ QStringList white_territory_coords;
+ QStringList black_territory_coords;
+
+ int white_count = 0, black_count = 0;
+
+ // Convert IGS territory data to SGF coordinate format
+ for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
+ QPair<int, int> pos = it.key();
+ int ownership = it.value();
+
+ // Convert to SGF coordinates (a-s)
+ if (pos.first >= 0 && pos.first < 19 && pos.second >= 0 && pos.second < 19) {
+ char col = 'a' + pos.second; // pos.second = col (x coordinate)
+ char row = 'a' + pos.first; // pos.first = row (y coordinate)
+ QString coord = QString("%1%2").arg(col).arg(row);
+
+ if (ownership == 4) { // White territory
+ white_territory_coords.append(coord);
+ white_count++;
+ } else if (ownership == 5) { // Black territory
+ black_territory_coords.append(coord);
+ black_count++;
+ }
+ }
+ }
+
+ qDebug() << "🔍 SGF GENERATION: Found" << white_count << "white territory," << black_count << "black territory";
+ qDebug() << "🔍 SGF GENERATION: White coords:" << white_territory_coords.join(",");
+ qDebug() << "🔍 SGF GENERATION: Black coords:" << black_territory_coords.join(",");
+ 
+ // Add white territory to SGF
+ if (!white_territory_coords.isEmpty()) {
+ sgf += ";TW";
+ for (const QString &coord : white_territory_coords) {
+ sgf += QString("[%1]").arg(coord);
+ }
+ }
+ 
+ // Add black territory to SGF
+ if (!black_territory_coords.isEmpty()) {
+ sgf += ";TB";
+ for (const QString &coord : black_territory_coords) {
+ sgf += QString("[%1]").arg(coord);
+ }
+ }
+ }
+ 
+ // Add game result comment if available (q5Go style)
+ if (!game_result.isEmpty() && game_finished) {
+ // Format like q5Go: C[(move_number) Result text.\n(move_number) Formatted_result\n]
+ QString result_comment = formatGameResultComment();
+ if (!result_comment.isEmpty()) {
+ sgf += result_comment;
+ }
+ }
+ 
+ sgf += ")\n";
+ return sgf;
+}
+
+QString BoardWindow::formatGameResultComment() {
+ if (game_result.isEmpty()) {
+ return QString();
+ }
+ 
+ // Get current move number for the comment (total moves played)
+ int final_move_number = 0;
+ for (const GameMove &move : move_history) {
+ if (move.is_live_move && move.move_number > final_move_number) {
+ final_move_number = move.move_number;
+ }
+ }
+ 
+ // Convert IGS result format to standard format
+ QString standard_result = convertIGSResultToStandard(game_result);
+ 
+ // Format like q5Go: C[(199) White resigns.\n(199) B+R\n]
+ QString comment = QString("\nC[(%1) %2\\n(%3) %4\\n]")
+ .arg(final_move_number)
+ .arg(game_result)
+ .arg(final_move_number) 
+ .arg(standard_result);
+ 
+ return comment;
+}
+
+QString BoardWindow::convertIGSResultToStandard(const QString &igs_result) {
+ // Convert IGS result format to standard SGF result format
+ QString result = igs_result.trimmed();
+ 
+ // Handle resign cases
+ if (result.contains("resign", Qt::CaseInsensitive)) {
+ if (result.contains("Black", Qt::CaseInsensitive) || result.contains("black", Qt::CaseInsensitive)) {
+ return "W+R"; // White wins by resignation
+ } else if (result.contains("White", Qt::CaseInsensitive) || result.contains("white", Qt::CaseInsensitive)) {
+ return "B+R"; // Black wins by resignation 
+ }
+ }
+ 
+ // Handle time loss cases
+ if (result.contains("time", Qt::CaseInsensitive)) {
+ if (result.contains("Black", Qt::CaseInsensitive) || result.contains("black", Qt::CaseInsensitive)) {
+ return "W+T"; // White wins by time
+ } else if (result.contains("White", Qt::CaseInsensitive) || result.contains("white", Qt::CaseInsensitive)) {
+ return "B+T"; // Black wins by time
+ }
+ }
+ 
+ // Handle score results (e.g., "Black won by 5.5 points")
+ QRegExp score_re("(Black|White).*?(\\d+\\.?\\d*)\\s*points?", Qt::CaseInsensitive);
+ if (score_re.indexIn(result) != -1) {
+ QString winner = score_re.cap(1).toLower();
+ QString score = score_re.cap(2);
+ if (winner == "black") {
+ return QString("B+%1").arg(score);
+ } else {
+ return QString("W+%1").arg(score);
+ }
+ }
+ 
+ // Default: return the original result
+ return result;
+}
+
+// q5Go-style group tracking and capture detection
+int BoardWindow::addStoneWithCaptures(int x, int y, StoneColor color) {
+ QPair<int, int> new_pos(x, y);
+ int total_captured = 0;
+ 
+ // Get reference to groups
+ QList<StoneGroup>& opponent_groups = (color == BLACK_STONE) ? white_groups : black_groups;
+ QList<StoneGroup>& player_groups = (color == BLACK_STONE) ? black_groups : white_groups;
+ 
+ // Step 1: Check for captures of opponent groups (q5Go logic)
+ QSet<QPair<int, int>> adjacent_to_new_stone = getAdjacentPositions(QSet<QPair<int, int>>() << new_pos);
+ 
+ qDebug() << "DEBUG: Move" << x << "," << y << "by" << (color == BLACK_STONE ? "BLACK" : "WHITE");
+ qDebug() << "DEBUG: Checking" << opponent_groups.size() << "opponent groups";
+ 
+ for (auto& group : opponent_groups) {
+ // Check if this group is adjacent to the new stone
+ if (group.stones.intersects(adjacent_to_new_stone)) {
+ qDebug() << "DEBUG: Group adjacent - has" << group.liberties << "liberties";
+ 
+ // q5Go logic: if group currently has 1 liberty, it will be captured
+ if (group.liberties == 1) {
+ qDebug() << "DEBUG: *** CAPTURING opponent group of" << group.stones.size() << "stones (had 1 liberty) ***";
+ 
+ // Remove stones from board
+ for (const auto& pos : group.stones) {
+ qDebug() << "DEBUG: Removing stone at (" << pos.first << "," << pos.second << ")";
+ board_widget->placeMoveAt(pos.first, pos.second, EMPTY);
+ }
+ 
+ total_captured += group.stones.size();
+ group.alive = false; // Mark for removal
+ 
+ qDebug() << "DEBUG: Total captured this move:" << total_captured;
+ } else {
+ // Reduce liberty count (q5Go: it.m_n_liberties--)
+ group.liberties--;
+ qDebug() << "DEBUG: Opponent group of size" << group.stones.size() << "reduced to" << group.liberties << "liberties";
+ }
+ } else {
+ qDebug() << "DEBUG: Group not adjacent - no liberty change";
+ }
+ }
+ 
+ // Remove captured groups
+ removeDeadGroups(opponent_groups);
+ 
+ // Step 2: Merge new stone with adjacent friendly groups
+ QSet<QPair<int, int>> new_group_stones;
+ new_group_stones.insert(new_pos);
+ 
+ QList<int> groups_to_merge;
+ for (int i = 0; i < player_groups.size(); i++) {
+ if (player_groups[i].stones.intersects(adjacent_to_new_stone)) {
+ groups_to_merge.append(i);
+ new_group_stones.unite(player_groups[i].stones);
+ }
+ }
+ 
+ // Remove merged groups (in reverse order to maintain indices)
+ for (int i = groups_to_merge.size() - 1; i >= 0; i--) {
+ player_groups.removeAt(groups_to_merge[i]);
+ }
+ 
+ // Add new merged group
+ int new_liberties = countGroupLiberties(new_group_stones);
+ player_groups.append(StoneGroup(new_group_stones, new_liberties));
+ 
+ qDebug() << "DEBUG: Created/merged group of size" << new_group_stones.size() << "with" << new_liberties << "liberties";
+ 
+ // DEBUG: Rebuild all groups after every move to ensure accuracy
+ rebuildAllGroups();
+ 
+ // Step 3: Check for suicide (if new group has 0 liberties)
+ if (new_liberties == 0 && total_captured == 0) {
+ qDebug() << "DEBUG: Suicide move detected - removing own group";
+ 
+ // Remove own stones
+ for (const auto& pos : new_group_stones) {
+ board_widget->placeMoveAt(pos.first, pos.second, EMPTY);
+ }
+ 
+ // Count as captures for opponent
+ if (color == BLACK_STONE) {
+ white_captures += new_group_stones.size();
+ } else {
+ black_captures += new_group_stones.size();
+ }
+ 
+ // Remove the suicided group
+ player_groups.removeLast();
+ }
+ 
+ return total_captured;
+}
+
+int BoardWindow::countGroupLiberties(const QSet<QPair<int, int>>& group) {
+ QSet<QPair<int, int>> liberties;
+ 
+ for (const auto& pos : group) {
+ int dx[] = {0, 0, -1, 1};
+ int dy[] = {-1, 1, 0, 0};
+ 
+ for (int i = 0; i < 4; i++) {
+ int adj_x = pos.first + dx[i];
+ int adj_y = pos.second + dy[i];
+ 
+ if (adj_x >= 0 && adj_x < 19 && adj_y >= 0 && adj_y < 19) {
+ if (board_widget->getBoardState(adj_x, adj_y) == EMPTY) {
+ liberties.insert(QPair<int, int>(adj_x, adj_y));
+ }
+ }
+ }
+ }
+ 
+ return liberties.size();
+}
+
+QSet<QPair<int, int>> BoardWindow::getAdjacentPositions(const QSet<QPair<int, int>>& group) {
+ QSet<QPair<int, int>> adjacent;
+ 
+ int dx[] = {0, 0, -1, 1};
+ int dy[] = {-1, 1, 0, 0};
+ 
+ for (const auto& pos : group) {
+ for (int i = 0; i < 4; i++) {
+ int adj_x = pos.first + dx[i];
+ int adj_y = pos.second + dy[i];
+ 
+ if (adj_x >= 0 && adj_x < 19 && adj_y >= 0 && adj_y < 19) {
+ adjacent.insert(QPair<int, int>(adj_x, adj_y));
+ }
+ }
+ }
+ 
+ return adjacent;
+}
+
+QSet<QPair<int, int>> BoardWindow::floodFillGroup(int x, int y, StoneColor color) {
+ QSet<QPair<int, int>> group;
+ QList<QPair<int, int>> stack;
+ stack.append(QPair<int, int>(x, y));
+ 
+ while (!stack.isEmpty()) {
+ QPair<int, int> current = stack.takeLast();
+ 
+ if (group.contains(current)) continue;
+ 
+ int cx = current.first;
+ int cy = current.second;
+ 
+ if (cx < 0 || cx >= 19 || cy < 0 || cy >= 19) continue;
+ if (board_widget->getBoardState(cx, cy) != color) continue;
+ 
+ group.insert(current);
+ 
+ int dx[] = {0, 0, -1, 1};
+ int dy[] = {-1, 1, 0, 0};
+ for (int i = 0; i < 4; i++) {
+ stack.append(QPair<int, int>(cx + dx[i], cy + dy[i]));
+ }
+ }
+ 
+ return group;
+}
+
+void BoardWindow::rebuildAllGroups() {
+ white_groups.clear();
+ black_groups.clear();
+ 
+ QSet<QPair<int, int>> visited;
+ 
+ // Find all groups on the board
+ for (int x = 0; x < 19; x++) {
+ for (int y = 0; y < 19; y++) {
+ QPair<int, int> pos(x, y);
+ if (visited.contains(pos)) continue;
+ 
+ StoneColor color = board_widget->getBoardState(x, y);
+ if (color == EMPTY) continue;
+ 
+ QSet<QPair<int, int>> group = floodFillGroup(x, y, color);
+ for (const auto& group_pos : group) {
+ visited.insert(group_pos);
+ }
+ 
+ int liberties = countGroupLiberties(group);
+ 
+ if (color == WHITE_STONE) {
+ white_groups.append(StoneGroup(group, liberties));
+ } else {
+ black_groups.append(StoneGroup(group, liberties));
+ }
+ }
+ }
+ 
+ qDebug() << "DEBUG: Rebuilt groups - White:" << white_groups.size() << "Black:" << black_groups.size();
+}
+
+void BoardWindow::removeDeadGroups(QList<StoneGroup>& groups) {
+ // First, remove stones from the board display
+ for (auto it = groups.begin(); it != groups.end(); ) {
+ if (!it->alive) {
+ // Remove all stones in this group from the board
+ for (const QPair<int, int>& pos : it->stones) {
+ int x = pos.first;
+ int y = pos.second;
+ if (x >= 0 && x < 19 && y >= 0 && y < 19) {
+ board_widget->placeMoveAt(x, y, EMPTY); // Clear the stone
+ qDebug() << "DEBUG: Removed captured stone at (" << x << "," << y << ")";
+ }
+ }
+ it = groups.erase(it);
+ } else {
+ ++it;
+ }
+ }
+}
+
+// Counting phase implementation
+void BoardWindow::enterScoringMode() {
+ if (is_scoring_mode) return;
+ 
+ is_scoring_mode = true;
+ dead_stones.clear();
+ white_territory = 0;
+ black_territory = 0;
+ white_prisoners = white_captures; // Start with captured stones
+ black_prisoners = black_captures;
+ 
+ DEBUG_SCORING << "Entered scoring mode for game" << observed_game_id;
+ 
+ // Enable visual scoring mode on the board
+ if (board_widget) {
+ board_widget->setScoringMode(true);
+ }
+ 
+ // Update UI to show scoring mode
+ updateLabels();
+ 
+ // Calculate initial score
+ calculateScore();
+}
+
+void BoardWindow::exitScoringMode() {
+ if (!is_scoring_mode) return;
+ 
+ is_scoring_mode = false;
+ dead_stones.clear();
+ 
+ // Disable visual scoring mode on the board
+ if (board_widget) {
+ board_widget->setScoringMode(false);
+ }
+ 
+ DEBUG_SCORING << "Exited scoring mode for game" << observed_game_id;
+ updateLabels();
+}
+
+void BoardWindow::markStoneAsDead(int x, int y) {
+ if (!is_scoring_mode) return;
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) return;
+ 
+ // Check if there's a stone at this position
+ StoneColor stone_color = board_widget->getStoneAt(x, y);
+ if (stone_color == EMPTY) return;
+ 
+ // Find the entire connected group using flood fill
+ QSet<QPair<int, int>> connected_group = floodFillGroup(x, y, stone_color);
+ 
+ QPair<int, int> clicked_pos(x, y);
+ bool currently_marked = dead_stones.contains(clicked_pos);
+ 
+ if (currently_marked) {
+ // Unmark the entire connected group as dead
+ for (const auto& pos : connected_group) {
+ dead_stones.remove(pos);
+ }
+ qDebug() << "Unmarked connected group of" << connected_group.size() << "stones as dead";
+ } else {
+ // Mark the entire connected group as dead
+ for (const auto& pos : connected_group) {
+ dead_stones.insert(pos);
+ }
+ qDebug() << "Marked connected group of" << connected_group.size() << "stones as dead";
+ }
+ 
+ // Update board visualization
+ board_widget->setDeadStones(dead_stones);
+ 
+ // Recalculate score
+ calculateScore();
+}
+
+bool BoardWindow::hasStoneAt(int x, int y) const {
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) return false;
+ StoneColor color = board_widget->getStoneAt(x, y);
+ return (color != EMPTY);
+}
+
+void BoardWindow::clearDeadStones() {
+ dead_stones.clear();
+ board_widget->setDeadStones(dead_stones);
+}
+
+void BoardWindow::setBoardPosition(int x, int y, StoneColor color) {
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) return;
+ board_widget->placeMoveAt(x, y, color);
+}
+
+void BoardWindow::markTerritory(int x, int y, StoneColor owner) {
+ // For now, just log territory marking - we can enhance this later
+ qDebug() << "Territory marked at (" << x << "," << y << ") for" << 
+ (owner == WHITE_STONE ? "WHITE" : owner == BLACK_STONE ? "BLACK" : "NEUTRAL");
+}
+
+void BoardWindow::logMoveAudit(const MoveAudit& audit) {
+ // Circular buffer - remove oldest if at capacity
+ if (move_audit_trail.size() >= MAX_AUDIT_ENTRIES) {
+ move_audit_trail.removeFirst();
+ }
+ 
+ move_audit_trail.append(audit);
+ 
+ // Log critical info immediately
+ qDebug() << QString("🔍 AUDIT[%1]: %2 → (%3,%4) %5 SUCCESS=%6")
+ .arg(audit.move_number)
+ .arg(audit.parsed_coords)
+ .arg(audit.final_x)
+ .arg(audit.final_y)
+ .arg(audit.color == BLACK_STONE ? "BLACK" : "WHITE")
+ .arg(audit.placement_success ? "YES" : "NO");
+}
+
+void BoardWindow::dumpMoveAuditTrail() {
+ qDebug() << "📋 MOVE AUDIT TRAIL DUMP (" << move_audit_trail.size() << " entries):";
+ for (const auto& audit : move_audit_trail) {
+ qDebug() << QString(" [%1] %2 %3→(%4,%5) %6 %7 SUCCESS=%8")
+ .arg(audit.move_number)
+ .arg(audit.timestamp)
+ .arg(audit.parsed_coords)
+ .arg(audit.final_x)
+ .arg(audit.final_y)
+ .arg(audit.color == BLACK_STONE ? "B" : "W")
+ .arg(audit.captures.isEmpty() ? "no-captures" : audit.captures)
+ .arg(audit.placement_success ? "YES" : "NO");
+ }
+}
+
+void BoardWindow::dumpBoardState() {
+ DEBUG_OBSERVATION_STATE << "🎯 BOARD STATE DUMP for game" << observed_game_id << ":";
+ qDebug() << " Move count:" << move_history.size() << "Current move:" << current_move;
+ qDebug() << " Scoring mode:" << (is_scoring_mode ? "YES" : "NO");
+ qDebug() << " Dead stones:" << dead_stones.size();
+ 
+ // Sample a few key positions to verify board state
+ QStringList sample_positions = {"Q16", "D4", "Q4", "D16", "P11", "K10", "J17"};
+ for (const QString& pos : sample_positions) {
+ if (pos.length() >= 2) {
+ QChar letter = pos[0];
+ int number = pos.mid(1).toInt();
+ int x = letter.unicode() - 'A' - (letter > 'I' ? 1 : 0);
+ int y = 19 - number;
+ if (x >= 0 && x < 19 && y >= 0 && y < 19) {
+ StoneColor color = board_widget->getStoneAt(x, y);
+ QString color_str = (color == BLACK_STONE ? "BLACK" : 
+ color == WHITE_STONE ? "WHITE" : "EMPTY");
+ qDebug() << QString(" %1 (%2,%3): %4").arg(pos).arg(x).arg(y).arg(color_str);
+ }
+ }
+ }
+}
+
+void BoardWindow::calculateScore() {
+ if (!is_scoring_mode) return;
+ 
+ white_territory = 0;
+ black_territory = 0;
+ white_prisoners = white_captures;
+ black_prisoners = black_captures;
+ 
+ // Count dead stones as prisoners
+ for (const auto& pos : dead_stones) {
+ StoneColor stone_color = board_widget->getStoneAt(pos.first, pos.second);
+ if (stone_color == WHITE_STONE) {
+ black_prisoners++;
+ } else if (stone_color == BLACK_STONE) {
+ white_prisoners++;
+ }
+ }
+ 
+ // Calculate territory using flood fill
+ calculateTerritory();
+ 
+ // Calculate final score (Japanese rules: territory + prisoners + komi)
+ final_score = (white_territory + white_prisoners + komi) - (black_territory + black_prisoners);
+ 
+ qDebug() << "Score calculated - White territory:" << white_territory << "prisoners:" << white_prisoners << "total:" << (white_territory + white_prisoners + komi)
+ << "Black territory:" << black_territory << "prisoners:" << black_prisoners << "total:" << (black_territory + black_prisoners)
+ << "Final score:" << final_score;
+ 
+ // Format score result like q5Go (e.g., "B+5.5" or "W+12.0")
+ if (final_score > 0) {
+ game_result = QString("W+%1").arg(final_score, 0, 'f', 1);
+ } else if (final_score < 0) {
+ game_result = QString("B+%1").arg(-final_score, 0, 'f', 1);
+ } else {
+ game_result = "Draw";
+ }
+ 
+ updateLabels();
+}
+
+void BoardWindow::calculateTerritory() {
+ if (!board_widget) return;
+ 
+ int board_size = 19; // Assuming 19x19 board
+ QSet<QPair<int, int>> visited;
+ QMap<QPair<int, int>, StoneColor> territory_map;
+ 
+ white_territory = 0;
+ black_territory = 0;
+ 
+ // Iterate through all empty points on the board
+ for (int x = 0; x < board_size; x++) {
+ for (int y = 0; y < board_size; y++) {
+ QPair<int, int> pos(x, y);
+ 
+ // Skip if already visited or if there's a stone
+ if (visited.contains(pos)) continue;
+ 
+ StoneColor stone = board_widget->getStoneAt(x, y);
+ if (stone != EMPTY) continue;
+ 
+ // Skip if this empty point has a dead stone
+ if (dead_stones.contains(pos)) continue;
+ 
+ // Use flood fill to find connected empty territory
+ QSet<QPair<int, int>> territory_visited;
+ StoneColor owner = getTerritoryOwner(x, y, territory_visited);
+ 
+ // Add all points in this territory to global visited set
+ visited.unite(territory_visited);
+ 
+ // Add territory points to visualization map
+ for (const auto& territory_point : territory_visited) {
+ territory_map[territory_point] = owner;
+ }
+ 
+ // Count territory points for the owner
+ if (owner == WHITE_STONE) {
+ white_territory += territory_visited.size();
+ } else if (owner == BLACK_STONE) {
+ black_territory += territory_visited.size();
+ }
+ // If owner is EMPTY, it's neutral territory (not counted for either side)
+ }
+ }
+ 
+ // Update visual display with territory and dead stones
+ if (board_widget) {
+ board_widget->setTerritoryMap(territory_map);
+ board_widget->setDeadStones(dead_stones);
+ }
+}
+
+StoneColor BoardWindow::getTerritoryOwner(int x, int y, QSet<QPair<int, int>>& visited) {
+ if (!board_widget) return EMPTY;
+ 
+ int board_size = 19; // Assuming 19x19 board
+ QStack<QPair<int, int>> stack;
+ QSet<StoneColor> adjacent_colors;
+ 
+ stack.push(QPair<int, int>(x, y));
+ 
+ while (!stack.isEmpty()) {
+ QPair<int, int> current = stack.pop();
+ int cx = current.first;
+ int cy = current.second;
+ 
+ // Skip if out of bounds or already visited
+ if (cx < 0 || cx >= board_size || cy < 0 || cy >= board_size || visited.contains(current)) {
+ continue;
+ }
+ 
+ StoneColor stone = board_widget->getStoneAt(cx, cy);
+ 
+ // If there's a live stone, record its color and don't expand further
+ if (stone != EMPTY && !dead_stones.contains(current)) {
+ adjacent_colors.insert(stone);
+ continue;
+ }
+ 
+ // If it's empty or a dead stone, add to territory
+ visited.insert(current);
+ 
+ // Add adjacent points to stack for flood fill
+ stack.push(QPair<int, int>(cx - 1, cy));
+ stack.push(QPair<int, int>(cx + 1, cy));
+ stack.push(QPair<int, int>(cx, cy - 1));
+ stack.push(QPair<int, int>(cx, cy + 1));
+ }
+ 
+ // Determine territory owner based on surrounding stones
+ if (adjacent_colors.size() == 1) {
+ // Territory is surrounded by only one color
+ return *adjacent_colors.begin();
+ } else {
+ // Territory is contested or surrounded by multiple colors (neutral)
+ return EMPTY;
+ }
+}
+
+// Helper function to check if a liberty (empty point) is surrounded by opponent stones
+// Returns true if the empty region containing this point only touches opponent stones
+bool BoardWindow::isLibertySurroundedByOpponent(int x, int y, StoneColor opponent_color) {
+ QSet<QPair<int, int>> visited;
+ QStack<QPair<int, int>> stack;
+ stack.push(QPair<int, int>(x, y));
+
+ QSet<StoneColor> touching_colors;
+ int board_size = 19;
+
+ while (!stack.isEmpty()) {
+ QPair<int, int> pos = stack.pop();
+ if (visited.contains(pos)) continue;
+ visited.insert(pos);
+
+ int px = pos.first;
+ int py = pos.second;
+
+ // Check all 4 directions
+ QPair<int, int> neighbors[4] = {
+ QPair<int, int>(px-1, py), QPair<int, int>(px+1, py),
+ QPair<int, int>(px, py-1), QPair<int, int>(px, py+1)
+ };
+
+ for (const QPair<int, int>& neighbor : neighbors) {
+ int nx = neighbor.first;
+ int ny = neighbor.second;
+
+ if (nx < 0 || nx >= board_size || ny < 0 || ny >= board_size) continue;
+
+ StoneColor stone = board_widget->getStoneAt(nx, ny);
+ if (stone == EMPTY) {
+ if (!visited.contains(neighbor)) {
+ stack.push(neighbor);
+ }
+ } else {
+ touching_colors.insert(stone);
+ }
+ }
+ }
+
+ // Liberty is surrounded by opponent if it only touches opponent stones
+ return touching_colors.size() == 1 && touching_colors.contains(opponent_color);
+}
+
+// Algorithmically detect dead stones based on groups whose liberties are in opponent territory
+// Revised algorithm: Check if ALL of a group's liberties are surrounded by opponent stones
+void BoardWindow::detectDeadStones() {
+ if (!board_widget) return;
+
+ qDebug() << "*** DEAD STONE DETECTION: Analyzing board position...";
+
+ dead_stones.clear();
+ int board_size = 19;
+
+ // Rebuild all stone groups
+ rebuildAllGroups();
+
+ // Analyze white groups
+ for (const StoneGroup& group : white_groups) {
+ // Check if group has any liberties
+ if (group.liberties == 0) {
+ qDebug() << " Found dead white group (0 liberties) with" << group.stones.size() << "stones";
+ dead_stones.unite(group.stones);
+ continue;
+ }
+
+ // Get all liberties for this group
+ QSet<QPair<int, int>> liberty_points;
+ for (const QPair<int, int>& stone_pos : group.stones) {
+ int x = stone_pos.first;
+ int y = stone_pos.second;
+
+ // Check all 4 directions for liberties
+ QPair<int, int> neighbors[4] = {
+ QPair<int, int>(x-1, y), QPair<int, int>(x+1, y),
+ QPair<int, int>(x, y-1), QPair<int, int>(x, y+1)
+ };
+
+ for (const QPair<int, int>& neighbor : neighbors) {
+ int nx = neighbor.first;
+ int ny = neighbor.second;
+
+ if (nx < 0 || nx >= board_size || ny < 0 || ny >= board_size) continue;
+
+ StoneColor neighbor_stone = board_widget->getStoneAt(nx, ny);
+ if (neighbor_stone == EMPTY) {
+ liberty_points.insert(neighbor);
+ }
+ }
+ }
+
+ // Check if ALL liberties are surrounded by black stones
+ if (liberty_points.size() > 0 && liberty_points.size() <= 6) {
+ bool all_liberties_in_black_territory = true;
+ for (const QPair<int, int>& lib : liberty_points) {
+ if (!isLibertySurroundedByOpponent(lib.first, lib.second, BLACK_STONE)) {
+ all_liberties_in_black_territory = false;
+ break;
+ }
+ }
+
+ if (all_liberties_in_black_territory) {
+ qDebug() << " Found dead white group (all" << liberty_points.size() << "liberties in black territory) with" << group.stones.size() << "stones";
+ dead_stones.unite(group.stones);
+ }
+ }
+ }
+
+ // Analyze black groups
+ for (const StoneGroup& group : black_groups) {
+ // Check if group has any liberties
+ if (group.liberties == 0) {
+ qDebug() << " Found dead black group (0 liberties) with" << group.stones.size() << "stones";
+ dead_stones.unite(group.stones);
+ continue;
+ }
+
+ // Get all liberties for this group
+ QSet<QPair<int, int>> liberty_points;
+ for (const QPair<int, int>& stone_pos : group.stones) {
+ int x = stone_pos.first;
+ int y = stone_pos.second;
+
+ // Check all 4 directions for liberties
+ QPair<int, int> neighbors[4] = {
+ QPair<int, int>(x-1, y), QPair<int, int>(x+1, y),
+ QPair<int, int>(x, y-1), QPair<int, int>(x, y+1)
+ };
+
+ for (const QPair<int, int>& neighbor : neighbors) {
+ int nx = neighbor.first;
+ int ny = neighbor.second;
+
+ if (nx < 0 || nx >= board_size || ny < 0 || ny >= board_size) continue;
+
+ StoneColor neighbor_stone = board_widget->getStoneAt(nx, ny);
+ if (neighbor_stone == EMPTY) {
+ liberty_points.insert(neighbor);
+ }
+ }
+ }
+
+ // Check if ALL liberties are surrounded by white stones
+ if (liberty_points.size() > 0 && liberty_points.size() <= 6) {
+ bool all_liberties_in_white_territory = true;
+ for (const QPair<int, int>& lib : liberty_points) {
+ if (!isLibertySurroundedByOpponent(lib.first, lib.second, WHITE_STONE)) {
+ all_liberties_in_white_territory = false;
+ break;
+ }
+ }
+
+ if (all_liberties_in_white_territory) {
+ qDebug() << " Found dead black group (all" << liberty_points.size() << "liberties in white territory) with" << group.stones.size() << "stones";
+ dead_stones.unite(group.stones);
+ }
+ }
+ }
+
+ qDebug() << "*** DEAD STONE DETECTION: Found" << dead_stones.size() << "total dead stones";
+}
+
+// Public wrapper for client-side territory calculation
+// Following q5Go's calc_scoring_markers_complex() for observed games
+void BoardWindow::calculateTerritoryMarkers() {
+ // CHECK: Do we have server-side territory data from Command 22?
+ if (!territory_ownership.isEmpty()) {
+ qDebug() << "*** SERVER-SIDE TERRITORY DATA: Command 22 data already processed by receiveScoreEnd()";
+ qDebug() << ">>> Territory markers already set - Dead stones:" << dead_stones.size()
+ << "White territory:" << white_territory
+ << "Black territory:" << black_territory;
+
+ // receiveScoreEnd() has already called:
+ // - board_widget->setTerritoryMap(territory_map)
+ // - board_widget->setDeadStones(confirmed_dead_stones)
+ // - Updated dead_stones, white_territory, black_territory
+ // - Called updateLabels()
+ // So we don't need to do anything here!
+ } else {
+ // FALLBACK: Use client-side territory detection
+ qDebug() << "*** CLIENT-SIDE TERRITORY CALCULATION: No Command 22 data, running detection algorithm...";
+
+ // STEP 1: Detect dead stones algorithmically
+ detectDeadStones();
+
+ // STEP 2: Calculate territories (which now uses the populated dead_stones set)
+ calculateTerritory();
+ }
+
+ // STEP 3: Refresh display
+ board_widget->update();
+}
+
+// Move navigation implementation
+void BoardWindow::onFirstMoveClicked() {
+ goToFirstMove();
+}
+
+void BoardWindow::onPreviousMoveClicked() {
+ goToPreviousMove();
+}
+
+void BoardWindow::onNextMoveClicked() {
+ goToNextMove();
+}
+
+void BoardWindow::onLastMoveClicked() {
+ goToLastMove();
+}
+
+void BoardWindow::onMoveSliderChanged(int value) {
+ DEBUG_MOVE_PROCESSING << "🎯 SLIDER: onMoveSliderChanged called, value:" << value << "slider_update_in_progress:" << slider_update_in_progress;
+ if (slider_update_in_progress) {
+ qDebug() << "🚫 SLIDER: Blocked by slider_update_in_progress flag";
+ return; // Prevent recursion
+ }
+ qDebug() << "✅ SLIDER: Calling goToMove(" << value << ")";
+ goToMove(value);
+}
+
+// q5Go-style tree navigation: Navigate to a specific move number
+void BoardWindow::goToMove(int move_number) {
+ DEBUG_MOVE_PROCESSING << "🎯 goToMove: Called with move_number:" << move_number << "slider_update_in_progress:" << slider_update_in_progress;
+ if (slider_update_in_progress) {
+ qDebug() << "🚫 goToMove: Blocked by slider_update_in_progress flag";
+ return; // Prevent recursion
+ }
+
+ GameNode* target = current_node;
+
+ // Navigate backward if needed
+ while (target->moveNumber() > move_number && target->prevMove()) {
+ target = target->prevMove();
+ }
+
+ // Navigate forward if needed
+ while (target->moveNumber() < move_number && target->nextMove()) {
+ target = target->nextMove();
+ }
+
+ // Update current position
+ current_node = target;
+ current_move_index = target->moveNumber();
+
+ // AUTO-FOLLOW MODE MANAGEMENT (q5Go behavior):
+ // Check if we're at the end of the game tree
+ int total_moves = getTotalMoves();
+ bool at_end = (current_node->moveNumber() == total_moves);
+
+ if (at_end) {
+ // Re-enable auto-follow when user returns to the end
+ if (!auto_follow_mode) {
+ auto_follow_mode = true;
+ qDebug() << "AUTO-FOLLOW: Re-enabled (at end of game)";
+ }
+ } else {
+ // Disable auto-follow when user navigates to an earlier position
+ if (auto_follow_mode) {
+ auto_follow_mode = false;
+ qDebug() << "AUTO-FOLLOW: Disabled (viewing earlier position)";
+ }
+ }
+
+ // Display this node's board state
+ displayNode(current_node);
+
+ // Update navigation controls
+ updateMoveNavigation();
+}
+
+void BoardWindow::goToFirstMove() {
+ goToMove(0);
+}
+
+void BoardWindow::goToPreviousMove() {
+ if (current_move_index > 0) {
+ goToMove(current_move_index - 1);
+ }
+}
+
+void BoardWindow::goToNextMove() {
+ if (current_move_index < move_history.size()) {
+ goToMove(current_move_index + 1);
+ }
+}
+
+void BoardWindow::goToLastMove() {
+ goToMove(getTotalMoves());
+}
+
+void BoardWindow::updateMoveNavigation() {
+ // Get total moves from game tree
+ int total_moves = getTotalMoves();
+
+ // Block slider signals to prevent recursion
+ slider_update_in_progress = true;
+
+ // Update slider
+ move_slider->setMaximum(total_moves);
+ move_slider->setValue(current_move_index);
+
+ // Unblock signals
+ slider_update_in_progress = false;
+
+ // Update label
+ move_number_label->setText(QString("Move: %1/%2")
+ .arg(current_move_index)
+ .arg(total_moves));
+
+ // Update button states
+ first_move_button->setEnabled(current_move_index > 0);
+ prev_move_button->setEnabled(current_move_index > 0);
+ next_move_button->setEnabled(current_move_index < total_moves);
+ last_move_button->setEnabled(current_move_index < total_moves);
+}
+
+// Server scoring implementation
+void BoardWindow::setServerScore(double white_score, double black_score) {
+ server_white_score = white_score;
+ server_black_score = black_score;
+ has_server_score = true;
+ 
+ // Calculate final result like q5Go
+ double score_difference = white_score - black_score;
+ if (score_difference > 0) {
+ game_result = QString("W+%1").arg(score_difference, 0, 'f', 1);
+ } else if (score_difference < 0) {
+ game_result = QString("B+%1").arg(-score_difference, 0, 'f', 1);
+ } else {
+ game_result = "Jigo";
+ }
+ 
+ qDebug() << "*** SERVER SCORE SET: White" << white_score << "Black" << black_score << "Result:" << game_result;
+ 
+ // Update the display
+ updateLabels();
+}
+
+// IGS territory marking functions (following q5Go protocol)
+void BoardWindow::receiveScoreBegin() {
+ DEBUG_SCORING << "*** IGS TERRITORY: Beginning score data reception for game" << observed_game_id;
+ receiving_territory_data = true;
+ territory_data_row = 0;
+ territory_ownership.clear();
+ dead_stones.clear(); // Clear old dead stone marks from previous scoring sessions
+ DEBUG_SCORING << "*** IGS TERRITORY: Cleared old territory and dead stone data for game" << observed_game_id;
+}
+
+void BoardWindow::receiveScoreLine(int row, const QString &line) {
+ DEBUG_SCORING << "*** IGS TERRITORY: Row" << row << "data:" << line;
+
+ if (!receiving_territory_data) {
+ DEBUG_SCORING << "*** IGS TERRITORY: ERROR - Not in territory data mode";
+ return;
+ }
+
+ // Enable scoring mode when Command 22 starts (row 0)
+ // This allows markStoneAsDead() to work when Command 15 messages arrive
+ if (row == 0) {
+ is_scoring_mode = true;
+ board_widget->setScoringMode(true);
+ DEBUG_SCORING << "*** IGS TERRITORY: Enabled scoring mode for game" << observed_game_id;
+ }
+
+ // Process each character in the line
+ // 0=black stone, 1=white stone, 2=free, 3=neutral, 4=white territory, 5=black territory
+ for (int col = 0; col < line.length() && col < 19; col++) {
+ int digit = line[col].digitValue();
+ QPair<int, int> pos(row, col);
+
+ // Store ALL territory data for later analysis
+ territory_ownership[pos] = digit;
+
+ if (digit == 4 || digit == 5) {
+ DEBUG_SCORING << "*** IGS TERRITORY: Position" << row << col << "=" << (digit == 4 ? "WHITE" : "BLACK") << "territory";
+ } else if (digit == 0 || digit == 1) {
+ DEBUG_SCORING << "*** IGS TERRITORY: Position" << row << col << "=" << (digit == 0 ? "BLACK" : "WHITE") << "stone";
+ }
+ }
+
+ territory_data_row++;
+}
+
+void BoardWindow::receiveScoreEnd() {
+ DEBUG_SCORING << "*** IGS TERRITORY: Score data reception completed for game" << observed_game_id;
+ receiving_territory_data = false;
+
+ // Process Command 22 territory data
+ // ONLY mark empty territory points (digits 4 and 5)
+ //
+ // IGS Command 22 format:
+ // 0 = Black stone (alive or dead - still on board)
+ // 1 = White stone (alive or dead - still on board)
+ // 2 = Empty / dame
+ // 3 = Unknown / neutral
+ // 4 = White territory (EMPTY point)
+ // 5 = Black territory (EMPTY point)
+ //
+ // IMPORTANT: Dead stones are NOT marked in Command 22 data.
+ // They are marked interactively by players after typing "done".
+ // For observation mode, we simply show empty territory marking
+ // as provided by the server in Command 22.
+ //
+ // This matches q5Go's approach - see qgo_interface.cpp:receive_score_line()
+
+ QMap<QPair<int, int>, StoneColor> territory_map;
+ int white_territory_count = 0, black_territory_count = 0;
+
+ int dame_count = 0;
+
+ for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
+ QPair<int, int> pos = it.key();
+ int digit = it.value();
+
+ if (digit == 4) { // White territory (empty point)
+ territory_map[pos] = WHITE_STONE;
+ white_territory_count++;
+ } else if (digit == 5) { // Black territory (empty point)
+ territory_map[pos] = BLACK_STONE;
+ black_territory_count++;
+ } else if (digit == 2 || digit == 3) { // Dame / neutral territory (empty point)
+ territory_map[pos] = EMPTY; // Use EMPTY to represent dame/neutral
+ dame_count++;
+ }
+ // Ignore digits 0, 1 - they represent stones, not territory
+ }
+
+ DEBUG_SCORING << "*** IGS TERRITORY: Empty territory marked - White:" << white_territory_count
+ << "Black:" << black_territory_count << "Dame:" << dame_count;
+ DEBUG_SCORING << "*** IGS TERRITORY: Dead stones count from Command 15:" << dead_stones.size();
+
+ // Detect dead stones from Command 22 territory data
+ // Strategy: Stones located in opponent's territory are dead
+ // This mirrors q5Go's approach - after scoring completes, Command 22 territory
+ // data reflects final agreed-upon territories including dead stone positions
+ DEBUG_SCORING << "*** IGS TERRITORY: Detecting dead stones from Command 22 data...";
+
+ QSet<QPair<int, int>> cmd22_dead_stones;
+
+ for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
+ QPair<int, int> pos = it.key();
+ int digit = it.value();
+
+ // Check what's actually on the board at this position
+ StoneColor actual_stone = board_widget->getStoneAt(pos.first, pos.second);
+
+ // Detect dead stones: black stones in white territory, or white stones in black territory
+ if (digit == 4 && actual_stone == BLACK_STONE) {
+ // Black stone in white territory = dead black stone
+ qDebug() << " Found dead BLACK stone at" << pos.first << pos.second << "(in white territory)";
+ cmd22_dead_stones.insert(pos);
+ } else if (digit == 5 && actual_stone == WHITE_STONE) {
+ // White stone in black territory = dead white stone
+ qDebug() << " Found dead WHITE stone at" << pos.first << pos.second << "(in black territory)";
+ cmd22_dead_stones.insert(pos);
+ }
+ }
+
+ DEBUG_SCORING << "*** IGS TERRITORY: Detected" << cmd22_dead_stones.size() << "dead stones from Command 22 territory data";
+
+ // Merge with any Command 15 dead stones (if we received them during active scoring)
+ if (!dead_stones.isEmpty()) {
+ DEBUG_SCORING << "*** IGS TERRITORY: Merging" << dead_stones.size() << "Command 15 dead stones with" << cmd22_dead_stones.size() << "Command 22 detected dead stones";
+ dead_stones.unite(cmd22_dead_stones);
+ } else {
+ dead_stones = cmd22_dead_stones;
+ }
+
+ DEBUG_SCORING << "*** IGS TERRITORY: Final dead stone count:" << dead_stones.size();
+
+ // Apply empty territory visualization
+ board_widget->setTerritoryMap(territory_map);
+
+ // Set dead stones (either from Command 15 or from algorithmic detection)
+ board_widget->setDeadStones(dead_stones);
+
+ // Update stored values
+ white_territory = white_territory_count;
+ black_territory = black_territory_count;
+ updateLabels();
+}
+
+// Board click handler - routes to appropriate action based on game mode
+void BoardWindow::onBoardClicked(int x, int y) {
+ qDebug() << "Board clicked at" << x << "," << y << "- is_playing:" << is_playing << "is_scoring_mode:" << is_scoring_mode;
+ 
+ if (is_scoring_mode) {
+ // In scoring mode, handle dead stone marking
+ markStoneAsDead(x, y);
+ } else if (is_playing) {
+ // In playing mode, attempt to make a move
+ makeMove(x, y);
+ } else {
+ // In observation mode, do nothing (or could show move preview)
+ qDebug() << "Board click ignored - not playing or scoring";
+ }
+}
+
+// Handle move making for actual gameplay
+void BoardWindow::makeMove(int x, int y) {
+ qDebug() << "Making move at" << x << "," << y << "for game" << observed_game_id;
+ 
+ // Basic validation - assume 19x19 board for now
+ if (x < 0 || y < 0 || x >= 19 || y >= 19) {
+ qDebug() << "Invalid move coordinates:" << x << "," << y;
+ return;
+ }
+ 
+ // Check if position is empty
+ StoneColor stone_at_pos = board_widget->getStoneAt(x, y);
+ if (stone_at_pos != EMPTY) {
+ qDebug() << "Position occupied - cannot place stone at" << x << "," << y;
+ return;
+ }
+ 
+ // Emit signal to main window to send move to server
+ emit moveRequested(observed_game_id, x, y);
+ 
+ qDebug() << "Move request sent to main window for game" << observed_game_id << "at" << x << "," << y;
+}
+
+// Set playing mode for the board
+void BoardWindow::setPlayingMode(bool playing) {
+ is_playing = playing;
+ is_observing = !playing; // Playing and observing are mutually exclusive
+
+ qDebug() << "Board window game" << observed_game_id << "set to" << (playing ? "PLAYING" : "OBSERVING") << "mode";
+
+ // Update UI elements to reflect the new mode
+ updateWindowTitle();
+ updateCommentButtonText(); // Update say/kibitz button based on mode
+
+ // Show/hide appropriate buttons based on mode
+ if (playing) {
+ resign_button->setVisible(true); // Show Resign when playing
+ close_button->setVisible(false); // Hide Close when playing (use title bar X)
+ } else {
+ resign_button->setVisible(false); // Hide Resign when observing
+ close_button->setVisible(true); // Show Close when observing
+ }
+}
+
+// Resign the current game
+void BoardWindow::resignGame() {
+ if (!is_playing) {
+ qDebug() << "Cannot resign - not playing in game" << observed_game_id;
+ return;
+ }
+
+ // Confirm resignation with user
+ QMessageBox::StandardButton reply = QMessageBox::question(
+ this,
+ "Resign Game",
+ "Are you sure you want to resign this game?",
+ QMessageBox::Yes | QMessageBox::No
+ );
+
+ if (reply == QMessageBox::Yes) {
+ qDebug() << "Player resigned game" << observed_game_id;
+ emit resignRequested(observed_game_id);
+ }
+}
+
+// Game tree navigation helpers (q5Go-style implementation)
+void BoardWindow::displayNode(GameNode* node) {
+ if (!node) return;
+
+ // Get complete board state from this node
+ const GoBoard& board = node->getBoard();
+
+ // Clear the board and rebuild from stored state
+ board_widget->clearBoard();
+
+ // CRITICAL FIX: Clear scoring mode visualizations when navigating away from final position
+ // Territory markers and dead stones should only show on the final scored position
+ int total_moves = getTotalMoves();
+ bool is_final_position = (node->moveNumber() == total_moves);
+
+ if (!is_final_position) {
+ // Clear territory markers when viewing historical positions
+ board_widget->setTerritoryMap(QMap<QPair<int, int>, StoneColor>());
+ board_widget->setDeadStones(QSet<QPair<int, int>>());
+ board_widget->setScoringMode(false);
+ } else {
+ // Check if this node has territory markers from SGF (TW/TB properties)
+ if (node->hasTerritory()) {
+ // SGF file territory markers - display automatically
+ board_widget->setTerritoryMap(node->getTerritory());
+ board_widget->setScoringMode(true);
+ qDebug() << "Displaying SGF territory markers:" << node->getTerritory().size() << "points";
+ }
+ // Restore territory markers at final position if we have them from live observation
+ else if (!territory_ownership.isEmpty() && is_scoring_mode) {
+ // Rebuild territory map from stored ownership data
+ QMap<QPair<int, int>, StoneColor> territory_map;
+ for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
+ int digit = it.value();
+ if (digit == 4) {
+ territory_map[it.key()] = WHITE_STONE;
+ } else if (digit == 5) {
+ territory_map[it.key()] = BLACK_STONE;
+ } else if (digit == 2 || digit == 3) {
+ territory_map[it.key()] = EMPTY;
+ }
+ }
+ board_widget->setTerritoryMap(territory_map);
+ board_widget->setDeadStones(dead_stones);
+ board_widget->setScoringMode(true);
+ }
+ }
+
+ // Place all stones from the stored board state
+ for (int x = 0; x < 19; x++) {
+ for (int y = 0; y < 19; y++) {
+ StoneColor color = board.getStone(x, y);
+ if (color != EMPTY_STONE) {
+ board_widget->placeMoveAt(x, y, color);
+ }
+ }
+ }
+
+ // Mark the last move for this node
+ if (node->getX() >= 0 && node->getY() >= 0) {
+ board_widget->setLastMove(node->getX(), node->getY());
+ } else {
+ // Clear last move marker for pass moves (x=-1, y=-1)
+ board_widget->setLastMove(-1, -1);
+ }
+
+ // Update the move number label
+ move_number_label->setText(QString("Move: %1/%2")
+ .arg(node->moveNumber())
+ .arg(total_moves));
+
+ board_widget->update();
+}
+
+int BoardWindow::getTotalMoves() const {
+ // Follow the active variation from root to find maximum move number
+ return game_root->activeVariationMax();
+}
+
+// Helper functions for capture calculation during live move processing
+int BoardWindow::countLiberties(const GoBoard& board, int x, int y) {
+ StoneColor color = board.getStone(x, y);
+ if (color == EMPTY_STONE) {
+ return 0;
+ }
+
+ // Find all stones in this group using flood fill
+ bool visited[19][19] = {{false}};
+ QList<QPair<int,int>> group;
+ floodFill(board, x, y, color, visited, group);
+
+ // Count unique liberties (empty points adjacent to group)
+ QSet<QPair<int,int>> liberties;
+ int dx[] = {-1, 1, 0, 0};
+ int dy[] = {0, 0, -1, 1};
+
+ for (const auto& stone : group) {
+ for (int dir = 0; dir < 4; dir++) {
+ int nx = stone.first + dx[dir];
+ int ny = stone.second + dy[dir];
+
+ if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+ board.getStone(nx, ny) == EMPTY_STONE) {
+ liberties.insert(QPair<int,int>(nx, ny));
+ }
+ }
+ }
+
+ return liberties.size();
+}
+
+void BoardWindow::removeGroup(GoBoard& board, int x, int y) {
+ StoneColor color = board.getStone(x, y);
+ if (color == EMPTY_STONE) {
+ return;
+ }
+
+ // Find all stones in this group
+ bool visited[19][19] = {{false}};
+ QList<QPair<int,int>> group;
+ floodFill(board, x, y, color, visited, group);
+
+ // Remove all stones in the group
+ for (const auto& stone : group) {
+ board.removeStone(stone.first, stone.second);
+ }
+}
+
+void BoardWindow::floodFill(const GoBoard& board, int x, int y, StoneColor color,
+ bool visited[19][19], QList<QPair<int,int>>& group) {
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) {
+ return;
+ }
+
+ if (visited[x][y] || board.getStone(x, y) != color) {
+ return;
+ }
+
+ visited[x][y] = true;
+ group.append(QPair<int,int>(x, y));
+
+ // Recursively visit all 4 neighbors
+ floodFill(board, x - 1, y, color, visited, group);
+ floodFill(board, x + 1, y, color, visited, group);
+ floodFill(board, x, y - 1, color, visited, group);
+ floodFill(board, x, y + 1, color, visited, group);
+}
+
+#include "board_window.moc"
