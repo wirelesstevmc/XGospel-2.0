@@ -4,6 +4,70 @@ All notable changes to the XGospel2 Qt5-based IGS Go client will be documented i
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v50_R19-FILTER-PREFERENCES] - 2026-04-22
+
+### Added
+- **Feature: Player filter preference persistence**
+  - All player list filters now save and restore across sessions
+  - "Open" filter checkbox state persisted
+  - "Hide Guests" filter checkbox state persisted
+  - Rank range "From" and "To" selections persisted
+  - Filter states loaded on startup and automatically applied
+  - Preferences saved immediately when filters change
+  - Settings keys: `players_filter_open`, `players_filter_hide_guests`, `players_filter_rank_from`, `players_filter_rank_to`
+  - Default values: open=false, hide_guests=false, rank_from="BC", rank_to="9p"
+
+### Fixed
+- **Player dialog toggle flags resetting after refresh**
+  - Fixed local player toggle flags (Looking, Open, Quiet, Shout) resetting to OFF/FALSE after players list refresh
+  - Root cause: Players list refresh doesn't update dialog stats, stat field becomes stale
+  - Solution: Auto-request fresh stats for local player if their dialog is open after player list refresh
+  - Added parseToggleStatesFromStat() function to extract flags from IGS stat field
+  - IGS stat field flags: '!' = Looking, 'X' = Not Open, 'Q' = Quiet, 'S' = Shout
+  - parseToggleStatesFromStat() called in constructor before setupUI()
+  - parseToggleStatesFromStat() called in updateStatsData() before rebuilding UI
+  - Auto-stats request triggered at end of players list load if local dialog open
+  - Added getLocalUsername() method to FixedPlayersWindow
+  - Location: xgospel2_fixed.cpp:131-147, 530, 1573-1576, 4221-4235
+  - Result: Toggle button states now refresh automatically and stay correct
+
+- **CRITICAL: Filter conflict causing lost state after refresh**
+  - Fixed three filters (open, rank range, hide guests) overriding each other
+  - Root cause: Sequential filter application caused later filters to unconditionally override earlier ones
+  - Old behavior: `applyRankRangeFilter()` would show all players in rank range, ignoring open filter
+  - Problem: Filters were fighting each other instead of cooperating
+  - New behavior: Unified `applyAllFilters()` function combines all conditions in single pass
+  - A player is now hidden if ANY condition is true:
+    - Open filter is on AND (player is playing OR has X mark)
+    - Guest filter is on AND player is a guest
+    - Player's rank is outside selected range
+  - Grey formatting for X-marked players now applied in same pass as visibility logic
+  - Result: All filters work together dynamically without conflicts or requiring refresh
+
+### Changed
+- **Filter application strategy**
+  - Replaced three separate filter functions with unified `applyAllFilters()`
+  - All checkbox/combo signals now call unified filter function
+  - Filter preferences saved to settings when changed (using lambda captures)
+  - Preferences loaded in constructor after setupUI()
+  - Eliminated race conditions between filter types
+
+### Technical Details
+- xgospel2_fixed.cpp:723-738: Load filter preferences from settings in constructor
+- xgospel2_fixed.cpp:871-873: Modified open filter checkbox to save preference on toggle
+- xgospel2_fixed.cpp:876-879: Modified hide guests checkbox to save preference on toggle
+- xgospel2_fixed.cpp:901-910: Modified rank combos to save preferences on change
+- xgospel2_fixed.cpp:1225-1310: Unified `applyAllFilters()` function (replaces three separate functions)
+- settings.h:35-40: Using `writeEntry()`, `readEntry()`, `writeBoolEntry()`, `readBoolEntry()`
+
+### Notes
+- Version updated from v50_R18 to v50_R19
+- All features from v50_R18 are included in this release
+- Filter preferences persist in `~/.config/xgospel2/xgospel2.conf`
+- Setting checkbox states during preference load triggers save (harmless redundancy)
+
+---
+
 ## [v50_R18-GITHUB-PREP] - 2026-04-18
 
 ### Changed

@@ -46,8 +46,8 @@
 #include "preferences_dialog.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v50_R18-GITHUB-PREP";
-const QString XGOSPEL_BUILD_DATE = "2026-04-18";
+const QString XGOSPEL_VERSION = "v50_R19-FILTER-PREFERENCES";
+const QString XGOSPEL_BUILD_DATE = "2026-04-22";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -125,7 +125,27 @@ public:
  toggle_looking(nullptr), toggle_open(nullptr), toggle_quiet(nullptr), toggle_shout(nullptr) {
 
  setWindowTitle(QString("Player: %1 [%2]").arg(name, rank));
+ parseToggleStatesFromStat();  // Parse toggle states before setupUI
  setupUI();
+ }
+
+ // Parse toggle states from stat field (IGS flags)
+ void parseToggleStatesFromStat() {
+ // IGS stat field flags:
+ // '!' = Looking for game / Not accepting matches
+ // 'X' = Not open for matches
+ // 'Q' = Quiet mode
+ // 'S' = Shout mode
+ state_looking = stat.contains('!');
+ state_open = !stat.contains('X');  // Open is the inverse of X flag
+ state_quiet = stat.contains('Q');
+ state_shout = stat.contains('S');
+
+ qDebug() << "[TOGGLE-PARSE] Parsed stat field:" << stat
+          << "-> Looking:" << state_looking
+          << "Open:" << state_open
+          << "Quiet:" << state_quiet
+          << "Shout:" << state_shout;
  }
 
  void setupUI() {
@@ -506,6 +526,8 @@ public:
  delete oldLayout;
  }
 
+ // Re-parse toggle states from stat field before rebuilding UI
+ parseToggleStatesFromStat();
  setupUI();
 
  qDebug() << "[STATS-UPDATE] Rebuilt dialog - Rank:" << player_rank << "Country:" << country << "Last log:" << last_log
@@ -722,6 +744,22 @@ public:
  newrating_enabled = false;
  setupUI();
 
+ // Restore filter preferences from settings
+ bool saved_open_filter = settings->readBoolEntry("players_filter_open", false);
+ bool saved_hide_guests = settings->readBoolEntry("players_filter_hide_guests", false);
+ QString saved_rank_from = settings->readEntry("players_filter_rank_from", "BC");
+ QString saved_rank_to = settings->readEntry("players_filter_rank_to", "9p");
+
+ qDebug() << "[PLAYERS] Loading filter preferences - open:" << saved_open_filter
+          << "hide_guests:" << saved_hide_guests
+          << "rank:" << saved_rank_from << "to" << saved_rank_to;
+
+ // Apply saved filter states (will trigger preference saving again, but that's harmless)
+ open_filter_checkbox->setChecked(saved_open_filter);
+ hide_guests_checkbox->setChecked(saved_hide_guests);
+ from_rank_combo->setCurrentText(saved_rank_from);
+ to_rank_combo->setCurrentText(saved_rank_to);
+
  // Restore window geometry from settings (xgospel1 .Xdefaults style)
  QRect savedGeometry = settings->loadWindowGeometry("players", QRect(200, 100, 900, 600));
  qDebug() << "[PLAYERS] Loading geometry:" << savedGeometry;
@@ -854,10 +892,8 @@ public:
  this, [this](int logicalIndex, Qt::SortOrder order) {
  Q_UNUSED(logicalIndex);
  Q_UNUSED(order);
- // Reapply both filters after sorting
- this->reapplyOpenFilter();
- this->reapplyRankRangeFilter();
-			this->reapplyHideGuestsFilter();
+ // Reapply all filters after sorting (unified to avoid conflicts)
+ this->applyAllFilters();
  });
 
  setupHeaders();
@@ -869,13 +905,19 @@ public:
 
  // "Open" filter checkbox (q5Go style)
  open_filter_checkbox = new QCheckBox("open");
- open_filter_checkbox->setChecked(false);  // Unchecked by default shows all players
- connect(open_filter_checkbox, &QCheckBox::toggled, this, &FixedPlayersWindow::applyOpenFilter);
+ open_filter_checkbox->setChecked(false);  // Will be overridden by saved preference
+ connect(open_filter_checkbox, &QCheckBox::toggled, this, [this](bool checked) {
+ settings->writeBoolEntry("players_filter_open", checked);
+ this->applyAllFilters();
+ });
 
 		// Hide Guests filter checkbox
 		hide_guests_checkbox = new QCheckBox("Hide Guests");
-		hide_guests_checkbox->setChecked(false);
-		connect(hide_guests_checkbox, &QCheckBox::toggled, this, &FixedPlayersWindow::applyHideGuestsFilter);
+		hide_guests_checkbox->setChecked(false);  // Will be overridden by saved preference
+		connect(hide_guests_checkbox, &QCheckBox::toggled, this, [this](bool checked) {
+			settings->writeBoolEntry("players_filter_hide_guests", checked);
+			this->applyAllFilters();
+		});
 
  // Bug 35: Rank range filter (q5Go style)
  from_rank_combo = new QComboBox();
@@ -898,9 +940,15 @@ public:
  to_rank_combo->setCurrentText("9p");
 
  connect(from_rank_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-         this, &FixedPlayersWindow::applyRankRangeFilter);
+         this, [this]() {
+         settings->writeEntry("players_filter_rank_from", from_rank_combo->currentText());
+         this->applyAllFilters();
+         });
  connect(to_rank_combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-         this, &FixedPlayersWindow::applyRankRangeFilter);
+         this, [this]() {
+         settings->writeEntry("players_filter_rank_to", to_rank_combo->currentText());
+         this->applyAllFilters();
+         });
 
  QHBoxLayout *filter_layout = new QHBoxLayout();
  filter_layout->addWidget(new QLabel("From:"));
@@ -1129,6 +1177,8 @@ public:
  players_table->sortByColumn(2, Qt::AscendingOrder);
  // Force the proxy model to re-sort immediately
  proxy_model->sort(2, Qt::AscendingOrder);
+ // Process events to ensure proxy model completes sorting before filters are applied
+ QCoreApplication::processEvents();
  qDebug() << "[PLAYERS] Sorted by rank column 2 in ascending order (strongest first)";
  }
 
@@ -1136,7 +1186,12 @@ public:
  // Reapply the open filter after refresh to restore formatting
  // This is needed because clearPlayers() wipes all formatting
  if (open_filter_checkbox) {
- applyOpenFilter(open_filter_checkbox->isChecked());
+ bool filter_state = open_filter_checkbox->isChecked();
+ qDebug() << "[REAPPLY-FILTER] reapplyOpenFilter() called - checkbox state:" << filter_state;
+ qDebug() << "[REAPPLY-FILTER] Players model row count:" << (players_model ? players_model->rowCount() : -1);
+ qDebug() << "[REAPPLY-FILTER] Sorting enabled:" << (players_table ? players_table->isSortingEnabled() : false);
+ applyOpenFilter(filter_state);
+ qDebug() << "[REAPPLY-FILTER] applyOpenFilter() completed";
  }
  }
 
@@ -1217,6 +1272,87 @@ public:
 
 	void reapplyHideGuestsFilter() {
 		if (hide_guests_checkbox) applyHideGuestsFilter();
+	}
+
+	void applyAllFilters() {
+		// Apply ALL three filters in a single pass to avoid conflicts
+		if (!players_model || !proxy_model) return;
+		if (!players_table->isSortingEnabled()) return;
+
+		bool open_checked = open_filter_checkbox ? open_filter_checkbox->isChecked() : false;
+		bool hide_guests = hide_guests_checkbox ? hide_guests_checkbox->isChecked() : false;
+		QString from_rank = from_rank_combo ? from_rank_combo->currentText() : "BC";
+		QString to_rank = to_rank_combo ? to_rank_combo->currentText() : "9p";
+
+		int from_value = getRankNumericValue(from_rank);
+		int to_value = getRankNumericValue(to_rank);
+		if (from_value < to_value) qSwap(from_value, to_value);
+
+		qDebug() << "[ALL-FILTERS] Applying unified filter - open:" << open_checked << "hide_guests:" << hide_guests << "rank:" << from_rank << "to" << to_rank;
+
+		int visible = 0, hidden = 0;
+
+		for (int row = 0; row < players_model->rowCount(); ++row) {
+			QStandardItem *stat_item = players_model->item(row, 0);
+			QStandardItem *name_item = players_model->item(row, 1);
+			QStandardItem *rank_item = players_model->item(row, 2);
+			QStandardItem *pl_item = players_model->item(row, 3);
+
+			if (!stat_item || !name_item || !rank_item || !pl_item) continue;
+
+			QString name = name_item->text();
+			QString rank = rank_item->text();
+			QString pl_value = pl_item->text();
+			QString stat_value = stat_item->text();
+
+			bool is_playing = !pl_value.contains('-');
+			bool has_x_mark = stat_value.contains('X');
+			bool is_guest = name.startsWith("guest", Qt::CaseInsensitive);
+			int rank_value = getRankNumericValue(rank);
+			bool in_rank_range = (rank_value <= from_value && rank_value >= to_value);
+
+			// Combine all filter conditions
+			bool should_hide = false;
+
+			// Open filter: hide if playing OR has X mark
+			if (open_checked && (is_playing || has_x_mark)) {
+				should_hide = true;
+			}
+
+			// Guest filter: hide if guest
+			if (hide_guests && is_guest) {
+				should_hide = true;
+			}
+
+			// Rank filter: hide if outside range
+			if (!in_rank_range) {
+				should_hide = true;
+			}
+
+			QModelIndex source_index = players_model->index(row, 0);
+			QModelIndex proxy_index = proxy_model->mapFromSource(source_index);
+
+			if (proxy_index.isValid()) {
+				players_table->setRowHidden(proxy_index.row(), proxy_index.parent(), should_hide);
+				if (should_hide) hidden++; else visible++;
+
+				// Apply grey formatting to X-marked players that are visible
+				if (has_x_mark && !should_hide) {
+					for (int col = 0; col < players_model->columnCount(); ++col) {
+						QStandardItem *item = players_model->item(row, col);
+						if (item) item->setForeground(QBrush(QColor(170, 170, 170)));
+					}
+				} else if (!has_x_mark && !should_hide) {
+					// Restore normal color for non-X players
+					for (int col = 0; col < players_model->columnCount(); ++col) {
+						QStandardItem *item = players_model->item(row, col);
+						if (item) item->setForeground(QBrush(QColor(255, 255, 255)));
+					}
+				}
+			}
+		}
+
+		qDebug() << "[ALL-FILTERS] Complete - Visible:" << visible << "Hidden:" << hidden << "Total:" << players_model->rowCount();
 	}
 
 protected:
@@ -1435,6 +1571,11 @@ public:
  return open_dialogs;
  }
 
+ // Get the local player's username
+ QString getLocalUsername() const {
+ return local_username;
+ }
+
  // Open a player stats dialog for a given player name
  // Called when a tell is received and dialog doesn't already exist
  void openStatsDialogForPlayer(const QString &playerName) {
@@ -1600,10 +1741,18 @@ public:
  // 1. Have 'X' in their info/stat field (declining matches)
  // 2. Are currently playing (play_str does NOT contain '-')
 
- if (!players_model || !proxy_model) return;
+ qDebug() << "[APPLY-FILTER] applyOpenFilter() START - checked:" << checked;
+
+ if (!players_model || !proxy_model) {
+ qDebug() << "[APPLY-FILTER] ERROR: players_model or proxy_model is NULL!";
+ return;
+ }
+
+ qDebug() << "[APPLY-FILTER] Model row count:" << players_model->rowCount();
 
  int visible_count = 0;
  int hidden_count = 0;
+ int invalid_proxy_count = 0;
 
  for (int row = 0; row < players_model->rowCount(); ++row) {
  // Column indices: 0=Stat, 1=Name, 2=Rk, 3=pl, 4=ob, 5=Idle, 6=X
@@ -1625,6 +1774,13 @@ public:
  // Get the source model index and map to proxy
  QModelIndex sourceIndex = players_model->index(row, 0);
  QModelIndex proxyIndex = proxy_model->mapFromSource(sourceIndex);
+
+ // Check if proxy index is valid (may be invalid during/after sorting)
+ if (!proxyIndex.isValid()) {
+ qDebug() << "[APPLY-FILTER] WARNING: Invalid proxy index for row" << row << "player:" << (name_item ? name_item->text() : "?") << "- skipping";
+ invalid_proxy_count++;
+ continue;
+ }
 
  if (checked) {
  // "open" is checked: hide players who are playing or have X mark (q5Go behavior)
@@ -1672,7 +1828,7 @@ public:
  }
  }
 
- qDebug() << "[OPEN FILTER] checked=" << checked << "Visible:" << visible_count << "Hidden:" << hidden_count << "Total:" << players_model->rowCount();
+ qDebug() << "[APPLY-FILTER] COMPLETE - checked=" << checked << "Visible:" << visible_count << "Hidden:" << hidden_count << "Invalid proxy:" << invalid_proxy_count << "Total:" << players_model->rowCount();
  }
 
  void applyRankRangeFilter() {
@@ -2214,9 +2370,7 @@ public:
 			// Observing data comes from WHO/userlist command, not from games list
 		}
 		qDebug() << "[GAMES] Player status sync complete for" << games_model->rowCount() << "games";
-		players_window_ref->reapplyOpenFilter();
-		players_window_ref->reapplyRankRangeFilter();
-		players_window_ref->reapplyHideGuestsFilter();
+		players_window_ref->applyAllFilters();
 	}
 
 	void updateGamesCount() {
@@ -4069,9 +4223,20 @@ private slots:
  games_window->syncAllPlayerStatuses();
  }
 
- players_window->reapplyOpenFilter();  // Reapply open filter to restore "X" player formatting
- players_window->reapplyRankRangeFilter();  // Bug 35: Reapply rank range filter
-		players_window->reapplyHideGuestsFilter();
+ players_window->applyAllFilters();  // Apply all filters together to avoid conflicts
+
+ // If local player dialog is open, refresh their stats to update toggle flags
+ if (players_window && !players_window->getLocalUsername().isEmpty()) {
+ QString local_user = players_window->getLocalUsername();
+ for (PlayerStatsDialog *dialog : players_window->getOpenDialogs()) {
+ if (dialog->getPlayerName().compare(local_user, Qt::CaseInsensitive) == 0) {
+ qDebug() << "[REFRESH] Local player dialog is open, requesting fresh stats for" << local_user;
+ sendCommandString(QString("stats %1").arg(local_user));
+ break;
+ }
+ }
+ }
+
  if (!this->suppress_server_console) output_console->append(QString(">>> COMPLETED: Parsed %1 total players from IGS").arg(player_count));
  }
  }
