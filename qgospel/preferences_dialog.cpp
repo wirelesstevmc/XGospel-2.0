@@ -165,6 +165,31 @@ void PreferencesDialog::setupUI() {
     games_group->setLayout(games_form);
     app_tab_layout->addWidget(games_group);
 
+    // ---- Scoring group ----
+    QGroupBox *scoring_group = new QGroupBox("Scoring");
+    QFormLayout *scoring_form = new QFormLayout();
+
+    m_scoring_method_combo = new QComboBox();
+    m_scoring_method_combo->addItem("Simple  (flood-fill, fast)", "simple");
+    m_scoring_method_combo->addItem("Complex  (false-eye + seki detection)", "complex");
+
+    QString cur_method = settings->getScoringMethod();
+    int method_idx = m_scoring_method_combo->findData(cur_method);
+    if (method_idx >= 0) m_scoring_method_combo->setCurrentIndex(method_idx);
+
+    scoring_form->addRow("Score estimation method:", m_scoring_method_combo);
+
+    QLabel *scoring_help = new QLabel(
+        "Simple: fast flood-fill, accurate for most positions.  "
+        "Complex: adds false-eye detection and seki exclusion; marks disputed points with a grey square.  "
+        "Both methods can be compared by switching and re-scoring the same position.");
+    scoring_help->setWordWrap(true);
+    scoring_help->setStyleSheet("color: gray; font-size: 9pt;");
+    scoring_form->addRow("", scoring_help);
+
+    scoring_group->setLayout(scoring_form);
+    app_tab_layout->addWidget(scoring_group);
+
     app_tab_layout->addStretch();
     m_tab_widget->addTab(app_settings_tab, "Application Settings");
 
@@ -397,6 +422,7 @@ void PreferencesDialog::onApply() {
     settings->setGamesWindowRefreshInterval(m_games_refresh_spin->value());
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
+    settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
 
     // Save to settings
     settings->setHosts(m_hosts);
@@ -423,6 +449,7 @@ void PreferencesDialog::onOk() {
     settings->setGamesWindowRefreshInterval(m_games_refresh_spin->value());
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
+    settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
 
     // Save and close
     settings->setHosts(m_hosts);

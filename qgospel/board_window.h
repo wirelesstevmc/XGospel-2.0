@@ -18,6 +18,7 @@
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QScrollArea>
 
 // Simple Go board representation (shared with game_tree.h)
 // Define enum BEFORE including game_tree.h
@@ -52,6 +53,31 @@ struct GameMove {
     QDateTime received_time;
 };
 
+// Horizontal game tree navigation strip (linear games only for now)
+class GameTreeStrip : public QWidget {
+    Q_OBJECT
+
+    int m_node_size = 24;       // Pixel width/height of each node icon
+    int m_active_index = 0;       // Currently highlighted move index
+    QList<StoneColor> m_moves;    // Color sequence (EMPTY = root/setup node)
+    QList<bool> m_edited;         // Whether each node was user-edited
+
+public:
+    GameTreeStrip(QWidget *parent = nullptr);
+
+    void setMoves(const QList<StoneColor> &moves, int active_index,
+                  const QList<bool> &edited = QList<bool>());
+    void setActiveIndex(int index);
+    QSize sizeHint() const override;
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+
+signals:
+    void nodeClicked(int index);
+};
+
 class GoBoardWidget : public QFrame {
     Q_OBJECT
 
@@ -61,13 +87,15 @@ private:
     int margin;
     int cell_size;
     int stone_size;  // Actual generated stone diameter (96% of cell_size)
-    int last_move_x, last_move_y;  // Highlight last move
+    int last_move_x, last_move_y;        // Last original game move (red marker)
+    int last_edit_x, last_edit_y;        // Last user-edited stone (blue marker)
     bool show_coordinates;
 
     // Scoring mode visualization
     bool scoring_mode_enabled;
     QMap<QPair<int, int>, StoneColor> territory_map;  // Empty points and their territory owner
     QSet<QPair<int, int>> dead_stone_positions;
+    QSet<QPair<int, int>> disputed_positions;          // Seki / false-eye points (complex scoring)
 
     // Board texture (xgospel 1.X style)
     QPixmap board_texture;
@@ -79,6 +107,7 @@ private:
     GameMode game_mode;
     int mouse_down_x, mouse_down_y;  // Anti-clicko support
     StoneColor next_player_color;  // Track which color to place next in edit mode
+    int hover_x, hover_y;          // Current hover position (-1 when outside board)
 
 public:
     GoBoardWidget(QWidget *parent = nullptr);
@@ -89,6 +118,10 @@ public:
     StoneColor getStoneAt(int x, int y) const;
     void clearBoard();
     void setLastMove(int x, int y);
+    void setLastEditMove(int x, int y);  // Blue marker for user-edited stones
+    void clearEditMarker() { last_edit_x = last_edit_y = -1; update(); }
+    int getLastEditX() const { return last_edit_x; }
+    int getLastEditY() const { return last_edit_y; }
     void setShowCoordinates(bool show) { show_coordinates = show; update(); }
     StoneColor getBoardState(int x, int y) const;
     
@@ -96,9 +129,10 @@ public:
     void setScoringMode(bool enabled) { scoring_mode_enabled = enabled; update(); }
     void setTerritoryMap(const QMap<QPair<int, int>, StoneColor> &map) { territory_map = map; update(); }
     void setDeadStones(const QSet<QPair<int, int>> &dead_stones);
+    void setDisputedPoints(const QSet<QPair<int, int>> &disputed) { disputed_positions = disputed; update(); }
 
     // Edit mode
-    void setGameMode(GameMode mode) { game_mode = mode; update(); }
+    void setGameMode(GameMode mode) { game_mode = mode; hover_x = hover_y = -1; if (mode != MODE_EDIT) { last_edit_x = last_edit_y = -1; } update(); }
     GameMode getGameMode() const { return game_mode; }
     void removeStoneAt(int x, int y);  // Remove stone during edit
     void setNextPlayerColor(StoneColor color) { next_player_color = color; }
@@ -108,6 +142,8 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
@@ -116,8 +152,10 @@ private:
     void drawStones(QPainter &painter);
     void drawCoordinates(QPainter &painter);
     void drawLastMoveMarker(QPainter &painter);
+    void drawHoverCursor(QPainter &painter);
     void drawTerritoryMarkers(QPainter &painter);
     void drawDeadStoneMarkers(QPainter &painter);
+    void drawDisputedMarkers(QPainter &painter);
     QPoint boardToScreen(int x, int y);
     QPoint screenToBoard(int px, int py);
 
@@ -146,6 +184,8 @@ private:
     QLabel *black_clock_label;        // Clock display (large font)
     QLabel *black_captures_label;     // Capture count
     QLabel *to_play_stone_icon;       // Dynamic stone indicator for "to play" (q5Go style)
+    QPixmap icon_black_pixmap;        // Cached 20px black stone icon
+    QPixmap icon_white_pixmap;        // Cached 20px white stone icon
 
     QPushButton *save_button;          // Save game to SGF
     QPushButton *edit_button;          // Edit/Analyze button (q5Go style)
@@ -188,6 +228,25 @@ private:
     QDateTime game_start_time;
     GameMode game_mode;  // Current game mode (normal/edit/score)
     bool is_edit_window;  // True if this is an edit/analysis window (child of observe window)
+    bool in_edit_position_mode;  // True when Edit Position (free placement) is active
+
+    // Game tree strip (edit window only)
+    GameTreeStrip *game_tree_strip;
+    QScrollArea  *game_tree_scroll;
+
+    // Edit window button panel (only used in edit windows)
+    QPushButton *update_button;
+    QPushButton *pass_button;
+    QPushButton *score_button;
+    QPushButton *edit_position_button;
+    QPushButton *cancel_edit_button;
+    QPushButton *append_button;
+    QPushButton *undo_edit_button;
+    struct EditSnapshot { GoBoard board; int edit_x, edit_y; };
+    QList<EditSnapshot> edit_undo_stack;  // Per-stone undo history within one edit-position session
+
+    // The parent BoardWindow this edit window was launched from (for Update)
+    BoardWindow *source_board_window;
 
     // Observation state for SGF accuracy
     // Consecutive pass tracking for counting phase detection
@@ -267,7 +326,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 public:
-    BoardWindow(QWidget *parent = nullptr, const QString &username = "");
+    BoardWindow(QWidget *parent = nullptr, const QString &username = "", bool edit_window = false);
     ~BoardWindow();
 
     void startObserving(int game_id, const QString &white, const QString &black,
@@ -386,7 +445,7 @@ private slots:
     void updateClockDisplay();
     void onBoardClicked(int x, int y);
     void makeMove(int x, int y);
-    
+
     // Move navigation slots
     void onFirstMoveClicked();
     void onPreviousMoveClicked();
@@ -394,8 +453,21 @@ private slots:
     void onLastMoveClicked();
     void onMoveSliderChanged(int value);
 
+    // Edit window button slots
+    void onUpdateClicked();
+    void onPassClicked();
+    void onScoreClicked();
+    void onEditPositionClicked();
+    void onCancelEditClicked();
+    void onAppendClicked();
+    void onUndoEditClicked();
+
 private:
     void setupUI();
+    void setupEditUI();   // SGF editor window layout (called instead of setupUI for edit windows)
+    void switchToEditPositionMode();   // Transform button panel: 4 buttons -> 5
+    void switchToViewMode();           // Restore button panel: 5 buttons -> 4
+    void updateGameTreeStrip();        // Rebuild game tree strip from current game_root
     void updateLabels();
     void updatePlayerInfoGroups();  // Update White/Black player info groups (q5Go style)
     void updateWindowTitle();

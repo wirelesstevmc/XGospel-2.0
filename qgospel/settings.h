@@ -70,6 +70,10 @@ public:
     bool getDebugScoring() const { return readBoolEntry("DEBUG_SCORING", false); }
     void setDebugScoring(bool value) { writeBoolEntry("DEBUG_SCORING", value); }
 
+    // Scoring method: "simple" (default) or "complex"
+    QString getScoringMethod() const { return readEntry("scoring_method", "simple"); }
+    void setScoringMethod(const QString &method) { writeEntry("scoring_method", method); }
+
     bool getDebugProtocol() const { return readBoolEntry("DEBUG_PROTOCOL", false); }
     void setDebugProtocol(bool value) { writeBoolEntry("DEBUG_PROTOCOL", value); }
 

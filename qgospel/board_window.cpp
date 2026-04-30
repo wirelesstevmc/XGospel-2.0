@@ -2,6 +2,7 @@
 #include "igs_move_parser.h"
 #include "sgf_parser.h"
 #include "settings.h"
+#include "score_engine.h"
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QFont>
@@ -27,10 +28,11 @@
 // GoBoardWidget Implementation
 GoBoardWidget::GoBoardWidget(QWidget *parent)
  : QFrame(parent), board_size(19), board_state(nullptr), margin(30),
- cell_size(25), stone_size(24), last_move_x(-1), last_move_y(-1), show_coordinates(true),
+ cell_size(25), stone_size(24), last_move_x(-1), last_move_y(-1), last_edit_x(-1), last_edit_y(-1), show_coordinates(true),
  scoring_mode_enabled(false), game_mode(MODE_NORMAL), mouse_down_x(-1), mouse_down_y(-1),
- next_player_color(BLACK_STONE)
+ next_player_color(BLACK_STONE), hover_x(-1), hover_y(-1)
 {
+ setMouseTracking(true);
  setFrameStyle(QFrame::Sunken | QFrame::Panel);
  setLineWidth(2);
  setMinimumSize(500, 500);
@@ -125,6 +127,12 @@ void GoBoardWidget::setLastMove(int x, int y) {
  update();
 }
 
+void GoBoardWidget::setLastEditMove(int x, int y) {
+ last_edit_x = x;
+ last_edit_y = y;
+ update();
+}
+
 StoneColor GoBoardWidget::getBoardState(int x, int y) const {
  if (x >= 0 && x < board_size && y >= 0 && y < board_size) {
  return static_cast<StoneColor>(board_state[x][y]);
@@ -173,11 +181,13 @@ void GoBoardWidget::calculateSizes() {
  cell_size = min_dimension / (board_size - 1);
  cell_size = std::max(cell_size, 15); // Minimum cell size
 
- // Generate q5Go-style stone pixmaps at the correct size
- // Account for render() pic_radius=0.97 shrinkage
- stone_size = static_cast<int>(cell_size * 0.99 + 0.5);
- stone_renderer->generateStones(stone_size);
- qDebug() << "=== STONE SIZE DEBUG === cell_size:" << cell_size << "stone_size:" << stone_size << "ratio:" << (double)stone_size/cell_size;
+ // Generate q5Go-style stone pixmaps only when size changes
+ int new_stone_size = static_cast<int>(cell_size * 0.99 + 0.5);
+ if (new_stone_size != stone_size) {
+     stone_size = new_stone_size;
+     stone_renderer->generateStones(stone_size);
+     qDebug() << "=== STONE SIZE DEBUG === cell_size:" << cell_size << "stone_size:" << stone_size << "ratio:" << (double)stone_size/cell_size;
+ }
  }
 }
 
@@ -211,10 +221,12 @@ void GoBoardWidget::paintEvent(QPaintEvent *event) {
  drawCoordinates(painter);
  }
  drawLastMoveMarker(painter);
+ drawHoverCursor(painter);
 
  // Draw dead stone markers on top of stones
  if (scoring_mode_enabled) {
  drawDeadStoneMarkers(painter);
+ drawDisputedMarkers(painter);
  }
 }
 
@@ -352,11 +364,59 @@ void GoBoardWidget::drawCoordinates(QPainter &painter) {
 }
 
 void GoBoardWidget::drawLastMoveMarker(QPainter &painter) {
- if (last_move_x >= 0 && last_move_y >= 0) {
- QPoint center = boardToScreen(last_move_x, last_move_y);
- painter.setPen(QPen(Qt::red, 3));
  painter.setBrush(Qt::NoBrush);
- painter.drawEllipse(center, cell_size/3, cell_size/3);
+ // Red circle — last move from the original game record
+ if (last_move_x >= 0 && last_move_y >= 0) {
+     painter.setPen(QPen(Qt::red, 3));
+     painter.drawEllipse(boardToScreen(last_move_x, last_move_y), cell_size/3, cell_size/3);
+ }
+ // Blue circle — last stone placed during edit
+ if (last_edit_x >= 0 && last_edit_y >= 0) {
+     painter.setPen(QPen(QColor(0, 120, 255), 3));
+     painter.drawEllipse(boardToScreen(last_edit_x, last_edit_y), cell_size/3, cell_size/3);
+ }
+}
+
+void GoBoardWidget::drawHoverCursor(QPainter &painter) {
+ if (game_mode != MODE_EDIT) return;
+ if (hover_x < 0 || hover_y < 0 || hover_x >= board_size || hover_y >= board_size) return;
+ if (board_state[hover_x][hover_y] != EMPTY) return;
+
+ QPoint center = boardToScreen(hover_x, hover_y);
+ int radius = stone_size / 2;
+
+ painter.setRenderHint(QPainter::Antialiasing, true);
+ if (next_player_color == BLACK_STONE) {
+     painter.setBrush(QColor(0, 0, 0, 130));
+     painter.setPen(QPen(QColor(0, 0, 0, 180), 1));
+ } else {
+     painter.setBrush(QColor(255, 255, 255, 160));
+     painter.setPen(QPen(QColor(100, 100, 100, 180), 1));
+ }
+ painter.drawEllipse(center, radius, radius);
+}
+
+void GoBoardWidget::mouseMoveEvent(QMouseEvent *event) {
+ if (game_mode == MODE_EDIT) {
+     QPoint bp = screenToBoard(event->x(), event->y());
+     int bx = bp.x();
+     int by = bp.y();
+     // Clamp to valid board range — screenToBoard can return out-of-bounds values
+     // when the mouse is near or outside the board edge
+     if (bx < 0 || bx >= board_size || by < 0 || by >= board_size)
+         bx = by = -1;
+     if (bx != hover_x || by != hover_y) {
+         hover_x = bx;
+         hover_y = by;
+         update();
+     }
+ }
+}
+
+void GoBoardWidget::leaveEvent(QEvent *) {
+ if (hover_x != -1 || hover_y != -1) {
+     hover_x = hover_y = -1;
+     update();
  }
 }
 
@@ -426,6 +486,20 @@ void GoBoardWidget::drawDeadStoneMarkers(QPainter &painter) {
  }
 }
 
+void GoBoardWidget::drawDisputedMarkers(QPainter &painter) {
+ // Draw a small hollow grey square for seki / false-eye points (complex scoring only).
+ // Distinct from territory boxes (filled black/white) and dead stone boxes.
+ for (const auto &pos : disputed_positions) {
+     QPoint center = boardToScreen(pos.first, pos.second);
+     int box_size = cell_size / 3;  // Slightly smaller than territory markers
+     QRect disp_rect(center.x() - box_size/2, center.y() - box_size/2,
+                     box_size, box_size);
+     painter.setPen(QPen(QColor(220, 40, 40, 240), 2));  // Red outline
+     painter.setBrush(Qt::NoBrush);                       // Hollow
+     painter.drawRect(disp_rect);
+ }
+}
+
 QPoint GoBoardWidget::boardToScreen(int x, int y) {
  return QPoint(margin + x * cell_size, margin + y * cell_size);
 }
@@ -464,36 +538,17 @@ void GoBoardWidget::mouseReleaseEvent(QMouseEvent *event) {
  return;
  }
 
- // Handle edit mode - left click places next player's stone and alternates color
+ // Edit mode: emit boardClicked so BoardWindow can handle stone placement
+ // and update the game tree / last-move marker correctly.
+ // Right-click removal is handled here since it doesn't need game tree tracking.
  if (game_mode == MODE_EDIT) {
- StoneColor existing_stone = (StoneColor)board_state[x][y];
-
  if (event->button() == Qt::LeftButton) {
- // Left click: Place next player's stone, or remove if same color exists
- if (existing_stone == next_player_color) {
- // Remove stone of the same color (undo placement)
- removeStoneAt(x, y);
- } else if (existing_stone == EMPTY) {
- // Place stone and alternate color
- placeMoveAt(x, y, next_player_color);
- // Alternate to next color
- next_player_color = (next_player_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
- DEBUG_EDIT_MODE << "Edit mode: Placed stone, next player:"
- << (next_player_color == BLACK_STONE ? "Black" : "White");
- } else {
- // Different color stone exists - replace it with next player's color
- placeMoveAt(x, y, next_player_color);
- // Alternate to next color
- next_player_color = (next_player_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
- DEBUG_EDIT_MODE << "Edit mode: Replaced stone, next player:"
- << (next_player_color == BLACK_STONE ? "Black" : "White");
- }
+     emit boardClicked(x, y);
  } else if (event->button() == Qt::RightButton) {
- // Right click: Remove any stone (for corrections)
- if (existing_stone != EMPTY) {
- removeStoneAt(x, y);
- DEBUG_EDIT_MODE << "Edit mode: Removed stone with right click";
- }
+     StoneColor existing_stone = (StoneColor)board_state[x][y];
+     if (existing_stone != EMPTY) {
+         removeStoneAt(x, y);
+     }
  }
  return;
  }
@@ -509,11 +564,116 @@ void GoBoardWidget::resizeEvent(QResizeEvent *event) {
  calculateSizes();
 }
 
+// GameTreeStrip Implementation
+
+GameTreeStrip::GameTreeStrip(QWidget *parent)
+    : QWidget(parent)
+{
+    setMinimumHeight(m_node_size + 4);
+    setMaximumHeight(m_node_size + 4);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    setMouseTracking(false);
+}
+
+QSize GameTreeStrip::sizeHint() const
+{
+    return QSize(m_moves.size() * m_node_size, m_node_size + 4);
+}
+
+void GameTreeStrip::setMoves(const QList<StoneColor> &moves, int active_index,
+                              const QList<bool> &edited)
+{
+    m_moves = moves;
+    m_active_index = active_index;
+    m_edited = edited;
+    setMinimumWidth(m_moves.size() * m_node_size);
+    update();
+}
+
+void GameTreeStrip::setActiveIndex(int index)
+{
+    m_active_index = index;
+    update();
+}
+
+void GameTreeStrip::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    int sz = m_node_size;
+    int radius = sz / 2 - 2;
+
+    for (int i = 0; i < m_moves.size(); i++) {
+        int x = i * sz + sz / 2;
+        int y = height() / 2;
+        QPoint center(x, y);
+
+        // Highlight active node with red background
+        if (i == m_active_index) {
+            p.setBrush(QColor(200, 0, 0, 160));
+            p.setPen(Qt::NoPen);
+            p.drawRect(i * sz, 0, sz, height());
+        }
+
+        bool edited = (i < m_edited.size()) && m_edited[i];
+        QColor border_color = edited ? QColor(0, 120, 255) : Qt::black;
+        int border_width = edited ? 2 : 1;
+
+        StoneColor col = m_moves[i];
+        if (col == BLACK_STONE) {
+            QRadialGradient grad(center - QPoint(radius/3, radius/3), radius * 1.2);
+            grad.setColorAt(0, QColor(80, 80, 80));
+            grad.setColorAt(1, QColor(0, 0, 0));
+            p.setBrush(grad);
+            p.setPen(QPen(border_color, border_width));
+            p.drawEllipse(center, radius, radius);
+        } else if (col == WHITE_STONE) {
+            QRadialGradient grad(center - QPoint(radius/3, radius/3), radius * 1.2);
+            grad.setColorAt(0, QColor(255, 255, 255));
+            grad.setColorAt(1, QColor(180, 180, 180));
+            p.setBrush(grad);
+            p.setPen(QPen(edited ? border_color : Qt::darkGray, border_width));
+            p.drawEllipse(center, radius, radius);
+        } else {
+            // Root or setup node — draw a small diamond
+            p.setBrush(QColor(150, 150, 150));
+            p.setPen(QPen(Qt::darkGray, 1));
+            QPolygon diamond;
+            diamond << QPoint(x, y - radius)
+                    << QPoint(x + radius, y)
+                    << QPoint(x, y + radius)
+                    << QPoint(x - radius, y);
+            p.drawPolygon(diamond);
+        }
+
+        // Draw connecting line between nodes
+        if (i > 0) {
+            p.setPen(QPen(Qt::darkGray, 1));
+            p.drawLine((i - 1) * sz + sz / 2 + radius, y,
+                       i * sz + sz / 2 - radius, y);
+        }
+    }
+}
+
+void GameTreeStrip::mousePressEvent(QMouseEvent *event)
+{
+    int index = event->x() / m_node_size;
+    if (index >= 0 && index < m_moves.size())
+        emit nodeClicked(index);
+}
+
 // BoardWindow Implementation
-BoardWindow::BoardWindow(QWidget *parent, const QString &username)
+BoardWindow::BoardWindow(QWidget *parent, const QString &username, bool edit_window)
  : QMainWindow(parent), observed_game_id(-1), my_username(username), current_move(0),
  current_player(BLACK_STONE), is_observing(false), is_playing(false), is_scoring_mode(false), game_mode(MODE_NORMAL),
- is_edit_window(false), handicap(0), komi(0.5), game_type("Free"), byoyomi_time(0),
+ is_edit_window(edit_window), in_edit_position_mode(false),
+ game_tree_strip(nullptr), game_tree_scroll(nullptr),
+ update_button(nullptr), pass_button(nullptr), score_button(nullptr),
+ edit_position_button(nullptr), cancel_edit_button(nullptr), append_button(nullptr),
+ undo_edit_button(nullptr),
+ source_board_window(nullptr),
+ handicap(0), komi(0.5), game_type("Free"), byoyomi_time(0),
  white_captures(0), black_captures(0), white_byo_moves(0), black_byo_moves(0),
  white_time_seconds(0), black_time_seconds(0), game_finished(false),
  white_territory(0), black_territory(0), white_prisoners(0), black_prisoners(0), final_score(0.0),
@@ -526,7 +686,10 @@ BoardWindow::BoardWindow(QWidget *parent, const QString &username)
  qDebug() << "DEBUG: Window title set";
  setMinimumSize(800, 700);
  qDebug() << "DEBUG: Minimum size set";
- setupUI();
+ if (is_edit_window)
+     setupEditUI();
+ else
+     setupUI();
  qDebug() << "DEBUG: UI setup completed";
  
  // Initialize clock timer for server lag compensation
@@ -703,6 +866,8 @@ void BoardWindow::setupUI() {
  // Create stone renderer for player icons and "to play" indicator (20x20 pixels)
  StoneRenderer icon_renderer;
  icon_renderer.generateStones(20);
+ icon_black_pixmap = icon_renderer.getBlackStone();
+ icon_white_pixmap = icon_renderer.getWhiteStone(0);
 
  // LEFT SIDE: Player info panel
  QFrame *player_info_panel = new QFrame();
@@ -1050,6 +1215,356 @@ void BoardWindow::setupUI() {
  if (!savedInfoSizes.isEmpty()) {
      info_splitter->setSizes(savedInfoSizes);
  }
+}
+
+void BoardWindow::setupEditUI() {
+    QWidget *central = new QWidget;
+    setCentralWidget(central);
+
+    QHBoxLayout *main_layout = new QHBoxLayout(central);
+    main_layout->setSpacing(8);
+    main_layout->setMargin(8);
+
+    // --- Left side: board + navigation strip ---
+    QFrame *board_frame = new QFrame;
+    board_frame->setFrameStyle(QFrame::Raised | QFrame::Panel);
+    board_frame->setLineWidth(3);
+    board_frame->setStyleSheet(
+        "QFrame { border: 3px outset #888; background- }"
+    );
+
+    QVBoxLayout *board_layout = new QVBoxLayout(board_frame);
+    board_layout->setMargin(8);
+
+    board_widget = new GoBoardWidget;
+    board_layout->addWidget(board_widget);
+    connect(board_widget, &GoBoardWidget::boardClicked, this, &BoardWindow::onBoardClicked);
+
+    // Move navigation controls (same as main window)
+    QFrame *nav_frame = new QFrame;
+    nav_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+    nav_frame->setStyleSheet("QFrame { border: 1px inset #666; background- padding: 5px; }");
+
+    QHBoxLayout *nav_layout = new QHBoxLayout(nav_frame);
+    nav_layout->setSpacing(5);
+    nav_layout->setMargin(5);
+
+    first_move_button = new QPushButton("⏮");
+    first_move_button->setFixedSize(30, 25);
+    first_move_button->setToolTip("Go to first move");
+
+    prev_move_button = new QPushButton("⏪");
+    prev_move_button->setFixedSize(30, 25);
+    prev_move_button->setToolTip("Previous move");
+
+    next_move_button = new QPushButton("⏩");
+    next_move_button->setFixedSize(30, 25);
+    next_move_button->setToolTip("Next move");
+
+    last_move_button = new QPushButton("⏭");
+    last_move_button->setFixedSize(30, 25);
+    last_move_button->setToolTip("Go to last move");
+
+    move_slider = new QSlider(Qt::Horizontal);
+    move_slider->setMinimum(0);
+    move_slider->setMaximum(0);
+    move_slider->setValue(0);
+    move_slider->setTickPosition(QSlider::TicksBelow);
+    move_slider->setTickInterval(10);
+
+    move_number_label = new QLabel("Move: 0/0");
+    move_number_label->setMinimumWidth(80);
+    move_number_label->setAlignment(Qt::AlignCenter);
+
+    nav_layout->addWidget(first_move_button);
+    nav_layout->addWidget(prev_move_button);
+    nav_layout->addWidget(move_slider, 1);
+    nav_layout->addWidget(next_move_button);
+    nav_layout->addWidget(last_move_button);
+    nav_layout->addWidget(move_number_label);
+
+    board_layout->addWidget(nav_frame);
+
+    // Game tree strip (horizontal scrollable stone icon row)
+    game_tree_strip = new GameTreeStrip;
+    game_tree_scroll = new QScrollArea;
+    game_tree_scroll->setWidget(game_tree_strip);
+    game_tree_scroll->setWidgetResizable(false);
+    game_tree_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    game_tree_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    game_tree_scroll->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+    game_tree_scroll->setFixedHeight(game_tree_strip->minimumHeight() + 20); // strip + scrollbar
+    board_layout->addWidget(game_tree_scroll);
+
+    connect(game_tree_strip, &GameTreeStrip::nodeClicked, this, &BoardWindow::goToMove);
+
+    current_move_index = 0;
+
+    connect(first_move_button, &QPushButton::clicked, this, &BoardWindow::onFirstMoveClicked);
+    connect(prev_move_button,  &QPushButton::clicked, this, &BoardWindow::onPreviousMoveClicked);
+    connect(next_move_button,  &QPushButton::clicked, this, &BoardWindow::onNextMoveClicked);
+    connect(last_move_button,  &QPushButton::clicked, this, &BoardWindow::onLastMoveClicked);
+    connect(move_slider, &QSlider::valueChanged, this, &BoardWindow::onMoveSliderChanged);
+
+    // --- Right side: player info + edit buttons + comments ---
+    QFrame *right_frame = new QFrame;
+    right_frame->setFrameStyle(QFrame::NoFrame);
+    right_frame->setMinimumWidth(200);
+    right_frame->setMaximumWidth(280);
+
+    QVBoxLayout *right_layout = new QVBoxLayout(right_frame);
+    right_layout->setSpacing(6);
+    right_layout->setMargin(6);
+
+    // Player info (white)
+    white_stone_icon = new QLabel();
+    white_stone_icon->setPixmap(icon_white_pixmap);
+    white_stone_icon->setFixedSize(20, 20);
+
+    white_player_label = new QLabel("White");
+    white_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+
+    QHBoxLayout *white_row = new QHBoxLayout;
+    white_row->setSpacing(4);
+    white_row->addWidget(white_stone_icon);
+    white_row->addWidget(white_player_label);
+    white_row->addStretch();
+    right_layout->addLayout(white_row);
+
+    white_clock_label = new QLabel("--:--");
+    white_clock_label->setStyleSheet(
+        "font-size: 16px; font-weight: bold; font-family: monospace; padding: 3px;"
+        "background-color: #000000; color: #00FF00; border: 2px solid #808080;"
+    );
+    white_clock_label->setAlignment(Qt::AlignCenter);
+    right_layout->addWidget(white_clock_label);
+
+    white_captures_label = new QLabel("Captures: 0");
+    white_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+    white_captures_label->setAlignment(Qt::AlignCenter);
+    right_layout->addWidget(white_captures_label);
+
+    QFrame *sep = new QFrame;
+    sep->setFrameShape(QFrame::HLine);
+    sep->setStyleSheet("QFrame { margin: 2px 0px; }");
+    right_layout->addWidget(sep);
+
+    // Player info (black)
+    black_stone_icon = new QLabel();
+    black_stone_icon->setPixmap(icon_black_pixmap);
+    black_stone_icon->setFixedSize(20, 20);
+
+    black_player_label = new QLabel("Black");
+    black_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+
+    QHBoxLayout *black_row = new QHBoxLayout;
+    black_row->setSpacing(4);
+    black_row->addWidget(black_stone_icon);
+    black_row->addWidget(black_player_label);
+    black_row->addStretch();
+    right_layout->addLayout(black_row);
+
+    black_clock_label = new QLabel("--:--");
+    black_clock_label->setStyleSheet(
+        "font-size: 16px; font-weight: bold; font-family: monospace; padding: 3px;"
+        "background-color: #000000; color: #00FF00; border: 2px solid #808080;"
+    );
+    black_clock_label->setAlignment(Qt::AlignCenter);
+    right_layout->addWidget(black_clock_label);
+
+    black_captures_label = new QLabel("Captures: 0");
+    black_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+    black_captures_label->setAlignment(Qt::AlignCenter);
+    right_layout->addWidget(black_captures_label);
+
+    handicap_komi_label = new QLabel("Komi: 6.5");
+    handicap_komi_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 2px; border: none;");
+    handicap_komi_label->setAlignment(Qt::AlignCenter);
+    right_layout->addWidget(handicap_komi_label);
+
+    right_layout->addStretch();
+
+    // --- Edit button panel (view mode: 4 buttons) ---
+    // These are laid out individually so switchToEditPositionMode() can
+    // hide/show them without rebuilding the layout.
+
+    update_button = new QPushButton("Update");
+    update_button->setToolTip("Refresh board to current live game position");
+    update_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #5dade2,stop:1 #2980b9);"
+        " border: 2px outset #85c1e9; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #73c2ec,stop:1 #3498db); }"
+        "QPushButton:pressed { border: 2px inset #5dade2; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+    );
+    connect(update_button, &QPushButton::clicked, this, &BoardWindow::onUpdateClicked);
+    right_layout->addWidget(update_button);
+
+    pass_button = new QPushButton("Pass");
+    pass_button->setToolTip("Insert a pass move");
+    pass_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
+        " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
+        "QPushButton:pressed { border: 2px inset #52be80; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+    );
+    connect(pass_button, &QPushButton::clicked, this, &BoardWindow::onPassClicked);
+    right_layout->addWidget(pass_button);
+
+    score_button = new QPushButton("Score");
+    score_button->setToolTip("Estimate territory score (completed games)");
+    score_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #d68910);"
+        " border: 2px outset #f8c471; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f5b041,stop:1 #f39c12); }"
+        "QPushButton:pressed { border: 2px inset #f39c12; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+    );
+    score_button->setEnabled(true);
+    connect(score_button, &QPushButton::clicked, this, &BoardWindow::onScoreClicked);
+    right_layout->addWidget(score_button);
+
+    edit_position_button = new QPushButton("Edit Position");
+    edit_position_button->setToolTip("Enter free-placement edit mode");
+    edit_position_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #8e44ad,stop:1 #6c3483);"
+        " border: 2px outset #bb8fce; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #9b59b6,stop:1 #8e44ad); }"
+        "QPushButton:pressed { border: 2px inset #8e44ad; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+    );
+    connect(edit_position_button, &QPushButton::clicked, this, &BoardWindow::onEditPositionClicked);
+    right_layout->addWidget(edit_position_button);
+
+    // Edit position mode buttons (hidden initially)
+    cancel_edit_button = new QPushButton("Cancel Edit");
+    cancel_edit_button->setToolTip("Discard changes and return to view mode");
+    cancel_edit_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ef5350,stop:1 #c62828);"
+        " border: 2px outset #e57373; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f44336,stop:1 #d32f2f); }"
+        "QPushButton:pressed { border: 2px inset #ef5350; }"
+    );
+    cancel_edit_button->setVisible(false);
+    connect(cancel_edit_button, &QPushButton::clicked, this, &BoardWindow::onCancelEditClicked);
+    right_layout->addWidget(cancel_edit_button);
+
+    append_button = new QPushButton("Append");
+    append_button->setToolTip("Commit edited position as new SGF node after current move");
+    append_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
+        " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
+        "QPushButton:pressed { border: 2px inset #52be80; }"
+    );
+    append_button->setVisible(false);
+    connect(append_button, &QPushButton::clicked, this, &BoardWindow::onAppendClicked);
+    right_layout->addWidget(append_button);
+
+    undo_edit_button = new QPushButton("Undo");
+    undo_edit_button->setToolTip("Remove last placed stone and step back");
+    undo_edit_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #d68910);"
+        " border: 2px outset #f8c471; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f5b041,stop:1 #f39c12); }"
+        "QPushButton:pressed { border: 2px inset #f39c12; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+    );
+    undo_edit_button->setVisible(false);
+    connect(undo_edit_button, &QPushButton::clicked, this, &BoardWindow::onUndoEditClicked);
+    right_layout->addWidget(undo_edit_button);
+
+    // Close button
+    close_button = new QPushButton("Close Editor");
+    close_button->setStyleSheet(
+        "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ef5350,stop:1 #c62828);"
+        " border: 2px outset #e57373; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f44336,stop:1 #d32f2f); }"
+        "QPushButton:pressed { border: 2px inset #ef5350; }"
+    );
+    connect(close_button, &QPushButton::clicked, this, &BoardWindow::closeBoard);
+    right_layout->addWidget(close_button);
+
+    // Null out widgets that only exist in the main window layout
+    // (referenced by updateLabels / other shared helpers)
+    teaching_title_label = nullptr;
+    game_info_label = nullptr;
+    to_play_stone_icon = nullptr;
+    save_button = nullptr;
+    edit_button = nullptr;
+    resign_button = nullptr;
+    main_splitter = nullptr;
+    right_splitter = nullptr;
+    info_splitter = nullptr;
+    observers_list = nullptr;
+    comment_input = nullptr;
+    send_comment_button = nullptr;
+
+    // Comments panel (read-only in edit window — shows SGF node comments)
+    QFrame *comment_frame = new QFrame;
+    comment_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
+    comment_frame->setStyleSheet("QFrame { border: 2px inset #888; background- padding: 5px; }");
+
+    QVBoxLayout *comment_layout = new QVBoxLayout(comment_frame);
+    comment_layout->setMargin(6);
+
+    QLabel *comment_title = new QLabel("Comments");
+    comment_title->setAlignment(Qt::AlignCenter);
+    comment_title->setStyleSheet(
+        "QLabel { font-weight: bold; font-size: 11px; border: 1px solid #ccc; padding: 2px; }"
+    );
+    comment_layout->addWidget(comment_title);
+
+    comment_display = new QTextEdit;
+    comment_display->setReadOnly(true);
+    comment_display->setStyleSheet(
+        "QTextEdit { background- border: 1px solid #ccc; font-family: monospace; font-size: 10px; }"
+    );
+    comment_display->setPlaceholderText("SGF node comments appear here...");
+    comment_layout->addWidget(comment_display);
+
+    right_layout->addWidget(comment_frame);
+
+    // Assemble main layout
+    main_layout->addWidget(board_frame, 1);
+    main_layout->addWidget(right_frame, 0);
+
+    setWindowTitle("SGF Editor");
+
+    // Board is immediately editable — clicks append moves to the game tree
+    board_widget->setGameMode(MODE_EDIT);
+    in_edit_position_mode = false;
+    undo_edit_button->setVisible(true);
+    undo_edit_button->setEnabled(false);  // enabled once at a non-root node
+}
+
+void BoardWindow::switchToEditPositionMode() {
+    edit_undo_stack.clear();
+    update_button->setEnabled(false);
+    edit_position_button->setVisible(false);
+    cancel_edit_button->setVisible(true);
+    append_button->setVisible(true);
+    undo_edit_button->setVisible(true);
+    undo_edit_button->setEnabled(false);  // Nothing to undo yet
+
+    board_widget->setGameMode(MODE_EDIT);
+    in_edit_position_mode = true;
+}
+
+void BoardWindow::switchToViewMode() {
+    edit_undo_stack.clear();
+    update_button->setEnabled(true);
+    score_button->setEnabled(true);
+    edit_position_button->setVisible(true);
+    cancel_edit_button->setVisible(false);
+    append_button->setVisible(false);
+    // Undo stays visible in default edit mode — navigates back through tree
+    undo_edit_button->setVisible(true);
+    undo_edit_button->setEnabled(current_node && !current_node->isRoot());
+
+    board_widget->setGameMode(MODE_EDIT);
+    in_edit_position_mode = false;
 }
 
 void BoardWindow::startObserving(int game_id, const QString &white, const QString &black,
@@ -1713,14 +2228,17 @@ void BoardWindow::editGame() {
  return;
  }
 
- // Create a new board window for editing/analysis
- // Use the same parent as this window so it gets tracked properly
- BoardWindow* edit_board = new BoardWindow(parentWidget(), my_username);
+ // Create a dedicated SGF editor window
+ BoardWindow* edit_board = new BoardWindow(parentWidget(), my_username, true);
 
- // Mark this as an edit window and enable edit mode
- edit_board->is_edit_window = true;
- edit_board->game_mode = MODE_EDIT;
- edit_board->board_widget->setGameMode(MODE_EDIT);
+ // Wire back to this window so Update can re-sync from the live game
+ edit_board->source_board_window = this;
+
+ // Null out the pointer if the source window is closed before the edit window.
+ // Without this, source_board_window becomes a dangling pointer and crashes on Update.
+ connect(this, &QObject::destroyed, edit_board, [edit_board]() {
+     edit_board->source_board_window = nullptr;
+ });
 
  // Load the SGF into the edit window
  edit_board->loadSGF(root, white_player, black_player,
@@ -1728,20 +2246,17 @@ void BoardWindow::editGame() {
  komi, handicap,
  game_result, temp_filename);
 
- // Navigate to the most recent move (instead of starting at move 0)
+ // Navigate to the most recent move
  edit_board->goToLastMove();
 
- // Set the next player color based on current position
+ // Set the next player color based on whose turn it is
  edit_board->board_widget->setNextPlayerColor(edit_board->current_player);
 
- // Show the edit window
  edit_board->show();
  edit_board->raise();
  edit_board->activateWindow();
 
- qDebug() << "Edit window created with edit mode ENABLED";
-
- DEBUG_EDIT_MODE << "Opened Edit Game window for game #" << observed_game_id
+ DEBUG_EDIT_MODE << "Opened SGF editor for game #" << observed_game_id
  << white_player << "vs" << black_player;
 }
 
@@ -1794,13 +2309,11 @@ void BoardWindow::updateLabels() {
  if (is_observing) {
  game_info_label->setText(QString("Game #%1 | %2").arg(observed_game_id).arg(next_player));
 
- // Update dynamic stone icon to match current player
- StoneRenderer icon_renderer;
- icon_renderer.generateStones(20);
+ // Update dynamic stone icon to match current player (use cached pixmaps)
  if (current_player == WHITE_STONE) {
- to_play_stone_icon->setPixmap(icon_renderer.getWhiteStone(0));
+ to_play_stone_icon->setPixmap(icon_white_pixmap);
  } else {
- to_play_stone_icon->setPixmap(icon_renderer.getBlackStone());
+ to_play_stone_icon->setPixmap(icon_black_pixmap);
  }
  to_play_stone_icon->setVisible(true);
  } else {
@@ -1938,7 +2451,7 @@ void BoardWindow::updatePlayerInfoGroups() {
  return;
  }
 
- if (is_observing || is_playing) {
+ if (is_observing || is_playing || is_edit_window) {
  // Update White player info (name/rank only - stone icon shows color)
  white_player_label->setText(QString("%1 %2").arg(white_player, white_rank));
 
@@ -2864,15 +3377,16 @@ void BoardWindow::enterScoringMode() {
 
 void BoardWindow::exitScoringMode() {
  if (!is_scoring_mode) return;
- 
+
  is_scoring_mode = false;
  dead_stones.clear();
- 
+
  // Disable visual scoring mode on the board
  if (board_widget) {
  board_widget->setScoringMode(false);
+ board_widget->setDisputedPoints(QSet<QPair<int,int>>());
  }
- 
+
  DEBUG_SCORING << "Exited scoring mode for game" << observed_game_id;
  updateLabels();
 }
@@ -2907,9 +3421,60 @@ void BoardWindow::markStoneAsDead(int x, int y) {
  
  // Update board visualization
  board_widget->setDeadStones(dead_stones);
- 
- // Recalculate score
- calculateScore();
+
+ // In edit position mode use ScoreEngine + dead stone adjustment
+ if (in_edit_position_mode) {
+     // Rebuild board from widget, then remove dead stones so the flood fill
+     // treats those intersections as empty and fills through them correctly
+     GoBoard score_board;
+     for (int bx = 0; bx < 19; bx++)
+         for (int by = 0; by < 19; by++) {
+             StoneColor sc = board_widget->getStoneAt(bx, by);
+             if (sc != EMPTY && !dead_stones.contains(qMakePair(bx, by)))
+                 score_board.placeStone(bx, by, sc);
+         }
+
+     QMap<QPair<int,int>, StoneColor> territory_map;
+     QSet<QPair<int,int>> dummy_dead;
+     QSet<QPair<int,int>> disputed_map;
+     int b_score = 0, w_score = 0;
+     ScoringMethod method = (settings->getScoringMethod() == "complex")
+                            ? ScoringMethod::Complex : ScoringMethod::Simple;
+     ScoreEngine::estimate(score_board, territory_map, dummy_dead, disputed_map, b_score, w_score, method);
+
+     // Dead stone intersections count as opponent prisoners (already in territory
+     // via the flood fill since we removed them from the board above, but add
+     // them explicitly as prisoner counts too)
+     int dead_white = 0, dead_black = 0;
+     for (const auto &pos : dead_stones) {
+         StoneColor dc = board_widget->getStoneAt(pos.first, pos.second);
+         if (dc == WHITE_STONE) dead_white++;
+         else if (dc == BLACK_STONE) dead_black++;
+     }
+     // dead white stones = black prisoners, dead black stones = white prisoners
+     b_score += dead_white;
+     w_score += dead_black;
+
+     black_territory = b_score;
+     white_territory = w_score;
+     double w_total = w_score + white_captures + komi;
+     double b_total = b_score + black_captures;
+     double diff = b_total - w_total;
+     if (diff > 0)
+         game_result = QString("B+%1").arg(diff, 0, 'f', 1);
+     else if (diff < 0)
+         game_result = QString("W+%1").arg(-diff, 0, 'f', 1);
+     else
+         game_result = "Jigo";
+
+     current_node->setTerritoryMap(territory_map);
+     board_widget->setTerritoryMap(territory_map);
+     board_widget->setDisputedPoints(disputed_map);
+     updateLabels();
+ } else {
+     // Recalculate score using existing IGS-based path
+     calculateScore();
+ }
 }
 
 bool BoardWindow::hasStoneAt(int x, int y) const {
@@ -3352,6 +3917,242 @@ void BoardWindow::onMoveSliderChanged(int value) {
  goToMove(value);
 }
 
+// --- Edit window button slots ---
+
+void BoardWindow::onUpdateClicked() {
+    if (!source_board_window) return;
+    if (!source_board_window->game_root) return;
+
+    // Snapshot the source window's current game tree from its current node
+    GameNode *src = source_board_window->current_node;
+    if (!src) return;
+
+    // Walk to the root of the source tree and regenerate SGF, then reload here
+    QString sgf = source_board_window->generateSGF();
+    QString temp_file = QString("/tmp/xgospel2_update_%1.sgf").arg(source_board_window->observed_game_id);
+
+    QFile f(temp_file);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Update Error", "Could not write temporary SGF file.");
+        return;
+    }
+    QTextStream out(&f);
+    out << sgf;
+    f.close();
+
+    SGFParser parser;
+    QString error;
+    GameNode *new_root = parser.parseFile(temp_file, error);
+    if (!new_root) {
+        QMessageBox::warning(this, "Update Error", QString("Failed to parse updated SGF:\n%1").arg(error));
+        return;
+    }
+
+    current_node = nullptr;     // prevent dangling pointer during delete
+    delete game_root;
+    game_root = nullptr;        // prevent dangling pointer
+    game_root = new_root;
+    current_node = game_root;
+    current_move_index = 0;
+
+    goToLastMove();
+    updateMoveNavigation();
+}
+
+void BoardWindow::onPassClicked() {
+    // Insert a pass node after the current node
+    GameNode *pass_node = current_node->addMove(-1, -1, board_widget->getNextPlayerColor());
+    pass_node->setBoard(current_node->getBoard().copy());
+    pass_node->setEdited(true);
+    current_node = pass_node;
+    current_move_index = current_node->moveNumber();
+
+    // Alternate next player color
+    StoneColor next = (board_widget->getNextPlayerColor() == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+    board_widget->setNextPlayerColor(next);
+
+    updateMoveNavigation();
+}
+
+void BoardWindow::onScoreClicked() {
+    if (!current_node) return;
+
+    // In the edit window, white_captures/black_captures start at 0 because they
+    // are not copied from the source board on loadSGF.  Recompute them by walking
+    // the game tree from root to current_node and diffing consecutive board states.
+    // Stones of color C present in the parent but absent in the child were captured
+    // by the opponent of C.
+    if (is_edit_window) {
+        // Build the ancestor chain root→…→current_node
+        QList<GameNode*> path;
+        for (GameNode *n = current_node; n != nullptr; n = n->prevMove())
+            path.prepend(n);
+
+        int white_stones_taken = 0;  // white stones removed from board = black's prisoners
+        int black_stones_taken = 0;  // black stones removed from board = white's prisoners
+        for (int i = 1; i < path.size(); i++) {
+            const GoBoard &prev = path[i-1]->getBoard();
+            const GoBoard &curr = path[i]->getBoard();
+            for (int x = 0; x < 19; x++) {
+                for (int y = 0; y < 19; y++) {
+                    StoneColor was = prev.getStone(x, y);
+                    StoneColor now = curr.getStone(x, y);
+                    if (was == WHITE_STONE && now != WHITE_STONE) white_stones_taken++;
+                    if (was == BLACK_STONE && now != BLACK_STONE) black_stones_taken++;
+                }
+            }
+        }
+        // white_captures = prisoners held by white = black stones white captured
+        // black_captures = prisoners held by black = white stones black captured
+        white_captures = black_stones_taken;
+        black_captures = white_stones_taken;
+    }
+
+    // In edit position mode the widget holds the live edited board, not current_node
+    GoBoard score_board;
+    if (in_edit_position_mode) {
+        for (int x = 0; x < 19; x++)
+            for (int y = 0; y < 19; y++) {
+                StoneColor sc = board_widget->getStoneAt(x, y);
+                if (sc != EMPTY) score_board.placeStone(x, y, sc);
+            }
+    } else {
+        score_board = current_node->getBoard();
+    }
+
+    QMap<QPair<int,int>, StoneColor> territory_map;
+    QSet<QPair<int,int>> dead_set;
+    QSet<QPair<int,int>> disputed_set;
+    int b_score = 0, w_score = 0;
+
+    ScoringMethod method = (settings->getScoringMethod() == "complex")
+                           ? ScoringMethod::Complex : ScoringMethod::Simple;
+    ScoreEngine::estimate(score_board, territory_map, dead_set, disputed_set, b_score, w_score, method);
+
+    dead_stones      = dead_set;
+    black_territory  = b_score;
+    white_territory  = w_score;
+
+    // Compute final score with komi (white gets komi)
+    double w_total = w_score + komi;
+    double b_total = b_score;
+    double diff    = b_total - w_total;
+    if (diff > 0)
+        game_result = QString("B+%1").arg(diff, 0, 'f', 1);
+    else if (diff < 0)
+        game_result = QString("W+%1").arg(-diff, 0, 'f', 1);
+    else
+        game_result = "Jigo";
+
+    // Store territory on the node so displayNode() can restore it on navigation
+    current_node->setTerritoryMap(territory_map);
+
+    is_scoring_mode = true;
+    // Suspend edit placement so clicks toggle dead stones instead of placing stones
+    if (in_edit_position_mode)
+        board_widget->setGameMode(MODE_NORMAL);
+    board_widget->setScoringMode(true);
+    board_widget->setTerritoryMap(territory_map);
+    board_widget->setDeadStones(dead_set);
+    board_widget->setDisputedPoints(disputed_set);
+    updateLabels();
+}
+
+void BoardWindow::onEditPositionClicked() {
+    // Set next player color to the alternate of whoever played the current node
+    StoneColor last_color = current_node->getColor();
+    StoneColor next_color;
+    if (last_color == BLACK_STONE)
+        next_color = WHITE_STONE;
+    else if (last_color == WHITE_STONE)
+        next_color = BLACK_STONE;
+    else
+        next_color = BLACK_STONE; // Root/setup node — black plays first
+    board_widget->setNextPlayerColor(next_color);
+    switchToEditPositionMode();
+}
+
+void BoardWindow::onCancelEditClicked() {
+    // Discard any edits by re-displaying the current node's stored board state
+    board_widget->clearEditMarker();
+    displayNode(current_node);
+    switchToViewMode();
+}
+
+void BoardWindow::onAppendClicked() {
+    // Build a new GoBoard from whatever is currently drawn on the board widget
+    GoBoard new_board;
+    new_board.clear();
+    for (int x = 0; x < 19; x++)
+        for (int y = 0; y < 19; y++) {
+            StoneColor c = board_widget->getBoardState(x, y);
+            if (c != EMPTY)
+                new_board.placeStone(x, y, c);
+        }
+
+    // Append as a setup node (x=-1, y=-1 signals no single move — just a board state)
+    GameNode *new_node = current_node->addMove(-1, -1, EMPTY);
+    new_node->setBoard(new_board);
+    new_node->setEdited(true);
+    current_node = new_node;
+    current_move_index = current_node->moveNumber();
+
+    updateMoveNavigation();
+    switchToViewMode();
+}
+
+void BoardWindow::onUndoEditClicked() {
+    if (!in_edit_position_mode) {
+        // Default mode: undo = step back to parent node in the game tree
+        if (!current_node || current_node->isRoot()) return;
+        GameNode *parent = current_node->prevMove();
+        if (!parent) return;
+        current_node = parent;
+        current_move_index = current_node->moveNumber();
+        // Restore next-player color
+        StoneColor last = current_node->getColor();
+        StoneColor next = (last == BLACK_STONE) ? WHITE_STONE :
+                          (last == WHITE_STONE) ? BLACK_STONE : BLACK_STONE;
+        board_widget->setNextPlayerColor(next);
+        displayNode(current_node);
+        updateMoveNavigation();
+        updateGameTreeStrip();
+        undo_edit_button->setEnabled(!current_node->isRoot());
+        return;
+    }
+
+    // Free-placement mode: restore from snapshot stack
+    if (edit_undo_stack.isEmpty())
+        return;
+
+    EditSnapshot snap = edit_undo_stack.takeLast();
+
+    // Restore the board widget to the saved snapshot
+    board_widget->clearBoard();  // wipes last_move_x/y — restore below
+    for (int bx = 0; bx < 19; bx++)
+        for (int by = 0; by < 19; by++) {
+            StoneColor sc = snap.board.getStone(bx, by);
+            if (sc != EMPTY)
+                board_widget->placeMoveAt(bx, by, sc);
+        }
+
+    // Restore red circle (original game last move)
+    if (current_node->getX() >= 0 && current_node->getY() >= 0)
+        board_widget->setLastMove(current_node->getX(), current_node->getY());
+
+    // Restore blue circle to where it was before the undone stone
+    if (snap.edit_x >= 0 && snap.edit_y >= 0)
+        board_widget->setLastEditMove(snap.edit_x, snap.edit_y);
+    else
+        board_widget->clearEditMarker();
+
+    // Alternate the next-player color back
+    StoneColor cur = board_widget->getNextPlayerColor();
+    board_widget->setNextPlayerColor(cur == BLACK_STONE ? WHITE_STONE : BLACK_STONE);
+
+    undo_edit_button->setEnabled(!edit_undo_stack.isEmpty());
+}
+
 // q5Go-style tree navigation: Navigate to a specific move number
 void BoardWindow::goToMove(int move_number) {
  DEBUG_MOVE_PROCESSING << "🎯 goToMove: Called with move_number:" << move_number << "slider_update_in_progress:" << slider_update_in_progress;
@@ -3446,6 +4247,28 @@ void BoardWindow::updateMoveNavigation() {
  prev_move_button->setEnabled(current_move_index > 0);
  next_move_button->setEnabled(current_move_index < total_moves);
  last_move_button->setEnabled(current_move_index < total_moves);
+
+ // Update game tree strip if present (edit window only)
+ if (game_tree_strip)
+     updateGameTreeStrip();
+}
+
+void BoardWindow::updateGameTreeStrip() {
+ // Walk the active variation from root and collect move colors
+ // Edited nodes are flagged so the strip can show them differently
+ QList<StoneColor> moves;
+ QList<bool> edited_flags;
+ GameNode *node = game_root;
+ while (node) {
+     moves.append(node->getColor());
+     edited_flags.append(node->isEdited());
+     node = node->nextMove();
+ }
+ game_tree_strip->setMoves(moves, current_move_index, edited_flags);
+
+ // Scroll to keep the active node visible
+ int x = current_move_index * 24; // m_node_size
+ game_tree_scroll->ensureVisible(x, 0, 36, 0);
 }
 
 // Server scoring implementation
@@ -3617,15 +4440,110 @@ void BoardWindow::receiveScoreEnd() {
 // Board click handler - routes to appropriate action based on game mode
 void BoardWindow::onBoardClicked(int x, int y) {
  qDebug() << "Board clicked at" << x << "," << y << "- is_playing:" << is_playing << "is_scoring_mode:" << is_scoring_mode;
- 
+
  if (is_scoring_mode) {
- // In scoring mode, handle dead stone marking
  markStoneAsDead(x, y);
+ } else if (in_edit_position_mode) {
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) return;
+ StoneColor color = board_widget->getNextPlayerColor();
+ StoneColor existing = board_widget->getBoardState(x, y);
+ if (existing == color) {
+     // Same color — remove it as a correction, don't alternate
+     board_widget->removeStoneAt(x, y);
+     board_widget->setLastEditMove(-1, -1);
+ } else {
+     // Snapshot current board widget state into a GoBoard, apply the move
+     // with capture logic, then render the result back to the widget
+     GoBoard work;
+     work.clear();
+     for (int bx = 0; bx < 19; bx++)
+         for (int by = 0; by < 19; by++) {
+             StoneColor sc = board_widget->getBoardState(bx, by);
+             if (sc != EMPTY) work.placeStone(bx, by, sc);
+         }
+     // Save pre-move snapshot (board + current blue marker position) for per-stone undo
+     edit_undo_stack.append({work, board_widget->getLastEditX(), board_widget->getLastEditY()});
+     undo_edit_button->setEnabled(true);
+     work.placeStone(x, y, color);
+
+     // Remove opponent groups with no liberties
+     StoneColor opponent = (color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+     int dx[] = {-1, 1, 0, 0};
+     int dy[] = {0, 0, -1, 1};
+     for (int dir = 0; dir < 4; dir++) {
+         int nx = x + dx[dir], ny = y + dy[dir];
+         if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+             work.getStone(nx, ny) == opponent &&
+             countLiberties(work, nx, ny) == 0)
+             removeGroup(work, nx, ny);
+     }
+
+     // Render updated GoBoard back to widget
+     board_widget->clearBoard();  // clears last_move_x/y — restore it below
+     for (int bx = 0; bx < 19; bx++)
+         for (int by = 0; by < 19; by++) {
+             StoneColor sc = work.getStone(bx, by);
+             if (sc != EMPTY) board_widget->placeMoveAt(bx, by, sc);
+         }
+     // Restore red circle (clearBoard wiped it)
+     if (current_node->getX() >= 0 && current_node->getY() >= 0)
+         board_widget->setLastMove(current_node->getX(), current_node->getY());
+     board_widget->setLastEditMove(x, y);
+     StoneColor next = (color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+     board_widget->setNextPlayerColor(next);
+ }
+ } else if (is_edit_window && !in_edit_position_mode) {
+ // Default edit window behavior: append a single move to the game tree
+ if (x < 0 || x >= 19 || y < 0 || y >= 19) return;
+ if (board_widget->getStoneAt(x, y) != EMPTY) return;  // occupied
+
+ // Clear scoring overlay if active
+ if (is_scoring_mode) {
+     is_scoring_mode = false;
+     board_widget->setScoringMode(false);
+     board_widget->setTerritoryMap(QMap<QPair<int,int>, StoneColor>());
+     board_widget->setDeadStones(QSet<QPair<int,int>>());
+ }
+
+ StoneColor color = board_widget->getNextPlayerColor();
+
+ // Apply move with capture logic on a copy of the current board
+ GoBoard new_board = current_node->getBoard().copy();
+ new_board.placeStone(x, y, color);
+ StoneColor opponent = (color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+ int dx[] = {-1, 1, 0, 0};
+ int dy[] = {0, 0, -1, 1};
+ for (int dir = 0; dir < 4; dir++) {
+     int nx = x + dx[dir], ny = y + dy[dir];
+     if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+         new_board.getStone(nx, ny) == opponent &&
+         countLiberties(new_board, nx, ny) == 0)
+         removeGroup(new_board, nx, ny);
+ }
+
+ // Append as a new child node of current_node
+ GameNode *new_node = current_node->addMove(x, y, color);
+ new_node->setBoard(new_board);
+ new_node->setEdited(true);
+ current_node = new_node;
+ current_move_index = current_node->moveNumber();
+
+ // Render
+ board_widget->clearBoard();
+ for (int bx = 0; bx < 19; bx++)
+     for (int by = 0; by < 19; by++) {
+         StoneColor sc = new_board.getStone(bx, by);
+         if (sc != EMPTY) board_widget->placeMoveAt(bx, by, sc);
+     }
+ board_widget->setLastMove(x, y);
+ board_widget->setNextPlayerColor(opponent);
+
+ undo_edit_button->setEnabled(true);
+ updateMoveNavigation();
+ updateGameTreeStrip();
  } else if (is_playing) {
- // In playing mode, attempt to make a move
  makeMove(x, y);
  } else {
- // In observation mode, do nothing (or could show move preview)
  qDebug() << "Board click ignored - not playing or scoring";
  }
 }
@@ -3705,27 +4623,22 @@ void BoardWindow::displayNode(GameNode* node) {
  // Clear the board and rebuild from stored state
  board_widget->clearBoard();
 
- // CRITICAL FIX: Clear scoring mode visualizations when navigating away from final position
- // Territory markers and dead stones should only show on the final scored position
  int total_moves = getTotalMoves();
+
+ // Check if this node has territory markers (SGF TW/TB or user Score button)
+ if (node->hasTerritory()) {
+ board_widget->setTerritoryMap(node->getTerritory());
+ board_widget->setScoringMode(true);
+ } else {
  bool is_final_position = (node->moveNumber() == total_moves);
 
  if (!is_final_position) {
- // Clear territory markers when viewing historical positions
+ // Clear territory markers when viewing historical positions without scored data
  board_widget->setTerritoryMap(QMap<QPair<int, int>, StoneColor>());
  board_widget->setDeadStones(QSet<QPair<int, int>>());
  board_widget->setScoringMode(false);
- } else {
- // Check if this node has territory markers from SGF (TW/TB properties)
- if (node->hasTerritory()) {
- // SGF file territory markers - display automatically
- board_widget->setTerritoryMap(node->getTerritory());
- board_widget->setScoringMode(true);
- qDebug() << "Displaying SGF territory markers:" << node->getTerritory().size() << "points";
- }
+ } else if (!territory_ownership.isEmpty() && is_scoring_mode) {
  // Restore territory markers at final position if we have them from live observation
- else if (!territory_ownership.isEmpty() && is_scoring_mode) {
- // Rebuild territory map from stored ownership data
  QMap<QPair<int, int>, StoneColor> territory_map;
  for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
  int digit = it.value();
@@ -3753,13 +4666,15 @@ void BoardWindow::displayNode(GameNode* node) {
  }
  }
 
- // Mark the last move for this node
- if (node->getX() >= 0 && node->getY() >= 0) {
- board_widget->setLastMove(node->getX(), node->getY());
- } else {
- // Clear last move marker for pass moves (x=-1, y=-1)
- board_widget->setLastMove(-1, -1);
- }
+ // Red marker always tracks the node's move coordinate (original game)
+ // Blue marker is only set during active Edit Position mode via onBoardClicked
+ if (node->getX() >= 0 && node->getY() >= 0)
+     board_widget->setLastMove(node->getX(), node->getY());
+ else
+     board_widget->setLastMove(-1, -1);
+ // Clear blue marker when navigating — it only applies during live editing
+ if (!in_edit_position_mode)
+     board_widget->clearEditMarker();
 
  // Update the move number label
  move_number_label->setText(QString("Move: %1/%2")

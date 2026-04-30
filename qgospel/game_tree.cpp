@@ -66,6 +66,7 @@ GameNode::GameNode(GameNode* parent, int move_num)
       m_x(-1),
       m_y(-1),
       m_color(EMPTY_STONE),
+      m_edited(false),
       m_parent(parent),
       m_active_child(0)
 {

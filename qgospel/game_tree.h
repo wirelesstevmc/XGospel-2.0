@@ -64,6 +64,10 @@ public:
     bool hasTerritory() const { return !m_territory.isEmpty(); }
     const QMap<QPair<int,int>, StoneColor>& getTerritory() const { return m_territory; }
 
+    // Edited flag — true for nodes added by the user during analysis
+    bool isEdited() const { return m_edited; }
+    void setEdited(bool v) { m_edited = v; }
+
     // Tree building
     GameNode* addMove(int x, int y, StoneColor color);
     void makeActive();  // Mark this node's path as the active variation
@@ -81,6 +85,7 @@ private:
     QList<GameNode*> m_children;
     int m_active_child;                 // Which child is the active variation
 
+    bool m_edited;                        // True for user-added analysis nodes
     QString m_comment;                  // Optional comment for this move
     QMap<QPair<int,int>, StoneColor> m_territory;  // Territory markers (for final position)
 };

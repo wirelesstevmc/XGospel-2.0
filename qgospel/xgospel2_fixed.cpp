@@ -46,8 +46,8 @@
 #include "preferences_dialog.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v50_R19-FILTER-PREFERENCES";
-const QString XGOSPEL_BUILD_DATE = "2026-04-22";
+const QString XGOSPEL_VERSION = "v51_R1-COMPLEX-SCORING";
+const QString XGOSPEL_BUILD_DATE = "2026-04-30";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -2545,7 +2545,7 @@ public:
  // Komi
  settings_layout->addWidget(new QLabel("Komi:"), 1, 0);
  komi_spin = new QDoubleSpinBox();
- komi_spin->setRange(0.0, 9.5);
+ komi_spin->setRange(-9.5, 9.5);
  komi_spin->setSingleStep(0.5);
  komi_spin->setValue(0.5); // Default to 0.5 for IGS
  komi_spin->setDecimals(1);
@@ -3945,7 +3945,7 @@ private slots:
  int boards_delivered = 0;
  for (BoardWindow* board : board_windows) {
  boards_checked++;
- if (board->isPlaying()) {
+ if (board->isPlaying() && !board->isFinished()) {
  // Check if sender is one of the players in this game
  QString white = board->getWhitePlayer();
  QString black = board->getBlackPlayer();
@@ -4440,21 +4440,24 @@ private slots:
 
  // Determine correct game type and apply komi/handicap
  // Priority: 1) Command 7 (authoritative), 2) next_game_is_free flag, 3) Command 15
- if (game_komi_map.contains(game_id)) {
- // Command 7 data available - use authoritative type from game list
- double stored_komi = game_komi_map[game_id];
- QString stored_type = game_type_map.value(game_id, game_type);
- board->updateGameSetup(0, stored_komi, stored_type);
- board->updateGameDetails(stored_type, 0);
- qDebug() << "[GAME] KOMI APPLIED: Game" << game_id << "komi:" << stored_komi << "type:" << stored_type << "(from Command 7)";
- } else {
- // No Command 7 yet - use detected game type from match setup or Command 15
- QString detected_type = next_game_is_free ? "Free" : (game_type_map.contains(game_id) ? game_type_map[game_id] : game_type);
- board->updateGameSetup(0, 0.5, detected_type);
- board->updateGameDetails(detected_type, 0);
- qDebug() << "[GAME] DEFAULT SETUP: Game" << game_id << "komi: 0.5 type:" << detected_type << "(will update from Command 7)";
+ {
+ double stored_komi    = game_komi_map.value(game_id, -999.0);
+ int stored_handicap   = game_handicap_map.value(game_id, 0);
+ QString stored_type   = game_type_map.value(game_id, QString());
+ QString detected_type = next_game_is_free ? "Free" : (stored_type.isEmpty() ? game_type : stored_type);
 
- // Reset for next game
+ if (stored_komi < -998.0) {
+     // Command 7 not yet received — pick a sensible default:
+     // handicap games use 0.5, even games use 6.5
+     stored_komi = (stored_handicap > 0) ? 0.5 : 6.5;
+     qDebug() << "[GAME] DEFAULT SETUP: Game" << game_id << "komi:" << stored_komi
+              << "handicap:" << stored_handicap << "type:" << detected_type << "(will update from Command 7)";
+ } else {
+     qDebug() << "[GAME] KOMI APPLIED: Game" << game_id << "komi:" << stored_komi
+              << "handicap:" << stored_handicap << "type:" << detected_type << "(from Command 7)";
+ }
+ board->updateGameSetup(stored_handicap, stored_komi, detected_type);
+ board->updateGameDetails(detected_type, 0);
  next_game_is_free = false;
  }
  
@@ -4867,9 +4870,18 @@ private slots:
  .arg(handicap_val).arg(komi_val, 0, 'f', 1).arg(byoyomi_val).arg(game_type));
 
 	}
- // Update any board window (both observing AND playing) for this game with complete details
+ // Update any board window (both observing AND playing) for this game with complete details.
+ // Guard: skip finished boards and boards whose players don't match (IGS reuses game IDs).
  for (BoardWindow* board : board_windows) {
- if (board->getObservedGameId() == game_id) {
+ if (board->getObservedGameId() == game_id && !board->isFinished()) {
+ // Verify player names match so a reused game ID doesn't corrupt a stale open board.
+ bool players_match = (board->getWhitePlayer() == white || board->getWhitePlayer() == "?" ||
+                       board->getBlackPlayer() == black || board->getBlackPlayer() == "?");
+ if (!players_match) {
+ qDebug() << "*** KOMI GUARD: Skipping game" << game_id << "board update - players mismatch ("
+          << board->getWhitePlayer() << "vs" << white << ") - likely reused game ID";
+ continue;
+ }
  qDebug() << "*** DEBUG KOMI: Calling updateGameSetup with komi=" << komi_val << "for game" << game_id;
  board->updateGameSetup(handicap_val, komi_val, QString("Byoyomi: %1s").arg(byoyomi_val));
  qDebug() << ">>> [CMD7] UPDATING BOARD GAME TYPE: Game" << game_id << "setting type to" << game_type;
@@ -5397,6 +5409,45 @@ private slots:
  // output_console->append(QString("[INFO] DEBUG: All Command 9 messages: %1").arg(line));
  // }
  
+ // Parse IGS Command 21 - Game resume notification
+ // Format: 21 {Game <id>: <white> vs <black> @ Move <move_num>}
+ if (line.startsWith("21 ")) {
+ QRegExp resume_re("21\\s+\\{Game\\s+(\\d+):\\s+(\\S+)\\s+vs\\s+(\\S+)\\s+@\\s+Move\\s+(\\d+)\\}");
+ if (resume_re.indexIn(line) != -1) {
+     int game_id  = resume_re.cap(1).toInt();
+     QString white = resume_re.cap(2).remove('*');
+     QString black = resume_re.cap(3).remove('*');
+     int at_move   = resume_re.cap(4).toInt();
+     if (!this->suppress_server_console)
+         output_console->append(QString(">>> GAME RESUMED: Game %1 (%2 vs %3) at move %4")
+                                .arg(game_id).arg(white).arg(black).arg(at_move));
+
+     // If we have an adjourned board window for this game, reactivate it
+     BoardWindow* existing = nullptr;
+     for (BoardWindow* board : board_windows) {
+         if (board->getObservedGameId() == game_id && board->isFinished()) {
+             existing = board;
+             break;
+         }
+     }
+     if (existing) {
+         // Reactivate the existing window and re-subscribe on IGS
+         existing->stopObserving();
+         existing->startObserving(game_id, white, black, "?", "?");
+         existing->show();
+         existing->raise();
+         observed_game_ids.insert(game_id);
+         if (games_window) games_window->updateObservedGames(observed_game_ids);
+         socket->write((QString("observe %1\n").arg(game_id)).toUtf8());
+         if (!this->suppress_server_console)
+             output_console->append(QString(">>> SENT: observe %1 (game resumed)").arg(game_id));
+     } else {
+         // No window open for this game — open a fresh observation
+         observeGame(game_id, white, black, "?", "?");
+     }
+ }
+ }
+
  // Parse IGS Command 21 - Resignation and other game results
  if (line.startsWith("21 ")) {
  // Format: 21 {Game 124: Player1* vs Player2* : Black lost by Resign}

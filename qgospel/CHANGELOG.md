@@ -4,6 +4,175 @@ All notable changes to the XGospel2 Qt5-based IGS Go client will be documented i
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v51_R1-COMPLEX-SCORING] - 2026-04-30
+
+### Changed
+- **Major version bump to v51** — SGF editor, game tree navigation, complex scoring engine,
+  and disputed territory visualisation represent a significant milestone in development.
+
+### Fixed
+- **Update button segfault**: The SGF edit window's "Update" button crashed when the source
+  live game window had been closed before Update was clicked. `source_board_window` was a
+  dangling pointer — the null check did not catch it. Fix: connect `QObject::destroyed` on
+  the source window to null out the pointer in the edit window before memory is freed.
+- **Disputed marker colour**: Changed from grey to red for better visibility when comparing
+  complex scoring output against q5Go side-by-side.
+
+---
+
+## [v50_R21-COMPLEX-SCORING] - 2026-04-29
+
+### Added
+- **Complex scoring engine (calc_scoring_markers_complex port from q5Go)**
+  - Full port of q5Go's `go_board::calc_scoring_markers_complex()` into `score_engine.cpp`
+  - False-eye detection: iterative loop identifies groups touching exactly one candidate
+    territory point with external liberties; those points are removed from territory and
+    flagged as `falseeye`
+  - Dead-stone propagation: territory containing dead stones is "real"; liveness propagates
+    outward from real territory through bordering units and their adjacent empty points
+  - Seki exclusion: groups with `m_seki` flag set contribute a `seki_neighbours` exclusion
+    mask passed to `finish_scoring_markers`; seki points are not counted for either side
+  - Benson's algorithm (`benson()` + `find_eas()`) fully ported but kept behind `#if 0`
+    matching q5Go upstream — can be activated when needed
+  - New `sc_mark` values: `seki`, `falseeye` — populated by complex path, empty in simple path
+
+- **False-eye upstream bug fix (q5Go improvement)**
+  - q5Go's original false-eye loop only sets `changed = true` when a territory unit becomes
+    completely empty, leaving trimmed-but-non-empty units' removed points stranded in
+    `cand_territory`.  Those stranded points survived to `finish_scoring_markers` uncategorised
+    and appeared as disputed — the 1-point error visible in q5Go's complex scoring.
+  - Fix: `changed` is set whenever *any* point is removed from any territory unit.
+    `cand_territory` is fully rebuilt from actual unit contents after each pass.
+    Result: no points can persist as phantom candidates between iterations.
+
+- **Disputed-point visual marker**
+  - `GoBoardWidget` gains `disputed_positions` member and `setDisputedPoints()` setter
+  - `drawDisputedMarkers()`: hollow grey square (cell_size/3), 2px grey outline, no fill —
+    visually distinct from filled territory boxes and dead-stone markers
+  - Drawn in `paintEvent` after `drawDeadStoneMarkers`, only when `scoring_mode_enabled`
+  - `exitScoringMode()` clears disputed points from the widget
+
+- **Scoring method preference (Simple vs Complex)**
+  - `ScoringMethod` enum in `score_engine.h`: `Simple` (default), `Complex`
+  - `ScoreEngine::estimate()` extended with `disputed_out` (QSet) and `method` parameters
+  - `settings.h`: `getScoringMethod()` / `setScoringMethod()` — key `scoring_method`
+  - Preferences dialog: new "Scoring" group in Application Settings tab with combo box:
+    "Simple (flood-fill, fast)" / "Complex (false-eye + seki detection)"
+  - Setting persists across sessions; both methods can be compared by re-scoring same position
+
+### Technical Details
+- score_engine.h: `ScoringMethod` enum; `estimate()` signature extended
+- score_engine.cpp: `stone_unit` gains `m_n_vital` (short) + `m_seki` (bool); `sc_mark`
+  gains `seki` + `falseeye`; `bit_array` gains `subset_of()`; `ScoreBoard` gains
+  `enclosed_area`, `find_eas()`, `benson()`, `calc_scoring_markers_complex()`;
+  `finish_scoring_markers()` now accepts `const bit_array *do_not_count` (nullptr for simple)
+- board_window.h: `disputed_positions` member; `setDisputedPoints()` inline setter;
+  `drawDisputedMarkers()` declaration
+- board_window.cpp: `drawDisputedMarkers()` implementation; all three `ScoreEngine::estimate()`
+  call sites updated (markStoneAsDead, onScoreClicked, receiveScoreEnd path unchanged);
+  method read from settings at each call
+- preferences_dialog.h/cpp: `m_scoring_method_combo`; Scoring group UI; saved in onApply/onOk
+
+### Notes
+- Default scoring method remains Simple — no behavior change for existing users
+- Complex method produces identical results to Simple for positions with no seki/false-eyes
+- The Benson #if 0 gate matches q5Go upstream; activating it seeds m_seki for live-group
+  detection but is not needed for the false-eye + propagation path currently in use
+
+---
+
+## [v50_R20-patch1-KOMI-GUARD] - 2026-04-29
+
+### Fixed
+- **CRITICAL: Komi corruption via IGS game ID reuse**
+  - Root cause: IGS recycles game numbers. When a finished game's board window remained open,
+    a new game assigned the same ID would send a Command 7 line with different players and komi.
+    The Command 7 handler matched only on game ID and blindly overwrote the stale board's komi,
+    handicap, and game type with values from the new game.
+  - Discovery: Pro teaching game kansai1 vs kansai1 (game 167, komi 6.5) was observed and played
+    to conclusion (W resigns). After the game ended IGS reused game ID 167 for a new game
+    (RCC vs krka, komi -5.5). Periodic Command 7 updates then overwrote the open kansai1 board's
+    komi to -5.5. When the SGF was saved it recorded `KM[-5.500000]` instead of `KM[6.500000]`,
+    flipping the game result from W+2.5 to B+9.5. Confirmed via session log at line ~2310555:
+    `"7 [167]         RCC [ 1d ] vs.        krka [ 1k ] (  2   19  0 -5.5  5  I) (  0)"`.
+  - Fix: Command 7 board-update loop now guards on two conditions before applying any update:
+    1. `!board->isFinished()` — finished/stale boards are never updated.
+    2. Player name match — if neither white nor black from Command 7 matches the board's players,
+       the game ID was reused; update is skipped and a diagnostic message is logged.
+  - Location: xgospel2_fixed.cpp, Command 7 handler, board-update loop (~line 4873).
+  - Impact: Protects komi, handicap, and game type from silent corruption for any game where
+    the board window is kept open after the game ends (common during post-game analysis).
+
+---
+
+## [v50_R20-SGF-EDITOR] - 2026-04-27
+
+### Added
+- **SGF Editor: Full edit window launched from observed/played games**
+  - "Edit Game" button opens a dedicated analysis board (separate BoardWindow in edit mode)
+  - Inherits player names, game metadata, and full game tree from source window
+  - Horizontal game tree navigation strip at bottom (stone icons, scrollable)
+  - Active node highlighted in red; user-edited nodes drawn with blue border
+  - Click any node in strip to jump directly to that position
+
+- **SGF Editor: Edit Position mode (free stone placement)**
+  - "Edit Position" button transforms panel from 4-button view to 5-button edit layout
+  - Stones placed in alternating color with full capture rule enforcement
+  - Ghost cursor (semi-transparent stone) follows mouse in edit mode
+  - Red circle marks last move from unedited game record (preserved through edits)
+  - Blue circle marks last stone placed in current edit session
+  - Both markers visible simultaneously and survive clearBoard() re-renders
+
+- **SGF Editor: Per-stone Undo in edit position mode**
+  - "Undo" button (orange) appears only in edit position mode
+  - Undoes one stone at a time back to the start of the edit session
+  - Board state, blue marker, red marker, and next-player color all correctly restored
+  - Stack cleared on entering/leaving edit position mode
+
+- **SGF Editor: Append and Pass**
+  - "Append" commits current scratchpad board state as a new edited GameNode
+  - "Pass" creates a pass node (x=-1, y=-1) marked as edited
+  - Edited nodes flagged with `isEdited()` for distinct rendering in tree strip
+
+- **SGF Editor: Cancel Edit and Update**
+  - "Cancel Edit" discards scratchpad, returns to view mode at current node
+  - "Update" regenerates SGF from source board, re-parses, reloads tree in edit window
+
+- **IGS game resume detection**
+  - Parser now handles `21 {Game <id>: <white> vs <black> @ Move <move_num>}` resume notification
+  - If a board window for that game exists and is marked finished (adjourned), it is reactivated and re-subscribed via `observe <id>`
+  - If no window exists, a fresh observation is opened automatically
+  - Handles game ID reassignment that IGS performs on resume
+
+### Fixed
+- **Say/Tell protocol revert after game ends**
+  - Incoming Command 24 (`say`) messages were still routing to finished game board windows
+  - Root cause: routing condition checked `isPlaying()` but not `isFinished()`
+  - Fix: added `&& !board->isFinished()` guard — messages now fall through to player dialog `tell` channel as soon as game result is received, even with board window still open
+  - Location: xgospel2_fixed.cpp Command 24 handler
+
+- **Red circle (last game move marker) disappearing during edit**
+  - `clearBoard()` was resetting `last_move_x/y = -1`
+  - Fix: after every `clearBoard()` + re-render in edit mode, `setLastMove()` is called with `current_node` coordinates to restore red marker
+
+- **Blue circle (last edit stone marker) lost after Undo**
+  - Undo stack stored only `GoBoard` snapshots, not the previous blue marker position
+  - Fix: stack entries now carry `{GoBoard, edit_x, edit_y}`; Undo restores both board and blue marker
+
+### Technical Details
+- board_window.h: Added `GameTreeStrip` class, `GoBoardWidget` hover/edit extensions, `BoardWindow` edit members
+- board_window.cpp: `setupEditUI()`, `switchToEditPositionMode()`, `switchToViewMode()`, `updateGameTreeStrip()`, `onBoardClicked()`, `onAppendClicked()`, `onPassClicked()`, `onCancelEditClicked()`, `onUpdateClicked()`, `onUndoEditClicked()`
+- game_tree.h/cpp: Added `m_edited` flag to `GameNode` with `isEdited()`/`setEdited()` accessors
+- xgospel2_fixed.cpp: Command 21 resume handler; Command 24 `isFinished()` guard
+
+### Notes
+- Version updated from v50_R19 to v50_R20
+- Score estimation (Benson's algorithm + flood-fill territory) deferred to Phase 2
+- Variation support in game tree strip deferred to Phase 2
+- All features from v50_R19 are included in this release
+
+---
+
 ## [v50_R19-FILTER-PREFERENCES] - 2026-04-22
 
 ### Added

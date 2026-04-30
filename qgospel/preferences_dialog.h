@@ -55,6 +55,7 @@ private:
     QSpinBox *m_games_refresh_spin;
     QSpinBox *m_players_refresh_spin;
     QCheckBox *m_use_focus_colors_check;
+    QComboBox *m_scoring_method_combo;
 
     // Dialog buttons
     QPushButton *m_apply_btn;
