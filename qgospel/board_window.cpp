@@ -5,6 +5,7 @@
 #include "score_engine.h"
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QScrollBar>
 #include <QtGui/QFont>
 #include <QtGui/QCloseEvent>
 #include <QtCore/QDebug>
@@ -420,6 +421,11 @@ void GoBoardWidget::leaveEvent(QEvent *) {
  }
 }
 
+void GoBoardWidget::clearHover() {
+ hover_x = hover_y = -1;
+ update();
+}
+
 void GoBoardWidget::drawTerritoryMarkers(QPainter &painter) {
  for (auto it = territory_map.begin(); it != territory_map.end(); ++it) {
  QPair<int, int> pos = it.key();
@@ -559,6 +565,139 @@ void GoBoardWidget::mouseReleaseEvent(QMouseEvent *event) {
  }
 }
 
+QPixmap GoBoardWidget::renderToPixmap(int size,
+                                       const int ext_board_state[19][19],
+                                       int ext_board_size,
+                                       int ext_last_move_x, int ext_last_move_y,
+                                       const QString &title_overlay) const
+{
+    // --- size geometry (mirrors calculateSizes() but against 'size' not widget dims) ---
+    const int bs = (ext_board_size > 1 && ext_board_size <= 19) ? ext_board_size : 19;
+
+    // First pass: estimate cell_size
+    int base_margin = 8;
+    int available   = size - 2 * base_margin;
+    int cs          = available / (bs - 1);
+    cs = std::max(cs, 4);
+
+    int stone_diam  = static_cast<int>(cs * 0.99 + 0.5);
+    int stone_rad   = stone_diam / 2;
+    int clearance   = static_cast<int>(0.75 * stone_diam);
+    int req_margin  = stone_rad + clearance + 4;
+    int mg          = std::max(req_margin, base_margin);
+
+    // Second pass: recalculate with real margin
+    available = size - 2 * mg;
+    cs        = available / (bs - 1);
+    cs = std::max(cs, 4);
+
+    int ss = static_cast<int>(cs * 0.99 + 0.5);   // stone pixmap size for this render
+
+    // Helper: board coords -> pixel centre within the pixmap
+    auto b2s = [&](int bx, int by) -> QPoint {
+        return QPoint(mg + bx * cs, mg + by * cs);
+    };
+
+    // --- create off-screen pixmap and painter ---
+    QPixmap px(size, size);
+    px.fill(QColor(0xdd, 0xa0, 0x4c));  // plain wood colour fallback
+
+    // Tile board texture if the live widget has one loaded
+    if (!board_texture.isNull()) {
+        QPainter tp(&px);
+        for (int tx = 0; tx < size; tx += board_texture.width())
+            for (int ty = 0; ty < size; ty += board_texture.height())
+                tp.drawPixmap(tx, ty, board_texture);
+    }
+
+    QPainter p(&px);
+    p.setRenderHint(QPainter::Antialiasing, false);
+
+    // --- grid ---
+    QPen grid_pen(Qt::black);
+    grid_pen.setWidth(0);
+    grid_pen.setCosmetic(true);
+    p.setPen(grid_pen);
+
+    for (int i = 0; i < bs; ++i) {
+        p.drawLine(b2s(i, 0),      b2s(i, bs - 1));
+        p.drawLine(b2s(0, i),      b2s(bs - 1, i));
+    }
+
+    // --- star points ---
+    p.setBrush(Qt::black);
+    p.setPen(Qt::NoPen);
+    auto drawHoshi = [&](int x, int y) {
+        p.drawEllipse(b2s(x, y), 2, 2);
+    };
+    if (bs == 19) {
+        for (int hx : {3, 9, 15})
+            for (int hy : {3, 9, 15})
+                drawHoshi(hx, hy);
+    } else if (bs == 13) {
+        for (auto &pt : std::initializer_list<std::pair<int,int>>{{3,3},{6,6},{9,3},{3,9},{9,9}})
+            drawHoshi(pt.first, pt.second);
+    } else if (bs == 9) {
+        for (auto &pt : std::initializer_list<std::pair<int,int>>{{2,2},{6,2},{4,4},{2,6},{6,6}})
+            drawHoshi(pt.first, pt.second);
+    }
+
+    // --- stones ---
+    // Generate stone pixmaps at the required size using a temporary StoneRenderer.
+    // We reuse the live widget's renderer if the size matches; otherwise create a
+    // temporary one.  For small previews the renderer is cheap to create.
+    StoneRenderer *sr = stone_renderer;
+    StoneRenderer  tmp_renderer;
+    if (ss != stone_size) {
+        tmp_renderer.generateStones(ss);
+        sr = &tmp_renderer;
+    }
+
+    p.setRenderHint(QPainter::Antialiasing, true);
+    for (int i = 0; i < bs; ++i) {
+        for (int j = 0; j < bs; ++j) {
+            if (ext_board_state[i][j] == EMPTY) continue;
+            QPoint centre = b2s(i, j);
+            int sr_rad = ss / 2;
+
+            // Shadow
+            QPoint shadow_pos(centre.x() - sr_rad - 2, centre.y() - sr_rad + 2);
+            p.drawPixmap(shadow_pos, sr->getShadow());
+
+            QPoint stone_pos(centre.x() - sr_rad, centre.y() - sr_rad);
+            if (ext_board_state[i][j] == BLACK_STONE) {
+                p.drawPixmap(stone_pos, sr->getBlackStone());
+            } else {
+                int variation = (i * 19 + j) % 10;
+                p.drawPixmap(stone_pos, sr->getWhiteStone(variation));
+            }
+        }
+    }
+
+    // --- last move marker ---
+    if (ext_last_move_x >= 0 && ext_last_move_y >= 0) {
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(Qt::red, std::max(1, cs / 8)));
+        p.drawEllipse(b2s(ext_last_move_x, ext_last_move_y), cs / 3, cs / 3);
+    }
+
+    // --- teaching game title overlay (top edge) ---
+    if (!title_overlay.isEmpty()) {
+        const int bar_h = std::max(14, size / 14);
+        QRect bar(0, 0, size, bar_h);
+        p.fillRect(bar, QColor(0, 0, 0, 160));
+        p.setPen(Qt::white);
+        QFont f = p.font();
+        f.setPixelSize(std::max(9, bar_h - 3));
+        p.setFont(f);
+        p.drawText(bar.adjusted(3, 0, -3, 0), Qt::AlignVCenter | Qt::AlignLeft,
+                   title_overlay);
+    }
+
+    return px;
+}
+
 void GoBoardWidget::resizeEvent(QResizeEvent *event) {
  QFrame::resizeEvent(event);
  calculateSizes();
@@ -668,6 +807,10 @@ BoardWindow::BoardWindow(QWidget *parent, const QString &username, bool edit_win
  : QMainWindow(parent), observed_game_id(-1), my_username(username), current_move(0),
  current_player(BLACK_STONE), is_observing(false), is_playing(false), is_scoring_mode(false), game_mode(MODE_NORMAL),
  is_edit_window(edit_window), in_edit_position_mode(false),
+ engine_console_panel(nullptr), engine_status_label(nullptr), engine_go_btn(nullptr),
+ engine_clear_btn(nullptr),
+ engine_log(nullptr), engine_cmd_input(nullptr), engine_send_btn(nullptr),
+ undo_button(nullptr), done_button(nullptr),
  game_tree_strip(nullptr), game_tree_scroll(nullptr),
  update_button(nullptr), pass_button(nullptr), score_button(nullptr),
  edit_position_button(nullptr), cancel_edit_button(nullptr), append_button(nullptr),
@@ -682,22 +825,16 @@ BoardWindow::BoardWindow(QWidget *parent, const QString &username, bool edit_win
  consecutive_passes(0), server_move_count(0), mv_counter(-1), observation_state(NOT_OBSERVING), moves_received_during_live(0),
  game_root(new GameNode()), current_node(game_root), slider_update_in_progress(false), auto_follow_mode(true)
 {
- qDebug() << "DEBUG: BoardWindow constructor started";
- qDebug() << "DEBUG: Window title set";
  setMinimumSize(800, 700);
- qDebug() << "DEBUG: Minimum size set";
  if (is_edit_window)
      setupEditUI();
  else
      setupUI();
- qDebug() << "DEBUG: UI setup completed";
- 
+
  // Initialize clock timer for server lag compensation
  clock_timer = new QTimer(this);
- qDebug() << "DEBUG: Timer created";
  connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
  clock_timer->start(1000); // Update every second to compensate for server lag
- qDebug() << "DEBUG: Timer connected and started";
  
  // Set initial window title
  updateWindowTitle();
@@ -706,7 +843,11 @@ BoardWindow::BoardWindow(QWidget *parent, const QString &username, bool edit_win
  QRect savedGeometry = settings->loadWindowGeometry("board", QRect(150, 150, 900, 800));
  setGeometry(savedGeometry);
 
- qDebug() << "DEBUG: BoardWindow constructor completed";
+ // Restore dock/toolbar layout (dock position, float state)
+ QByteArray windowState = settings->loadByteArray("board_window_state");
+ if (!windowState.isEmpty())
+     restoreState(windowState);
+
 }
 
 BoardWindow::~BoardWindow() {
@@ -714,6 +855,15 @@ BoardWindow::~BoardWindow() {
 }
 
 void BoardWindow::closeEvent(QCloseEvent *event) {
+ // In docked (shared) mode the window is reused across games.
+ // Pressing X should unobserve the active game only — not destroy the window.
+ // closeBoardWindow() will hide it if no games remain.
+ if (is_shared_window && observed_game_id > 0) {
+     event->ignore();
+     emit boardClosed(observed_game_id);
+     return;
+ }
+
  // Emit boardClosed signal to trigger unobserve and unhighlight (xgospel1 pattern)
  // ALWAYS emit if we have a valid game ID, regardless of is_observing flag state
  if (observed_game_id > 0) {
@@ -723,6 +873,9 @@ void BoardWindow::closeEvent(QCloseEvent *event) {
 
  // Save board window geometry before closing (xgospel1 style)
  settings->saveWindowGeometry("board", geometry());
+
+ // Save QMainWindow dock/toolbar layout (captures dock position and float state)
+ settings->saveByteArray("board_window_state", saveState());
 
  // Save splitter sizes for panel positions
  if (main_splitter) {
@@ -1032,6 +1185,62 @@ void BoardWindow::setupUI() {
  resign_button->setVisible(false); // Hidden by default, shown when playing
  info_layout->addWidget(resign_button);
 
+ // Done button — shown during scoring phase in bot mode and normal IGS play
+ done_button = new QPushButton("Done");
+ done_button->setToolTip("Accept the current score and end the game");
+ done_button->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #e67e22,stop:1 #ca6f1e);"
+     " border: 2px outset #f0a85a; border-radius: 4px; padding: 6px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #e67e22); }"
+     "QPushButton:pressed { border: 2px inset #f0a85a; }"
+ );
+ connect(done_button, &QPushButton::clicked, this, [this]() {
+     emit doneRequested(observed_game_id);
+ });
+ done_button->setVisible(false); // Hidden until scoring phase
+ info_layout->addWidget(done_button);
+
+ // Pass button (local play mode only — hidden until setLocalPlayMode(true))
+ pass_button = new QPushButton("Pass");
+ pass_button->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
+     " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
+     "QPushButton:pressed { border: 2px inset #52be80; }"
+     "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+ );
+ connect(pass_button, &QPushButton::clicked, this, &BoardWindow::onPassClicked);
+ pass_button->setVisible(false);
+ info_layout->addWidget(pass_button);
+
+ // Undo button (local play mode only)
+ undo_button = new QPushButton("Undo");
+ undo_button->setToolTip("Take back your last move and the engine's response");
+ undo_button->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2980b9,stop:1 #1f6fa8);"
+     " border: 2px outset #5dade2; border-radius: 4px; padding: 6px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #3498db,stop:1 #2980b9); }"
+     "QPushButton:pressed { border: 2px inset #2980b9; }"
+     "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+ );
+ undo_button->setEnabled(false);
+ undo_button->setVisible(false);
+ connect(undo_button, &QPushButton::clicked, this, &BoardWindow::undoRequested);
+ info_layout->addWidget(undo_button);
+
+ // Score button (local play mode only)
+ score_button = new QPushButton("Score");
+ score_button->setToolTip("Score the current position using flood-fill territory counting");
+ score_button->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #7f8c8d,stop:1 #6c7a7d);"
+     " border: 2px outset #aab7b8; border-radius: 4px; padding: 6px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #95a5a6,stop:1 #7f8c8d); }"
+     "QPushButton:pressed { border: 2px inset #7f8c8d; }"
+ );
+ score_button->setVisible(false);
+ connect(score_button, &QPushButton::clicked, this, &BoardWindow::onScoreClicked);
+ info_layout->addWidget(score_button);
+
  // Close button (shown when observing, hidden when playing since window has title bar close)
  // q5Go style 3D button with gradient
  close_button = new QPushButton("Close Board");
@@ -1044,49 +1253,99 @@ void BoardWindow::setupUI() {
  // Add player info panel to left side of info splitter
  info_splitter->addWidget(player_info_panel);
 
- // RIGHT SIDE: Analysis pane (placeholder for future engine integration)
- QFrame *analysis_panel = new QFrame();
- analysis_panel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
- analysis_panel->setStyleSheet(
-     "QFrame {"
-     "    border: 2px inset #888;"
-     "    background-color: #2c2c2c;"  // Slightly darker background for distinction
-     "    padding: 8px;"
-     "}"
+ // RIGHT SIDE: Engine console panel (shown in local play mode; placeholder otherwise)
+ engine_console_panel = new QFrame();
+ engine_console_panel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+ engine_console_panel->setStyleSheet(
+     "QFrame { border: 2px inset #444; background-color: #1a1a1a; padding: 4px; }"
  );
 
- QVBoxLayout *analysis_layout = new QVBoxLayout(analysis_panel);
- analysis_layout->setSpacing(5);
- analysis_layout->setContentsMargins(8, 8, 8, 8);
+ QVBoxLayout *console_layout = new QVBoxLayout(engine_console_panel);
+ console_layout->setSpacing(4);
+ console_layout->setContentsMargins(6, 6, 6, 6);
 
- // Analysis title label
- QLabel *analysis_title = new QLabel("Analysis Mode");
- analysis_title->setAlignment(Qt::AlignCenter);
- analysis_title->setStyleSheet(
-     "QLabel {"
-     "    font-weight: bold;"
-     "    font-size: 12px;"
-     "    padding: 5px;"
-     "    border: 1px solid #555;"
-     "    border-radius: 3px;"
-     "}"
+ // Engine name + status indicator row
+ QHBoxLayout *status_row = new QHBoxLayout();
+ status_row->setSpacing(6);
+ engine_status_label = new QLabel("No engine");
+ engine_status_label->setStyleSheet(
+     "QLabel { font-weight: bold; font-size: 11px; color: #aaa; }"
  );
- analysis_layout->addWidget(analysis_title);
+ status_row->addWidget(engine_status_label);
+ status_row->addStretch();
+ console_layout->addLayout(status_row);
 
- // Placeholder text for future engine integration
- QLabel *analysis_placeholder = new QLabel("Engine analysis will appear here\n(KataGo / Leela Zero integration)");
- analysis_placeholder->setAlignment(Qt::AlignCenter);
- analysis_placeholder->setStyleSheet("font-size: 10px; color: #888;");
- analysis_placeholder->setWordWrap(true);
- analysis_layout->addWidget(analysis_placeholder);
+ // "Engine: Go" button — asks engine to generate its move
+ engine_go_btn = new QPushButton("Engine: Go");
+ engine_go_btn->setToolTip("Ask the engine to play its move now");
+ engine_go_btn->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #e67e22,stop:1 #ca6f1e);"
+     " border: 2px outset #f0a45a; border-radius: 4px; padding: 5px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #e67e22); }"
+     "QPushButton:pressed { border: 2px inset #e67e22; }"
+     "QPushButton:disabled { background: #555; color: #888; border: 2px outset #666; }"
+ );
+ engine_go_btn->setEnabled(false);  // Enabled only after engineReady
+ connect(engine_go_btn, &QPushButton::clicked, this, &BoardWindow::engineGoRequested);
+ console_layout->addWidget(engine_go_btn);
 
- analysis_layout->addStretch();
+ // "Clear Board" button — sends clear_board to reset the engine position
+ engine_clear_btn = new QPushButton("Clear Board");
+ engine_clear_btn->setToolTip("Send clear_board to the engine (resets position without restarting)");
+ engine_clear_btn->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #6c3483,stop:1 #5b2c6f);"
+     " border: 2px outset #9b59b6; border-radius: 4px; padding: 5px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #7d3c98,stop:1 #6c3483); }"
+     "QPushButton:pressed { border: 2px inset #6c3483; }"
+     "QPushButton:disabled { background: #555; color: #888; border: 2px outset #666; }"
+ );
+ engine_clear_btn->setEnabled(false);  // Enabled only after engineReady
+ connect(engine_clear_btn, &QPushButton::clicked, this, &BoardWindow::engineClearRequested);
+ console_layout->addWidget(engine_clear_btn);
 
- // Add analysis panel to right side of info splitter
- info_splitter->addWidget(analysis_panel);
+ // GTP I/O log
+ engine_log = new QTextEdit();
+ engine_log->setReadOnly(true);
+ engine_log->setFont(QFont("Monospace", 9));
+ engine_log->setStyleSheet(
+     "QTextEdit { background-color: #111; color: #ddd; border: 1px solid #444; }"
+ );
+ engine_log->setMinimumHeight(80);
+ console_layout->addWidget(engine_log, 1);
 
- // Set default sizes for info splitter (50/50 split)
- info_splitter->setSizes({250, 250});
+ // Manual command input row
+ QHBoxLayout *cmd_row = new QHBoxLayout();
+ cmd_row->setSpacing(4);
+ engine_cmd_input = new QLineEdit();
+ engine_cmd_input->setPlaceholderText("GTP command...");
+ engine_cmd_input->setFont(QFont("Monospace", 9));
+ engine_cmd_input->setStyleSheet(
+     "QLineEdit { background-color: #222; color: #ddd; border: 1px solid #555; padding: 3px; }"
+ );
+ engine_send_btn = new QPushButton("Send");
+ engine_send_btn->setFixedWidth(48);
+ engine_send_btn->setStyleSheet(
+     "QPushButton { background: #2e6da4; color: white; border: 1px solid #1a4d7a;"
+     " border-radius: 3px; padding: 3px 6px; font-size: 9px; }"
+     "QPushButton:hover { background: #3a80be; }"
+     "QPushButton:pressed { background: #1a4d7a; }"
+ );
+ connect(engine_cmd_input, &QLineEdit::returnPressed, this, &BoardWindow::onEngineCmdSend);
+ connect(engine_send_btn, &QPushButton::clicked,      this, &BoardWindow::onEngineCmdSend);
+ cmd_row->addWidget(engine_cmd_input);
+ cmd_row->addWidget(engine_send_btn);
+ console_layout->addLayout(cmd_row);
+
+ // Always visible — shows "No engine" when idle, full controls in local/analysis mode
+ engine_console_panel->setVisible(true);
+ engine_console_panel->setMinimumWidth(25);
+
+ // Add engine console panel to right side of info splitter
+ info_splitter->addWidget(engine_console_panel);
+
+ // Default: player info gets most space, analysis pane gets a 25px sliver so users
+ // can see it exists and drag it open; they can collapse it to zero if desired.
+ info_splitter->setSizes({475, 25});
 
  right_splitter->addWidget(info_frame);
  
@@ -1186,7 +1445,6 @@ void BoardWindow::setupUI() {
 
  // Set minimum heights to prevent collapsing (user can resize via splitters)
  info_frame->setMinimumHeight(320); // game info + 2 player groups (larger) + komi/captures + buttons
- info_frame->setMaximumHeight(360); // Fixed height (increased for multi-line game statistics)
  comment_frame->setMinimumHeight(60);  // Reduced minimum - user resizable
  observers_frame->setMinimumHeight(40); // Reduced minimum - user resizable
 
@@ -1197,7 +1455,7 @@ void BoardWindow::setupUI() {
  main_layout->addWidget(main_splitter, 1);
 
  // Set default splitter sizes (smaller comments/observers for more board space)
- right_splitter->setSizes({340, 100, 60}); // Info panel larger, comments/observers smaller (user resizable)
+ right_splitter->setSizes({400, 100, 60}); // Info panel larger, comments/observers smaller (user resizable)
  main_splitter->setSizes({750, 250});      // Board gets 75%, right panel gets 25%
 
  // Restore saved splitter sizes (if any) - must be after addWidget
@@ -1214,6 +1472,15 @@ void BoardWindow::setupUI() {
  QList<int> savedInfoSizes = settings->loadSplitterSizes("board_info_splitter");
  if (!savedInfoSizes.isEmpty()) {
      info_splitter->setSizes(savedInfoSizes);
+ }
+
+ // Game selection dock — created here, hidden until docked-pane mode is active.
+ // FixedXGospelWindow calls getGameSelectionDock() and shows it when needed.
+ if (!is_edit_window) {
+     game_selection_dock = new GameSelectionDock(this);
+     game_selection_dock->setObjectName("GameSelectionDock");
+     addDockWidget(Qt::LeftDockWidgetArea, game_selection_dock);
+     game_selection_dock->hide();
  }
 }
 
@@ -1567,6 +1834,278 @@ void BoardWindow::switchToViewMode() {
     in_edit_position_mode = false;
 }
 
+// ---------------------------------------------------------------------------
+// Docked-pane mode: load all state from a GameSlot into the UI.
+// Called by FixedXGospelWindow::switchActiveGame() when the user clicks a
+// different game button.  The slot is already up-to-date; we just reflect it.
+// ---------------------------------------------------------------------------
+
+QPixmap BoardWindow::renderSlotToPixmap(int size,
+                                        const int board_state[19][19],
+                                        int board_size,
+                                        int last_move_x, int last_move_y,
+                                        const QString &title_overlay) const
+{
+    return board_widget->renderToPixmap(size, board_state, board_size,
+                                        last_move_x, last_move_y, title_overlay);
+}
+
+void BoardWindow::loadSlot(GameSlot *slot)
+{
+    if (!slot) return;
+    // --- scalar state ---
+    observed_game_id           = slot->game_id;
+    white_player               = slot->white_player;
+    black_player               = slot->black_player;
+    white_rank                 = slot->white_rank;
+    black_rank                 = slot->black_rank;
+    my_username                = slot->my_username;
+    custom_game_title          = slot->custom_game_title;
+    if (teaching_title_label) {
+        if (!custom_game_title.isEmpty()) {
+            teaching_title_label->setText(custom_game_title);
+            teaching_title_label->show();
+        } else {
+            teaching_title_label->hide();
+        }
+    }
+    is_observing               = slot->is_observing;
+    is_playing                 = slot->is_playing;
+    is_scoring_mode            = slot->is_scoring_mode;
+    game_start_time            = slot->game_start_time;
+    game_mode                  = static_cast<GameMode>(slot->game_mode);
+    observation_state          = static_cast<ObservationState>(slot->observation_state);
+    observation_start_time     = slot->observation_start_time;
+    moves_received_during_live = slot->moves_received_during_live;
+    current_move               = slot->current_move;
+    current_move_index         = slot->current_move_index;
+    server_move_count          = slot->server_move_count;
+    consecutive_passes         = slot->consecutive_passes;
+    auto_follow_mode           = slot->auto_follow_mode;
+    handicap                   = slot->handicap;
+    komi                       = slot->komi;
+    time_control               = slot->time_control;
+    game_type                  = slot->game_type;
+    game_type_locked           = slot->game_type_locked;
+    byoyomi_time               = slot->byoyomi_time;
+    white_time_seconds         = slot->white_time_seconds;
+    black_time_seconds         = slot->black_time_seconds;
+    white_byo_moves            = slot->white_byo_moves;
+    black_byo_moves            = slot->black_byo_moves;
+    last_time_update           = slot->last_time_update;
+    white_captures             = slot->white_captures;
+    black_captures             = slot->black_captures;
+    dead_stones                = slot->dead_stones;
+    white_territory            = slot->white_territory;
+    black_territory            = slot->black_territory;
+    white_prisoners            = slot->white_prisoners;
+    black_prisoners            = slot->black_prisoners;
+    final_score                = slot->final_score;
+    server_white_score         = slot->server_white_score;
+    server_black_score         = slot->server_black_score;
+    has_server_score           = slot->has_server_score;
+    receiving_territory_data   = slot->receiving_territory_data;
+    territory_data_row         = slot->territory_data_row;
+    territory_ownership        = slot->territory_ownership;
+    game_result                = slot->game_result;
+    game_finished              = slot->game_finished;
+    white_groups               = slot->white_groups;
+    black_groups               = slot->black_groups;
+    move_history               = slot->move_history;
+
+    // --- game tree: point at the slot's tree (BoardWindow does NOT own it in docked mode) ---
+    // We do NOT delete game_root here — in docked mode the slot owns the tree.
+    game_root    = slot->game_root;
+    current_node = slot->current_node;
+
+    // Inactive slots route moves through applyMoveToSlotBoard() which does not build
+    // the game tree.  Rebuild it now from move_history so navigation and SGF export
+    // always work, regardless of which slot was active when moves arrived.
+    if (getTotalMoves() == 0 && !move_history.isEmpty()) {
+        rebuildGameTreeFromMoveHistory();
+        slot->current_node = current_node;
+    }
+
+    // Sync slider position to the actual end of the tree when auto-follow is on.
+    // slot->current_move_index may be stale if moves arrived while the slot was
+    // inactive (applyMoveToSlotBoard advances the tree but not the index).
+    if (auto_follow_mode) {
+        int last = getTotalMoves();
+        // Walk current_node forward to the end of the active variation
+        while (current_node && current_node->nextMove())
+            current_node = current_node->nextMove();
+        current_move_index = last;
+        slot->current_node  = current_node;
+        slot->current_move_index = last;
+    }
+
+    // --- board widget ---
+    board_widget->clearBoard();
+    board_widget->clearHover();  // discard stale hover from previous slot
+    board_widget->setBoardSize(slot->board_size);
+    for (int x = 0; x < slot->board_size; ++x)
+        for (int y = 0; y < slot->board_size; ++y)
+            if (slot->board_state[x][y] != EMPTY)
+                board_widget->placeMoveAt(x, y,
+                    static_cast<StoneColor>(slot->board_state[x][y]));
+    board_widget->setLastMove(slot->last_move_x, slot->last_move_y);
+    board_widget->setDeadStones(slot->dead_stone_positions);
+    board_widget->setDisputedPoints(slot->disputed_positions);
+    board_widget->setScoringMode(slot->is_scoring_mode);
+    {
+        QMap<QPair<int,int>, StoneColor> tmap;
+        if (slot->is_scoring_mode && !slot->territory_map.isEmpty()) {
+            // Slot already has a computed territory map — restore it directly.
+            // Also sync dead_stones (engine set) from dead_stone_positions so any
+            // subsequent click-to-toggle-dead and re-score works correctly.
+            if (dead_stones.isEmpty() && !slot->dead_stone_positions.isEmpty())
+                dead_stones = slot->dead_stone_positions;
+            for (auto it = slot->territory_map.constBegin();
+                 it != slot->territory_map.constEnd(); ++it)
+                tmap[it.key()] = static_cast<StoneColor>(it.value());
+            board_widget->setTerritoryMap(tmap);
+        } else if (slot->is_scoring_mode) {
+            // Slot is in scoring mode but territory hasn't been computed yet — run it now
+            board_widget->setTerritoryMap(tmap); // clear first
+            calculateScore();
+        } else {
+            board_widget->setTerritoryMap(tmap); // clears overlay
+        }
+    }
+    current_player = static_cast<StoneColor>(slot->current_player);
+
+    // --- clock: disconnect previous timer from display refresh, connect new slot's timer ---
+    // Do NOT stop the previous timer — if it belongs to another slot it must keep ticking.
+    disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+    clock_timer = slot->clock_timer;
+    connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+
+    // Inactive slots never get updateByoyomi() called, so last_time_update stays null.
+    // Seed it to now so the clock countdown starts ticking immediately on switch.
+    if (last_time_update.isNull() && (white_time_seconds > 0 || black_time_seconds > 0))
+        last_time_update = QDateTime::currentDateTime();
+    updateClockDisplay();  // paint new slot's clock immediately, don't wait for next tick
+
+    // --- observers list ---
+    clearObservers();
+    for (const auto &obs : slot->observers)
+        addObserver(obs.name, obs.rank);
+
+    // --- comments ---
+    if (comment_display) {
+        comment_display->clear();
+        for (const auto &c : slot->comments) {
+            QString prefix = c.is_kibitz
+                ? QString("<b>%1:</b> ").arg(c.user.toHtmlEscaped())
+                : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
+            comment_display->append(prefix + c.text.toHtmlEscaped());
+        }
+    }
+    // --- game tree strip (edit windows only) ---
+    if (game_tree_strip)
+        updateGameTreeStrip();
+
+    // --- if the game already finished while this was an inactive slot, show result ---
+    if (game_finished && !game_result.isEmpty())
+        updateGameResult(game_result);
+
+    // --- all labels and title ---
+    updateLabels();
+    updatePlayerInfoGroups();
+    updateWindowTitle();
+    updateCommentButtonText();
+    updateMoveNavigation();
+}
+
+// ---------------------------------------------------------------------------
+// Lightweight board-state snapshot for hover pixmap refresh after a live move.
+// Copies only position data — does NOT disconnect the clock timer.
+// ---------------------------------------------------------------------------
+void BoardWindow::snapshotBoardStateToSlot(GameSlot *slot)
+{
+    if (!slot) return;
+    slot->board_size  = board_widget->getBoardSize();
+    slot->last_move_x = board_widget->getLastMoveX();
+    slot->last_move_y = board_widget->getLastMoveY();
+    for (int x = 0; x < slot->board_size; ++x)
+        for (int y = 0; y < slot->board_size; ++y)
+            slot->board_state[x][y] = board_widget->getBoardState(x, y);
+}
+
+// ---------------------------------------------------------------------------
+// Docked-pane mode: write current live UI state back to the slot before
+// switching away.  Captures anything that may have changed since loadSlot().
+// ---------------------------------------------------------------------------
+void BoardWindow::snapshotToSlot(GameSlot *slot)
+{
+    if (!slot) return;
+
+    // Scalar state that may have changed during live observation
+    slot->current_move               = current_move;
+    slot->current_move_index         = current_move_index;
+    slot->server_move_count          = server_move_count;
+    slot->consecutive_passes         = consecutive_passes;
+    slot->auto_follow_mode           = auto_follow_mode;
+    slot->observation_state          = static_cast<GameSlot::ObservationState>(observation_state);
+    slot->moves_received_during_live = moves_received_during_live;
+    slot->current_player             = current_player;
+    slot->last_move_x                = board_widget->getLastMoveX();
+    slot->last_move_y                = board_widget->getLastMoveY();
+    slot->white_captures             = white_captures;
+    slot->black_captures             = black_captures;
+    slot->white_time_seconds         = white_time_seconds;
+    slot->black_time_seconds         = black_time_seconds;
+    slot->white_byo_moves            = white_byo_moves;
+    slot->black_byo_moves            = black_byo_moves;
+    slot->last_time_update           = last_time_update;
+    slot->is_scoring_mode            = is_scoring_mode;
+    slot->dead_stones                = dead_stones;
+    slot->white_territory            = white_territory;
+    slot->black_territory            = black_territory;
+    slot->white_prisoners            = white_prisoners;
+    slot->black_prisoners            = black_prisoners;
+    slot->final_score                = final_score;
+    slot->server_white_score         = server_white_score;
+    slot->server_black_score         = server_black_score;
+    slot->has_server_score           = has_server_score;
+    slot->receiving_territory_data   = receiving_territory_data;
+    slot->territory_data_row         = territory_data_row;
+    slot->territory_ownership        = territory_ownership;
+    slot->game_result                = game_result;
+    slot->game_finished              = game_finished;
+    slot->move_history               = move_history;
+    slot->white_groups               = white_groups;
+    slot->black_groups               = black_groups;
+
+    // Board widget overlays
+    slot->dead_stone_positions = board_widget->getDeadStonePositions();
+    slot->disputed_positions   = board_widget->getDisputedPositions();
+
+    // Territory map (scoring overlay) — convert StoneColor → int for slot storage
+    slot->territory_map.clear();
+    const auto &tmap = board_widget->getTerritoryMap();
+    for (auto it = tmap.constBegin(); it != tmap.constEnd(); ++it)
+        slot->territory_map[it.key()] = static_cast<int>(it.value());
+
+    // Snapshot board state array from widget
+    slot->board_size = board_widget->getBoardSize();
+    for (int x = 0; x < slot->board_size; ++x)
+        for (int y = 0; y < slot->board_size; ++y)
+            slot->board_state[x][y] = board_widget->getBoardState(x, y);
+
+    // Always sync both tree pointers so slot->game_root never dangles if game_root
+    // was replaced (e.g. by clearMoveHistoryBeforeMovesCommand).
+    slot->game_root    = game_root;
+    slot->current_node = current_node;
+
+    // Disconnect display refresh from this slot's timer — the slot keeps ticking
+    disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+    // Restore BoardWindow's own clock_timer pointer so it is never left dangling
+    if (!clock_timer->parent()) {
+        clock_timer->setParent(this);
+    }
+}
+
 void BoardWindow::startObserving(int game_id, const QString &white, const QString &black,
  const QString &w_rank, const QString &b_rank) {
  observed_game_id = game_id;
@@ -1649,6 +2188,15 @@ void BoardWindow::loadSGF(GameNode* root, const QString &white, const QString &b
  is_observing = false;
  is_playing = false;
  observed_game_id = -1;
+
+ // Exit scoring mode so the edit window starts with a clean stone view,
+ // not the territory overlay from the source game.
+ is_scoring_mode = false;
+ board_widget->setScoringMode(false);
+ board_widget->setTerritoryMap(QMap<QPair<int,int>, StoneColor>());
+ board_widget->setDeadStones(QSet<QPair<int,int>>());
+ territory_ownership.clear();
+ dead_stones.clear();
 
  // Clear any existing game tree
  delete game_root;
@@ -2142,45 +2690,39 @@ void BoardWindow::updateClockDisplay() {
  if ((!is_observing && !is_playing) || last_time_update.isNull()) {
  return;
  }
- 
- // Calculate elapsed time since last IGS update
- qint64 elapsed_ms = last_time_update.msecsTo(QDateTime::currentDateTime());
- int elapsed_seconds = elapsed_ms / 1000;
- 
- // Apply lag compensation - only countdown current player's time
- int current_white_time = white_time_seconds;
- int current_black_time = black_time_seconds;
- 
- if (current_player == WHITE_STONE) {
- current_white_time = qMax(0, white_time_seconds - elapsed_seconds);
- } else if (current_player == BLACK_STONE) {
- current_black_time = qMax(0, black_time_seconds - elapsed_seconds);
+
+ // Each timer tick: decrement the current player's stored time by elapsed seconds,
+ // then slide last_time_update forward so the next tick measures from now.
+ QDateTime now = QDateTime::currentDateTime();
+ int elapsed_seconds = static_cast<int>(last_time_update.secsTo(now));
+ if (elapsed_seconds > 0) {
+     if (current_player == WHITE_STONE)
+         white_time_seconds = qMax(0, white_time_seconds - elapsed_seconds);
+     else if (current_player == BLACK_STONE)
+         black_time_seconds = qMax(0, black_time_seconds - elapsed_seconds);
+     last_time_update = now;
  }
- 
+
  // Convert time from seconds to MM:SS format like q5Go
  auto formatTime = [](int seconds) -> QString {
  int minutes = seconds / 60;
  int secs = seconds % 60;
  return QString("%1:%2").arg(minutes).arg(secs, 2, 10, QChar('0'));
  };
- 
+
  // Format: "7:37 / 15" like in q5Go, or just "5:26" for main time
  QString white_display, black_display;
- 
+
  if (white_byo_moves >= 0) {
- // In byoyomi period - show time / moves format
- white_display = QString("%1 / %2").arg(formatTime(current_white_time)).arg(white_byo_moves);
+ white_display = QString("%1 / %2").arg(formatTime(white_time_seconds)).arg(white_byo_moves);
  } else {
- // In main time - show just time
- white_display = formatTime(current_white_time);
+ white_display = formatTime(white_time_seconds);
  }
- 
+
  if (black_byo_moves >= 0) {
- // In byoyomi period - show time / moves format
- black_display = QString("%1 / %2").arg(formatTime(current_black_time)).arg(black_byo_moves);
+ black_display = QString("%1 / %2").arg(formatTime(black_time_seconds)).arg(black_byo_moves);
  } else {
- // In main time - show just time
- black_display = formatTime(current_black_time);
+ black_display = formatTime(black_time_seconds);
  }
 
  // Update individual clock labels (q5Go style)
@@ -2190,11 +2732,77 @@ void BoardWindow::updateClockDisplay() {
  }
 }
 
+void BoardWindow::rebuildGameTreeFromMoveHistory()
+{
+    // Build from the existing root in-place so that any slot pointer to game_root
+    // stays valid.  Only called when the tree is empty (getTotalMoves() == 0).
+
+    GameNode* insertion_point = game_root;
+    GoBoard current_board;
+
+    for (const GameMove &move : move_history) {
+        // Handicap setup move (x == -2)
+        if (move.x == -2) {
+            QList<QPair<int,int>> positions = IGSMoveParser::getHandicapPositions(move.y);
+            GoBoard handicap_board;
+            for (const auto &pos : positions)
+                handicap_board.placeStone(pos.first, pos.second, BLACK_STONE);
+            GameNode *hnode = insertion_point->addMove(-2, move.y, BLACK_STONE);
+            hnode->setBoard(handicap_board);
+            current_board = handicap_board;
+            insertion_point = hnode;
+            continue;
+        }
+
+        StoneColor color = static_cast<StoneColor>(move.color);
+        if (color != BLACK_STONE && color != WHITE_STONE) continue;
+
+        GameNode *new_node = insertion_point->addMove(move.x, move.y, color);
+
+        if (move.x >= 0 && move.y >= 0) {
+            GoBoard new_board = current_board.copy();
+            new_board.placeStone(move.x, move.y, color);
+
+            StoneColor opp = (color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+            int dx[] = {-1, 1, 0, 0};
+            int dy[] = {0, 0, -1, 1};
+            for (int dir = 0; dir < 4; dir++) {
+                int nx = move.x + dx[dir], ny = move.y + dy[dir];
+                if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+                    new_board.getStone(nx, ny) == opp &&
+                    countLiberties(new_board, nx, ny) == 0)
+                    removeGroup(new_board, nx, ny);
+            }
+            if (countLiberties(new_board, move.x, move.y) == 0)
+                removeGroup(new_board, move.x, move.y);
+
+            new_node->setBoard(new_board);
+            current_board = new_board;
+        } else {
+            // Pass — board unchanged
+            new_node->setBoard(current_board.copy());
+        }
+
+        insertion_point = new_node;
+    }
+
+    current_node = insertion_point;
+    current_move_index = current_node->moveNumber();
+    qDebug() << "rebuildGameTreeFromMoveHistory: rebuilt" << move_history.size()
+             << "moves into game tree (" << getTotalMoves() << "total)";
+}
+
 void BoardWindow::editGame() {
- if (!is_observing) {
+ if (!is_observing && !is_playing && !game_finished) {
  QMessageBox::information(this, "Edit Game",
  "No game currently being observed.\n\n" "Edit Game is available when observing a game.");
  return;
+ }
+
+ // Docked inactive slots track moves in move_history but skip game tree building.
+ // Rebuild the tree now if it is empty so generateSGF() produces a full record.
+ if (getTotalMoves() == 0 && !move_history.isEmpty()) {
+     rebuildGameTreeFromMoveHistory();
  }
 
  // Generate SGF from current game state
@@ -2261,38 +2869,51 @@ void BoardWindow::editGame() {
 }
 
 void BoardWindow::saveGame() {
- if (!is_observing) {
- return;
- }
+    // Rebuild game tree from move history if needed (docked/local play may not have built it)
+    if (getTotalMoves() == 0 && !move_history.isEmpty())
+        rebuildGameTreeFromMoveHistory();
 
- // Get save directory from settings (or use default)
- QString saveDir = settings->getSaveGameDirectory();
+    // Get save directory from settings (or use default)
+    QString saveDir = settings->getSaveGameDirectory();
 
- // Create filename with game info
- QString filename = QString("%1/game_%2_%3_vs_%4_%5.sgf")
- .arg(saveDir)
- .arg(observed_game_id)
- .arg(white_player)
- .arg(black_player)
- .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    // Ensure directory exists
+    QDir dir(saveDir);
+    if (!dir.exists()) {
+        if (!dir.mkpath(saveDir)) {
+            QMessageBox::warning(this, "Save Error",
+                QString("Cannot create save directory:\n%1").arg(saveDir));
+            return;
+        }
+    }
 
- QString sgf_content = generateSGF();
+    // Build a clean filename — for local engine games, game id is -2
+    QString id_str = (observed_game_id >= 0)
+                     ? QString::number(observed_game_id)
+                     : "local";
+    QString filename = QString("%1/%2_%3_vs_%4_%5.sgf")
+        .arg(saveDir)
+        .arg(id_str)
+        .arg(white_player.isEmpty() ? "White" : white_player)
+        .arg(black_player.isEmpty() ? "Black" : black_player)
+        .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
 
- // Save to file
- QFile file(filename);
- if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
- QTextStream out(&file);
- out << sgf_content;
- file.close();
+    QString sgf_content = generateSGF();
 
- if (comment_display) {
- comment_display->append(QString("✓ Game saved to: %1").arg(filename));
- }
- } else {
- if (comment_display) {
- comment_display->append(QString("✗ Error saving game to: %1").arg(filename));
- }
- }
+    QFile file(filename);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << sgf_content;
+        file.close();
+        if (comment_display)
+            comment_display->append(QString("✓ Game saved to: %1").arg(filename));
+        qDebug() << "[saveGame] Saved to:" << filename;
+    } else {
+        QString msg = QString("✗ Error saving game to: %1").arg(filename);
+        if (comment_display)
+            comment_display->append(msg);
+        QMessageBox::warning(this, "Save Error", msg);
+        qDebug() << "[saveGame] Failed to open for writing:" << filename;
+    }
 }
 
 void BoardWindow::closeBoard() {
@@ -2306,7 +2927,7 @@ void BoardWindow::updateLabels() {
  // Update game info label and dynamic "to play" stone icon (q5Go style)
  if (game_info_label && to_play_stone_icon) {
  QString next_player = (current_player == WHITE_STONE) ? "White to Play" : "Black to Play";
- if (is_observing) {
+ if (is_observing || is_playing) {
  game_info_label->setText(QString("Game #%1 | %2").arg(observed_game_id).arg(next_player));
 
  // Update dynamic stone icon to match current player (use cached pixmaps)
@@ -2729,6 +3350,9 @@ void BoardWindow::updateCaptures(int white_caps, int black_caps) {
 void BoardWindow::updateGameResult(const QString &result) {
  game_result = result;
  game_finished = true;
+ clock_timer->stop();
+ // Game is over — hide Done button
+ if (done_button) done_button->setVisible(false);
 
  // Display result in comment area (q5Go style)
  if (comment_display) {
@@ -2750,20 +3374,12 @@ void BoardWindow::updateGameResult(const QString &result) {
 
  QString result_message;
  if (is_scored_result) {
- // Scored game - show result and score totals
- // Calculate totals (including dead stones from capture labels)
- int dead_white_stones = 0;
- int dead_black_stones = 0;
- for (const auto &pos : dead_stones) {
- if (board_widget->getBoardState(pos.first, pos.second) == WHITE_STONE) {
- dead_white_stones++;
- } else if (board_widget->getBoardState(pos.first, pos.second) == BLACK_STONE) {
- dead_black_stones++;
- }
- }
-
- double white_total = white_territory + (white_captures + dead_black_stones) + komi;
- double black_total = black_territory + (black_captures + dead_white_stones);
+ // Use the pre-computed prisoner totals (set by CMD9 or calculateScore()).
+ // These already include dead stones as prisoners and are authoritative.
+ // Re-counting from dead_stones here is unreliable for inactive slots because
+ // dead_stones may not be fully synced at the moment updateGameResult() is called.
+ double white_total = white_territory + white_prisoners + komi;
+ double black_total = black_territory + black_prisoners;
 
  result_message = QString("Game finished: %1\nW %2 B %3")
  .arg(standard_result)
@@ -2789,6 +3405,16 @@ void BoardWindow::updatePlayerNames(const QString &white, const QString &black) 
  updateWindowTitle();
  
  qDebug() << "Updated player names: White:" << white_player << "Black:" << black_player;
+}
+
+void BoardWindow::setWhiteRank(const QString &rank) {
+ white_rank = rank;
+ updateLabels();
+}
+
+void BoardWindow::setBlackRank(const QString &rank) {
+ black_rank = rank;
+ updateLabels();
 }
 
 void BoardWindow::setCustomGameTitle(const QString &title) {
@@ -3371,7 +3997,21 @@ void BoardWindow::enterScoringMode() {
  // Update UI to show scoring mode
  updateLabels();
  
+ // Show Done button so the player can accept the score (hidden in observe mode)
+ if (done_button && !is_observing)
+     done_button->setVisible(true);
+
  // Calculate initial score
+ calculateScore();
+}
+
+void BoardWindow::enterScoringModeForResult() {
+ // Like enterScoringMode() but always runs calculateScore() regardless of whether
+ // is_scoring_mode was already set by the 3-pass detector in processMove().
+ is_scoring_mode = true;
+ if (board_widget) board_widget->setScoringMode(true);
+ white_prisoners = white_captures;
+ black_prisoners = black_captures;
  calculateScore();
 }
 
@@ -3558,23 +4198,21 @@ void BoardWindow::dumpBoardState() {
 
 void BoardWindow::calculateScore() {
  if (!is_scoring_mode) return;
- 
+
  white_territory = 0;
  black_territory = 0;
  white_prisoners = white_captures;
  black_prisoners = black_captures;
- 
- // Count dead stones as prisoners
+
+ // Count dead stones as prisoners (dead white = black prisoners, vice versa)
+ // dead_stones is populated by markStoneAsDead() from IGS "is removing @" messages.
  for (const auto& pos : dead_stones) {
- StoneColor stone_color = board_widget->getStoneAt(pos.first, pos.second);
- if (stone_color == WHITE_STONE) {
- black_prisoners++;
- } else if (stone_color == BLACK_STONE) {
- white_prisoners++;
+     StoneColor stone_color = board_widget->getStoneAt(pos.first, pos.second);
+     if (stone_color == WHITE_STONE)      black_prisoners++;
+     else if (stone_color == BLACK_STONE) white_prisoners++;
  }
- }
- 
- // Calculate territory using flood fill
+
+ // Calculate territory using flood fill (dead_stones treated as empty)
  calculateTerritory();
  
  // Calculate final score (Japanese rules: territory + prisoners + komi)
@@ -3598,11 +4236,11 @@ void BoardWindow::calculateScore() {
 
 void BoardWindow::calculateTerritory() {
  if (!board_widget) return;
- 
+
  int board_size = 19; // Assuming 19x19 board
  QSet<QPair<int, int>> visited;
  QMap<QPair<int, int>, StoneColor> territory_map;
- 
+
  white_territory = 0;
  black_territory = 0;
  
@@ -3960,7 +4598,13 @@ void BoardWindow::onUpdateClicked() {
 }
 
 void BoardWindow::onPassClicked() {
-    // Insert a pass node after the current node
+    if (local_play_mode) {
+        // Local engine game: emit signal so the main window can forward to KataGo
+        emit passRequested(observed_game_id);
+        return;
+    }
+
+    // Edit window: insert a pass node after the current node
     GameNode *pass_node = current_node->addMove(-1, -1, board_widget->getNextPlayerColor());
     pass_node->setBoard(current_node->getBoard().copy());
     pass_node->setEdited(true);
@@ -4056,6 +4700,18 @@ void BoardWindow::onScoreClicked() {
     board_widget->setDeadStones(dead_set);
     board_widget->setDisputedPoints(disputed_set);
     updateLabels();
+}
+
+void BoardWindow::setScoringModeWithTerritory(const QMap<QPair<int,int>, StoneColor> &tmap)
+{
+    is_scoring_mode = true;
+    // Attach the territory map to the current node so displayNode() can restore it
+    // when subsequent CMD15 moves re-render the board (otherwise displayNode() clears
+    // scoring mode on every non-final node, wiping the overlay immediately).
+    if (current_node)
+        current_node->setTerritoryMap(tmap);
+    board_widget->setScoringMode(true);
+    board_widget->setTerritoryMap(tmap);
 }
 
 void BoardWindow::onEditPositionClicked() {
@@ -4264,11 +4920,14 @@ void BoardWindow::updateGameTreeStrip() {
      edited_flags.append(node->isEdited());
      node = node->nextMove();
  }
- game_tree_strip->setMoves(moves, current_move_index, edited_flags);
+ if (game_tree_strip)
+     game_tree_strip->setMoves(moves, current_move_index, edited_flags);
 
  // Scroll to keep the active node visible
- int x = current_move_index * 24; // m_node_size
- game_tree_scroll->ensureVisible(x, 0, 36, 0);
+ if (game_tree_scroll) {
+     int x = current_move_index * 24; // m_node_size
+     game_tree_scroll->ensureVisible(x, 0, 36, 0);
+ }
 }
 
 // Server scoring implementation
@@ -4441,6 +5100,12 @@ void BoardWindow::receiveScoreEnd() {
 void BoardWindow::onBoardClicked(int x, int y) {
  qDebug() << "Board clicked at" << x << "," << y << "- is_playing:" << is_playing << "is_scoring_mode:" << is_scoring_mode;
 
+ // In local engine play, ignore clicks until the engine has finished initialising
+ if (local_play_mode && !engine_ready) {
+     qDebug() << "Board click ignored - engine not ready yet";
+     return;
+ }
+
  if (is_scoring_mode) {
  markStoneAsDead(x, y);
  } else if (in_edit_position_mode) {
@@ -4584,12 +5249,100 @@ void BoardWindow::setPlayingMode(bool playing) {
 
  // Show/hide appropriate buttons based on mode
  if (playing) {
- resign_button->setVisible(true); // Show Resign when playing
- close_button->setVisible(false); // Hide Close when playing (use title bar X)
+     resign_button->setVisible(true);  // Show Resign when playing
+     pass_button->setVisible(true);    // Show Pass when playing IGS game
+     close_button->setVisible(false);  // Hide Close when playing (use title bar X)
+     // Done button shown only when scoring phase starts (enterScoringMode)
  } else {
- resign_button->setVisible(false); // Hide Resign when observing
- close_button->setVisible(true); // Show Close when observing
+     resign_button->setVisible(false); // Hide Resign when observing
+     pass_button->setVisible(false);   // Hide Pass when observing
+     if (done_button) done_button->setVisible(false); // Never show Done in observe mode
+     close_button->setVisible(true);   // Show Close when observing
  }
+}
+
+void BoardWindow::setLocalPlayMode(bool enabled) {
+    local_play_mode = enabled;
+    if (enabled) {
+        if (pass_button)            pass_button->setVisible(true);
+        if (undo_button)            undo_button->setVisible(true);
+        if (score_button)           score_button->setVisible(true);
+        if (engine_console_panel)
+            engine_console_panel->setVisible(true);
+        // No IGS history exchange in local play — release the mv_counter guard
+        // so processMove() accepts stones immediately.
+        mv_counter = 0;
+    }
+}
+
+void BoardWindow::setEngineReady(bool ready) {
+    engine_ready = ready;
+    if (ready) {
+        QString t = windowTitle();
+        t.replace("  [Engine starting...]", "");
+        t.replace(" [Engine starting...]", "");
+        setWindowTitle(t + "  [Ready]");
+        if (engine_go_btn)    engine_go_btn->setEnabled(true);
+        if (engine_clear_btn) engine_clear_btn->setEnabled(true);
+    } else {
+        if (engine_go_btn)    engine_go_btn->setEnabled(false);
+    }
+}
+
+void BoardWindow::stepBackOneMove()
+{
+    if (!current_node || current_node->isRoot()) return;
+    GameNode *parent = current_node->prevMove();
+    if (!parent) return;
+    current_node = parent;
+    current_move_index = current_node->moveNumber();
+    StoneColor last = current_node->getColor();
+    StoneColor next = (last == WHITE_STONE) ? BLACK_STONE : BLACK_STONE;
+    Q_UNUSED(next);
+    displayNode(current_node);
+    updateMoveNavigation();
+    updateGameTreeStrip();
+}
+
+void BoardWindow::enableUndoButton(bool on)
+{
+    if (undo_button) undo_button->setEnabled(on);
+}
+
+void BoardWindow::appendEngineLog(const QString &text, bool is_sent)
+{
+    if (!engine_log) return;
+    // is_sent (>>> commands) in cyan; responses (<<<) in light green; errors in red
+    QString color = is_sent ? "#5dade2" : "#58d68d";
+    if (text.startsWith("?"))
+        color = "#e74c3c";
+    engine_log->append(
+        QString("<span style=\"color:%1; font-family:monospace;\">%2</span>")
+            .arg(color)
+            .arg(text.toHtmlEscaped())
+    );
+    // Auto-scroll to bottom
+    QScrollBar *sb = engine_log->verticalScrollBar();
+    sb->setValue(sb->maximum());
+}
+
+void BoardWindow::setEngineStatus(const QString &name, bool ready)
+{
+    if (!engine_status_label) return;
+    QString dot   = ready ? "<span style=\"color:#2ecc71\">&#9679;</span>"
+                          : "<span style=\"color:#e74c3c\">&#9679;</span>";
+    engine_status_label->setText(QString("%1 %2").arg(dot).arg(name.toHtmlEscaped()));
+    engine_status_label->setTextFormat(Qt::RichText);
+}
+
+void BoardWindow::onEngineCmdSend()
+{
+    if (!engine_cmd_input) return;
+    QString cmd = engine_cmd_input->text().trimmed();
+    if (cmd.isEmpty()) return;
+    engine_cmd_input->clear();
+    appendEngineLog(">>> " + cmd, true);
+    emit engineCmdRequested(cmd);
 }
 
 // Resign the current game
@@ -4685,7 +5438,7 @@ void BoardWindow::displayNode(GameNode* node) {
 }
 
 int BoardWindow::getTotalMoves() const {
- // Follow the active variation from root to find maximum move number
+ if (!game_root) return 0;
  return game_root->activeVariationMax();
 }
 

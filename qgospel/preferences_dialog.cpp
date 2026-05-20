@@ -8,20 +8,20 @@
 #include <QFileDialog>
 #include <QDebug>
 
-PreferencesDialog::PreferencesDialog(QWidget *parent)
-    : QDialog(parent), m_current_host_index(-1)
+PreferencesDialog::PreferencesDialog(EngineManager *engine_manager, QWidget *parent)
+    : QDialog(parent), m_current_host_index(-1), m_engines_widget(nullptr)
 {
     setWindowTitle("xgospel2 Preferences");
     setMinimumSize(600, 400);
 
-    setupUI();
+    setupUI(engine_manager);
     loadHosts();
 }
 
 PreferencesDialog::~PreferencesDialog() {
 }
 
-void PreferencesDialog::setupUI() {
+void PreferencesDialog::setupUI(EngineManager *engine_manager) {
     QVBoxLayout *main_layout = new QVBoxLayout(this);
 
     // Create tab widget
@@ -121,6 +121,18 @@ void PreferencesDialog::setupUI() {
     console_help->setStyleSheet("color: gray; font-size: 9pt;");
     console_form->addRow("", console_help);
 
+    // Console dump directory — shown here so it is always visible
+    m_consoledump_dir_edit = new QLineEdit();
+    m_consoledump_dir_edit->setPlaceholderText("$HOME/Claude_Projects/64-bit/xgospel2_console_dumps");
+    m_consoledump_dir_edit->setText(settings->readEntry("CONSOLEDUMPDIR",
+        "$HOME/Claude_Projects/64-bit/xgospel2_console_dumps"));
+    m_consoledump_browse_btn = new QPushButton("Browse...");
+    m_consoledump_browse_btn->setMaximumWidth(100);
+    QHBoxLayout *consoledump_row = new QHBoxLayout();
+    consoledump_row->addWidget(m_consoledump_dir_edit);
+    consoledump_row->addWidget(m_consoledump_browse_btn);
+    console_form->addRow("Console Dump Folder:", consoledump_row);
+
     console_group->setLayout(console_form);
     app_tab_layout->addWidget(console_group);
 
@@ -190,8 +202,46 @@ void PreferencesDialog::setupUI() {
     scoring_group->setLayout(scoring_form);
     app_tab_layout->addWidget(scoring_group);
 
+    // ---- Game Pane group ----
+    QGroupBox *game_pane_group = new QGroupBox("Game Pane");
+    QFormLayout *game_pane_form = new QFormLayout();
+
+    m_docked_game_pane_check = new QCheckBox("Use docked game selection pane");
+    m_docked_game_pane_check->setChecked(settings->getUseDockedGamePane());
+    game_pane_form->addRow("", m_docked_game_pane_check);
+
+    QLabel *docked_help = new QLabel(
+        "When enabled, all observed games share a single board window with a dockable "
+        "selection pane on the left.  Click a game button to switch the board view.  "
+        "Hover over a button to preview that game's current position.  "
+        "Requires restart to take effect.");
+    docked_help->setWordWrap(true);
+    docked_help->setStyleSheet("color: gray; font-size: 9pt;");
+    game_pane_form->addRow("", docked_help);
+
+    m_hover_board_size_spin = new QSpinBox();
+    m_hover_board_size_spin->setRange(100, 600);
+    m_hover_board_size_spin->setSingleStep(25);
+    m_hover_board_size_spin->setValue(settings->getHoverBoardSize());
+    m_hover_board_size_spin->setSuffix(" px");
+    game_pane_form->addRow("Board preview size:", m_hover_board_size_spin);
+
+    QLabel *preview_help = new QLabel("(Size of the board popup shown on hover. Default: 200 px)");
+    preview_help->setWordWrap(true);
+    preview_help->setStyleSheet("color: gray; font-size: 9pt;");
+    game_pane_form->addRow("", preview_help);
+
+    game_pane_group->setLayout(game_pane_form);
+    app_tab_layout->addWidget(game_pane_group);
+
     app_tab_layout->addStretch();
     m_tab_widget->addTab(app_settings_tab, "Application Settings");
+
+    // ========== Engines Tab ==========
+    if (engine_manager) {
+        m_engines_widget = new EnginesPrefsWidget(engine_manager, this);
+        m_tab_widget->addTab(m_engines_widget, "Engines");
+    }
 
     // ========== Bottom Buttons ==========
     QHBoxLayout *button_layout = new QHBoxLayout();
@@ -212,6 +262,7 @@ void PreferencesDialog::setupUI() {
     connect(m_new_btn, &QPushButton::clicked, this, &PreferencesDialog::onNewHost);
     connect(m_delete_btn, &QPushButton::clicked, this, &PreferencesDialog::onDeleteHost);
     connect(m_browse_btn, &QPushButton::clicked, this, &PreferencesDialog::onBrowseSaveDir);
+    connect(m_consoledump_browse_btn, &QPushButton::clicked, this, &PreferencesDialog::onBrowseConsoleDumpDir);
     connect(m_apply_btn, &QPushButton::clicked, this, &PreferencesDialog::onApply);
     connect(m_ok_btn, &QPushButton::clicked, this, &PreferencesDialog::onOk);
     connect(m_cancel_btn, &QPushButton::clicked, this, &PreferencesDialog::onCancel);
@@ -405,6 +456,26 @@ void PreferencesDialog::onBrowseSaveDir() {
     }
 }
 
+void PreferencesDialog::onBrowseConsoleDumpDir() {
+    QString currentDir = m_consoledump_dir_edit->text();
+    if (currentDir.startsWith("$HOME/"))
+        currentDir = QDir::homePath() + currentDir.mid(5);
+    else if (currentDir == "$HOME")
+        currentDir = QDir::homePath();
+
+    QString dir = QFileDialog::getExistingDirectory(
+        this, "Select Console Dump Directory",
+        currentDir.isEmpty() ? QDir::homePath() : currentDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (!dir.isEmpty()) {
+        QString homePath = QDir::homePath();
+        if (dir.startsWith(homePath))
+            dir = "$HOME" + dir.mid(homePath.length());
+        m_consoledump_dir_edit->setText(dir);
+    }
+}
+
 void PreferencesDialog::onApply() {
     if (!saveCurrentHost()) {
         return;
@@ -412,10 +483,15 @@ void PreferencesDialog::onApply() {
 
     // Save save game directory
     QString saveDir = m_savegame_dir_edit->text().trimmed();
-    if (saveDir.isEmpty()) {
+    if (saveDir.isEmpty())
         saveDir = "$HOME/Claude_Projects/64-bit/game_files";
-    }
     settings->setSaveGameDirectory(saveDir);
+
+    // Save console dump directory
+    QString dumpDir = m_consoledump_dir_edit->text().trimmed();
+    if (dumpDir.isEmpty())
+        dumpDir = "$HOME/Claude_Projects/64-bit/xgospel2_console_dumps";
+    settings->setConsoleDumpDirectory(dumpDir);
 
     // Save application settings
     settings->setConsoleBufferSize(m_console_buffer_spin->value());
@@ -423,6 +499,11 @@ void PreferencesDialog::onApply() {
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
+    settings->setUseDockedGamePane(m_docked_game_pane_check->isChecked());
+    settings->setHoverBoardSize(m_hover_board_size_spin->value());
+
+    // Save engine profiles
+    if (m_engines_widget) m_engines_widget->apply();
 
     // Save to settings
     settings->setHosts(m_hosts);
@@ -439,10 +520,15 @@ void PreferencesDialog::onOk() {
 
     // Save save game directory
     QString saveDir = m_savegame_dir_edit->text().trimmed();
-    if (saveDir.isEmpty()) {
+    if (saveDir.isEmpty())
         saveDir = "$HOME/Claude_Projects/64-bit/game_files";
-    }
     settings->setSaveGameDirectory(saveDir);
+
+    // Save console dump directory
+    QString dumpDir = m_consoledump_dir_edit->text().trimmed();
+    if (dumpDir.isEmpty())
+        dumpDir = "$HOME/Claude_Projects/64-bit/xgospel2_console_dumps";
+    settings->setConsoleDumpDirectory(dumpDir);
 
     // Save application settings
     settings->setConsoleBufferSize(m_console_buffer_spin->value());
@@ -450,6 +536,9 @@ void PreferencesDialog::onOk() {
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
+
+    // Save engine profiles
+    if (m_engines_widget) m_engines_widget->apply();
 
     // Save and close
     settings->setHosts(m_hosts);

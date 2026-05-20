@@ -98,6 +98,23 @@ void Settings::setSaveGameDirectory(const QString &directory) {
     writeEntry("SAVEGAMEDIR", directory);
 }
 
+QString Settings::getConsoleDumpDirectory() const {
+    QString defaultDir = QDir::homePath() + "/Claude_Projects/64-bit/xgospel2_console_dumps";
+    QString dir = readEntry("CONSOLEDUMPDIR", defaultDir);
+    if (dir.startsWith("$HOME/"))
+        dir = QDir::homePath() + dir.mid(5);
+    else if (dir == "$HOME")
+        dir = QDir::homePath();
+    QDir d;
+    if (!d.exists(dir))
+        d.mkpath(dir);
+    return dir;
+}
+
+void Settings::setConsoleDumpDirectory(const QString &directory) {
+    writeEntry("CONSOLEDUMPDIR", directory);
+}
+
 void Settings::saveWindowGeometry(const QString &windowName, const QRect &geometry) {
     // Format: "WINDOWNAMEgeometry [x,y,width,height]"
     // Following xgospel1 .Xdefaults style: xgospel.console.geometry: 800x600+100+50
@@ -139,6 +156,18 @@ QRect Settings::loadWindowGeometry(const QString &windowName, const QRect &defau
     return QRect(x, y, width, height);
 }
 
+void Settings::saveByteArray(const QString &key, const QByteArray &data)
+{
+    writeEntry(key, QString::fromLatin1(data.toHex()));
+}
+
+QByteArray Settings::loadByteArray(const QString &key) const
+{
+    QString hex = readEntry(key);
+    if (hex.isEmpty()) return QByteArray();
+    return QByteArray::fromHex(hex.toLatin1());
+}
+
 void Settings::saveSplitterSizes(const QString &splitterName, const QList<int> &sizes) {
     // Format: "SPLITTERNAMEsizes [size1,size2,...]"
     QString key = splitterName + "sizes";
@@ -173,6 +202,17 @@ QList<int> Settings::loadSplitterSizes(const QString &splitterName) const {
     }
 
     return sizes;
+}
+
+double Settings::getUiFontScale() const {
+    bool ok;
+    double v = m_params.value("ui_font_scale", "1.0").toDouble(&ok);
+    if (!ok || v < 0.5 || v > 4.0) return 1.0;
+    return v;
+}
+
+void Settings::setUiFontScale(double scale) {
+    m_params["ui_font_scale"] = QString::number(scale, 'f', 2);
 }
 
 void Settings::load() {

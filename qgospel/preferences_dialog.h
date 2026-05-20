@@ -10,12 +10,14 @@
 #include <QSpinBox>
 #include <QCheckBox>
 #include "settings.h"
+#include "engine_manager.h"
 
 class PreferencesDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit PreferencesDialog(QWidget *parent = nullptr);
+    explicit PreferencesDialog(EngineManager *engine_manager,
+                               QWidget *parent = nullptr);
     ~PreferencesDialog();
 
 private slots:
@@ -23,12 +25,13 @@ private slots:
     void onNewHost();
     void onDeleteHost();
     void onBrowseSaveDir();
+    void onBrowseConsoleDumpDir();
     void onApply();
     void onOk();
     void onCancel();
 
 private:
-    void setupUI();
+    void setupUI(EngineManager *engine_manager);
     void loadHosts();
     void updateHostFields();
     void clearHostFields();
@@ -47,6 +50,8 @@ private:
     QComboBox *m_codec_combo;
     QLineEdit *m_savegame_dir_edit;
     QPushButton *m_browse_btn;
+    QLineEdit *m_consoledump_dir_edit;
+    QPushButton *m_consoledump_browse_btn;
     QPushButton *m_new_btn;
     QPushButton *m_delete_btn;
 
@@ -56,6 +61,13 @@ private:
     QSpinBox *m_players_refresh_spin;
     QCheckBox *m_use_focus_colors_check;
     QComboBox *m_scoring_method_combo;
+
+    // Game Pane tab
+    QCheckBox *m_docked_game_pane_check;
+    QSpinBox  *m_hover_board_size_spin;
+
+    // Engines tab
+    EnginesPrefsWidget *m_engines_widget;
 
     // Dialog buttons
     QPushButton *m_apply_btn;

@@ -49,6 +49,10 @@ public:
     QString getSaveGameDirectory() const;
     void setSaveGameDirectory(const QString &directory);
 
+    // Console dump directory management
+    QString getConsoleDumpDirectory() const;
+    void setConsoleDumpDirectory(const QString &directory);
+
     // Window geometry management (xgospel1 .Xdefaults style)
     void saveWindowGeometry(const QString &windowName, const QRect &geometry);
     QRect loadWindowGeometry(const QString &windowName, const QRect &defaultGeometry = QRect()) const;
@@ -56,6 +60,10 @@ public:
     // Splitter state management (for board window panel sizes)
     void saveSplitterSizes(const QString &splitterName, const QList<int> &sizes);
     QList<int> loadSplitterSizes(const QString &splitterName) const;
+
+    // Binary state storage (hex-encoded) — used for QMainWindow::saveState()
+    void saveByteArray(const QString &key, const QByteArray &data);
+    QByteArray loadByteArray(const QString &key) const;
 
     // Debug flag management (all default to false)
     bool getDebugObservationState() const { return readBoolEntry("DEBUG_OBSERVATION_STATE", false); }
@@ -98,6 +106,18 @@ public:
     // Use focus-based highlighting colors (false = q5Go style, always use inactive color)
     bool getUseFocusColors() const { return readBoolEntry("use_focus_colors", true); }
     void setUseFocusColors(bool value) { writeBoolEntry("use_focus_colors", value); }
+
+    // Dockable game pane (Phase 2 — multi-game observation mode)
+    bool getUseDockedGamePane() const { return readBoolEntry("use_docked_game_pane", false); }
+    void setUseDockedGamePane(bool value) { writeBoolEntry("use_docked_game_pane", value); }
+
+    // Hover board preview size in pixels (100–600, default 200)
+    int getHoverBoardSize() const { return readIntEntry("hover_board_size", 200); }
+    void setHoverBoardSize(int px) { writeIntEntry("hover_board_size", px); }
+
+    // Global UI font scale factor (1.0 = default; future font-scale feature)
+    double getUiFontScale() const;
+    void setUiFontScale(double scale);
 
     // Save all settings to disk
     void save();

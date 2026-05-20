@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QRegExp>
-#include "board_window.h"
+#include "game_types.h"
 
 class IGSMoveParser {
 public:

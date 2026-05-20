@@ -28,8 +28,14 @@ public:
     GoBoard copy() const;
     bool isEmpty() const;
 
+    // Go rules helpers
+    int  countLiberties(int x, int y) const;  // liberties of the group containing (x,y)
+    void removeGroup(int x, int y);            // remove all stones in the group at (x,y)
+
 private:
     StoneColor board[19][19];
+    void floodFillGroup(int x, int y, StoneColor color,
+                        bool visited[19][19], QList<QPair<int,int>> &group) const;
 };
 
 // Game tree node - represents a single position in the game tree

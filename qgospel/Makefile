@@ -26,14 +26,22 @@ SOURCES = board_window.cpp \
           settings.cpp \
           preferences_dialog.cpp \
           sgf_parser.cpp \
-          stone_renderer.cpp
+          stone_renderer.cpp \
+          score_engine.cpp \
+          game_slot.cpp \
+          game_button_widget.cpp \
+          game_selection_dock.cpp \
+          katago_engine.cpp \
+          engine_manager.cpp \
+          local_game_dialog.cpp
 
 # Object files
 MAIN_OBJECT = $(MAIN_SOURCE:.cpp=.o)
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # MOC files (Qt meta-object compiler)
-MOC_HEADERS = board_window.h preferences_dialog.h
+MOC_HEADERS = board_window.h preferences_dialog.h game_slot.h game_button_widget.h game_selection_dock.h \
+              katago_engine.h engine_manager.h
 MOC_SOURCES = $(MOC_HEADERS:.h=.moc) xgospel2_fixed.moc
 
 # Target executables
@@ -124,7 +132,11 @@ help:
 
 # Dependencies
 $(MAIN_OBJECT): $(MAIN_SOURCE) xgospel2_fixed.moc xgospel2_parser.h xgospel2_games_parser.h igs_move_parser.h settings.h
-board_window.o: board_window.cpp board_window.h board_window.moc igs_move_parser.h
+board_window.o: board_window.cpp board_window.h board_window.moc igs_move_parser.h score_engine.h
+score_engine.o: score_engine.cpp score_engine.h game_tree.h
+game_slot.o: game_slot.cpp game_slot.h game_slot.moc game_tree.h igs_move_parser.h
+game_button_widget.o: game_button_widget.cpp game_button_widget.h game_button_widget.moc
+game_selection_dock.o: game_selection_dock.cpp game_selection_dock.h game_selection_dock.moc game_button_widget.h
 igs_move_parser.o: igs_move_parser.cpp igs_move_parser.h
 xgospel2_parser.o: xgospel2_parser.cpp xgospel2_parser.h
 xgospel2_games_parser.o: xgospel2_games_parser.cpp xgospel2_games_parser.h
@@ -132,4 +144,14 @@ settings.o: settings.cpp settings.h
 preferences_dialog.o: preferences_dialog.cpp preferences_dialog.h preferences_dialog.moc settings.h
 board_window.moc: board_window.h
 preferences_dialog.moc: preferences_dialog.h
+game_slot.moc: game_slot.h
+game_button_widget.moc: game_button_widget.h
+game_selection_dock.moc: game_selection_dock.h
+katago_engine.moc: katago_engine.h
+engine_manager.moc: engine_manager.h
 xgospel2_fixed.moc: xgospel2_fixed.cpp
+katago_engine.o: katago_engine.cpp katago_engine.h katago_engine.moc game_types.h
+engine_manager.o: engine_manager.cpp engine_manager.h engine_manager.moc katago_engine.h settings.h
+local_game_dialog.o: local_game_dialog.cpp local_game_dialog.h local_game_dialog.moc game_types.h
+local_game_dialog.moc: local_game_dialog.h
+	$(QT5_MOC) local_game_dialog.h -o local_game_dialog.moc

@@ -20,38 +20,11 @@
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QScrollArea>
 
-// Simple Go board representation (shared with game_tree.h)
-// Define enum BEFORE including game_tree.h
-#ifndef STONE_COLOR_DEFINED
-#define STONE_COLOR_DEFINED
-enum StoneColor {
-    EMPTY = 0,          // Empty point
-    BLACK_STONE = 1,
-    WHITE_STONE = 2,
-    EMPTY_STONE = 0     // Alias for EMPTY (used by game_tree)
-};
-#endif
-
-#include "game_tree.h"
+// game_types.h provides StoneColor, GameMode, GameMove — must come before game_tree.h
+#include "game_types.h"
 #include "stone_renderer.h"
-
-// Game modes (inspired by q5Go)
-enum GameMode {
-    MODE_NORMAL = 0,    // Regular observation/playing
-    MODE_EDIT = 1,      // Edit/setup stones
-    MODE_SCORE = 2      // Scoring mode
-};
-
-struct GameMove {
-    int game_id;
-    int move_number;
-    StoneColor color;
-    int x, y;  // Board coordinates
-    QString time_info;
-    QString captured;
-    bool is_live_move;  // true for live moves, false for board reconstruction
-    QDateTime received_time;
-};
+#include "game_selection_dock.h"
+#include "game_slot.h"
 
 // Horizontal game tree navigation strip (linear games only for now)
 class GameTreeStrip : public QWidget {
@@ -117,6 +90,7 @@ public:
     void placeMoveAt(int x, int y, StoneColor color);
     StoneColor getStoneAt(int x, int y) const;
     void clearBoard();
+    void clearHover();
     void setLastMove(int x, int y);
     void setLastEditMove(int x, int y);  // Blue marker for user-edited stones
     void clearEditMarker() { last_edit_x = last_edit_y = -1; update(); }
@@ -128,8 +102,16 @@ public:
     // Scoring mode visualization
     void setScoringMode(bool enabled) { scoring_mode_enabled = enabled; update(); }
     void setTerritoryMap(const QMap<QPair<int, int>, StoneColor> &map) { territory_map = map; update(); }
+    const QMap<QPair<int, int>, StoneColor> &getTerritoryMap() const { return territory_map; }
     void setDeadStones(const QSet<QPair<int, int>> &dead_stones);
     void setDisputedPoints(const QSet<QPair<int, int>> &disputed) { disputed_positions = disputed; update(); }
+
+    // Accessors for snapshotToSlot
+    int getBoardSize()    const { return board_size; }
+    int getLastMoveX()    const { return last_move_x; }
+    int getLastMoveY()    const { return last_move_y; }
+    const QSet<QPair<int,int>>& getDeadStonePositions() const { return dead_stone_positions; }
+    const QSet<QPair<int,int>>& getDisputedPositions()  const { return disputed_positions; }
 
     // Edit mode
     void setGameMode(GameMode mode) { game_mode = mode; hover_x = hover_y = -1; if (mode != MODE_EDIT) { last_edit_x = last_edit_y = -1; } update(); }
@@ -137,6 +119,15 @@ public:
     void removeStoneAt(int x, int y);  // Remove stone during edit
     void setNextPlayerColor(StoneColor color) { next_player_color = color; }
     StoneColor getNextPlayerColor() const { return next_player_color; }
+
+    // Off-screen render for hover popup previews.
+    // Accepts an external board state array so it works for non-active game slots
+    // without disturbing the live widget state.
+    QPixmap renderToPixmap(int size,
+                           const int ext_board_state[19][19],
+                           int ext_board_size,
+                           int ext_last_move_x, int ext_last_move_y,
+                           const QString &title_overlay = QString()) const;
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -190,12 +181,16 @@ private:
     QPushButton *save_button;          // Save game to SGF
     QPushButton *edit_button;          // Edit/Analyze button (q5Go style)
     QPushButton *resign_button;
+    QPushButton *done_button;
     QPushButton *close_button;
 
     // Splitters for resizable panels
     QSplitter *main_splitter;          // Horizontal: board vs info panel
     QSplitter *right_splitter;         // Vertical: info/comments/observers
     QSplitter *info_splitter;          // Horizontal: player info vs analysis pane
+
+    // Dockable game selection pane (non-null only when use_docked_game_pane = true)
+    GameSelectionDock *game_selection_dock = nullptr;
 
     // Move navigation controls
     QPushButton *first_move_button;
@@ -228,7 +223,19 @@ private:
     QDateTime game_start_time;
     GameMode game_mode;  // Current game mode (normal/edit/score)
     bool is_edit_window;  // True if this is an edit/analysis window (child of observe window)
+    bool is_shared_window = false; // True when shared across multiple docked games — X closes active game only
     bool in_edit_position_mode;  // True when Edit Position (free placement) is active
+    bool local_play_mode = false; // True when playing a local engine game (no IGS)
+    bool engine_ready    = false; // True after engineReady() fires — gates board clicks
+
+    // Engine console panel (local play mode only)
+    QFrame    *engine_console_panel;
+    QLabel    *engine_status_label;
+    QPushButton *engine_go_btn;    // "Engine: Go" — triggers genmove
+    QPushButton *engine_clear_btn; // "Clear Board" — sends clear_board
+    QTextEdit *engine_log;
+    QLineEdit *engine_cmd_input;
+    QPushButton *engine_send_btn;
 
     // Game tree strip (edit window only)
     GameTreeStrip *game_tree_strip;
@@ -238,6 +245,7 @@ private:
     QPushButton *update_button;
     QPushButton *pass_button;
     QPushButton *score_button;
+    QPushButton *undo_button;   // local play mode undo (sends GTP undo x2 via signal)
     QPushButton *edit_position_button;
     QPushButton *cancel_edit_button;
     QPushButton *append_button;
@@ -329,6 +337,24 @@ public:
     BoardWindow(QWidget *parent = nullptr, const QString &username = "", bool edit_window = false);
     ~BoardWindow();
 
+    GameSelectionDock *getGameSelectionDock() const { return game_selection_dock; }
+
+    // Render an external board state to a pixmap (for dock button thumbnails).
+    QPixmap renderSlotToPixmap(int size,
+                               const int board_state[19][19],
+                               int board_size,
+                               int last_move_x, int last_move_y,
+                               const QString &title_overlay = QString()) const;
+
+    // Docked-pane mode: load a GameSlot's state into this window's UI widgets.
+    void loadSlot(GameSlot *slot);
+    // Docked-pane mode: snapshot current UI / widget state back into the slot
+    // before switching away.
+    void snapshotToSlot(GameSlot *slot);
+    // Lightweight snapshot of just the board position (for hover pixmap refresh
+    // after a live move — does NOT disconnect the clock timer).
+    void snapshotBoardStateToSlot(GameSlot *slot);
+
     void startObserving(int game_id, const QString &white, const QString &black,
                        const QString &w_rank, const QString &b_rank);
     void loadSGF(GameNode* root, const QString &white, const QString &black,
@@ -338,6 +364,7 @@ public:
                  const QString &game_name = QString());
     void stopObserving();
     void clearMoveHistoryBeforeMovesCommand();  // Clear move_history before requesting moves to prevent duplicates
+    GameNode* getGameRoot() const { return game_root; } // For slot sync after tree reset
     void setPlayingMode(bool playing);
     bool isObserving() const { return is_observing; }
     bool isPlaying() const { return is_playing; }
@@ -359,18 +386,36 @@ public:
     void updateGameResult(const QString &result);
     void updateGameDetails(const QString &game_type, int byoyomi_seconds);
     void lockGameType();  // Lock game type to prevent IGS 15 format from overriding
+    void setLocalPlayMode(bool enabled);
+    void setEngineReady(bool ready);   // Called when KataGo finishes init
+    void stepBackOneMove();            // Local play undo — steps back one node in game tree
+    void enableUndoButton(bool on);    // Called by xgospel2_fixed after each move pair
+    int  getCurrentMove()        const { return current_move; }
+    int  getConsecutivePasses()  const { return consecutive_passes; }
+
+    // Engine console (local play mode)
+    void appendEngineLog(const QString &text, bool is_sent);  // is_sent=true → cyan, false → white
+    void setEngineStatus(const QString &name, bool ready);    // Updates status dot + label
     void updateCaptures(int white_caps, int black_caps);
     void updatePlayerNames(const QString &white, const QString &black);
+    void setWhiteRank(const QString &rank);
+    void setBlackRank(const QString &rank);
+    const QMap<QPair<int,int>,int> &getTerritoryOwnership() const { return territory_ownership; }
+    StoneColor getStoneAt(int x, int y) const { return board_widget ? board_widget->getBoardState(x, y) : EMPTY; }
+    QSet<QPair<int,int>> getDeadStones() const { return board_widget ? board_widget->getDeadStonePositions() : QSet<QPair<int,int>>(); }
     void setCustomGameTitle(const QString &title);
+    void setSharedWindow(bool shared) { is_shared_window = shared; }
     void clearObservers();
     void addObserver(const QString &name, const QString &rank);
     
     // Counting phase functions
     void enterScoringMode();
+    void enterScoringModeForResult(); // Like enterScoringMode but always runs calculateScore
     void exitScoringMode();
     void markStoneAsDead(int x, int y);
     void calculateScore();
-    
+    void setScoringModeWithTerritory(const QMap<QPair<int,int>, StoneColor> &tmap);
+
     // Server scoring functions
     void setServerScore(double white_score, double black_score);
     
@@ -409,15 +454,7 @@ public:
     void goToLastMove();
     void updateMoveNavigation();
     
-    // q5Go-style group tracking
-    struct StoneGroup {
-        QSet<QPair<int, int>> stones;
-        int liberties;
-        bool alive;
-        
-        StoneGroup(const QSet<QPair<int, int>>& s, int lib) : stones(s), liberties(lib), alive(true) {}
-    };
-    
+    // q5Go-style group tracking (StoneGroup defined in game_types.h)
     QList<StoneGroup> white_groups;
     QList<StoneGroup> black_groups;
     
@@ -461,6 +498,7 @@ private slots:
     void onCancelEditClicked();
     void onAppendClicked();
     void onUndoEditClicked();
+    void onEngineCmdSend();  // Engine console manual command send
 
 private:
     void setupUI();
@@ -484,6 +522,7 @@ private:
     // Game tree navigation helpers
     void displayNode(GameNode* node);  // Display a specific node's position
     int getTotalMoves() const;          // Get total moves in active variation
+    void rebuildGameTreeFromMoveHistory(); // Reconstruct game_root tree from move_history (for docked inactive slots)
 
     // Capture calculation helpers for live move processing
     int countLiberties(const GoBoard& board, int x, int y);
@@ -499,6 +538,12 @@ signals:
     void sayRequested(int game_id, const QString &message); // For private player communication
     void observersRequested(int game_id);
     void moveRequested(int game_id, int x, int y);
+    void passRequested(int game_id);
+    void engineCmdRequested(const QString &cmd);  // Manual GTP command from console
+    void engineGoRequested();                     // User pressed "Engine: Go"
+    void engineClearRequested();                  // User pressed "Clear Board"
+    void undoRequested();                         // User pressed "Undo" in local play mode
+    void doneRequested(int game_id);              // User pressed "Done" in scoring phase
 };
 
 #endif // BOARD_WINDOW_H

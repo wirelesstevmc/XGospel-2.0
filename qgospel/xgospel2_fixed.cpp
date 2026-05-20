@@ -17,22 +17,29 @@
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QFormLayout>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QGridLayout>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QStyledItemDelegate>
+#include <QtCore/QStack>
+#include <QtCore/QQueue>
+#include <QtCore/QSet>
 #include <QtGui/QPainter>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QCursor>
 #include <QtGui/QCloseEvent>
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QTimer>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEventLoop>
 #include <QtNetwork/QTcpSocket>
@@ -44,10 +51,14 @@
 #include "sgf_parser.h"
 #include "settings.h"
 #include "preferences_dialog.h"
+#include "engine_manager.h"
+#include "katago_engine.h"
+#include "local_game_dialog.h"
+#include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v51_R1-COMPLEX-SCORING";
-const QString XGOSPEL_BUILD_DATE = "2026-04-30";
+const QString XGOSPEL_VERSION = "v149";
+const QString XGOSPEL_BUILD_DATE = "2026-05-20";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -1212,6 +1223,38 @@ public:
  }
 
 
+	QString getRankForPlayer(const QString &player_name) const {
+		if (!players_model) return "?";
+		for (int row = 0; row < players_model->rowCount(); ++row) {
+			QStandardItem *name_item = players_model->item(row, 1);
+			if (name_item && name_item->text().compare(player_name, Qt::CaseInsensitive) == 0) {
+				QStandardItem *rank_item = players_model->item(row, 2);
+				if (rank_item && !rank_item->text().isEmpty())
+					return rank_item->text();
+			}
+		}
+		return "?";
+	}
+
+	void upsertPlayerRank(const QString &player_name, const QString &rank) {
+		if (!players_model || player_name.isEmpty() || rank.isEmpty()) return;
+		for (int row = 0; row < players_model->rowCount(); ++row) {
+			QStandardItem *name_item = players_model->item(row, 1);
+			if (name_item && name_item->text().compare(player_name, Qt::CaseInsensitive) == 0) {
+				QStandardItem *rank_item = players_model->item(row, 2);
+				if (rank_item) rank_item->setText(rank);
+				return;
+			}
+		}
+		// Player not in model — insert a stub row (col 1=name, col 2=rank, rest empty)
+		QList<QStandardItem*> row;
+		for (int i = 0; i < players_model->columnCount(); ++i)
+			row << new QStandardItem();
+		row[1]->setText(player_name);
+		row[2]->setText(rank);
+		players_model->appendRow(row);
+	}
+
 	void updatePlayerGameStatus(const QString& player_name, const QString& game_nr, const QString& observing = QString()) {
 		if (!players_model) return;
 		qDebug() << "[PLAYER-STATUS] Updating" << player_name << "game:" << game_nr;
@@ -1711,8 +1754,8 @@ public:
  }
 
  // If no dialog exists, auto-open one for this incoming tell
- // Only do this if players_model has data (i.e., player list has been loaded)
- if (!dialogExists && players_model && players_model->rowCount() > 0) {
+ // Open regardless of whether players_model is populated — openStatsDialogForPlayer handles missing data with defaults
+ if (!dialogExists) {
  qDebug() << "[NOTIFY] Dialog doesn't exist for sender:" << sender << "- auto-opening";
  openStatsDialogForPlayer(sender);
  // After opening, find the newly created dialog
@@ -1722,8 +1765,6 @@ public:
  break;
  }
  }
- } else if (!dialogExists && (!players_model || players_model->rowCount() == 0)) {
- qDebug() << "[WAIT] Players list not loaded yet, deferring auto-dialog for:" << sender;
  }
 
  // Send incoming tell to the target dialog (or all dialogs if sender matches)
@@ -2386,12 +2427,8 @@ public:
           << "new size:" << observed_ids.size();
  observed_game_ids = observed_ids;
 
- // Force IMMEDIATE synchronous repaint (not deferred update())
- // Use repaint() instead of update() to force immediate painting even when window lacks focus
  if (games_table && games_table->viewport()) {
- qDebug() << "[updateObservedGames] Forcing viewport repaint";
- games_table->viewport()->repaint();
- qDebug() << "[updateObservedGames] Viewport repaint complete";
+ games_table->viewport()->update();
  } else {
  qDebug() << "[updateObservedGames] WARNING: games_table or viewport is NULL!";
  }
@@ -2790,6 +2827,69 @@ public slots:
  }
 };
 
+// ---------------------------------------------------------------------------
+// EngineVsEngineDialog — pick Black/White engine profiles, komi, handicap
+// ---------------------------------------------------------------------------
+class EngineVsEngineDialog : public QDialog {
+public:
+    explicit EngineVsEngineDialog(const QList<EngineProfile> &profiles,
+                                  QWidget *parent = nullptr)
+        : QDialog(parent)
+    {
+        setWindowTitle("Engine vs Engine");
+        setFixedWidth(340);
+
+        QVBoxLayout *main_layout = new QVBoxLayout(this);
+        QFormLayout *form = new QFormLayout();
+        m_black_combo = new QComboBox();
+        m_white_combo = new QComboBox();
+        for (const EngineProfile &p : profiles) {
+            m_black_combo->addItem(p.name, p.id);
+            m_white_combo->addItem(p.name, p.id);
+        }
+        if (profiles.size() >= 2) m_white_combo->setCurrentIndex(1);
+        form->addRow("Black engine:", m_black_combo);
+        form->addRow("White engine:", m_white_combo);
+
+        m_handicap_spin = new QSpinBox();
+        m_handicap_spin->setRange(0, 9);
+        m_handicap_spin->setValue(0);
+        m_komi_spin = new QDoubleSpinBox();
+        m_komi_spin->setRange(0.0, 9.5);
+        m_komi_spin->setSingleStep(0.5);
+        m_komi_spin->setValue(6.5);
+        m_komi_spin->setDecimals(1);
+        form->addRow("Handicap:", m_handicap_spin);
+        form->addRow("Komi:", m_komi_spin);
+        connect(m_handicap_spin,
+                static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+                [this](int v){ m_komi_spin->setValue(v > 0 ? 0.5 : 6.5); });
+        main_layout->addLayout(form);
+
+        QHBoxLayout *btns = new QHBoxLayout();
+        btns->addStretch();
+        QPushButton *ok  = new QPushButton("Start");
+        QPushButton *can = new QPushButton("Cancel");
+        ok->setDefault(true);
+        connect(ok,  &QPushButton::clicked, this, &QDialog::accept);
+        connect(can, &QPushButton::clicked, this, &QDialog::reject);
+        btns->addWidget(ok);
+        btns->addWidget(can);
+        main_layout->addLayout(btns);
+    }
+
+    QString blackProfileId() const { return m_black_combo->currentData().toString(); }
+    QString whiteProfileId() const { return m_white_combo->currentData().toString(); }
+    double  komi()           const { return m_komi_spin->value(); }
+    int     handicap()       const { return m_handicap_spin->value(); }
+
+private:
+    QComboBox      *m_black_combo;
+    QComboBox      *m_white_combo;
+    QDoubleSpinBox *m_komi_spin;
+    QSpinBox       *m_handicap_spin;
+};
+
 class FixedXGospelWindow : public QMainWindow {
  Q_OBJECT
 
@@ -2802,6 +2902,13 @@ private:
     MatchDialog *pending_match_dialog;  // Bug 34: Track pending match dialog for server command
  QList<BoardWindow*> board_windows;
  BoardWindow *most_recently_observed_board; // Track most recent observation for teaching title assignment
+ int most_recently_observed_game_id = -1;  // Fallback for title lines that arrive before first Command 15
+
+ // Docked-pane mode members (populated only when use_docked_game_pane = true)
+ bool               docked_pane_mode       = false;
+ QList<GameSlot*>   game_slots;
+ int                active_slot_game_id    = -1;
+ BoardWindow       *shared_board_window    = nullptr;
  IGSMoveParser *move_parser;
  int current_game_context; // Track which game context we're in
  bool waiting_for_players;
@@ -2866,11 +2973,18 @@ private:
  // Manual observe command state
  bool pending_manual_observe;
  int pending_observe_game_id;
+
+ // History replay: when "moves N" is sent, pin current_game_context to N until
+ // the replay finishes so interleaved CMD15 headers from other games don't hijack
+ // move routing and cause all history moves to be dropped as SKIPPED.
+ // Per-slot replay state machines replace the old global history_replay_game_id pin.
+ // No global pin, no deferred queue — each slot tracks its own replay state.
  
  // IGS territory data state (following q5Go protocol)
  bool receiving_territory_data;
  int territory_data_column;
  BoardWindow* territory_board;
+ GameSlot*    territory_slot;   // non-null when territory data is for an inactive docked slot
  QString territory_player_name; // Track first player name from Command 22 to match board
  
  // TCP buffering variables (from q5Go)
@@ -2879,6 +2993,57 @@ private:
 
  // Connection menu for dynamic account management
  QMenu *connection_menu;
+
+ // Engines menu and attach submenu (rebuilt dynamically)
+ QMenu *engines_menu   = nullptr;
+ QMenu *attach_submenu = nullptr;
+
+ // AI engine integration
+ EngineManager *engine_manager   = nullptr;  // human-vs-engine / EvE black engine
+ EngineManager *engine_manager2  = nullptr;  // EvE white engine
+ BoardWindow   *engine_board     = nullptr;
+ StoneColor     engine_color     = BLACK_STONE;  // which color the engine plays (human-vs-engine)
+ int            engine_game_id   = -2;  // sentinel — negative avoids IGS game ID collision
+ QString        m_pending_engine_profile_id;
+ bool           eve_mode         = false;  // true = engine-vs-engine game in progress
+ bool           m_eve_black_ready = false;
+ bool           m_eve_white_ready = false;
+ // EvE deferred white engine start (stored until black is ready)
+ QString        m_eve_white_id;
+ double         m_eve_komi       = 6.5;
+ int            m_eve_handicap   = 0;
+
+ // --- Bot mode (Phase 2) ---
+ bool           bot_mode_active  = false;  // true = auto-accept matches, engine plays on IGS
+ bool           bot_engine_ready = false;  // true after onBotEngineReady completes (set_free_handicap sent)
+ QAction       *bot_mode_action  = nullptr; // menu toggle (kept for checkmark updates)
+ StoneColor     bot_color        = BLACK_STONE; // color bot plays in current IGS game
+ int            bot_game_id      = -1;    // IGS game ID of current bot game (-1 = none)
+ int            bot_main_time    = 0;     // main time in seconds from match params
+ int            bot_byoyomi_time = 300;   // byoyomi period in seconds (default 5 min)
+ int            bot_byoyomi_stones = 25;  // stones per byoyomi period (default 25)
+ double         bot_komi         = 6.5;
+ int            bot_handicap     = 0;
+ int            bot_boardsize    = 19;
+ int            bot_time_remaining = 0;   // bot's remaining time (seconds), updated per move
+ int            bot_stones_remaining = 0; // stones remaining in current byoyomi period
+ QString        bot_opponent;             // opponent's IGS handle
+ bool           bot_scoring_pending  = false; // true after scoring trigger, waiting for ownership
+ bool           bot_done_sent        = false; // true after done written to socket during scoring phase
+ bool           bot_pass2_rendered   = false; // true after Pass 2 territory overlay fired (once only)
+ bool           bot_overlay_active   = false; // true while KataGo territory overlay is displayed (pass 1 or 2)
+ QStringList               bot_pending_removes;          // IGS coord strings for remove commands
+ QList<QPair<int,int>>     bot_pending_remove_positions; // board (x,y) for markStoneAsDead
+ QVector<float> bot_cached_ownership;        // ownership prefetched during pass sequence; consumed at scoring
+ QVector<float> bot_ownership_snapshot;     // ownership saved when bot sends done; used for progressive territory renders
+ // Canned responses sent at random when a tell arrives during bot mode
+ const QStringList bot_tell_responses = {
+     "Hello! I am a KataGo bot. Good luck and have fun!",
+     "I am an automated bot powered by KataGo. I cannot read tells but wish you a great game!",
+     "Hi there! I am a Go bot — I cannot chat, but I enjoy playing. GL HF!",
+     "Thanks for the message! I am a bot so I cannot respond personally. Enjoy the game!",
+     "Good luck! I am powered by KataGo and will do my best. Feel free to review the game afterwards."
+ };
 
 public:
  FixedXGospelWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
@@ -2894,6 +3059,9 @@ public:
  my_account_name = ""; // Will be set when we connect
  my_account_rank = "NR"; // Default to unranked
  most_recently_observed_board = nullptr; // Initialize teaching title tracking
+ docked_pane_mode = settings->getUseDockedGamePane();
+ engine_manager  = new EngineManager(this);
+ engine_manager2 = new EngineManager(this);
  waiting_for_players = false;
  waiting_for_games = false;
  auto_launched_windows = false;
@@ -2929,6 +3097,7 @@ public:
  receiving_territory_data = false;
  territory_data_column = 0;
  territory_board = nullptr;
+ territory_slot  = nullptr;
  territory_player_name = "";
  
  // Initialize TCP buffering
@@ -3100,6 +3269,27 @@ public:
  // Console menu with suppression options
  QMenu *console_menu = menu->addMenu("Console");
 
+ QAction *save_console_action = console_menu->addAction("Save Console to File...");
+ connect(save_console_action, &QAction::triggered, this, [this]() {
+     QString dumpDir = settings->getConsoleDumpDirectory();
+     QString defaultName = dumpDir + "/xgospel2_console_dump_" +
+         QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + ".txt";
+     QString path = QFileDialog::getSaveFileName(this, "Save Console",
+         defaultName, "Text files (*.txt);;All files (*)");
+     if (path.isEmpty()) return;
+     QFile f(path);
+     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+         output_console->append(QString("[Console] ERROR: could not open %1 for writing").arg(path));
+         return;
+     }
+     QTextStream out(&f);
+     out << output_console->toPlainText();
+     f.close();
+     output_console->append(QString("[Console] Saved to %1").arg(path));
+ });
+
+ console_menu->addSeparator();
+
  // Add "Suppress All Output" option first
  QAction *suppress_all_action = console_menu->addAction("Suppress All Output");
  suppress_all_action->setCheckable(true);
@@ -3142,6 +3332,22 @@ public:
  QMenu *settings_menu = menu->addMenu("Settings");
  QAction *preferences_action = settings_menu->addAction("Preferences...");
  connect(preferences_action, &QAction::triggered, this, &FixedXGospelWindow::showPreferences);
+
+ // Engines menu
+ engines_menu = menu->addMenu("Engines");
+ engines_menu->addAction("Manage Engines...", this, &FixedXGospelWindow::openEnginesPrefs);
+ engines_menu->addSeparator();
+ attach_submenu = engines_menu->addMenu("Attach Engine");
+ engines_menu->addAction("Detach Engine", this, &FixedXGospelWindow::detachEngine);
+ engines_menu->addSeparator();
+ engines_menu->addAction("Play vs Engine...", this, &FixedXGospelWindow::launchLocalEngineGame);
+ engines_menu->addAction("Engine vs Engine...", this, &FixedXGospelWindow::launchEngineVsEngine);
+ engines_menu->addSeparator();
+ bot_mode_action = engines_menu->addAction("Bot Mode (IGS)");
+ bot_mode_action->setCheckable(true);
+ bot_mode_action->setChecked(false);
+ connect(bot_mode_action, &QAction::toggled, this, &FixedXGospelWindow::toggleBotMode);
+ connect(engines_menu, &QMenu::aboutToShow, this, &FixedXGospelWindow::populateAttachSubmenu);
 
  // Help menu with About dialog
  QMenu *help_menu = menu->addMenu("Help");
@@ -3291,6 +3497,8 @@ private slots:
  if (!this->suppress_server_console) output_console->append(">>> CONNECTED to IGS successfully!");
  updateStatus(QString("Connected - logging in as %1").arg(login_username));
  connected_to_igs = true;
+ // Disable Nagle algorithm so small move packets are sent immediately
+ socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
  // Set account name for match dialogs
  my_account_name = login_username;
@@ -3331,46 +3539,13 @@ private slots:
  }
  
  void onDataReceived() {
- // Use q5Go's buffering approach to prevent TCP packet fragmentation issues
- for (;;) {
- int available = socket->bytesAvailable();
- if (available == 0) {
- return;
- }
- 
- // If we can't read a complete line, buffer the incomplete data
- if (!socket->canReadLine()) {
- char *new_data = new char[available + len_saved_data];
- if (saved_data) {
- memcpy(new_data, saved_data, len_saved_data);
- delete[] saved_data;
- }
- int nread = socket->read(new_data + len_saved_data, available);
- saved_data = new_data;
- len_saved_data += nread;
- return; // Wait for more data
- }
- 
- // Process complete lines
+ // Read all complete lines from the socket.
+ // Use QTcpSocket::readLine() returning QByteArray (no size limit) to avoid
+ // truncation bugs that dropped moves when bytesAvailable() was computed before
+ // the full line arrived in the kernel buffer.
  while (socket->canReadLine()) {
- int size = socket->bytesAvailable() + 1;
- char *c = new char[size + len_saved_data];
- if (len_saved_data) {
- memcpy(c, saved_data, len_saved_data);
- }
- socket->readLine(c + len_saved_data, size);
- QString line = QString::fromUtf8(c);
- delete[] c;
- 
- // Clean up saved data after processing
- len_saved_data = 0;
- if (saved_data) {
- delete[] saved_data;
- saved_data = nullptr;
- }
- 
- // Remove trailing newline characters
- line = line.trimmed();
+ QByteArray raw = socket->readLine();
+ QString line = QString::fromUtf8(raw).trimmed();
  if (line.isEmpty()) continue;
 
  // Parse stats command response (Command 9)
@@ -3690,6 +3865,29 @@ private slots:
  qDebug() << "[STATS-DEBUG] Parsed match prefs:" << stats_match_prefs;
  }
 
+ if (players_window && !stats_player_name.isEmpty() && !stats_rank.isEmpty()) {
+     players_window->upsertPlayerRank(stats_player_name, stats_rank);
+     // Refresh the bot board if this rank arrived for the current bot opponent
+     if (bot_mode_active && bot_game_id != -1 &&
+         stats_player_name.compare(bot_opponent, Qt::CaseInsensitive) == 0 &&
+         engine_board) {
+         bool is_white_opp = (bot_color == BLACK_STONE);
+         if (docked_pane_mode) {
+             if (GameSlot *bslot = findSlot(bot_game_id)) {
+                 if (is_white_opp) bslot->white_rank = stats_rank;
+                 else              bslot->black_rank = stats_rank;
+                 // Refresh the dock button now that we have the real rank
+                 if (shared_board_window) {
+                     if (GameSelectionDock *dock2 = shared_board_window->getGameSelectionDock())
+                         dock2->updateGameRanks(bot_game_id, bslot->black_rank, bslot->white_rank);
+                 }
+             }
+         }
+         if (is_white_opp) engine_board->setWhiteRank(stats_rank);
+         else              engine_board->setBlackRank(stats_rank);
+     }
+ }
+
  if (players_window && !stats_player_name.isEmpty() && !stats_rated.isEmpty()) {
  qDebug() << "[STATS] Got complete stats:" << stats_player_name
  << "Wins:" << stats_wins << "Losses:" << stats_losses
@@ -3798,10 +3996,19 @@ private slots:
  if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG: observeGame call completed, cleared pending flags"));
  } else {
  // Update existing board window with correct player names
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->white_player = white_player;
+         slot->black_player = black_player;
+         if (game_id == active_slot_game_id)
+             shared_board_window->updatePlayerNames(white_player, black_player);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == game_id) {
  board->updatePlayerNames(white_player, black_player);
  if (!this->suppress_server_console) output_console->append(QString(">>> UPDATED PLAYER NAMES for game %1").arg(game_id));
+ }
  }
  }
  }
@@ -3832,11 +4039,19 @@ private slots:
  if (!this->suppress_server_console) output_console->append(QString(">>> OBSERVER LIST START for game %1").arg(extracted_game_id));
  parsing_observers = true;
  observer_game_id = extracted_game_id;
- 
+
  // Clear existing observers
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(extracted_game_id)) {
+         slot->observers.clear();
+         if (extracted_game_id == active_slot_game_id)
+             shared_board_window->clearObservers();
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == extracted_game_id) {
  board->clearObservers();
+ }
  }
  }
  }
@@ -3856,11 +4071,20 @@ private slots:
  QString observer_rank = words[i + 1];
  
  if (!this->suppress_server_console) output_console->append(QString(">>> FOUND OBSERVER: %1 [%2]").arg(observer_name, observer_rank));
- 
- // Add to board windows
+
+ // Add to slot/board window
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(observer_game_id)) {
+         GameSlot::ObserverEntry e; e.name = observer_name; e.rank = observer_rank;
+         slot->observers.append(e);
+         if (observer_game_id == active_slot_game_id)
+             shared_board_window->addObserver(observer_name, observer_rank);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == observer_game_id) {
  board->addObserver(observer_name, observer_rank);
+ }
  }
  }
  }
@@ -3883,8 +4107,16 @@ private slots:
  QString observer_rank = rank_pattern.cap(2);
  if (!observer_name.isEmpty() && !observer_rank.isEmpty()) {
  if (!this->suppress_server_console) output_console->append(QString(">>> ALTERNATE PARSING - FOUND OBSERVER: %1 [%2]").arg(observer_name, observer_rank));
- 
- // Add to board windows
+
+ // Add to slot/board window
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(observer_request_game_id)) {
+         GameSlot::ObserverEntry e; e.name = observer_name; e.rank = observer_rank;
+         slot->observers.append(e);
+         if (observer_request_game_id == active_slot_game_id)
+             shared_board_window->addObserver(observer_name, observer_rank);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == observer_request_game_id) {
  board->addObserver(observer_name, observer_rank);
@@ -3893,6 +4125,7 @@ private slots:
  }
  }
  }
+ } // end if (waiting_for_observer_response && !parsing_observers)
 
  // Parse IGS Command 24 - Say messages (private player communication)
  // Possible formats:
@@ -3940,41 +4173,46 @@ private slots:
  if (parsed) {
  if (!this->suppress_server_console) output_console->append(QString(">>> MESSAGE from %1: %2").arg(sender, message));
 
- // First try to send to a playing board (if this is a say during a game)
- int boards_checked = 0;
  int boards_delivered = 0;
- for (BoardWindow* board : board_windows) {
- boards_checked++;
- if (board->isPlaying() && !board->isFinished()) {
- // Check if sender is one of the players in this game
- QString white = board->getWhitePlayer();
- QString black = board->getBlackPlayer();
 
- if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG: Checking board %1: white=%2 black=%3 sender=%4")
- .arg(boards_checked).arg(white, black, sender));
-
- if (sender.compare(white, Qt::CaseInsensitive) == 0 ||
- sender.compare(black, Qt::CaseInsensitive) == 0) {
- board->processComment(sender, message, false);
- if (!this->suppress_server_console) output_console->append(QString(">>> [OK] MESSAGE DELIVERED to game board: %1 vs %2")
- .arg(white, black));
- boards_delivered++;
- break;
- }
- }
+ // Dock mode: deliver to shared_board_window if sender is a player in the active (non-finished) game
+ if (docked_pane_mode && shared_board_window && active_slot_game_id != -1) {
+     if (GameSlot *slot = findSlot(active_slot_game_id); slot && !slot->game_finished) {
+         QString white = shared_board_window->getWhitePlayer();
+         QString black = shared_board_window->getBlackPlayer();
+         if (sender.compare(white, Qt::CaseInsensitive) == 0 ||
+             sender.compare(black, Qt::CaseInsensitive) == 0) {
+             GameSlot::CommentEntry ce; ce.user = sender; ce.text = message; ce.is_kibitz = false;
+             slot->comments.append(ce);
+             shared_board_window->processComment(sender, message, false);
+             boards_delivered++;
+         }
+     }
  }
 
- // If not delivered to a game board, treat it as a tell/private message
- // and broadcast to Player Stats Dialogs
+ // Non-dock mode: search board_windows for a matching playing board
+ if (!docked_pane_mode) {
+     for (BoardWindow* board : board_windows) {
+         if (board->isPlaying() && !board->isFinished()) {
+             QString white = board->getWhitePlayer();
+             QString black = board->getBlackPlayer();
+             if (sender.compare(white, Qt::CaseInsensitive) == 0 ||
+                 sender.compare(black, Qt::CaseInsensitive) == 0) {
+                 board->processComment(sender, message, false);
+                 if (!this->suppress_server_console) output_console->append(QString(">>> [OK] MESSAGE DELIVERED to game board: %1 vs %2")
+                     .arg(white, black));
+                 boards_delivered++;
+                 break;
+             }
+         }
+     }
+ }
+
+ // If not delivered to a game board, treat as tell and broadcast to Player Stats Dialogs
  if (boards_delivered == 0) {
- if (!this->suppress_server_console) output_console->append(QString(">>> [TELL] TELL MESSAGE from %1 (no matching game board)").arg(sender));
- qDebug() << "[DEBUG] Checking players_window for broadcast - players_window=" << players_window;
- if (players_window) {
- qDebug() << "[BROADCAST] Broadcasting TELL message to player dialogs - sender:" << sender << "message:" << message;
- players_window->broadcastIncomingTell(sender, message);
- } else {
- qDebug() << "[ERROR] ERROR: players_window is NULL - cannot broadcast tell!";
- }
+     if (!this->suppress_server_console) output_console->append(QString(">>> [TELL] TELL MESSAGE from %1 (no matching game board)").arg(sender));
+     if (players_window)
+         players_window->broadcastIncomingTell(sender, message);
  }
  } else {
  if (!this->suppress_server_console) output_console->append(QString(">>> [WARN] SAY PARSE FAILED: Could not match any pattern for line: %1").arg(line));
@@ -3991,14 +4229,41 @@ private slots:
 
  if (!this->suppress_server_console) output_console->append(QString(">>> [TELL] TELL RECEIVED from %1: %2").arg(sender, message));
 
- // Broadcast tell to all open player stats dialogs
- qDebug() << "[TELL] Tell message received from" << sender << ":" << message;
- if (players_window) {
- qDebug() << "[BROADCAST] Calling broadcastIncomingTell on players_window";
- players_window->broadcastIncomingTell(sender, message);
+ // Route to the board comment panel if sender is a player in the active game (dock or non-dock)
+ bool delivered_to_board = false;
+ GameSlot *active_slot = (active_slot_game_id != -1) ? findSlot(active_slot_game_id) : nullptr;
+ if (docked_pane_mode && shared_board_window && active_slot && !active_slot->game_finished) {
+     QString white = shared_board_window->getWhitePlayer();
+     QString black = shared_board_window->getBlackPlayer();
+     if (sender.compare(white, Qt::CaseInsensitive) == 0 ||
+         sender.compare(black, Qt::CaseInsensitive) == 0) {
+         GameSlot::CommentEntry ce; ce.user = sender; ce.text = message; ce.is_kibitz = false;
+         active_slot->comments.append(ce);
+         shared_board_window->processComment(sender, message, false);
+         delivered_to_board = true;
+     }
  } else {
- qDebug() << "[ERROR] ERROR: players_window is NULL!";
+     for (BoardWindow* board : board_windows) {
+         if (board->isPlaying() && !board->isFinished()) {
+             QString white = board->getWhitePlayer();
+             QString black = board->getBlackPlayer();
+             if (sender.compare(white, Qt::CaseInsensitive) == 0 ||
+                 sender.compare(black, Qt::CaseInsensitive) == 0) {
+                 board->processComment(sender, message, false);
+                 delivered_to_board = true;
+                 break;
+             }
+         }
+     }
  }
+
+ // Always also broadcast to open player stats dialogs
+ if (players_window)
+     players_window->broadcastIncomingTell(sender, message);
+ // Bot mode: send a canned auto-reply
+ if (bot_mode_active)
+     botReplyToTell(sender);
+ Q_UNUSED(delivered_to_board);
  }
  }
 
@@ -4008,25 +4273,19 @@ private slots:
 	bool is_moves_data = line.startsWith("15 ");
 	bool is_players_data = line.startsWith("27 ") || line.startsWith("42 ");
 	bool is_stats_data = line.startsWith("9 ");
+	bool is_prompt_data = line.startsWith("1 ");  // IGS command 1: server prompts/status (e.g. "1 8" = enter command)
 
 	// Check if this is an important message that should never be suppressed
 	bool is_important = line.startsWith("ayt") ||  // Keep-alive heartbeat
 	                    line.contains("!!*Pandanet*!!") ||  // Server announcements
 	                    line.contains("Handicap and komi");  // Important game status messages
 
-	// Only output to console if not suppressed
-	// - Games data suppressed by suppress_games_console
-	// - Moves data suppressed by suppress_moves_console
-	// - Players data suppressed by suppress_server_console (debug output)
-	// - Stats data (Command 9) suppressed by suppress_server_console (debug output)
-	// - Raw server output (command responses, help, etc.) is NEVER suppressed
-	// - Important messages are NEVER suppressed
-	// Note: suppress_server_console now affects debug messages (>>>), players list data, AND stats data
 	bool suppress_this_line = !is_important &&
 	                          ((is_games_data && suppress_games_console) ||
 	                           (is_moves_data && suppress_moves_console) ||
 	                           (is_players_data && suppress_server_console) ||
-	                           (is_stats_data && suppress_server_console));
+	                           (is_stats_data && suppress_server_console) ||
+	                           (is_prompt_data && suppress_server_console));
 
 	if (!suppress_this_line) {
 		output_console->append("< " + line);
@@ -4053,6 +4312,9 @@ private slots:
  socket->write("toggle newrating\n");
  newrating_enabled = true; // Track newrating state
  qDebug() << "MAIN WINDOW: Setting newrating_enabled = true";
+
+ // Ensure account is open to challenges on login (bot mode will close it when activated)
+ socket->write("toggle open true\n");
  
  // Send nmatch range parameters (required for rated games) 
  // Format: nmatchrange BWN handicap boardsize maintime byotime byostones
@@ -4255,6 +4517,12 @@ private slots:
  if (line.contains("[") && line.contains("]") && line.contains("vs.") &&
  line.contains("(") && line.contains(")")) {
 
+ // Clear old list on the first game line received — not at request time.
+ // This keeps the previous list visible during the network round-trip so
+ // a delayed server response never leaves the window blank.
+ if (game_count == 0)
+     games_window->clearGames();
+
  games_window->addGameFromRawLine(line);
  game_count++;
 
@@ -4263,8 +4531,11 @@ private slots:
  }
  }
 
- // Check for end of games list
- if ((line.contains("**") && !line.contains("[")) ||
+ // Check for end of games list.
+ // Guard "**" against IGS periodic broadcasts like "*** 1246 Players 366 Total Games ***"
+ // which also contain "**" but no "[" — previously they falsely tripped end-of-list,
+ // setting waiting_for_games=false and discarding all subsequent game lines.
+ if ((line.contains("**") && !line.contains("[") && !line.contains("Players")) ||
  line.contains("games listed") ||
  (line.contains("1 1") && line.length() < 10) ||
  line.startsWith("Type 'games'") ||
@@ -4274,17 +4545,7 @@ private slots:
 
  waiting_for_games = false;
  games_window->resizeColumns();
- // Update observed games highlighting after refresh (xgospel1 pattern)
  games_window->updateObservedGames(observed_game_ids);
-
- // Add delayed secondary refresh to fix occasional rendering issues
- // 500ms delay allows better server-client handshaking timing
- QTimer::singleShot(500, games_window, [this]() {
- if (games_window && games_window->isVisible()) {
- games_window->updateObservedGames(observed_game_ids);
- }
- });
-
 			games_window->syncAllPlayerStatuses();
 			games_window->updateGamesCount();
  if (!this->suppress_server_console) output_console->append(QString(">>> COMPLETED: Parsed %1 total games from IGS").arg(game_count));
@@ -4335,7 +4596,9 @@ private slots:
  pending_observe_game_id = -1;
  }
  
- // Update current game context for move routing
+ // Always update current game context from CMD15 header — no suppression.
+ // Each slot tracks its own replay state independently, so we never need
+ // to pin the global context to protect a replay in progress.
  current_game_context = game_id;
  if (settings->getDebugCmd15()) if (!this->suppress_server_console) output_console->append(QString(">>> [CMD15-TEST] About to check if playing - white: %1 black: %2 us: %3").arg(white_name).arg(black_name).arg(login_username));
 
@@ -4384,6 +4647,129 @@ private slots:
  }
  
  if (!board_exists) {
+ // -----------------------------------------------------------------------
+ // Dock mode: create a GameSlot (playing) and route through shared_board_window
+ // -----------------------------------------------------------------------
+ if (docked_pane_mode) {
+     if (!findSlot(game_id)) {
+         // Resolve correct player name order from CMD7 if available
+         QString actual_white_name = white_name;
+         QString actual_black_name = black_name;
+         if (game_white_player_map.contains(game_id) && game_black_player_map.contains(game_id)) {
+             QString w7 = game_white_player_map[game_id];
+             QString b7 = game_black_player_map[game_id];
+             if ((w7 == white_name || w7 == black_name) && (b7 == white_name || b7 == black_name)) {
+                 actual_white_name = w7;
+                 actual_black_name = b7;
+             }
+         }
+
+         GameSlot *slot = new GameSlot(this);
+         slot->game_id      = game_id;
+         slot->white_player = actual_white_name;
+         slot->black_player = actual_black_name;
+         slot->white_rank   = findPlayerRank(actual_white_name);
+         slot->black_rank   = findPlayerRank(actual_black_name);
+         slot->my_username  = login_username;
+         slot->is_playing   = true;
+         slot->is_observing = false;
+         slot->observation_state = GameSlot::JOINING_GAME;
+         slot->observation_start_time = QDateTime::currentDateTime();
+         slot->game_start_time        = QDateTime::currentDateTime();
+         slot->game_mode   = MODE_NORMAL;
+         slot->board_size  = 19;
+         slot->current_player = BLACK_STONE;
+         slot->game_root   = new GameNode();
+         slot->current_node = slot->game_root;
+         slot->auto_follow_mode = true;
+         slot->komi        = game_komi_map.value(game_id, 6.5);
+         slot->handicap    = game_handicap_map.value(game_id, 0);
+         slot->game_type   = game_type_map.value(game_id, "Rated");
+         slot->replay_state = GameSlot::LIVE;  // playing games arrive live, no replay needed
+
+         connect(slot, &GameSlot::clockTick, this, [this, slot]() {
+             if (slot->game_finished) return;
+             if (slot->last_time_update.isNull()) return;
+             int elapsed = static_cast<int>(slot->last_time_update.secsTo(
+                               QDateTime::currentDateTime()));
+             if (slot->current_player == BLACK_STONE)
+                 slot->black_time_seconds = std::max(0, slot->black_time_seconds - elapsed);
+             else
+                 slot->white_time_seconds = std::max(0, slot->white_time_seconds - elapsed);
+             slot->last_time_update = QDateTime::currentDateTime();
+         });
+
+         game_slots.append(slot);
+
+         // Create shared_board_window if this is the first game in dock
+         if (!shared_board_window) {
+             shared_board_window = new BoardWindow(this, login_username);
+             connect(shared_board_window, &BoardWindow::boardClosed,
+                     this, &FixedXGospelWindow::closeBoardWindow);
+             connect(shared_board_window, &BoardWindow::saveRequested,
+                     this, &FixedXGospelWindow::saveBoardGame);
+             connect(shared_board_window, &BoardWindow::resignRequested,
+                     this, &FixedXGospelWindow::resignGame);
+             connect(shared_board_window, &BoardWindow::passRequested,
+                     this, [this](int) { socket->write("pass\n"); socket->flush();
+                         output_console->append("[IGS] >>> pass (manual Pass button)"); });
+             connect(shared_board_window, &BoardWindow::doneRequested,
+                     this, [this](int) { socket->write("done\n"); socket->flush();
+                         output_console->append("[BOT] >>> done (manual Done button)"); });
+             connect(shared_board_window, &BoardWindow::commentRequested,
+                     this, &FixedXGospelWindow::sendComment);
+             connect(shared_board_window, &BoardWindow::sayRequested,
+                     this, &FixedXGospelWindow::sendSay);
+             connect(shared_board_window, &BoardWindow::observersRequested,
+                     this, &FixedXGospelWindow::requestObservers);
+             connect(shared_board_window, &BoardWindow::moveRequested,
+                     this, &FixedXGospelWindow::sendMove);
+             GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
+             if (dock) {
+                 dock->show();
+                 connect(dock, &GameSelectionDock::gameSelected,
+                         this, &FixedXGospelWindow::switchActiveGame);
+             }
+             shared_board_window->setSharedWindow(true);
+             shared_board_window->show();
+         }
+
+         GameSelectionDock *dock2 = shared_board_window->getGameSelectionDock();
+         if (dock2) dock2->addGame(game_id, actual_black_name, slot->black_rank, actual_white_name, slot->white_rank);
+
+         // Always switch to the playing game — we need to be able to make moves
+         // Use switchActiveGame so the dock button highlight updates correctly
+         if (active_slot_game_id != -1) {
+             switchActiveGame(game_id);
+         } else {
+             shared_board_window->loadSlot(slot);
+             active_slot_game_id = game_id;
+             if (GameSelectionDock *dock3 = shared_board_window->getGameSelectionDock())
+                 dock3->setActiveGame(game_id);
+         }
+
+         // Apply komi/handicap and set playing mode on the now-active slot
+         shared_board_window->updateGameSetup(slot->handicap, slot->komi, slot->game_type);
+         shared_board_window->updateGameDetails(slot->game_type, 0);
+         shared_board_window->setPlayingMode(true);
+         shared_board_window->updateCaptures(white_captures, black_captures);
+         shared_board_window->updateByoyomi(white_time, black_time, white_byo_moves, black_byo_moves);
+         updateHoverPixmapForSlot(slot);
+
+         most_recently_observed_board = shared_board_window;
+         most_recently_observed_game_id = game_id;
+         observed_game_ids.insert(game_id);
+         if (games_window) games_window->updateObservedGames(observed_game_ids);
+         games_with_moves_requested.insert(game_id);  // prevent spurious "moves N" request
+
+         qDebug() << "[GAME] DOCK PLAYING BOARD: Game" << game_id
+                  << "White:" << actual_white_name << "Black:" << actual_black_name;
+     }
+ } else {
+
+ // -----------------------------------------------------------------------
+ // Non-dock mode: create a standalone BoardWindow for playing
+ // -----------------------------------------------------------------------
  // Create new board window for playing
  // CRITICAL: Use player names from Command 7 if available (authoritative white/black order)
  // Command 15 may list players in wrong order (initiator first, not white first)
@@ -4416,6 +4802,9 @@ private slots:
  connect(board, &BoardWindow::boardClosed, this, &FixedXGospelWindow::closeBoardWindow);
  connect(board, &BoardWindow::saveRequested, this, &FixedXGospelWindow::saveBoardGame);
  connect(board, &BoardWindow::resignRequested, this, &FixedXGospelWindow::resignGame);
+ connect(board, &BoardWindow::doneRequested, this, [this](int) {
+     socket->write("done\n"); socket->flush();
+     output_console->append("[IGS] >>> done (manual Done button)"); });
  connect(board, &BoardWindow::commentRequested, this, &FixedXGospelWindow::sendComment);
  connect(board, &BoardWindow::sayRequested, this, &FixedXGospelWindow::sendSay);
  connect(board, &BoardWindow::observersRequested, this, &FixedXGospelWindow::requestObservers);
@@ -4494,23 +4883,58 @@ private slots:
  qDebug() << "[GAME] GAME INFO INITIALIZED: Type:" << game_type << "W:" << white_time << "B:" << black_time;
  if (!this->suppress_server_console) output_console->append(QString(">>> [GAME] PLAYING BOARD CREATED: Game %1 - %2 vs %3 (We are %4)")
  .arg(game_id).arg(white_name).arg(black_name).arg(login_username));
+ } // end non-dock mode board creation
+ } // end if (!board_exists)
+
+ // Bot mode: start engine for this IGS game
+ if (bot_mode_active && bot_game_id == -1 && !bot_opponent.isEmpty()) {
+     // Determine authoritative color from CMD 67's own white_name/black_name.
+     // This reliably handles nigiri ("N") because CMD 67 always carries the real assignment.
+     // CMD 7 maps may not yet contain the new game ID (fresh nmatch games arrive in CMD 67
+     // before the next CMD 7 broadcast), so we prefer CMD 67 data here.
+     if (white_name.compare(login_username, Qt::CaseInsensitive) == 0)
+         bot_color = WHITE_STONE;
+     else if (black_name.compare(login_username, Qt::CaseInsensitive) == 0)
+         bot_color = BLACK_STONE;
+     // Fall back to CMD 7 maps only when CMD 67 names don't match (shouldn't happen,
+     // but guards against parser edge cases)
+     else if (game_white_player_map.contains(game_id) && game_black_player_map.contains(game_id)) {
+         QString auth_white = game_white_player_map.value(game_id);
+         QString auth_black = game_black_player_map.value(game_id);
+         if (auth_white.compare(login_username, Qt::CaseInsensitive) == 0)
+             bot_color = WHITE_STONE;
+         else if (auth_black.compare(login_username, Qt::CaseInsensitive) == 0)
+             bot_color = BLACK_STONE;
+     }
+     botStartGame(game_id);
  }
- }
- 
- // Find the board window observing this game and update capture counts, game type, and byoyomi
+ }  // end if (we_are_playing)
+
+ // Update capture counts, game type, and byoyomi for this game
+ QString correct_game_type = game_type_map.value(game_id, game_type);
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->white_captures = white_captures;
+         slot->black_captures = black_captures;
+         if (!slot->game_type_locked) slot->game_type = correct_game_type;
+         slot->white_time_seconds = white_time;
+         slot->black_time_seconds = black_time;
+         slot->white_byo_moves = white_byo_moves;
+         slot->black_byo_moves = black_byo_moves;
+         slot->last_time_update = QDateTime::currentDateTime();
+         if (game_id == active_slot_game_id) {
+             shared_board_window->updateCaptures(white_captures, black_captures);
+             shared_board_window->updateGameDetails(correct_game_type, 0);
+             shared_board_window->updateByoyomi(white_time, black_time, white_byo_moves, black_byo_moves);
+         }
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->getObservedGameId() == game_id) {
  board->updateCaptures(white_captures, black_captures);
- 
- // Use stored game type from Command 7 if available
- QString correct_game_type = game_type_map.value(game_id, game_type);
- qDebug() << "[MENU] GAME TYPE UPDATE: Game" << game_id << "using type" << correct_game_type << "(15 format was:" << game_type << ")";
  board->updateGameDetails(correct_game_type, 0);
  board->updateByoyomi(white_time, black_time, white_byo_moves, black_byo_moves);
- qDebug() << "DEBUG: Updated game info for game" << game_id 
- << "- White:" << white_captures << "captures, time:" << white_time << "byo:" << white_byo_moves
- << "Black:" << black_captures << "captures, time:" << black_time << "byo:" << black_byo_moves
- << "Type:" << game_type;
+ }
  }
  }
  }
@@ -4530,8 +4954,99 @@ private slots:
  
  // CRITICAL FIX: Use game context to route moves correctly
  BoardWindow* target_board = nullptr;
+ bool dock_move_handled = false;
 
  if (current_game_context != -1) {
+ if (docked_pane_mode) {
+     // In docked mode the slot was created in observeGame — find it
+     GameSlot *slot = findSlot(current_game_context);
+     if (slot) {
+         {
+             move.game_id = current_game_context;
+             if (current_game_context == active_slot_game_id) {
+                 // Active (viewed) slot — route directly to the shared board window.
+                 slot->move_history.append(move);
+                 slot->server_move_count++;
+                 target_board = shared_board_window;
+             } else if (slot->game_finished) {
+                 // Game scored — drop all subsequent CMD15 lines (stone removals etc).
+             } else if (slot->consecutive_passes >= 3 && move.x >= 0) {
+                 // Triple-pass = game over by IGS protocol.  Any non-pass line after
+                 // this is a scoring-phase stone removal arriving before CMD9 sets
+                 // game_finished.  Drop it.
+                 qDebug() << "[SCORING] Dropping post-triple-pass removal"
+                          << move.x << move.y << "for game" << current_game_context;
+             } else {
+                 // Inactive slot — per-slot state machine (no global pin).
+                 switch (slot->replay_state) {
+
+                 case GameSlot::WAITING_FOR_MOVES0:
+                     // Catch-up flood phase: IGS streams current live move(s) before
+                     // the moves N history reply.  Track the highest move_number seen
+                     // as the high-water mark; discard everything until move 0 arrives.
+                     if (move.move_number > slot->catchup_high)
+                         slot->catchup_high = move.move_number;
+                     qDebug() << "[SLOT] WAITING_FOR_MOVES0: game" << current_game_context
+                              << "catchup_high now" << slot->catchup_high;
+                     break;
+
+                 case GameSlot::REPLAYING:
+                     // moves N history reply — apply every move cleanly from move 0.
+                     // move_number == 0 is the first replay move; reset state first.
+                     if (move.move_number == 0 && !slot->move_history.isEmpty()) {
+                         memset(slot->board_state, 0, sizeof(slot->board_state));
+                         slot->move_history.clear();
+                         slot->server_move_count = 0;
+                         slot->white_captures = 0;
+                         slot->black_captures = 0;
+                         slot->consecutive_passes = 0;
+                         if (slot->game_root) {
+                             delete slot->game_root;
+                             slot->game_root = new GameNode();
+                             slot->current_node = slot->game_root;
+                         }
+                         qDebug() << "[SLOT] REPLAYING: game" << current_game_context
+                                  << "move 0 received - board reset for clean replay";
+                     }
+                     slot->move_history.append(move);
+                     slot->server_move_count++;
+                     applyMoveToSlotBoard(slot, move);
+                     updateHoverPixmapForSlot(slot);
+                     // Transition to LIVE once replay has passed the catch-up high-water mark.
+                     if (move.move_number > slot->catchup_high) {
+                         slot->replay_state = GameSlot::LIVE;
+                         qDebug() << "[SLOT] game" << current_game_context
+                                  << "replay complete at move" << move.move_number
+                                  << "(catchup_high=" << slot->catchup_high << ") -> LIVE";
+                         // If the user switched to this slot while it was still replaying,
+                         // the board widget shows a partial or empty position.  Reload now
+                         // that the slot's board_state is complete.
+                         if (current_game_context == active_slot_game_id && shared_board_window)
+                             shared_board_window->loadSlot(slot);
+                     }
+                     break;
+
+                 case GameSlot::LIVE:
+                     // Normal live move — drop re-sent catch-up duplicates, apply the rest.
+                     if (move.move_number > 0 && move.move_number <= slot->catchup_high) {
+                         qDebug() << "[SLOT] LIVE: dropping re-sent catch-up move"
+                                  << move.move_number << "<= catchup_high"
+                                  << slot->catchup_high << "for game" << current_game_context;
+                     } else {
+                         slot->move_history.append(move);
+                         slot->server_move_count++;
+                         applyMoveToSlotBoard(slot, move);
+                         updateHoverPixmapForSlot(slot);
+                         dock_move_handled = true;
+                     }
+                     break;
+                 }
+             }
+         }
+     } else {
+         dock_move_handled = true; // slot null but dock mode — don't warn
+     }
+ } else {
  qDebug() << "[BOARD-LOOKUP] Looking for board for game" << current_game_context << "- have" << board_windows.size() << "boards";
  // q5Go pattern: Find the board for the current game context
  for (BoardWindow* board : board_windows) {
@@ -4587,32 +5102,62 @@ private slots:
  .arg(current_game_context).arg(white_name).arg(black_name));
  }
 
- // q5Go pattern: Send "moves N" command on first move for this game
+ // q5Go pattern: Send "moves N" on first live move for this non-docked game
  if (target_board && !games_with_moves_requested.contains(current_game_context)) {
- games_with_moves_requested.insert(current_game_context);
-
- // CRITICAL FIX: Clear the board BEFORE sending moves command
- // This prevents duplicate/bogus moves from appearing in SGF
- target_board->clearMoveHistoryBeforeMovesCommand();
- qDebug() << "[q5Go] Cleared board for game" << current_game_context << "before requesting history";
-
- QString moves_cmd = QString("moves %1").arg(current_game_context);
- socket->write((moves_cmd + "\n").toUtf8());
- if (!this->suppress_server_console) output_console->append(QString(">>> [q5Go] SENT: %1 (first live move arrived, requesting history)").arg(moves_cmd));
-
- // CRITICAL: Skip processing ALL live moves until history arrives
- qDebug() << "[q5Go] Skipping live move" << move_part << "- waiting for history";
- target_board = nullptr; // Prevent processing below
+     games_with_moves_requested.insert(current_game_context);
+     target_board->clearMoveHistoryBeforeMovesCommand();
+     QString moves_cmd = QString("moves %1").arg(current_game_context);
+     socket->write((moves_cmd + "\n").toUtf8());
+     if (!suppress_server_console)
+         output_console->append(QString(">>> [q5Go] SENT: %1").arg(moves_cmd));
+     target_board = nullptr; // skip this catch-up move; history replay follows
  }
+ } // end non-docked move routing
  }
 
  if (target_board) {
- // Route move to target board
  move.game_id = current_game_context;
  target_board->processMove(move);
  qDebug() << "[MENU] MOVE ROUTED: Game" << current_game_context << "move" << move_part;
- } else {
+ // Refresh dock thumbnail for the active slot after the move is applied
+ if (docked_pane_mode) {
+     GameSlot *active_slot = findSlot(current_game_context);
+     if (active_slot) {
+         shared_board_window->snapshotBoardStateToSlot(active_slot);
+         updateHoverPixmapForSlot(active_slot);
+     }
+ }
+ } else if (!dock_move_handled) {
  qDebug() << "[WARN] MOVE SKIPPED:" << move_part << "- No target board for game context" << current_game_context;
+ }
+
+ // Bot mode: handle incoming moves — decoupled from UI routing.
+ // The bot must respond to opponent moves even if target_board is temporarily null
+ // (e.g. active_slot_game_id mismatch due to a concurrent UI update).
+ if (bot_mode_active && bot_game_id != -1 && current_game_context == bot_game_id) {
+     // Special case: "0(B): Handicap N" — parser sets x=-2, y=N.
+     if (move.x == -2 && move.y > 0) {
+         bot_handicap = move.y;
+         output_console->append(QString("[BOT] Handicap placement detected: %1 stones — stored for engine setup").arg(bot_handicap));
+     } else if (bot_engine_ready) {
+         // Skip move_number==0 in handicap games — IGS replays hc stones already placed
+         // by set_free_handicap; sending play black Q16 again causes "? illegal move".
+         if (move.move_number == 0 && bot_handicap >= 2) {
+             output_console->append(QString("[BOT] Skipping hc-stone replay: move 0 (%1) — engine already placed via set_free_handicap").arg(coordsToGtp(move.x, move.y)));
+         } else {
+             StoneColor opponent_color = (bot_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+             if (static_cast<StoneColor>(move.color) == opponent_color) {
+                 if (docked_pane_mode) {
+                     if (GameSlot *bslot = findSlot(bot_game_id)) {
+                         bot_time_remaining   = (bot_color == BLACK_STONE) ? bslot->black_time_seconds : bslot->white_time_seconds;
+                         bot_stones_remaining = (bot_color == BLACK_STONE) ? bslot->black_byo_moves    : bslot->white_byo_moves;
+                     }
+                 }
+                 QString gtp_vertex = coordsToGtp(move.x, move.y);
+                 onBotOpponentMove(gtp_vertex, bot_time_remaining, bot_stones_remaining);
+             }
+         }
+     }
  }
  } else {
  // Failed to parse move - no output to reduce clutter
@@ -4690,10 +5235,21 @@ private slots:
  
  // If we have a user and message, send to board
  if (!kibitz_user.isEmpty() && !kibitz_message.isEmpty()) {
+ if (docked_pane_mode) {
+     // Route to active game slot (no game_id context here)
+     if (active_slot_game_id != -1 && shared_board_window) {
+         if (GameSlot *slot = findSlot(active_slot_game_id)) {
+             GameSlot::CommentEntry ce; ce.user = kibitz_user; ce.text = kibitz_message; ce.is_kibitz = true;
+             slot->comments.append(ce);
+         }
+         shared_board_window->processComment(kibitz_user, kibitz_message, true);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving()) {
  board->processComment(kibitz_user, kibitz_message, true);
  if (!this->suppress_server_console) output_console->append(QString(">>> Sent kibitz to board window"));
+ }
  }
  }
  }
@@ -4720,11 +5276,20 @@ private slots:
  else if (!current_kibitzer.isEmpty() && line.startsWith("11 ")) {
  QString kibitz_message = line.mid(6); // Remove "11 " prefix
  if (!this->suppress_server_console) output_console->append(QString(">>> IGS COMMAND 11 KIBITZ MESSAGE: %1: %2").arg(current_kibitzer, kibitz_message));
- 
- // Send to board windows
+
+ // Send to slot/board window
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(current_kibitz_game)) {
+         GameSlot::CommentEntry ce; ce.user = current_kibitzer; ce.text = kibitz_message; ce.is_kibitz = true;
+         slot->comments.append(ce);
+         if (current_kibitz_game == active_slot_game_id)
+             shared_board_window->processComment(current_kibitzer, kibitz_message, true);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == current_kibitz_game) {
  board->processComment(current_kibitzer, kibitz_message, true);
+ }
  }
  }
  }
@@ -4770,6 +5335,16 @@ private slots:
  bool is_say = nngs_part.contains("*:"); // Say messages have *username*: format
 
  int boards_updated = 0;
+ if (docked_pane_mode) {
+     if (active_slot_game_id != -1 && shared_board_window) {
+         if (GameSlot *slot = findSlot(active_slot_game_id); slot && !slot->game_finished) {
+             GameSlot::CommentEntry ce; ce.user = kibitz_user; ce.text = kibitz_message; ce.is_kibitz = !is_say;
+             slot->comments.append(ce);
+             shared_board_window->processComment(kibitz_user, kibitz_message, !is_say);
+             boards_updated++;
+         }
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (is_say) {
  // SAY messages go to PLAYING boards only
@@ -4791,6 +5366,7 @@ private slots:
  if (board->isObserving()) {
  board->processComment(kibitz_user, kibitz_message, true); // true = kibitz
  boards_updated++;
+ }
  }
  }
  }
@@ -4817,8 +5393,8 @@ private slots:
  QString white_rank = gamesre.cap(3);
  QString black = gamesre.cap(4);
  QString black_rank = gamesre.cap(5);
- int move_count = gamesre.cap(6).toInt();
- int board_size = gamesre.cap(7).toInt();
+ int move_count = gamesre.cap(6).toInt(); Q_UNUSED(move_count)
+ int board_size = gamesre.cap(7).toInt(); Q_UNUSED(board_size)
  int handicap_val = gamesre.cap(8).toInt();
  double komi_val = gamesre.cap(9).toDouble();
  int byoyomi_val = gamesre.cap(10).toInt();
@@ -4870,6 +5446,22 @@ private slots:
  .arg(handicap_val).arg(komi_val, 0, 'f', 1).arg(byoyomi_val).arg(game_type));
 
 	}
+ // Update game setup for this game (komi, handicap, type, byoyomi)
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         if (!slot->game_finished) {
+             slot->komi = komi_val;
+             slot->handicap = handicap_val;
+             slot->byoyomi_time = byoyomi_val;
+             if (!slot->game_type_locked)
+                 slot->game_type = game_type;
+             if (game_id == active_slot_game_id) {
+                 shared_board_window->updateGameSetup(handicap_val, komi_val, QString("Byoyomi: %1s").arg(byoyomi_val));
+                 shared_board_window->updateGameDetails(game_type, byoyomi_val);
+             }
+         }
+     }
+ } else {
  // Update any board window (both observing AND playing) for this game with complete details.
  // Guard: skip finished boards and boards whose players don't match (IGS reuses game IDs).
  for (BoardWindow* board : board_windows) {
@@ -4887,6 +5479,7 @@ private slots:
  qDebug() << ">>> [CMD7] UPDATING BOARD GAME TYPE: Game" << game_id << "setting type to" << game_type;
  board->updateGameDetails(game_type, byoyomi_val);
  if (!this->suppress_server_console) output_console->append(QString(">>> [CMD7] Board for game %1 updated to type: %2").arg(game_id).arg(game_type));
+ }
  }
  }
 
@@ -4924,10 +5517,22 @@ private slots:
  }
  
  if (komi_val != 0.0) {
+ if (docked_pane_mode) {
+     // Apply to active slot only (komi messages from server are per-current-game context)
+     if (active_slot_game_id != -1) {
+         if (GameSlot *slot = findSlot(active_slot_game_id)) {
+             if (!slot->game_finished) {
+                 slot->komi = komi_val;
+                 shared_board_window->updateGameSetup(slot->handicap, komi_val);
+             }
+         }
+     }
+ } else {
  // Update all observing board windows
  for (BoardWindow* board : board_windows) {
  if (board->isObserving()) {
  board->updateGameSetup(board->getHandicap(), komi_val);
+ }
  }
  }
  }
@@ -4959,9 +5564,30 @@ private slots:
 
  // Find the board window matching this player name
  territory_board = nullptr;
+ territory_slot  = nullptr;
+ if (docked_pane_mode) {
+     for (GameSlot *slot : game_slots) {
+         if (slot->game_finished) continue; // skip completed games — same players appear in rematches
+         if (slot->white_player == player_name || slot->black_player == player_name) {
+             if (slot->game_id == active_slot_game_id && shared_board_window) {
+                 // Active game — route directly to the shared board window
+                 territory_board = shared_board_window;
+                 territory_board->receiveScoreBegin();
+             } else {
+                 // Inactive slot — buffer territory rows in the slot itself
+                 territory_slot = slot;
+                 slot->territory_ownership.clear();
+                 slot->receiving_territory_data = true;
+                 slot->territory_data_row = 0;
+                 slot->is_scoring_mode = true;
+             }
+             break;
+         }
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
- if (board->isObserving()) {
- // Match by player name (could be white or black)
+ if (board->isObserving() && !board->isFinished()) {
+ // Match by player name (could be white or black); skip finished games (rematches share names)
  if (board->getWhitePlayer() == player_name || board->getBlackPlayer() == player_name) {
  territory_board = board;
  territory_board->receiveScoreBegin();
@@ -4973,8 +5599,9 @@ private slots:
  }
  }
  }
+ } // end else (non-docked)
 
- if (!territory_board) {
+ if (!territory_board && !territory_slot) {
  if (!this->suppress_server_console) output_console->append(QString(">>> CMD22 WARNING: Could not find board matching player %1").arg(player_name));
  }
  }
@@ -4987,13 +5614,63 @@ private slots:
 
  if (territory_board) {
  territory_board->receiveScoreLine(row_number, row_data);
+ } else if (territory_slot) {
+ // Buffer row into slot's territory_ownership map for later decode
+ qDebug() << "[CMD22-INACTIVE] game" << territory_slot->game_id
+          << "row" << row_number << "data:" << row_data;
+ for (int col = 0; col < row_data.length() && col < 19; col++)
+     territory_slot->territory_ownership[QPair<int,int>(row_number, col)] = row_data[col].digitValue();
  }
 
  // If this is the last row (18), end territory reception
  if (row_number == 18) {
  if (territory_board) {
  territory_board->receiveScoreEnd();
+ bot_overlay_active = false; // CMD22 authoritative data now in control; stop protecting KataGo overlay
  if (!this->suppress_server_console) output_console->append(QString(">>> CMD22: Territory data complete for game %1").arg(territory_board->getObservedGameId()));
+ } else if (territory_slot) {
+ // Decode territory_ownership into slot->territory_map and extract dead stones.
+ // Same logic as receiveScoreEnd() but reads from slot->board_state instead of board widget.
+ territory_slot->territory_map.clear();
+ territory_slot->dead_stone_positions.clear();
+ int dbg_d4=0, dbg_d5=0, dbg_dame=0, dbg_dead_on_d4=0, dbg_dead_on_d5=0;
+ for (auto it = territory_slot->territory_ownership.constBegin();
+      it != territory_slot->territory_ownership.constEnd(); ++it) {
+     int digit = it.value();
+     QPair<int,int> pos = it.key();
+     if (digit == 4) {
+         dbg_d4++;
+         territory_slot->territory_map[pos] = static_cast<int>(WHITE_STONE);
+         // Black stone in white territory = dead
+         if (territory_slot->board_state[pos.first][pos.second] == static_cast<int>(BLACK_STONE)) {
+             territory_slot->dead_stone_positions.insert(pos);
+             dbg_dead_on_d4++;
+         }
+     } else if (digit == 5) {
+         dbg_d5++;
+         territory_slot->territory_map[pos] = static_cast<int>(BLACK_STONE);
+         // White stone in black territory = dead
+         if (territory_slot->board_state[pos.first][pos.second] == static_cast<int>(WHITE_STONE)) {
+             territory_slot->dead_stone_positions.insert(pos);
+             dbg_dead_on_d5++;
+         }
+     } else if (digit == 2 || digit == 3) {
+         // Dame / neutral — store as EMPTY so loadSlot() restores the green square
+         // overlay immediately on slot switch without requiring a slider round-trip.
+         dbg_dame++;
+         territory_slot->territory_map[pos] = static_cast<int>(EMPTY);
+     }
+ }
+ qDebug() << ">>> CMD22 inactive slot game" << territory_slot->game_id
+          << "d4(W-terr):" << dbg_d4 << "d5(B-terr):" << dbg_d5 << "dame:" << dbg_dame
+          << "dead-on-d4:" << dbg_dead_on_d4 << "dead-on-d5:" << dbg_dead_on_d5
+          << "territory points:" << territory_slot->territory_map.size()
+          << "dead stones detected:" << territory_slot->dead_stone_positions.size();
+ if (!this->suppress_server_console)
+     output_console->append(QString(">>> CMD22: Territory data buffered for inactive game %1 (%2 points, %3 dead)")
+         .arg(territory_slot->game_id).arg(territory_slot->territory_map.size())
+         .arg(territory_slot->dead_stone_positions.size()));
+ territory_slot = nullptr;
  }
  receiving_territory_data = false;
  territory_board = nullptr;
@@ -5010,27 +5687,39 @@ private slots:
  QString game_title = title_line.mid(15).trimmed(); // Remove "Game is titled:" prefix
  if (!this->suppress_server_console) output_console->append(QString(">>> CUSTOM TITLE DETECTED: %1").arg(game_title));
 
- // Apply teaching title to the board for the current game context
- // IGS sends "Game is titled:" via Command 9 messages interleaved with Command 15 moves
- // Use current_game_context to identify which game the title belongs to
- if (current_game_context != -1) {
- // Find the board window for this specific game
+ // Apply teaching title to the board for the current game context.
+ // "Game is titled:" arrives via Command 9 right after observation begins,
+ // before any Command 15 move sets current_game_context — fall back to
+ // most_recently_observed_game_id in that case.
+ int title_game_id = (current_game_context != -1)
+                     ? current_game_context
+                     : most_recently_observed_game_id;
+ if (title_game_id != -1) {
+ // Clear the fallback immediately — title consumed, don't let it bleed to other games
+ if (current_game_context == -1)
+     most_recently_observed_game_id = -1;
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(title_game_id)) {
+         slot->custom_game_title = game_title;
+         if (title_game_id == active_slot_game_id)
+             shared_board_window->setCustomGameTitle(game_title);
+     }
+ } else {
  BoardWindow *target_board = nullptr;
  for (BoardWindow* board : board_windows) {
- if (board->getObservedGameId() == current_game_context) {
+ if (board->getObservedGameId() == title_game_id) {
  target_board = board;
  break;
  }
  }
-
  if (target_board != nullptr) {
  target_board->setCustomGameTitle(game_title);
- if (!this->suppress_server_console) output_console->append(QString(">>> UPDATED BOARD TITLE for game %1: %2").arg(current_game_context).arg(game_title));
  } else {
- if (!this->suppress_server_console) output_console->append(QString(">>> WARNING: CUSTOM TITLE for game %1 but no board found: %2").arg(current_game_context).arg(game_title));
+ if (!this->suppress_server_console) output_console->append(QString(">>> WARNING: CUSTOM TITLE for game %1 but no board found: %2").arg(title_game_id).arg(game_title));
+ }
  }
  } else {
- if (!this->suppress_server_console) output_console->append(QString(">>> WARNING: CUSTOM TITLE DETECTED but no current game context: %1").arg(game_title));
+ if (!this->suppress_server_console) output_console->append(QString(">>> WARNING: CUSTOM TITLE DETECTED but no game context: %1").arg(game_title));
  }
  }
  }
@@ -5039,7 +5728,37 @@ private slots:
  if (line.contains("check your score with the score command")) {
  if (!this->suppress_server_console) output_console->append(">>> IGS REMOVESTONES: Game entered scoring phase - following q5Go protocol");
 
+ // Bot mode scoring phase entry.
+ // Protocol: 3 consecutive passes trigger CMD9. Each player independently sends
+ // remove commands for dead groups in their territory, then done. IGS scores
+ // when both dones are received. Bot waits 1500ms after ownership analysis
+ // before sending removes+done to ensure IGS scoring window is fully open.
+ if (bot_mode_active && bot_game_id != -1 && !bot_scoring_pending) {
+     bot_scoring_pending = true;
+     bot_cached_ownership.clear();
+     KataGoEngine *engine = engine_manager->currentEngine();
+     if (engine) {
+         if (engine->isOwnershipInFlight()) {
+             // Prefetch already running — it will deliver to onBotOwnershipReady.
+             // bot_scoring_pending=true ensures it's treated as the scoring result.
+             output_console->append("[BOT] Scoring phase — ownership already in flight, will use when ready");
+         } else {
+             output_console->append("[BOT] Scoring phase — requesting kata-raw-nn ownership");
+             engine->requestOwnership();
+         }
+     }
+ }
+
  // Implement q5Go's slot_removestones functionality
+ if (docked_pane_mode) {
+     // Enter scoring mode for the active game
+     if (active_slot_game_id != -1 && shared_board_window) {
+         if (GameSlot *slot = findSlot(active_slot_game_id)) {
+             slot->is_scoring_mode = true;
+             shared_board_window->enterScoringMode();
+         }
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving()) {
  int game_id = board->getObservedGameId();
@@ -5052,6 +5771,23 @@ private slots:
  if (!this->suppress_server_console) output_console->append(QString(">>> SCORE MODE: click on a stone to mark as dead... (Game %1)").arg(game_id));
  }
  }
+ }
+ }
+
+ // Opponent typed done during scoring phase — line format: "9 <player> has typed done."
+ if (bot_mode_active && line.contains("has typed done.")) {
+     QString msg = line.startsWith("9 ") ? line.mid(2) : line;
+     QString who = msg.section(' ', 0, 0);
+     if (who != login_username) {
+         output_console->append(QString("[BOT] Opponent %1 has typed done — waiting for score").arg(who));
+         // Render pass 2 once: opponent has finished removing dead stones (CMD49s already
+         // applied to board); re-render with both sides' removals reflected.
+         // IGS can send "has typed done" multiple times — guard with bot_pass2_rendered.
+         if (bot_done_sent && !bot_pass2_rendered) {
+             bot_pass2_rendered = true;
+             applyBotTerritoryOverlay("Pass 2 (opponent done)");
+         }
+     }
  }
 
  // Check for counting results: Format: 9 {Game 8: jlclub33 vs b53092967 : W 108.5 B 113.0}
@@ -5077,38 +5813,98 @@ private slots:
  
  if (!this->suppress_server_console) output_console->append(QString(">>> COUNTING RESULT: Game %1 - %2 (W:%3 B:%4)").arg(game_id).arg(result_text).arg(white_score).arg(black_score));
 
- // VERSION CONFIRMATION - verify correct binary is handling Command 9
- qDebug() << ">>> VERSION: BUILD-2026-01-03-v26-ENHANCED-SHADOWS (Command 9 handler executing)";
-
- // Update board window with result AND enter scoring mode with client-side territory calculation
- // Following q5Go pattern: enter scoring mode on Command 9, use calc_scoring_markers_complex()
- qDebug() << ">>> CMD9 DEBUG: About to iterate through" << board_windows.size() << "board windows for game" << game_id;
- for (BoardWindow* board : board_windows) {
- bool is_observing = board->isObserving();
- int observed_game_id = board->getObservedGameId();
- bool already_scoring = board->isScoringMode();
-
- qDebug() << ">>> CMD9 DEBUG: Board check - isObserving:" << is_observing
- << "observedGameId:" << observed_game_id
- << "targetGameId:" << game_id
- << "alreadyScoring:" << already_scoring;
-
- if (board->isObserving() && board->getObservedGameId() == game_id) {
- qDebug() << ">>> CMD9 DEBUG: Found matching board for game" << game_id;
- board->updateGameResult(result_text);
-
- // Store server scores for display
- board->setServerScore(white_score, black_score);
- qDebug() << ">>> CMD9: Set server scores - White:" << white_score << "Black:" << black_score;
-
- // TEMPORARY WORKAROUND: Removed enterScoringMode() and calculateTerritoryMarkers() calls
- // These were causing cross-contamination between observed games - one game finishing
- // would incorrectly trigger scoring mode on other observed games still in progress
- // Now relying solely on Command 22 territory data from server to enter scoring mode
- qDebug() << ">>> CMD9: Stored server scores, waiting for Command 22 territory data to trigger scoring mode";
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = result_text;
+         slot->game_finished = true;
+         slot->clock_timer->stop();
+         slot->server_white_score = white_score;
+         slot->server_black_score = black_score;
+         slot->has_server_score = true;
+         slot->is_scoring_mode = true;
+         if (game_id == active_slot_game_id) {
+             shared_board_window->setServerScore(white_score, black_score);
+             // Score first so white_prisoners/black_prisoners include dead stones
+             // before updateGameResult() reads them for the comment block.
+             shared_board_window->enterScoringModeForResult();
+             shared_board_window->updateGameResult(result_text);
+         } else {
+             // Inactive slot: if Command 22 already gave us territory + dead stones,
+             // count territory from the map. Otherwise flood-fill from board_state.
+             if (slot->territory_map.isEmpty()) {
+                 calculateTerritoryForSlot(slot);
+             } else {
+                 // CMD22 is authoritative — do NOT cross-reference board_state.
+                 // board_state may be incomplete due to mid-stream join / partial
+                 // replay.  dead_stone_positions was built directly from CMD22 by
+                 // detecting opponent stones sitting in the other side's territory
+                 // cells, so it is reliable regardless of board_state accuracy.
+                 //
+                 // Count all CMD22 territory directly: digit 4 = white territory,
+                 // digit 5 = black territory.  Dead stone positions (opponent stone
+                 // sitting in territory) are ALSO territory — the stone is removed
+                 // and the point scores.  Do NOT exclude dead_stone_positions here;
+                 // they are territory AND prisoners simultaneously (Japanese rules).
+                 slot->white_territory = 0;
+                 slot->black_territory = 0;
+                 for (auto it = slot->territory_map.constBegin();
+                      it != slot->territory_map.constEnd(); ++it) {
+                     if (it.value() == static_cast<int>(WHITE_STONE)) slot->white_territory++;
+                     else if (it.value() == static_cast<int>(BLACK_STONE)) slot->black_territory++;
+                 }
+                 qDebug() << ">>> TERR-LOOP game" << game_id
+                          << "CMD22-based (no board_state)"
+                          << "counted W-terr:" << slot->white_territory
+                          << "B-terr:" << slot->black_territory
+                          << "dead:" << slot->dead_stone_positions.size();
+             }
+             // Prisoners: captures + dead stones.
+             // dead_stone_positions comes from CMD22 decode — authoritative.
+             // dead-on-d4 = black stones in white territory → white prisoners.
+             // dead-on-d5 = white stones in black territory → black prisoners.
+             // We don't need board_state to determine color: the CMD22 digit
+             // tells us which side's territory the dead stone is in.
+             slot->white_prisoners = slot->white_captures;
+             slot->black_prisoners = slot->black_captures;
+             // Iterate territory_ownership to find dead stone colors from CMD22 digit.
+             for (const auto &pos : slot->dead_stone_positions) {
+                 int digit = slot->territory_ownership.value(pos, -1);
+                 // digit 4 = white territory → stone there is black → white gains prisoner
+                 if (digit == 4) slot->white_prisoners++;
+                 // digit 5 = black territory → stone there is white → black gains prisoner
+                 else if (digit == 5) slot->black_prisoners++;
+                 else {
+                     // Fallback: use board_state color if ownership digit unavailable
+                     int cell = slot->board_state[pos.first][pos.second];
+                     if (cell == static_cast<int>(WHITE_STONE)) slot->black_prisoners++;
+                     else if (cell == static_cast<int>(BLACK_STONE)) slot->white_prisoners++;
+                 }
+             }
+             slot->final_score = (slot->white_territory + slot->white_prisoners + slot->komi)
+                                 - (slot->black_territory + slot->black_prisoners);
+             qDebug() << ">>> INACTIVE SLOT SCORE game" << game_id
+                      << "W-terr:" << slot->white_territory << "W-pris:" << slot->white_prisoners
+                      << "komi:" << slot->komi
+                      << "-> W-total:" << (slot->white_territory + slot->white_prisoners + slot->komi)
+                      << "B-terr:" << slot->black_territory << "B-pris:" << slot->black_prisoners
+                      << "-> B-total:" << (slot->black_territory + slot->black_prisoners)
+                      << "final:" << slot->final_score
+                      << "(server W:" << white_score << "B:" << black_score << ")";
+         }
+     }
+ } else {
+     for (BoardWindow* board : board_windows) {
+         if (board->isObserving() && board->getObservedGameId() == game_id) {
+             board->setServerScore(white_score, black_score);
+             // enterScoringModeForResult() must run first: it calls calculateScore()
+             // which sets white_prisoners/black_prisoners (captures + dead stones).
+             // updateGameResult() reads those values to build the comment text,
+             // so calling it before scoring gave wrong totals (captures only, no dead).
+             board->enterScoringModeForResult();
+             board->updateGameResult(result_text);
+         }
+     }
  }
- }
- qDebug() << ">>> CMD9 DEBUG: Finished iterating through board windows";
 
  // Remove finished game from observed games tracking (unhighlight in Games window)
  untrackFinishedGame(game_id);
@@ -5131,18 +5927,26 @@ private slots:
  
  if (!this->suppress_server_console) output_console->append(QString(">>> RESIGN RESULT: Game %1 - %2 (%3 resigned)").arg(game_id).arg(result_text).arg(who_resigned));
 
- // Update board window with result (observing OR playing)
+ // Update board window/slot with result (observing OR playing)
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = result_text; slot->game_finished = true;
+         slot->clock_timer->stop();
+         if (game_id == active_slot_game_id) shared_board_window->updateGameResult(result_text);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->getObservedGameId() == game_id) {
  board->updateGameResult(result_text);
  if (!this->suppress_server_console) output_console->append(QString(">>> Updated board window %1 with result: %2").arg(board->getObservedGameId()).arg(result_text));
  }
  }
+ }
 
  // Remove finished game from observed games tracking (unhighlight in Games window)
  untrackFinishedGame(game_id);
  }
- 
+
  // Check for simple resignation format: "9 quietone has resigned the game."
  QRegExp simple_resign_re("9\\s+([^\\s]+)\\s+has\\s+resigned\\s+the\\s+game\\.");
  if (simple_resign_re.indexIn(line) != -1) {
@@ -5151,31 +5955,45 @@ private slots:
  // Find which game this belongs to by looking for current playing game
  int game_id = -1;
  QString result_text;
- 
+
+ if (docked_pane_mode) {
+     // In docked mode, use the active slot (simple resign has no game_id)
+     game_id = active_slot_game_id;
+     if (game_id != -1) {
+         if (GameSlot *slot = findSlot(game_id)) {
+             if (slot->white_player == who_resigned_name) result_text = "B+R";
+             else if (slot->black_player == who_resigned_name) result_text = "W+R";
+             else result_text = "?+R";
+         }
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isPlaying()) {
  game_id = board->getObservedGameId();
- 
- // Determine who resigned based on player names
- if (board->getWhitePlayer() == who_resigned_name) {
- result_text = "B+R"; // White resigned, Black wins
- } else if (board->getBlackPlayer() == who_resigned_name) {
- result_text = "W+R"; // Black resigned, White wins
- } else {
- result_text = "?+R"; // Unknown who resigned
- }
+ if (board->getWhitePlayer() == who_resigned_name) result_text = "B+R";
+ else if (board->getBlackPlayer() == who_resigned_name) result_text = "W+R";
+ else result_text = "?+R";
  break;
  }
  }
- 
+ }
+
  if (game_id != -1) {
  if (!this->suppress_server_console) output_console->append(QString(">>> SIMPLE RESIGN: Game %1 - %2 (%3 resigned)").arg(game_id).arg(result_text).arg(who_resigned_name));
 
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = result_text; slot->game_finished = true;
+         slot->clock_timer->stop();
+         if (game_id == active_slot_game_id) shared_board_window->updateGameResult(result_text);
+     }
+ } else {
  // Update board window with result
  for (BoardWindow* board : board_windows) {
  if (board->getObservedGameId() == game_id) {
  board->updateGameResult(result_text);
  if (!this->suppress_server_console) output_console->append(QString(">>> Updated board window %1 with result: %2").arg(board->getObservedGameId()).arg(result_text));
+ }
  }
  }
 
@@ -5184,6 +6002,27 @@ private slots:
  }
  }
  
+ // Check for no-move/no-greeting time loss: "9 <player> lost the game <N> due to no-move."
+ // Also covers "due to no-greeting" and any other "due to no-*" IGS variants.
+ QRegExp no_move_re("9\\s+(\\S+)\\s+lost the game\\s+(\\d+)\\s+due to no-\\w+\\.");
+ if (no_move_re.indexIn(line) != -1) {
+     QString loser    = no_move_re.cap(1).trimmed();
+     int     game_id  = no_move_re.cap(2).toInt();
+     QString result_text;
+     if (docked_pane_mode) {
+         if (GameSlot *slot = findSlot(game_id)) {
+             if (slot->white_player.compare(loser, Qt::CaseInsensitive) == 0) result_text = "B+T";
+             else result_text = "W+T";
+             slot->game_result = result_text; slot->game_finished = true;
+             slot->clock_timer->stop();
+             if (game_id == active_slot_game_id) shared_board_window->updateGameResult(result_text);
+         }
+     }
+     if (!this->suppress_server_console)
+         output_console->append(QString(">>> NO-MOVE TIME LOSS: Game %1 — %2 lost on time (%3)").arg(game_id).arg(loser).arg(result_text));
+     untrackFinishedGame(game_id);
+ }
+
  // Check for time forfeit results: Format: 9 {Game 23: ion125 vs gotoplay19 : White forfeits on time.}
  QRegExp forfeit_result_re("9\\s+\\{Game\\s+(\\d+):\\s+.*:\\s+(Black|White)\\s+forfeits on time\\.\\}");
  if (forfeit_result_re.indexIn(line) != -1) {
@@ -5201,15 +6040,20 @@ private slots:
 
  if (!this->suppress_server_console) output_console->append(QString(">>> TIME FORFEIT RESULT: Game %1 - %2 (%3 forfeited on time)").arg(game_id).arg(result_text).arg(who_forfeited));
 
- // Update board window with result (observing OR playing)
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = result_text; slot->game_finished = true;
+         slot->clock_timer->stop();
+         if (game_id == active_slot_game_id) shared_board_window->updateGameResult(result_text);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->getObservedGameId() == game_id) {
  board->updateGameResult(result_text);
  if (!this->suppress_server_console) output_console->append(QString(">>> Updated board window %1 with result: %2").arg(board->getObservedGameId()).arg(result_text));
  }
  }
-
- // Remove finished game from observed games tracking (unhighlight in Games window)
+ }
  untrackFinishedGame(game_id);
  }
 
@@ -5221,19 +6065,31 @@ private slots:
 
  if (!this->suppress_server_console) output_console->append(QString(">>> ADJOURNED RESULT: Game %1 - %2").arg(game_id).arg(result_text));
 
- // Update board window with result (observing OR playing)
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = result_text; slot->game_finished = true;
+         slot->clock_timer->stop();
+         if (game_id == active_slot_game_id) shared_board_window->updateGameResult(result_text);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->getObservedGameId() == game_id) {
  board->updateGameResult(result_text);
  if (!this->suppress_server_console) output_console->append(QString(">>> Updated board window %1 with result: %2").arg(board->getObservedGameId()).arg(result_text));
  }
  }
-
- // Remove finished game from observed games tracking (unhighlight in Games window)
+ }
  untrackFinishedGame(game_id);
  }
  }
  
+ // Fallback: "9 game completed." arrives when IGS finishes scoring but omits CMD20.
+ // If the bot sent done but never received CMD20, clean up here so botEndGame() fires.
+ if (line == "9 game completed." && bot_mode_active && bot_game_id != -1 && bot_done_sent) {
+     output_console->append(QString("[BOT] Game %1 completed (no CMD20) — cleaning up via game completed signal").arg(bot_game_id));
+     untrackFinishedGame(bot_game_id);
+ }
+
  // DEBUG: Show all Command 9 and 15 messages to understand protocol (DISABLED to reduce spam)
  // if (line.startsWith("9 ")) {
  // if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG CMD9: %1").arg(line));
@@ -5242,57 +6098,104 @@ private slots:
  // if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG CMD15: %1").arg(line));
  // }
  
- // Parse IGS Command 9 - Stone removal detection
+ // Parse IGS Command 9 - Stone removal echo (no game ID — handled by CMD49)
+ // "9 Removing @ H15" — log only; CMD49 carries the game ID and does the marking.
  if (line.startsWith("9 ") && line.contains("Removing @")) {
- QString coords_part = line.section('@', 1).trimmed();
- if (!this->suppress_server_console) output_console->append(QString(">>> STONE REMOVAL: %1").arg(coords_part));
- // TODO: Mark stones as dead on board
+     QString coords_part = line.section('@', 1).trimmed();
+     if (!this->suppress_server_console) output_console->append(QString(">>> STONE REMOVAL: %1").arg(coords_part));
  }
  
- // Parse IGS Command 15 - Dead stone coordinate messages (q5Go removestones protocol)
- if (line.startsWith("15 ") && line.contains("is removing @")) {
- // Extract coordinates from pattern: "15 GameID Player is removing @ A1"
- QString pt = line.section(' ', 6, 6); // Get coordinate (A1, B2, etc.)
- QString game = line.section(' ', 1, 1); // Get game ID
- QString who = line.section(' ', 2, 2); // Get player name
+ // Parse IGS Command 49 - Dead stone coordinate messages
+ // Format: "49 Game <id> <player> is removing @ <coord>"
+ if (line.startsWith("49 ") && line.contains("is removing @")) {
+ QString pt   = line.section(' ', 7, 7); // coordinate (e.g. H15)
+ QString game = line.section(' ', 2, 2); // game ID
+ QString who  = line.section(' ', 3, 3); // player name
  
  if (!this->suppress_server_console) output_console->append(QString(">>> IGS REMOVESTONES: Game %1 - %2 removing @ %3").arg(game, who, pt));
  
  // Process the dead stone marking exactly like q5Go
  int game_id = game.toInt();
+
+ // Parse coordinate once (used for both docked and non-docked paths)
+ int dead_col = -1, dead_row = -1;
+ if (!pt.isEmpty() && pt.length() >= 2) {
+ int i = pt[0].toLatin1() - 'A' + 1;
+ if (i > 8) i--;
+ int j;
+ if (pt.length() > 2 && pt[2].toLatin1() >= '0' && pt[2].toLatin1() <= '9')
+     j = 19 + 1 - pt.mid(1,2).toInt();
+ else
+     j = 19 + 1 - pt[1].digitValue();
+ dead_col = i - 1;
+ dead_row = j - 1;
+ }
+
+ if (dead_col >= 0 && dead_row >= 0) {
+ if (docked_pane_mode) {
+     // Skip bot's own removes in docked mode — already marked in the 1500ms timer.
+     // Echoing them again would double-toggle (un-mark) the group.
+     bool is_bot_own_remove_docked = (bot_mode_active && bot_game_id == game_id && who == login_username);
+     if (GameSlot *slot = findSlot(game_id)) {
+         if (game_id == active_slot_game_id) {
+             if (!is_bot_own_remove_docked) {
+                 shared_board_window->markStoneAsDead(dead_col, dead_row);
+                 // markStoneAsDead calls calculateScore() which overwrites our KataGo overlay.
+                 // Re-apply if bot overlay is active so territory stays correct during scoring.
+                 if (bot_overlay_active && bot_game_id == game_id)
+                     applyBotTerritoryOverlay(bot_pass2_rendered ? "Pass 2 (restore)" : "Pass 1 (restore)");
+             }
+         } else {
+             // Inactive slot: flood-fill the connected group from board_state
+             const int bs = slot->board_size;
+             int seed_color = slot->board_state[dead_col][dead_row];
+             if (seed_color != static_cast<int>(EMPTY)) {
+                 QStack<QPair<int,int>> stack;
+                 QSet<QPair<int,int>> visited;
+                 stack.push({dead_col, dead_row});
+                 while (!stack.isEmpty()) {
+                     auto cur = stack.pop();
+                     if (visited.contains(cur)) continue;
+                     int cx = cur.first, cy = cur.second;
+                     if (cx < 0 || cx >= bs || cy < 0 || cy >= bs) continue;
+                     if (slot->board_state[cx][cy] != seed_color) continue;
+                     visited.insert(cur);
+                     slot->dead_stones.insert(cur);
+                     slot->dead_stone_positions.insert(cur);
+                     stack.push({cx-1,cy}); stack.push({cx+1,cy});
+                     stack.push({cx,cy-1}); stack.push({cx,cy+1});
+                 }
+                 qDebug() << ">>> IS-REMOVING: inactive slot game" << game_id
+                          << "marked" << visited.size() << "stones dead at" << pt;
+             }
+         }
+     }
+ } else {
+ // Skip markStoneAsDead for the bot's own toggles — already marked visually in the 1500ms timer.
+ // Applying it again from the server echo would double-toggle (un-mark) the group.
+ bool is_bot_own_remove = (bot_mode_active && bot_game_id == game_id && who == login_username);
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == game_id) {
- // Follow q5Go's slot_removestones() logic exactly
- if (!this->suppress_server_console) output_console->append(QString(">>> Processing dead stone marking: %1 @ %2 (Game %3)").arg(who, pt, QString::number(game_id)));
- 
- // Convert IGS coordinate (A1, B2) to board position (following q5Go logic)
- if (!pt.isEmpty() && pt.length() >= 2) {
- // q5Go coordinate parsing logic
- int i = pt[0].toLatin1() - 'A' + 1;
- // skip 'I' in IGS coordinates
- if (i > 8) i--;
- 
- int j;
- if (pt.length() > 2 && pt[2].toLatin1() >= '0' && pt[2].toLatin1() <= '9') {
- j = 19 + 1 - pt.mid(1,2).toInt(); // board_size = 19 for standard Go
- } else {
- j = 19 + 1 - pt[1].digitValue();
- }
- 
- // Convert to 0-based coordinates
- int col = i - 1;
- int row = j - 1;
- 
- if (!this->suppress_server_console) output_console->append(QString(">>> Marking dead stone at (%1,%2) from IGS coord %3").arg(col).arg(row).arg(pt));
- 
- // Mark stone as dead exactly like q5Go does
- board->markStoneAsDead(col, row);
- 
- // Send kibitz message like q5Go does
- if (!this->suppress_server_console) output_console->append(QString(">>> removing @ %1").arg(pt));
+ if (!this->suppress_server_console) output_console->append(QString(">>> Marking dead stone at (%1,%2) from IGS coord %3").arg(dead_col).arg(dead_row).arg(pt));
+ if (!is_bot_own_remove) {
+     board->markStoneAsDead(dead_col, dead_row);
+     // markStoneAsDead calls calculateScore() which overwrites our KataGo overlay.
+     // Re-apply if bot overlay is active so territory stays correct during scoring.
+     if (bot_overlay_active && bot_game_id == game_id)
+         applyBotTerritoryOverlay(bot_pass2_rendered ? "Pass 2 (restore)" : "Pass 1 (restore)");
  }
  break;
  }
+ }
+ }
+ }
+
+ // CMD49 log
+ if (bot_mode_active && bot_game_id == game_id) {
+     if (who == login_username)
+         output_console->append(QString("[BOT] Server confirmed our removal @ %1").arg(pt));
+     else
+         output_console->append(QString("[BOT] Opponent %1 removing @ %2 (board updated)").arg(who).arg(pt));
  }
  }
  
@@ -5342,39 +6245,86 @@ private slots:
  // Find opponent's rank
  QString opponent_rank = findPlayerRank(opponent);
 
- // Show incoming match request dialog
- handleIncomingMatchRequest(opponent, opponent_rank, board_info, time_str, my_color);
+ if (!bot_mode_active) {
+     // Show incoming match request dialog (human handles it)
+     handleIncomingMatchRequest(opponent, opponent_rank, board_info, time_str, my_color);
+ }
+ // Bot mode: accept is sent from the "Use <match ...>" suggested-command handler below
  } else {
  output_console->append(QString("[ERROR] REGEX FAILED: Could not parse match request: %1").arg(line));
  }
  }
  
- // Bug 34: Parse server's suggested match command: "9 Use <match BusyBee B 19 1 5> or <decline BusyBee> to respond."
+ // Parse server's suggested match command: "9 Use <match BusyBee B 19 1 5> or <decline BusyBee> to respond."
+ // Format: match <opp> <color> <size> <main_min> <byo_min>
  if (line.startsWith("9 ") && line.contains("Use <match ") && line.contains("> or <decline")) {
      QRegExp cmd_regex("Use <(match [^>]+)> or");
      if (cmd_regex.indexIn(line) != -1) {
          QString suggested_cmd = cmd_regex.cap(1);
          qDebug() << "[MATCH] Server suggested command:" << suggested_cmd;
-         if (pending_match_dialog) {
+         if (bot_mode_active) {
+             // Parse: match <opp> <color> <size> <main_min> <byo_min>
+             QStringList parts = suggested_cmd.split(' ');
+             if (parts.size() >= 6) {
+                 QString opp      = parts[1];
+                 if (bot_game_id != -1) {
+                     // Already in a game — decline to avoid stomping active engine
+                     output_console->append(QString("[BOT] Declining match from %1 — game already in progress").arg(opp));
+                     socket->write((QString("decline %1\n").arg(opp)).toUtf8());
+                     socket->flush();
+                 } else {
+                     StoneColor myCol = (parts[2].toUpper() == "B") ? BLACK_STONE : WHITE_STONE;
+                     int bsize        = parts[3].toInt();
+                     int main_s       = parts[4].toInt() * 60;   // minutes → seconds
+                     int byo_s        = parts[5].toInt() * 60;   // minutes → seconds
+                     // Old match protocol doesn't carry handicap or stones — use IGS defaults
+                     botAcceptMatch(opp, suggested_cmd, myCol, bsize, 0, main_s, byo_s, 25, 6.5);
+                 }
+             }
+         } else if (pending_match_dialog) {
              pending_match_dialog->setServerSuggestedCommand(suggested_cmd);
              if (!this->suppress_server_console) output_console->append(QString(">>> Server suggests: %1").arg(suggested_cmd));
          }
      }
  }
 
- // Bug 34: Parse server's suggested nmatch command: "9 Use <nmatch woodnstone B 9 19 60 300 25 0 0 0> or <decline woodnstone> to respond."
+ // Parse server's suggested nmatch command: "9 Use <nmatch opp B 0 19 600 300 25 0 0 0> or <decline opp> to respond."
+ // Format: nmatch <opp> <color> <hc> <size> <main_s> <byo_s> <stones> ...
  if (line.startsWith("9 ") && line.contains("Use <nmatch ") && line.contains("> or <decline")) {
      QRegExp cmd_regex("Use <(nmatch [^>]+)> or");
      if (cmd_regex.indexIn(line) != -1) {
          QString suggested_cmd = cmd_regex.cap(1);
          qDebug() << "[NMATCH] Server suggested command:" << suggested_cmd;
-         if (pending_match_dialog) {
+         if (bot_mode_active) {
+             // Parse: nmatch <opp> <color> <hc> <size> <main_s> <byo_s> <stones> ...
+             QStringList parts = suggested_cmd.split(' ');
+             if (parts.size() >= 8) {
+                 QString opp      = parts[1];
+                 if (bot_game_id != -1) {
+                     // Already in a game — decline to avoid stomping active engine
+                     output_console->append(QString("[BOT] Declining nmatch from %1 — game already in progress").arg(opp));
+                     socket->write((QString("decline %1\n").arg(opp)).toUtf8());
+                     socket->flush();
+                 } else {
+                     // parts[2] is the color for the bot ("B", "W", or "N" for nigiri).
+                     // Use WHITE as placeholder for "N" — CMD 67 will correct it authoritatively.
+                     StoneColor myCol = (parts[2].toUpper() == "B") ? BLACK_STONE : WHITE_STONE;
+                     int hc           = parts[3].toInt();
+                     int bsize        = parts[4].toInt();
+                     int main_s       = parts[5].toInt();
+                     int byo_s        = parts[6].toInt();
+                     int stones       = parts[7].toInt();
+                     double def_komi  = (hc >= 2) ? 0.5 : 6.5;
+                     botAcceptMatch(opp, suggested_cmd, myCol, bsize, hc, main_s, byo_s, stones, def_komi);
+                 }
+             }
+         } else if (pending_match_dialog) {
              pending_match_dialog->setServerSuggestedCommand(suggested_cmd);
              if (!this->suppress_server_console) output_console->append(QString(">>> Server suggests: %1").arg(suggested_cmd));
          }
      }
  }
- 
+
  // Detect incoming nmatch requests: "9 NMatch requested with username(B 3 19 60 600 25 0 0 0)."
  if (line.startsWith("9 ") && line.contains("NMatch requested with")) {
  output_console->append(QString("[DEBUG] DEBUGGING: Detected potential nmatch request message: %1").arg(line));
@@ -5382,25 +6332,25 @@ private slots:
  if (nmatch_request.indexIn(line) != -1) {
  QString opponent = nmatch_request.cap(1).trimmed();
  QString nmatch_params = nmatch_request.cap(2);
- 
+
  if (!this->suppress_server_console) output_console->append(QString(">>> INCOMING NMATCH REQUEST: %1 with params %2")
  .arg(opponent).arg(nmatch_params));
- 
- // Find opponent's rank 
- QString opponent_rank = findPlayerRank(opponent);
- 
- // Parse nmatch parameters: "B 3 19 60 600 25 0 0 0"
- QStringList params = nmatch_params.split(' ');
- if (params.size() >= 5) {
- QString my_color = params[0];
- QString handicap = params[1];
- QString board_size = params[2];
- QString time_seconds = params[3];
- QString byo_seconds = params[4];
- 
- // Show incoming nmatch request dialog
- handleIncomingNmatchRequest(opponent, opponent_rank, my_color, handicap, board_size, time_seconds, byo_seconds);
+
+ if (!bot_mode_active) {
+     // Find opponent's rank
+     QString opponent_rank = findPlayerRank(opponent);
+     // Parse nmatch parameters: "B 3 19 60 600 25 0 0 0"
+     QStringList params = nmatch_params.split(' ');
+     if (params.size() >= 5) {
+         QString my_color  = params[0];
+         QString handicap  = params[1];
+         QString board_size = params[2];
+         QString time_seconds = params[3];
+         QString byo_seconds  = params[4];
+         handleIncomingNmatchRequest(opponent, opponent_rank, my_color, handicap, board_size, time_seconds, byo_seconds);
+     }
  }
+ // Bot mode: actual accept is sent from the "Use <nmatch ...>" suggested-command handler above
  }
  }
  
@@ -5422,7 +6372,11 @@ private slots:
          output_console->append(QString(">>> GAME RESUMED: Game %1 (%2 vs %3) at move %4")
                                 .arg(game_id).arg(white).arg(black).arg(at_move));
 
-     // If we have an adjourned board window for this game, reactivate it
+     // If we have an adjourned board/slot for this game, reactivate it
+     if (docked_pane_mode) {
+         // In docked mode, just re-observe via observeGame (handles slot reuse)
+         observeGame(game_id, white, black, "?", "?");
+     } else {
      BoardWindow* existing = nullptr;
      for (BoardWindow* board : board_windows) {
          if (board->getObservedGameId() == game_id && board->isFinished()) {
@@ -5445,6 +6399,7 @@ private slots:
          // No window open for this game — open a fresh observation
          observeGame(game_id, white, black, "?", "?");
      }
+     } // end non-docked path for game resume
  }
  }
 
@@ -5474,20 +6429,77 @@ private slots:
  
  if (!this->suppress_server_console) output_console->append(QString(">>> RESIGN/TIME RESULT: Game %1 - %2 (Raw: %3)").arg(game_id).arg(standard_result).arg(result_text));
 
- // Update board window with result
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         slot->game_result = standard_result; slot->game_finished = true;
+         slot->clock_timer->stop();
+         if (game_id == active_slot_game_id) shared_board_window->updateGameResult(standard_result);
+     }
+ } else {
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == game_id) {
  board->updateGameResult(standard_result);
  }
  }
-
- // Remove finished game from observed games tracking (unhighlight in Games window)
+ }
  untrackFinishedGame(game_id);
  }
  }
+ // Parse IGS Command 20 — server-assigned counting score.
+ // Format: "20 white_player (W:O): 95.5 to black_player (B:#): 116.0"
+ if (line.startsWith("20 ")) {
+     QRegExp cmd20_re("20\\s+(\\S+)\\s+\\(W:[^)]+\\):\\s+([\\d\\.]+)\\s+to\\s+(\\S+)\\s+\\(B:[^)]+\\):\\s+([\\d\\.]+)");
+     if (cmd20_re.indexIn(line) != -1) {
+         QString white_player = cmd20_re.cap(1);
+         double  white_score  = cmd20_re.cap(2).toDouble();
+         QString black_player = cmd20_re.cap(3);
+         double  black_score  = cmd20_re.cap(4).toDouble();
+         double  margin       = qAbs(white_score - black_score);
+         QString result_text  = (white_score > black_score)
+             ? QString("W+%1").arg(margin)
+             : QString("B+%1").arg(margin);
+         output_console->append(QString("[BOT] Server score CMD20: W:%1 B:%2 → %3")
+             .arg(white_score).arg(black_score).arg(result_text));
+         // Push authoritative score to the board window for the relevant game.
+         // Match by BOTH player names to avoid false matches when a player has multiple games.
+         // Do NOT call enterScoringModeForResult() here — it calls calculateScore() which
+         // clobbers non-scoring games (e.g. W+R games get a territory overlay).
+         // For bot games, scoring mode was already entered at CMD9 time.
+         int cmd20_game_id = -1;
+         if (docked_pane_mode) {
+             for (GameSlot *slot : game_slots) {
+                 if (slot->white_player == white_player && slot->black_player == black_player) {
+                     cmd20_game_id            = slot->game_id;
+                     slot->server_white_score = white_score;
+                     slot->server_black_score = black_score;
+                     slot->has_server_score   = true;
+                     slot->game_result        = result_text;
+                     slot->game_finished      = true;
+                     slot->clock_timer->stop();
+                     if (slot->game_id == active_slot_game_id && shared_board_window) {
+                         shared_board_window->setServerScore(white_score, black_score);
+                         shared_board_window->updateGameResult(result_text);
+                     }
+                     break;
+                 }
+             }
+         } else {
+             for (BoardWindow *board : board_windows) {
+                 if (board->getWhitePlayer() == white_player && board->getBlackPlayer() == black_player) {
+                     cmd20_game_id = board->getObservedGameId();
+                     board->setServerScore(white_score, black_score);
+                     board->updateGameResult(result_text);
+                     break;
+                 }
+             }
+         }
+         if (cmd20_game_id != -1)
+             untrackFinishedGame(cmd20_game_id);
+     }
+ }
+
  } // End while (socket->canReadLine())
- } // End for (;;)
- 
+
  // Auto-scroll
  output_console->verticalScrollBar()->setValue(output_console->verticalScrollBar()->maximum());
  }
@@ -5918,7 +6930,7 @@ private slots:
  }
 
  void showPreferences() {
- PreferencesDialog *prefs_dialog = new PreferencesDialog(this);
+ PreferencesDialog *prefs_dialog = new PreferencesDialog(engine_manager, this);
  if (prefs_dialog->exec() == QDialog::Accepted) {
  // Refresh connection menu to reflect updated accounts
  populateConnectionMenu();
@@ -5944,7 +6956,6 @@ private slots:
 
  void refreshGames() {
  if (games_window && socket->state() == QTcpSocket::ConnectedState) {
- games_window->clearGames();
  waiting_for_games = true;
  game_count = 0;
 
@@ -5962,13 +6973,352 @@ private slots:
  }
  }
  
- void observeGame(int game_id, const QString& white, const QString& black, 
+ // --- Docked-pane helpers ---
+
+ GameSlot *findSlot(int game_id) const {
+     for (GameSlot *s : game_slots)
+         if (s->game_id == game_id) return s;
+     return nullptr;
+ }
+
+ // Flood-fill territory directly from slot->board_state, with no board widget.
+ // Populates slot->territory_map, slot->white_territory, slot->black_territory.
+ // Called for inactive slots when a counted result arrives.
+ void calculateTerritoryForSlot(GameSlot *slot) {
+     if (!slot) return;
+     const int bs = slot->board_size;
+
+     slot->white_territory = 0;
+     slot->black_territory = 0;
+     slot->territory_map.clear();
+
+     QSet<QPair<int,int>> visited;
+
+     for (int x = 0; x < bs; ++x) {
+         for (int y = 0; y < bs; ++y) {
+             QPair<int,int> pos(x, y);
+             if (visited.contains(pos)) continue;
+             if (slot->board_state[x][y] != EMPTY) continue;
+             if (slot->dead_stone_positions.contains(pos)) continue;
+
+             // Flood-fill connected empty region
+             QStack<QPair<int,int>> stack;
+             QSet<QPair<int,int>> region;
+             QSet<StoneColor> adj_colors;
+             stack.push(pos);
+             while (!stack.isEmpty()) {
+                 QPair<int,int> cur = stack.pop();
+                 int cx = cur.first, cy = cur.second;
+                 if (cx < 0 || cx >= bs || cy < 0 || cy >= bs) continue;
+                 if (region.contains(cur)) continue;
+                 int cell = slot->board_state[cx][cy];
+                 if (cell != EMPTY && !slot->dead_stone_positions.contains(cur)) {
+                     adj_colors.insert(static_cast<StoneColor>(cell));
+                     continue;
+                 }
+                 region.insert(cur);
+                 stack.push({cx-1, cy}); stack.push({cx+1, cy});
+                 stack.push({cx, cy-1}); stack.push({cx, cy+1});
+             }
+             visited.unite(region);
+
+             StoneColor owner = EMPTY;
+             if (adj_colors.size() == 1)
+                 owner = *adj_colors.begin();
+
+             for (const auto &p : region)
+                 slot->territory_map[p] = static_cast<int>(owner);
+
+             if (owner == WHITE_STONE)      slot->white_territory += region.size();
+             else if (owner == BLACK_STONE) slot->black_territory += region.size();
+         }
+     }
+     qDebug() << "*** SLOT TERRITORY: game" << slot->game_id
+              << "W-terr:" << slot->white_territory
+              << "B-terr:" << slot->black_territory
+              << "dead:" << slot->dead_stone_positions.size();
+ }
+
+ void switchActiveGame(int game_id) {
+     if (game_id == active_slot_game_id) return;
+     if (!shared_board_window) return;
+
+     GameSlot *old_slot = findSlot(active_slot_game_id);
+     if (old_slot) {
+         shared_board_window->snapshotToSlot(old_slot);
+         updateHoverPixmapForSlot(old_slot);
+     }
+
+     GameSlot *new_slot = findSlot(game_id);
+     if (!new_slot) return;
+
+     shared_board_window->loadSlot(new_slot);
+     active_slot_game_id = game_id;
+
+     GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
+     if (dock) dock->setActiveGame(game_id);
+ }
+
+ // Apply a move directly to a slot's board_state array (for inactive slots).
+ // Places the stone and removes any captures listed in move.captured.
+ void applyMoveToSlotBoard(GameSlot *slot, const GameMove &move) {
+     if (!slot) return;
+     const int bs = slot->board_size;
+
+     // Pass — no stone to place, but turn still flips
+     if (move.x == -1 && move.y == -1) {
+         slot->last_move_x = -1;
+         slot->last_move_y = -1;
+         slot->current_player = (move.color == static_cast<int>(BLACK_STONE))
+                                ? WHITE_STONE : BLACK_STONE;
+         slot->consecutive_passes++;
+         // Game tree: add pass node
+         if (slot->current_node) {
+             GoBoard pass_board = slot->current_node->getBoard().copy();
+             GameNode *pass_node = slot->current_node->addMove(-1, -1,
+                                       static_cast<StoneColor>(move.color));
+             pass_node->setBoard(pass_board);
+             slot->current_node = pass_node;
+         }
+         return;
+     }
+     // Handicap setup
+     if (move.x == -2) {
+         QList<QPair<int,int>> positions = IGSMoveParser::getHandicapPositions(move.y);
+         GoBoard handicap_board;
+         for (auto &pos : positions) {
+             if (pos.first < bs && pos.second < bs) {
+                 slot->board_state[pos.first][pos.second] = BLACK_STONE;
+                 handicap_board.placeStone(pos.first, pos.second, BLACK_STONE);
+             }
+         }
+         slot->last_move_x = -1;
+         slot->last_move_y = -1;
+         if (slot->current_node) {
+             GameNode *hnode = slot->current_node->addMove(-2, move.y, BLACK_STONE);
+             hnode->setBoard(handicap_board);
+             slot->current_node = hnode;
+         }
+         return;
+     }
+     // Regular move — reset pass counter and update flat board_state and game tree
+     slot->consecutive_passes = 0;
+     if (move.x >= 0 && move.x < bs && move.y >= 0 && move.y < bs) {
+         // Reject placement on an already-occupied square — illegal in Go and a
+         // reliable signal of a spurious move (scoring-phase stone removal or
+         // cross-game contamination routed here by context pin).
+         if (slot->board_state[move.x][move.y] != 0) {
+             qDebug() << "[INVALID] Dropping occupied-square placement at"
+                      << move.x << move.y << "color" << move.color
+                      << "(occupied by" << slot->board_state[move.x][move.y] << ")"
+                      << "for game" << slot->game_id;
+             return;
+         }
+         slot->board_state[move.x][move.y] = move.color;
+         slot->last_move_x = move.x;
+         slot->last_move_y = move.y;
+     }
+     // Remove captured stones from flat board_state
+     if (!move.captured.isEmpty()) {
+         for (const QString &cap : move.captured.split(';', Qt::SkipEmptyParts)) {
+             QStringList xy = cap.split(',');
+             if (xy.size() == 2) {
+                 int cx = xy[0].toInt(), cy = xy[1].toInt();
+                 if (cx >= 0 && cx < bs && cy >= 0 && cy < bs)
+                     slot->board_state[cx][cy] = EMPTY;
+             }
+         }
+     }
+     // Game tree: build new node with correct GoBoard (captures via liberty check)
+     if (slot->current_node && move.x >= 0 && move.y >= 0) {
+         GoBoard new_board = slot->current_node->getBoard().copy();
+         StoneColor color = static_cast<StoneColor>(move.color);
+         new_board.placeStone(move.x, move.y, color);
+         StoneColor opp = (color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+         int dx[] = {-1, 1, 0, 0};
+         int dy[] = {0, 0, -1, 1};
+         for (int d = 0; d < 4; d++) {
+             int nx = move.x + dx[d], ny = move.y + dy[d];
+             if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+                 new_board.getStone(nx, ny) == opp &&
+                 new_board.countLiberties(nx, ny) == 0)
+                 new_board.removeGroup(nx, ny);
+         }
+         if (new_board.countLiberties(move.x, move.y) == 0)
+             new_board.removeGroup(move.x, move.y);
+         GameNode *new_node = slot->current_node->addMove(move.x, move.y, color);
+         new_node->setBoard(new_board);
+         slot->current_node = new_node;
+     }
+     // Track whose turn it is next (mirrors processMove logic)
+     slot->current_player = (move.color == static_cast<int>(BLACK_STONE))
+                            ? WHITE_STONE : BLACK_STONE;
+ }
+
+ // Generate the hover pixmap for a slot and push it to the dock button.
+ void updateHoverPixmapForSlot(GameSlot *slot) {
+     if (!slot || !docked_pane_mode || !shared_board_window) return;
+     GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
+     if (!dock) return;
+
+     int preview_size = settings->getHoverBoardSize();
+     QPixmap px = shared_board_window->renderSlotToPixmap(
+         preview_size,
+         slot->board_state,
+         slot->board_size,
+         slot->last_move_x,
+         slot->last_move_y,
+         slot->custom_game_title);
+     dock->updateHoverPixmap(slot->game_id, px);
+ }
+
+ void observeGame(int game_id, const QString& white, const QString& black,
  const QString& white_rank, const QString& black_rank) {
  if (!connected_to_igs) {
  if (!this->suppress_server_console) output_console->append(">>> ERROR: Connect to IGS first to observe games");
  return;
  }
- 
+
+ // -----------------------------------------------------------------------
+ // Docked-pane mode path
+ // -----------------------------------------------------------------------
+ if (docked_pane_mode) {
+     // Already observing?
+     if (findSlot(game_id)) {
+         switchActiveGame(game_id);
+         return;
+     }
+
+     // Create and initialise the slot
+     GameSlot *slot = new GameSlot(this);
+     slot->game_id      = game_id;
+     slot->white_player = white;
+     slot->black_player = black;
+     slot->white_rank   = white_rank;
+     slot->black_rank   = black_rank;
+     slot->my_username  = login_username;
+     slot->is_observing = true;
+     slot->observation_state = GameSlot::JOINING_GAME;
+     slot->observation_start_time = QDateTime::currentDateTime();
+     slot->game_start_time        = QDateTime::currentDateTime();
+     slot->game_mode   = MODE_NORMAL;
+     slot->board_size  = 19;
+     slot->current_player = BLACK_STONE;
+     slot->game_root   = new GameNode();
+     slot->current_node = slot->game_root;
+     slot->auto_follow_mode = true;
+     slot->komi        = 6.5;
+     slot->game_type   = "Free";
+
+     // Apply stored game details from Command 7 if available
+     if (game_komi_map.contains(game_id)) {
+         slot->komi     = game_komi_map[game_id];
+         slot->handicap = game_handicap_map.value(game_id, 0);
+         slot->game_type = game_type_map.value(game_id, "Free");
+     }
+
+     // Connect the slot's clock tick to update its own time fields
+     connect(slot, &GameSlot::clockTick, this, [this, slot]() {
+         if (slot->game_finished) return;
+         if (slot->last_time_update.isNull()) return;
+         int elapsed = static_cast<int>(slot->last_time_update.secsTo(
+                           QDateTime::currentDateTime()));
+         if (slot->current_player == BLACK_STONE)
+             slot->black_time_seconds = std::max(0, slot->black_time_seconds - elapsed);
+         else
+             slot->white_time_seconds = std::max(0, slot->white_time_seconds - elapsed);
+         slot->last_time_update = QDateTime::currentDateTime();
+     });
+
+     game_slots.append(slot);
+
+     // Create the shared BoardWindow on the first game; reuse for subsequent ones
+     if (!shared_board_window) {
+         shared_board_window = new BoardWindow(this, login_username);
+         connect(shared_board_window, &BoardWindow::boardClosed,
+                 this, &FixedXGospelWindow::closeBoardWindow);
+         connect(shared_board_window, &BoardWindow::saveRequested,
+                 this, &FixedXGospelWindow::saveBoardGame);
+         connect(shared_board_window, &BoardWindow::resignRequested,
+                 this, &FixedXGospelWindow::resignGame);
+             connect(shared_board_window, &BoardWindow::passRequested,
+                     this, [this](int) { socket->write("pass\n"); socket->flush();
+                         output_console->append("[IGS] >>> pass (manual Pass button)"); });
+         connect(shared_board_window, &BoardWindow::commentRequested,
+                 this, &FixedXGospelWindow::sendComment);
+         connect(shared_board_window, &BoardWindow::sayRequested,
+                 this, &FixedXGospelWindow::sendSay);
+         connect(shared_board_window, &BoardWindow::observersRequested,
+                 this, &FixedXGospelWindow::requestObservers);
+         connect(shared_board_window, &BoardWindow::moveRequested,
+                 this, &FixedXGospelWindow::sendMove);
+
+         // Wire dock button clicks to switchActiveGame
+         GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
+         if (dock) {
+             dock->show();
+             connect(dock, &GameSelectionDock::gameSelected,
+                     this, &FixedXGospelWindow::switchActiveGame);
+         }
+         shared_board_window->setSharedWindow(true);
+         shared_board_window->show();
+     }
+
+     // Add button to the dock
+     GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
+     if (dock) dock->addGame(game_id, black, black_rank, white, white_rank);
+
+     // Display this game if it's the first, otherwise keep showing the active one
+     if (active_slot_game_id == -1) {
+         shared_board_window->loadSlot(slot);
+         active_slot_game_id = game_id;
+     }
+
+     // Push initial pixmap after loadSlot so board widget is fully sized
+     updateHoverPixmapForSlot(slot);
+
+     most_recently_observed_board = shared_board_window;
+     most_recently_observed_game_id = game_id;
+     observed_game_ids.insert(game_id);
+     if (games_window) games_window->updateObservedGames(observed_game_ids);
+
+     // Send observe command
+     QString observe_cmd = QString("observe %1").arg(game_id);
+     socket->write((observe_cmd + "\n").toUtf8());
+     if (!suppress_server_console)
+         output_console->append(QString(">>> SENT: %1 (observing game)").arg(observe_cmd));
+
+     // Immediately request full move history. IGS sends a catch-up moves flood
+     // right after the observe confirmation, but it arrives before our slot is
+     // ready — those moves are skipped. Sending "moves N" explicitly here gives
+     // us a clean replay once the slot exists. Mark it so the first-live-move
+     // path in the Command 15 handler doesn't send a duplicate request.
+     games_with_moves_requested.insert(game_id);
+     if (game_id == active_slot_game_id) {
+         shared_board_window->clearMoveHistoryBeforeMovesCommand();
+         // Sync slot pointer after the tree reset to prevent dangling slot->game_root.
+         if (GameSlot *active_slot = findSlot(game_id)) {
+             active_slot->game_root    = shared_board_window->getGameRoot();
+             active_slot->current_node = shared_board_window->getGameRoot();
+             active_slot->move_history.clear();
+         }
+     }
+     QString moves_cmd = QString("moves %1").arg(game_id);
+     // Send moves N immediately — no deferral, no global pin.
+     // The slot's replay_state machine handles all routing independently.
+     slot->replay_state = GameSlot::REPLAYING;
+     socket->write((moves_cmd + "\n").toUtf8());
+     if (!suppress_server_console)
+         output_console->append(QString(">>> SENT: %1 (requesting move history)").arg(moves_cmd));
+     qDebug() << "[SLOT] game" << game_id << "moves N sent -> REPLAYING";
+
+     return;
+ }
+
+ // -----------------------------------------------------------------------
+ // Non-docked mode (original path — unchanged)
+ // -----------------------------------------------------------------------
+
  // Check if already observing this game (skip finished games - IGS reuses game IDs)
  for (BoardWindow* board : board_windows) {
  if (board->isObserving() && board->getObservedGameId() == game_id && !board->isFinished()) {
@@ -5978,7 +7328,7 @@ private slots:
  return;
  }
  }
- 
+
  // Create new board window
  qDebug() << "DEBUG: About to create BoardWindow";
  BoardWindow* board = new BoardWindow(this, login_username);
@@ -5995,6 +7345,7 @@ private slots:
 
  board_windows.append(board);
  most_recently_observed_board = board; // Track for teaching title assignment
+ most_recently_observed_game_id = game_id;
  board->startObserving(game_id, white, black, white_rank, black_rank);
  
  // Apply stored game details from Command 7 if available
@@ -6030,8 +7381,610 @@ private slots:
  if (!this->suppress_server_console) output_console->append(QString(">>> Waiting for first live move before requesting history..."));
  }
  
+ // -----------------------------------------------------------------------
+ // Engine / local game slots
+ // -----------------------------------------------------------------------
+
+ void launchEngineVsEngine() {
+     const QList<EngineProfile> profiles = engine_manager->profiles();
+     if (profiles.size() < 1) {
+         QMessageBox::information(this, "No Engines",
+             "Configure at least one engine in Engines → Manage Engines.");
+         return;
+     }
+
+     EngineVsEngineDialog dlg(profiles, this);
+     if (dlg.exec() != QDialog::Accepted) return;
+
+     QString black_id = dlg.blackProfileId();
+     QString white_id = dlg.whiteProfileId();
+     double  komi     = dlg.komi();
+     int     hc       = dlg.handicap();
+
+     QString black_name, white_name;
+     for (const EngineProfile &p : profiles) {
+         if (p.id == black_id) black_name = p.name;
+         if (p.id == white_id) white_name = p.name;
+     }
+
+     // Stop any running engines
+     engine_manager->detach();
+     engine_manager2->detach();
+     eve_mode     = false;
+     engine_color = WHITE_STONE;  // In EvE, engine_color = White engine's color
+
+     // Share the same profile registry with engine_manager2
+     engine_manager2->setProfiles(profiles);
+
+     // Launch board window
+     if (engine_board) { engine_board->close(); engine_board = nullptr; }
+     engine_board = new BoardWindow(this, "");
+     engine_board->setLocalPlayMode(true);
+     connect(engine_board, &BoardWindow::boardClosed,
+             this, &FixedXGospelWindow::closeBoardWindow);
+     connect(engine_board, &BoardWindow::engineGoRequested,
+             this, &FixedXGospelWindow::onEngineGoClicked);
+     connect(engine_board, &BoardWindow::engineCmdRequested,
+             this, &FixedXGospelWindow::onManualEngineCmd);
+     board_windows.append(engine_board);
+
+     engine_board->startObserving(engine_game_id, white_name, black_name, "", "");
+     engine_board->updateGameSetup(hc, komi, "");
+     // Not playing mode — just observing the two engines
+     engine_board->setWindowTitle(
+         QString("EvE: %1 (B) vs %2 (W)  [Engine starting...]")
+             .arg(black_name).arg(white_name));
+     engine_board->show();
+
+     // Engine 1 (black_id) starts first; engine 2 (white_id) starts after engine 1 is ready.
+     // This is color-independent — works for local/remote in any combination.
+     m_eve_white_id  = white_id;
+     m_eve_komi      = komi;
+     m_eve_handicap  = hc;
+     m_eve_black_ready = false;
+     m_eve_white_ready = false;
+     eve_mode = true;
+
+     // Start engine 1 (Black)
+     if (!engine_manager->attach(black_id, komi, hc)) {
+         QMessageBox::critical(this, "Engine Error",
+             QString("Failed to start Black engine (%1).").arg(black_name));
+         eve_mode = false;
+         return;
+     }
+
+     KataGoEngine *black_engine = engine_manager->currentEngine();
+
+     connect(black_engine, &KataGoEngine::gtpLogLine,
+             engine_board, &BoardWindow::appendEngineLog);
+     connect(black_engine, &KataGoEngine::engineReady,
+             this, &FixedXGospelWindow::onEveBlackReady);
+     connect(black_engine, &KataGoEngine::moveReady,
+             this, &FixedXGospelWindow::onEveBlackMove);
+     connect(black_engine, &KataGoEngine::passMoveReady,
+             this, &FixedXGospelWindow::onEveBlackPass);
+     connect(black_engine, &KataGoEngine::engineResigned,
+             this, &FixedXGospelWindow::onEveBlackResigned);
+     connect(black_engine, &KataGoEngine::scoreReady,
+             this, &FixedXGospelWindow::onEngineScore);
+     connect(black_engine, &KataGoEngine::engineError,
+             this, &FixedXGospelWindow::onEngineError);
+     connect(black_engine, &KataGoEngine::handicapStonesReady,
+             this, &FixedXGospelWindow::onEngineHandicapStones);
+     // Engine 2 (White) started in onEveBlackReady() once engine 1 is up
+
+     engine_board->setEngineStatus(
+         QString("%1 (B) vs %2 (W)").arg(black_name).arg(white_name), false);
+ }
+
+ void onEveBlackReady() {
+     m_eve_black_ready = true;
+     if (engine_board)
+         engine_board->appendEngineLog("--- Black engine ready. Starting White engine... ---", false);
+
+     // Now start white engine serially
+     engine_manager2->setProfiles(engine_manager->profiles());
+     if (!engine_manager2->attach(m_eve_white_id, m_eve_komi, m_eve_handicap)) {
+         QMessageBox::critical(this, "Engine Error", "Failed to start White engine.");
+         engine_manager->detach();
+         eve_mode = false;
+         return;
+     }
+
+     KataGoEngine *white_engine = engine_manager2->currentEngine();
+     connect(white_engine, &KataGoEngine::gtpLogLine,
+             engine_board, &BoardWindow::appendEngineLog);
+     connect(white_engine, &KataGoEngine::engineReady,
+             this, &FixedXGospelWindow::onEveWhiteReady);
+     connect(white_engine, &KataGoEngine::moveReady,
+             this, &FixedXGospelWindow::onEveWhiteMove);
+     connect(white_engine, &KataGoEngine::passMoveReady,
+             this, &FixedXGospelWindow::onEveWhitePass);
+     connect(white_engine, &KataGoEngine::engineResigned,
+             this, &FixedXGospelWindow::onEveWhiteResigned);
+     connect(white_engine, &KataGoEngine::scoreReady,
+             this, &FixedXGospelWindow::onEngineScore);
+     connect(white_engine, &KataGoEngine::engineError,
+             this, &FixedXGospelWindow::onEngineError);
+ }
+ void onEveWhiteReady() {
+     m_eve_white_ready = true;
+     if (m_eve_black_ready) onEveBothReady();
+ }
+ void onEveBothReady() {
+     if (!engine_board) return;
+     engine_board->setEngineReady(true);
+     engine_board->setWindowTitle(engine_board->windowTitle()
+         .replace("  [Engine starting...]", "  [Running]"));
+     engine_board->setEngineStatus(
+         engine_board->windowTitle().section(':', 1).trimmed(), true);
+     // Black moves first
+     engine_manager->currentEngine()->requestGenmove(BLACK_STONE);
+ }
+
+ void onEveBlackMove(int x, int y) {
+     if (!engine_board || !eve_mode) return;
+     // Render black stone
+     GameMove move;
+     move.game_id       = engine_game_id;
+     move.move_number   = engine_board->getCurrentMove() + 1;
+     move.color         = BLACK_STONE;
+     move.x = x; move.y = y;
+     move.is_live_move  = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     // Tell white engine about black's move then request white's reply
+     engine_manager2->currentEngine()->sendPlay(BLACK_STONE, x, y);
+     engine_manager2->currentEngine()->requestGenmove(WHITE_STONE);
+ }
+ void onEveBlackPass() {
+     if (!engine_board || !eve_mode) return;
+     GameMove move;
+     move.game_id = engine_game_id;
+     move.move_number = engine_board->getCurrentMove() + 1;
+     move.color = BLACK_STONE; move.x = -1; move.y = -1;
+     move.is_live_move = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     engine_manager2->currentEngine()->sendPass(BLACK_STONE);
+     if (engine_board->getConsecutivePasses() >= 2)
+         engine_manager->currentEngine()->requestFinalScore();
+     else
+         engine_manager2->currentEngine()->requestGenmove(WHITE_STONE);
+ }
+ void onEveBlackResigned() {
+     if (!engine_board) return;
+     engine_board->updateGameResult("W+Resign");
+     engine_manager->detach();
+     engine_manager2->detach();
+     eve_mode = false;
+ }
+
+ void onEveWhiteMove(int x, int y) {
+     if (!engine_board || !eve_mode) return;
+     GameMove move;
+     move.game_id       = engine_game_id;
+     move.move_number   = engine_board->getCurrentMove() + 1;
+     move.color         = WHITE_STONE;
+     move.x = x; move.y = y;
+     move.is_live_move  = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     // Tell black engine about white's move then request black's reply
+     engine_manager->currentEngine()->sendPlay(WHITE_STONE, x, y);
+     engine_manager->currentEngine()->requestGenmove(BLACK_STONE);
+ }
+ void onEveWhitePass() {
+     if (!engine_board || !eve_mode) return;
+     GameMove move;
+     move.game_id = engine_game_id;
+     move.move_number = engine_board->getCurrentMove() + 1;
+     move.color = WHITE_STONE; move.x = -1; move.y = -1;
+     move.is_live_move = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     engine_manager->currentEngine()->sendPass(WHITE_STONE);
+     if (engine_board->getConsecutivePasses() >= 2)
+         engine_manager2->currentEngine()->requestFinalScore();
+     else
+         engine_manager->currentEngine()->requestGenmove(BLACK_STONE);
+ }
+ void onEveWhiteResigned() {
+     if (!engine_board) return;
+     engine_board->updateGameResult("B+Resign");
+     engine_manager->detach();
+     engine_manager2->detach();
+     eve_mode = false;
+ }
+
+ void openEnginesPrefs() {
+     PreferencesDialog *dlg = new PreferencesDialog(engine_manager, this);
+     dlg->setAttribute(Qt::WA_DeleteOnClose);
+     // Jump straight to the Engines tab (index 2: Server, App Settings, Engines)
+     if (QTabWidget *tw = dlg->findChild<QTabWidget*>())
+         tw->setCurrentIndex(2);
+     dlg->exec();
+ }
+
+ void populateAttachSubmenu() {
+     if (!attach_submenu) return;
+     attach_submenu->clear();
+     const QList<EngineProfile> profiles = engine_manager->profiles();
+     if (profiles.isEmpty()) {
+         QAction *none = attach_submenu->addAction("(No engines configured)");
+         none->setEnabled(false);
+         return;
+     }
+     for (const EngineProfile &p : profiles) {
+         QAction *act = attach_submenu->addAction(p.name);
+         QString pid = p.id;
+         connect(act, &QAction::triggered, this, [this, pid]() {
+             attachEngine(pid);
+         });
+     }
+ }
+
+ void attachEngine(const QString &profileId) {
+     // If a local game is already running, ask before replacing
+     if (engine_manager->isAttached()) {
+         engine_manager->detach();
+     }
+     // Attachment happens at game-start time (we need komi/handicap from the dialog)
+     // Just record which profile the user selected
+     m_pending_engine_profile_id = profileId;
+     // Update menu state
+     QString name;
+     for (const EngineProfile &p : engine_manager->profiles())
+         if (p.id == profileId) { name = p.name; break; }
+     if (!this->suppress_server_console)
+         output_console->append(QString(">>> Engine selected: %1").arg(name));
+ }
+
+ void detachEngine() {
+     engine_manager->detach();
+     if (!this->suppress_server_console)
+         output_console->append(">>> Engine detached.");
+ }
+
+ void launchLocalEngineGame() {
+     const QList<EngineProfile> profiles = engine_manager->profiles();
+
+     if (profiles.isEmpty()) {
+         QMessageBox::information(this, "No Engine",
+             "No engine configured. Use Engines → Manage Engines to add one.");
+         return;
+     }
+
+     // Default selection: last used profile, or first in list
+     QString default_id = m_pending_engine_profile_id.isEmpty()
+                          ? profiles.first().id
+                          : m_pending_engine_profile_id;
+
+     LocalGameDialog dlg(profiles, default_id, this);
+     if (dlg.exec() != QDialog::Accepted) return;
+
+     QString profile_id = dlg.selectedProfileId();
+     QString engine_name;
+     for (const EngineProfile &p : profiles)
+         if (p.id == profile_id) { engine_name = p.name; break; }
+
+     // Resolve random color
+     StoneColor user_color = dlg.userColor();
+     if (user_color == EMPTY)
+         user_color = static_cast<StoneColor>((qrand() % 2) + 1);
+     engine_color = (user_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+     double komi        = dlg.komi();
+     int    hc          = dlg.handicap();
+     int    boardsize   = dlg.boardsize();
+     int    timepermove = dlg.timePerMove();
+
+     // Remember selection for next time
+     m_pending_engine_profile_id = profile_id;
+
+     // Attach engine
+     if (!engine_manager->attach(profile_id, komi, hc, boardsize, timepermove)) {
+         QMessageBox::critical(this, "Engine Error", "Failed to attach engine.");
+         return;
+     }
+     KataGoEngine *engine = engine_manager->currentEngine();
+
+     // Create board window
+     engine_board = new BoardWindow(this, login_username.isEmpty() ? "Player" : login_username);
+     engine_board->setLocalPlayMode(true);
+     connect(engine_board, &BoardWindow::boardClosed,
+             this, &FixedXGospelWindow::closeBoardWindow);
+     connect(engine_board, &BoardWindow::moveRequested,
+             this, &FixedXGospelWindow::onLocalMove);
+     connect(engine_board, &BoardWindow::resignRequested,
+             this, &FixedXGospelWindow::onLocalResign);
+     connect(engine_board, &BoardWindow::passRequested,
+             this, &FixedXGospelWindow::onLocalPass);
+     connect(engine_board, &BoardWindow::engineCmdRequested,
+             this, &FixedXGospelWindow::onManualEngineCmd);
+     connect(engine_board, &BoardWindow::engineGoRequested,
+             this, &FixedXGospelWindow::onEngineGoClicked);
+     connect(engine_board, &BoardWindow::engineClearRequested,
+             this, &FixedXGospelWindow::onEngineClearBoard);
+     connect(engine_board, &BoardWindow::undoRequested,
+             this, &FixedXGospelWindow::onLocalUndo);
+     board_windows.append(engine_board);
+
+     QString user_name  = login_username.isEmpty() ? "Player" : login_username;
+     QString white_name = (engine_color == WHITE_STONE) ? engine_name : user_name;
+     QString black_name = (engine_color == BLACK_STONE) ? engine_name : user_name;
+     engine_board->startObserving(engine_game_id, white_name, black_name, "", "");
+     engine_board->updateGameSetup(hc, komi, "");
+     engine_board->setPlayingMode(true);
+     engine_board->setWindowTitle(QString("vs %1  [Engine starting...]").arg(engine_name));
+     engine_board->show();
+
+     // Wire engine signals
+     connect(engine, &KataGoEngine::engineReady,
+             this, &FixedXGospelWindow::onEngineReady);
+     connect(engine, &KataGoEngine::moveReady,
+             this, &FixedXGospelWindow::onEngineMove);
+     connect(engine, &KataGoEngine::passMoveReady,
+             this, &FixedXGospelWindow::onEnginePass);
+     connect(engine, &KataGoEngine::engineResigned,
+             this, &FixedXGospelWindow::onEngineResigned);
+     connect(engine, &KataGoEngine::handicapStonesReady,
+             this, &FixedXGospelWindow::onEngineHandicapStones);
+     connect(engine, &KataGoEngine::scoreReady,
+             this, &FixedXGospelWindow::onEngineScore);
+     connect(engine, &KataGoEngine::engineError,
+             this, &FixedXGospelWindow::onEngineError);
+     connect(engine, &KataGoEngine::illegalMove,
+             this, &FixedXGospelWindow::onEngineIllegalMove);
+     connect(engine, &KataGoEngine::boardCleared,
+             this, &FixedXGospelWindow::onEngineBoardCleared);
+     connect(engine, &KataGoEngine::gtpLogLine,
+             engine_board, &BoardWindow::appendEngineLog);
+
+     engine_board->setEngineStatus(engine_name, false);  // red dot until ready
+ }
+
+ void onEngineReady() {
+     if (engine_board) {
+         const QList<EngineProfile> &profs = engine_manager->profiles();
+         QString name;
+         for (const EngineProfile &p : profs)
+             if (p.id == m_pending_engine_profile_id) { name = p.name; break; }
+         engine_board->setEngineStatus(name, true);
+         engine_board->setEngineReady(true);  // Unlock board clicks
+     }
+     // If engine plays Black (user is White), engine moves first
+     if (engine_color == BLACK_STONE && engine_board)
+         engine_manager->currentEngine()->requestGenmove(BLACK_STONE);
+     // If user plays Black, board is now unlocked and waiting for user's first click
+ }
+
+ void onManualEngineCmd(const QString &cmd) {
+     if (!engine_manager->isAttached()) return;
+     engine_manager->currentEngine()->enqueueRaw(cmd);
+ }
+
+ void onEngineClearBoard() {
+     if (!engine_manager->isAttached() || !engine_board) return;
+     engine_board->setEngineReady(false);  // disable Engine: Go until ACK
+     engine_manager->currentEngine()->clearBoard();
+ }
+
+ void onEngineBoardCleared() {
+     if (engine_board) engine_board->setEngineReady(true);  // re-enable Engine: Go
+ }
+
+ void onLocalUndo() {
+     if (!engine_manager->isAttached() || !engine_board) return;
+     KataGoEngine *eng = engine_manager->currentEngine();
+     // Undo engine's move then user's move (two GTP undos)
+     eng->enqueueRaw("undo");
+     eng->enqueueRaw("undo");
+     // Step back two nodes in the game tree
+     engine_board->stepBackOneMove();
+     engine_board->stepBackOneMove();
+     // Disable undo if we're back at the start (after handicap stones)
+     engine_board->enableUndoButton(engine_board->getCurrentMove() > 9);
+ }
+
+ void onEngineGoClicked() {
+     if (!engine_manager->isAttached() || !engine_board) return;
+     engine_manager->currentEngine()->requestGenmove(engine_color);
+ }
+
+ void onEngineMove(int x, int y) {
+     if (!engine_board) return;
+     GameMove move;
+     move.game_id      = engine_game_id;
+     move.move_number  = engine_board->getCurrentMove() + 1;
+     move.color        = engine_color;
+     move.x            = x;
+     move.y            = y;
+     move.is_live_move = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     engine_board->enableUndoButton(true);
+ }
+
+ void onEnginePass() {
+     if (!engine_board) return;
+     GameMove move;
+     move.game_id      = engine_game_id;
+     move.move_number  = engine_board->getCurrentMove() + 1;
+     move.color        = engine_color;
+     move.x            = -1;
+     move.y            = -1;
+     move.is_live_move = true;
+     move.received_time = QDateTime::currentDateTime();
+     engine_board->processMove(move);
+     if (engine_board->getConsecutivePasses() >= 2)
+         engine_manager->currentEngine()->requestFinalScore();
+ }
+
+ void onEngineResigned() {
+     if (!engine_board) return;
+     // Engine resigned — user wins
+     StoneColor user_color = (engine_color == WHITE_STONE) ? BLACK_STONE : WHITE_STONE;
+     QString result = (user_color == BLACK_STONE) ? "B+Resign" : "W+Resign";
+     engine_board->updateGameResult(result);
+     engine_manager->detach();
+ }
+
+ void onEngineHandicapStones(QList<QPair<int,int>> stones) {
+     if (!engine_board) return;
+     for (const QPair<int,int> &pos : stones) {
+         GameMove move;
+         move.game_id      = engine_game_id;
+         move.move_number  = engine_board->getCurrentMove() + 1;
+         move.color        = BLACK_STONE;
+         move.x            = pos.first;
+         move.y            = pos.second;
+         move.is_live_move = false;
+         move.received_time = QDateTime::currentDateTime();
+         engine_board->processMove(move);
+     }
+ }
+
+ void onEngineScore(const QString &result) {
+     if (!engine_board) return;
+     engine_board->updateGameResult(result);
+ }
+
+ void onEngineError(const QString &msg) {
+     QMessageBox::critical(this, "Engine Error", msg);
+     if (engine_board) engine_board->close();
+ }
+
+ void onEngineIllegalMove(const QString &vertex) {
+     // KataGo rejected our play — undo the optimistic stone from the client board,
+     // re-enable the board so the user can try again.
+     if (engine_board) {
+         engine_board->stepBackOneMove();
+         engine_board->setEngineReady(true);
+         engine_board->appendEngineLog(
+             QString("<<< ? illegal move (%1) — stone removed, please try again").arg(vertex), false);
+     }
+ }
+
+ void onLocalMove(int game_id, int x, int y) {
+     if (game_id != engine_game_id || !engine_manager->isAttached()) return;
+     StoneColor user_color = (engine_color == WHITE_STONE) ? BLACK_STONE : WHITE_STONE;
+
+     // Render the user's stone on the board immediately (engine won't echo it back)
+     if (engine_board) {
+         GameMove move;
+         move.game_id       = engine_game_id;
+         move.move_number   = engine_board->getCurrentMove() + 1;
+         move.color         = user_color;
+         move.x             = x;
+         move.y             = y;
+         move.is_live_move  = true;
+         move.received_time = QDateTime::currentDateTime();
+         engine_board->processMove(move);
+     }
+
+     engine_manager->currentEngine()->sendPlay(user_color, x, y);
+     engine_manager->currentEngine()->requestGenmove(engine_color);
+ }
+
+ void onLocalPass(int game_id) {
+     if (game_id != engine_game_id || !engine_manager->isAttached()) return;
+     StoneColor user_color = (engine_color == WHITE_STONE) ? BLACK_STONE : WHITE_STONE;
+
+     // Render user pass on the board
+     if (engine_board) {
+         GameMove move;
+         move.game_id       = engine_game_id;
+         move.move_number   = engine_board->getCurrentMove() + 1;
+         move.color         = user_color;
+         move.x             = -1;
+         move.y             = -1;
+         move.is_live_move  = true;
+         move.received_time = QDateTime::currentDateTime();
+         engine_board->processMove(move);
+     }
+
+     engine_manager->currentEngine()->sendPass(user_color);
+     if (engine_board && engine_board->getConsecutivePasses() >= 2)
+         engine_manager->currentEngine()->requestFinalScore();
+     else
+         engine_manager->currentEngine()->requestGenmove(engine_color);
+ }
+
+ void onLocalResign(int game_id) {
+     if (game_id != engine_game_id) return;
+     engine_manager->detach();
+     if (engine_board) {
+         StoneColor user_color = (engine_color == WHITE_STONE) ? BLACK_STONE : WHITE_STONE;
+         QString result = (user_color == BLACK_STONE) ? "W+Resign" : "B+Resign";
+         engine_board->updateGameResult(result);
+     }
+ }
+
  void closeBoardWindow(int game_id) {
- qDebug() << "[closeBoardWindow] Called for game" << game_id << ", board_windows.size=" << board_windows.size();
+ qDebug() << "[closeBoardWindow] Called for game" << game_id;
+
+ if (docked_pane_mode) {
+     GameSlot *slot = findSlot(game_id);
+     if (!slot) return;
+
+     // Send unobserve before removing the slot
+     QString unobserve_cmd = QString("unobserve %1").arg(game_id);
+     socket->write((unobserve_cmd + "\n").toUtf8());
+     if (!suppress_server_console)
+         output_console->append(QString(">>> SENT: %1 (stopped observing)").arg(unobserve_cmd));
+     games_with_moves_requested.remove(game_id);
+
+     // Remove from dock and slot list
+     GameSelectionDock *dock = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+     if (dock) dock->removeGame(game_id);
+
+     // If closing the active game, switch to another one first
+     if (active_slot_game_id == game_id) {
+         if (game_slots.size() > 1) {
+             // Switch the board window to the next slot BEFORE deleting the
+             // closing slot.  shared_board_window->game_root points into the
+             // closing slot's tree; deleting the slot first leaves a dangling
+             // pointer that causes a crash when loadSlot() (called from
+             // switchActiveGame) touches game_root via getTotalMoves() etc.
+             //
+             // Snapshot the closing slot manually (switchActiveGame would try
+             // to do this but the slot is still in the list at this point, so
+             // we call it explicitly and then remove before switching).
+             if (shared_board_window)
+                 shared_board_window->snapshotToSlot(slot);
+             game_slots.removeOne(slot);
+             // Clear active id so switchActiveGame's early-out doesn't fire
+             active_slot_game_id = -1;
+             // Redirect game_root to the new slot before freeing old one
+             switchActiveGame(game_slots.first()->game_id);
+             delete slot;
+         } else if (shared_board_window) {
+             // Last game closed — destroy the shared window properly
+             game_slots.removeOne(slot);
+             active_slot_game_id = -1;
+             delete slot;
+             shared_board_window->setSharedWindow(false);
+             shared_board_window->close();
+             shared_board_window = nullptr;
+         } else {
+             game_slots.removeOne(slot);
+             active_slot_game_id = -1;
+             delete slot;
+         }
+     } else {
+         game_slots.removeOne(slot);
+         delete slot;
+     }
+
+     observed_game_ids.remove(game_id);
+     if (games_window) {
+         games_window->clearSelectionForGame(game_id);
+         games_window->updateObservedGames(observed_game_ids);
+     }
+     return;
+ }
+
+ qDebug() << "[closeBoardWindow] board_windows.size=" << board_windows.size();
  for (int i = 0; i < board_windows.size(); i++) {
  if (board_windows[i]->getObservedGameId() == game_id) {
  qDebug() << "[closeBoardWindow] Found matching board at index" << i;
@@ -6075,6 +8028,13 @@ private slots:
  // Board window can stay open for review, but game is no longer actively observed
  qDebug() << "[untrackFinishedGame] Removing finished game" << game_id << "from observed tracking";
 
+ // Bot mode: clean up engine if this was the bot game
+ if (bot_mode_active && bot_game_id == game_id)
+     botEndGame();
+
+ // Clear moves-requested flag so IGS game ID reuse doesn't block the next game's history
+ games_with_moves_requested.remove(game_id);
+
  if (observed_game_ids.contains(game_id)) {
  observed_game_ids.remove(game_id);
  qDebug() << "[untrackFinishedGame] Removed game" << game_id << ", observed_game_ids size now:" << observed_game_ids.size();
@@ -6091,6 +8051,653 @@ private slots:
  } else {
  qDebug() << "[untrackFinishedGame] Game" << game_id << "not in observed_game_ids (already removed or never tracked)";
  }
+ }
+
+ // =========================================================
+ // Bot Mode (Phase 2)
+ // =========================================================
+
+ void toggleBotMode(bool enabled) {
+     bot_mode_active = enabled;
+     if (bot_mode_action) bot_mode_action->setChecked(enabled);
+     QString state = enabled ? "ON" : "OFF";
+     output_console->append(QString("[BOT] Bot mode %1").arg(state));
+     if (socket && socket->state() == QAbstractSocket::ConnectedState) {
+         if (enabled) {
+             // Advertise availability to challengers
+             socket->write("toggle open true\n");
+             socket->flush();
+         } else {
+             if (bot_game_id != -1) {
+                 output_console->append("[BOT] Warning: bot mode disabled while a bot game is in progress.");
+             } else {
+                 // No longer accepting challenges
+                 socket->write("toggle open false\n");
+                 socket->flush();
+                 // Shut down the warm engine now that bot mode is off
+                 engine_manager->detach();
+             }
+         }
+     }
+ }
+
+ // Called from the nmatch/match incoming request handlers when bot mode is active.
+ // Validates constraints and sends the accept command directly (no dialog).
+ void botAcceptMatch(const QString &opponent, const QString &suggested_cmd,
+                     StoneColor my_color, int boardsize, int handicap,
+                     int main_time, int byoyomi_time, int byoyomi_stones, double komi) {
+     if (bot_game_id != -1) {
+         // Already in a game — decline
+         output_console->append(QString("[BOT] Declining %1 — already in a bot game.").arg(opponent));
+         socket->write(QString("decline %1\n").arg(opponent).toUtf8());
+         return;
+     }
+     if (boardsize != 19) {
+         output_console->append(QString("[BOT] Declining %1 — only 19x19 supported.").arg(opponent));
+         socket->write(QString("decline %1\n").arg(opponent).toUtf8());
+         return;
+     }
+     if (byoyomi_time < 60) {
+         output_console->append(QString("[BOT] Declining %1 — byoyomi period %2s < 60s minimum.").arg(opponent).arg(byoyomi_time));
+         socket->write(QString("decline %1\n").arg(opponent).toUtf8());
+         return;
+     }
+
+     // Store match params for use after CMD 67 confirms the game
+     bot_opponent         = opponent;
+     bot_color            = my_color;
+     bot_boardsize        = boardsize;
+     bot_handicap         = handicap;   // authoritative from match offer; not from stale slot
+     bot_main_time        = main_time;
+     bot_byoyomi_time     = byoyomi_time;
+     bot_byoyomi_stones   = byoyomi_stones;
+     bot_komi             = komi;
+     bot_time_remaining   = main_time;
+     bot_stones_remaining = byoyomi_stones;
+
+     output_console->append(QString("[BOT] Accepting match from %1 — %2 %3x%3 main=%4s byo=%5s/%6 stones")
+         .arg(opponent)
+         .arg(my_color == BLACK_STONE ? "Black" : "White")
+         .arg(boardsize).arg(main_time).arg(byoyomi_time).arg(byoyomi_stones));
+
+     socket->write((suggested_cmd + "\n").toUtf8());
+     socket->flush();
+ }
+
+ // Called when CMD 67 confirms a new game and bot_mode_active is true.
+ // Attaches the engine and configures it for the IGS game.
+ void botStartGame(int game_id) {
+     bot_game_id = game_id;
+     bot_engine_ready = false;  // guard CMD 15 triggers until onBotEngineReady completes
+
+     // Find the board window for this game (dock: shared_board_window; non-dock: board_windows)
+     engine_board = nullptr;
+     if (docked_pane_mode) {
+         engine_board = shared_board_window;
+     } else {
+         for (BoardWindow *b : board_windows) {
+             if (b->getObservedGameId() == game_id) { engine_board = b; break; }
+         }
+     }
+
+     // Non-dock mode: call startObserving so the board knows the game/player names.
+     // Dock mode: the slot-based loadSlot already sets is_playing=true and observed_game_id;
+     // updateLabels now shows "Game #N | <color> to Play" whenever is_playing is true.
+     if (!docked_pane_mode && engine_board) {
+         QString wname = (bot_color == WHITE_STONE) ? login_username : bot_opponent;
+         QString bname = (bot_color == BLACK_STONE) ? login_username : bot_opponent;
+         engine_board->startObserving(game_id, wname, bname, findPlayerRank(wname), findPlayerRank(bname));
+         engine_board->setPlayingMode(true);
+     }
+     // Greeting is deferred to onBotEngineReady — the game must be fully open on the
+     // server before "say" will be delivered. Sending it here (before "9 Creating match")
+     // causes IGS to silently drop it.
+
+     // Fetch stats for the opponent in case they weren't in the initial userlist/who.
+     // The stats parser will call upsertPlayerRank when the response arrives.
+     if (!bot_opponent.isEmpty())
+         sendCommandString(QString("stats %1").arg(bot_opponent));
+
+     KataGoEngine *engine = engine_manager->currentEngine();
+
+     if (engine && engine->isReady()) {
+         // Warm path: engine already running from previous game — no cold-start latency.
+         // Re-wire signals (connections from the previous game are still live but safe to
+         // reconnect since disconnect/connect is idempotent for the same pairs).
+         output_console->append(QString("[BOT] Game %1 started vs %2 — reusing warm engine").arg(game_id).arg(bot_opponent));
+         disconnect(engine, nullptr, this, nullptr);
+         connect(engine, &KataGoEngine::boardCleared, this, &FixedXGospelWindow::onBotEngineReady);
+         connect(engine, &KataGoEngine::moveReady, this, [this](int x, int y){
+             onBotMoveReady(coordsToGtp(x, y));
+         });
+         connect(engine, &KataGoEngine::passMoveReady,  this, &FixedXGospelWindow::onBotPassReady);
+         connect(engine, &KataGoEngine::engineResigned, this, &FixedXGospelWindow::onBotEngineResigned);
+         connect(engine, &KataGoEngine::scoreReady,     this, &FixedXGospelWindow::onBotScoreReady);
+         connect(engine, &KataGoEngine::ownershipReady, this, &FixedXGospelWindow::onBotOwnershipReady);
+         connect(engine, &KataGoEngine::engineError,    this, &FixedXGospelWindow::onEngineError);
+         connect(engine, &KataGoEngine::gtpLogLine, this, [this](const QString &line, bool sent){
+             BoardWindow *target = engine_board;
+             if (!target && docked_pane_mode) target = shared_board_window;
+             if (target) target->appendEngineLog(line, sent);
+         });
+         // clear_board ack fires boardCleared → onBotEngineReady
+         engine->clearBoard();
+     } else {
+         // Cold path: first game of session, or engine died — launch fresh.
+         QList<EngineProfile> profiles = engine_manager->profiles();
+         if (profiles.isEmpty()) {
+             output_console->append("[BOT] ERROR: No engine profiles configured — cannot start bot game.");
+             bot_game_id = -1;
+             return;
+         }
+         QString profile_id = m_pending_engine_profile_id.isEmpty() ? profiles.first().id : m_pending_engine_profile_id;
+         output_console->append(QString("[BOT] Game %1 started vs %2 — cold-starting engine").arg(game_id).arg(bot_opponent));
+
+         if (!engine_manager->attach(profile_id, bot_komi, 0, bot_boardsize, 0)) {
+             output_console->append("[BOT] ERROR: Failed to attach engine.");
+             bot_game_id = -1;
+             return;
+         }
+         engine = engine_manager->currentEngine();
+
+         disconnect(engine, nullptr, this, nullptr);
+         connect(engine, &KataGoEngine::engineReady,    this, &FixedXGospelWindow::onBotEngineReady);
+         connect(engine, &KataGoEngine::moveReady, this, [this](int x, int y){
+             onBotMoveReady(coordsToGtp(x, y));
+         });
+         connect(engine, &KataGoEngine::passMoveReady,  this, &FixedXGospelWindow::onBotPassReady);
+         connect(engine, &KataGoEngine::engineResigned, this, &FixedXGospelWindow::onBotEngineResigned);
+         connect(engine, &KataGoEngine::scoreReady,     this, &FixedXGospelWindow::onBotScoreReady);
+         connect(engine, &KataGoEngine::ownershipReady, this, &FixedXGospelWindow::onBotOwnershipReady);
+         connect(engine, &KataGoEngine::engineError,    this, &FixedXGospelWindow::onEngineError);
+         connect(engine, &KataGoEngine::gtpLogLine, this, [this](const QString &line, bool sent){
+             BoardWindow *target = engine_board;
+             if (!target && docked_pane_mode) target = shared_board_window;
+             if (target) target->appendEngineLog(line, sent);
+         });
+     }
+ }
+
+ void onBotEngineReady() {
+     KataGoEngine *engine = engine_manager->currentEngine();
+     if (!engine) return;
+
+     // Komi: use slot value only if CMD 7 has updated it for this specific game
+     // (white/black names match our game).  A stale slot from a previous game in
+     // the same game ID slot would give the wrong komi.  bot_komi was set from
+     // the match-acceptance default (6.5 even / 0.5 hc) and is safe as fallback.
+     if (GameSlot *bslot = findSlot(bot_game_id)) {
+         QString slot_white = game_white_player_map.value(bot_game_id);
+         QString slot_black = game_black_player_map.value(bot_game_id);
+         bool cmd7_is_current = (!slot_white.isEmpty() && !slot_black.isEmpty()) &&
+             (slot_white.compare(bot_opponent, Qt::CaseInsensitive) == 0 ||
+              slot_black.compare(bot_opponent, Qt::CaseInsensitive) == 0);
+         if (cmd7_is_current)
+             bot_komi = bslot->komi;
+         // else keep bot_komi from match-acceptance (6.5 or 0.5)
+     }
+
+     output_console->append(QString("[BOT] Engine ready for game %1 — komi=%2 hc=%3")
+         .arg(bot_game_id).arg(bot_komi).arg(bot_handicap));
+
+     // Greet the opponent now that the game is fully open on the server.
+     // Sending "say" before "9 Creating match [N]" causes IGS to silently drop it.
+     {
+         QString greeting = QString("Hello %1! Good luck and have fun!").arg(bot_opponent);
+         socket->write((QString("say %1\n").arg(greeting)).toUtf8());
+         socket->flush();
+         output_console->append(QString("[BOT] >>> say: %1").arg(greeting));
+         // Save to slot comment list so it persists even if the board is showing another game
+         if (GameSlot *bslot = findSlot(bot_game_id)) {
+             GameSlot::CommentEntry ce; ce.user = login_username; ce.text = greeting; ce.is_kibitz = false;
+             bslot->comments.append(ce);
+         }
+         if (engine_board)
+             engine_board->processComment(login_username, greeting, false);
+     }
+
+     // The engine's built-in init already sent: time_settings, boardsize, komi, clear_board.
+     // Append kgs-time_settings and kata-set-rules after clear_board.
+     engine->enqueueRaw(QString("kgs-time_settings canadian %1 %2 %3")
+         .arg(bot_main_time).arg(bot_byoyomi_time).arg(bot_byoyomi_stones));
+     engine->enqueueRaw("kata-set-rules japanese");
+     // Correct komi (engine init used default 6.5; override with actual game komi)
+     engine->enqueueRaw(QString("komi %1").arg(bot_komi));
+
+     if (bot_handicap > 1) {
+         // Set handicap stones — IGS standard positions
+         QList<QPair<int,int>> hc_positions = IGSMoveParser::getHandicapPositions(bot_handicap);
+         QStringList vertices;
+         for (const auto &pos : hc_positions)
+             vertices << coordsToGtp(pos.first, pos.second);
+         engine->enqueueRaw(QString("set_free_handicap %1").arg(vertices.join(' ')));
+         output_console->append(QString("[BOT] Sent set_free_handicap: %1").arg(vertices.join(' ')));
+     }
+
+     // Allow CMD 15 moves to trigger genmove now that setup is complete.
+     bot_engine_ready = true;
+
+     if (bot_color == BLACK_STONE && bot_handicap <= 1) {
+         // Even game: Black moves first immediately.
+         output_console->append("[BOT] Bot plays Black (even game) — requesting first move");
+         engine->requestGenmove(BLACK_STONE);
+     } else if (bot_color == WHITE_STONE && bot_handicap >= 2) {
+         // Handicap game, bot is White — White moves FIRST after the handicap stones.
+         // The handicap placement is move 0 (server-allocated); White does not wait for
+         // a Black regular move. Call genmove W immediately now that set_free_handicap
+         // has been enqueued.
+         output_console->append(QString("[BOT] Bot plays White in %1-stone handicap game — requesting first move").arg(bot_handicap));
+         engine->requestGenmove(WHITE_STONE);
+     } else if (bot_color == WHITE_STONE) {
+         // Even game, bot is White — Black moves first.
+         // If Black already played before the engine finished init (fast opponent or slow
+         // engine startup), we missed the CMD 15 trigger. Check the move history directly.
+         if (GameSlot *bslot = findSlot(bot_game_id)) {
+             QString missed_vertex;
+             for (int i = bslot->move_history.size() - 1; i >= 0; --i) {
+                 const auto &m = bslot->move_history[i];
+                 if (m.color == BLACK_STONE && m.x >= 0) {
+                     missed_vertex = coordsToGtp(m.x, m.y);
+                     break;
+                 }
+             }
+             if (!missed_vertex.isEmpty()) {
+                 output_console->append(QString("[BOT] Engine ready late — opponent already played %1, triggering genmove W now").arg(missed_vertex));
+                 onBotOpponentMove(missed_vertex, bot_time_remaining, bot_stones_remaining);
+             }
+         }
+     }
+     // Remaining case (bot=Black, hc>=2): Black placed handicap stones, White moves
+     // first via CMD 15. If White already played before engine was ready, catch up now.
+     else if (bot_color == BLACK_STONE && bot_handicap >= 2) {
+         if (GameSlot *bslot = findSlot(bot_game_id)) {
+             QString missed_vertex;
+             for (int i = bslot->move_history.size() - 1; i >= 0; --i) {
+                 const auto &m = bslot->move_history[i];
+                 if (m.color == WHITE_STONE && m.x >= 0) {
+                     missed_vertex = coordsToGtp(m.x, m.y);
+                     break;
+                 }
+             }
+             if (!missed_vertex.isEmpty()) {
+                 output_console->append(QString("[BOT] Engine ready late — opponent already played %1, triggering genmove B now").arg(missed_vertex));
+                 onBotOpponentMove(missed_vertex, bot_time_remaining, bot_stones_remaining);
+             }
+         }
+     }
+ }
+
+ // Called from the CMD 15 move handler when bot_game_id is set and the move is the opponent's.
+ void onBotOpponentMove(const QString &gtp_vertex, int time_remaining, int stones_remaining) {
+     KataGoEngine *engine = engine_manager->currentEngine();
+     if (!engine) return;
+
+     QString color_str = (bot_color == BLACK_STONE) ? "white" : "black";
+
+     // CMD9 scoring confirmed: suppress all moves — game is over for the engine.
+     if (bot_scoring_pending) {
+         output_console->append(QString("[BOT] Opponent played %1 — scoring phase active, skipping play+genmove")
+             .arg(gtp_vertex));
+         return;
+     }
+
+     // If a kata-raw-nn prefetch is in-flight, let it complete — it takes
+     // milliseconds. Cancelling is counterproductive: the command is already
+     // queued so clearing m_awaiting_ownership causes the response to be silently
+     // dropped, leaving the engine unable to process the next ownership request.
+     // onBotOwnershipReady discards the result when bot_scoring_pending is false.
+
+     output_console->append(QString("[BOT] Opponent played %1 — requesting genmove %2")
+         .arg(gtp_vertex).arg(bot_color == BLACK_STONE ? "black" : "white"));
+
+     engine->enqueueRaw(QString("play %1 %2").arg(color_str).arg(gtp_vertex));
+     engine->requestGenmove(bot_color);
+
+     Q_UNUSED(time_remaining); Q_UNUSED(stones_remaining);
+ }
+
+ void onBotMoveReady(const QString &gtp_vertex) {
+     if (bot_game_id == -1) return;
+
+     // Convert GTP vertex (e.g. "K10") to IGS format and send
+     // GTP and IGS both use the same letter+number notation (both skip 'I'),
+     // so for standard 19x19 the vertex can be sent directly.
+     output_console->append(QString("[BOT] Engine plays %1 — sending to IGS").arg(gtp_vertex));
+     socket->write((gtp_vertex + "\n").toUtf8());
+     socket->flush();
+
+     // A real move invalidates any prefetched ownership — clear the cache.
+     if (!bot_cached_ownership.isEmpty()) {
+         bot_cached_ownership.clear();
+         output_console->append("[BOT] Real move played — ownership cache cleared");
+     }
+
+     // Sync remaining time with engine — clamp stones to 0 (IGS sends -1 during main time)
+     QString bot_color_str = (bot_color == BLACK_STONE) ? "black" : "white";
+     int stones_to_report = qMax(0, bot_stones_remaining);
+     engine_manager->currentEngine()->enqueueRaw(
+         QString("time_left %1 %2 %3")
+             .arg(bot_color_str).arg(bot_time_remaining).arg(stones_to_report));
+
+     // Update board window if it exists
+     if (!engine_board) {
+         for (BoardWindow *b : board_windows) {
+             if (b->getObservedGameId() == bot_game_id) { engine_board = b; break; }
+         }
+     }
+ }
+
+ void onBotPassReady() {
+     if (bot_game_id == -1) return;
+     output_console->append("[BOT] Engine passes — sending pass to IGS");
+     socket->write("pass\n");
+     socket->flush();
+     QString bot_color_str = (bot_color == BLACK_STONE) ? "black" : "white";
+     int stones_to_report = qMax(0, bot_stones_remaining);
+     KataGoEngine *engine = engine_manager->currentEngine();
+     engine->enqueueRaw(
+         QString("time_left %1 %2 %3")
+             .arg(bot_color_str).arg(bot_time_remaining).arg(stones_to_report));
+     // Prefetch ownership — if the engine is passing, scoring phase may be imminent.
+     // Only start prefetch if: not already scoring, and no request already in flight.
+     if (!bot_scoring_pending && !engine->isOwnershipInFlight()) {
+         output_console->append("[BOT] Engine passed — prefetching kata-raw-nn ownership");
+         bot_cached_ownership.clear();
+         engine->requestOwnership();
+     }
+ }
+
+ void onBotScoreReady(const QString &score) {
+     // final_score may still arrive (e.g. user sends it manually) — log but don't act.
+     if (bot_game_id == -1) return;
+     output_console->append(QString("[BOT] KataGo final_score: %1").arg(score));
+ }
+
+ void onBotOwnershipReady(const QVector<float> &ownership) {
+     if (bot_game_id == -1) return;
+
+     if (!bot_scoring_pending) {
+         // Proactive prefetch completed before scoring trigger arrived.
+         // Cache it — the scoring trigger handler will promote bot_scoring_pending
+         // and call this again (or see it from the in-flight path).
+         bot_cached_ownership = ownership;
+         output_console->append(QString("[BOT] Ownership prefetch complete — %1 values cached")
+             .arg(ownership.size()));
+         return;
+     }
+
+     // Scoring phase result received. Keep bot_scoring_pending=true until done is sent
+     // so the CMD49 handler can check it when deciding whether to fire removes+done.
+
+     if (ownership.size() != 361) {
+         output_console->append("[BOT] WARNING: Ownership analysis failed — sending done without remove");
+         bot_scoring_pending = false;
+         QTimer::singleShot(500, this, [this]() {
+             bot_done_sent = true; socket->write("done\n"); socket->flush();
+             output_console->append("[BOT] >>> done (no ownership)");
+         });
+         return;
+     }
+
+     // Resolve board window.
+     BoardWindow *board = engine_board;
+     if (!board && docked_pane_mode) board = shared_board_window;
+     if (!board) {
+         output_console->append("[BOT] WARNING: No board window — sending done without remove");
+         QTimer::singleShot(500, this, [this]() {
+             bot_done_sent = true; socket->write("done\n"); socket->flush();
+             output_console->append("[BOT] >>> done (no board)");
+         });
+         return;
+     }
+
+     output_console->append("[BOT] Ownership analysis complete — identifying dead groups in bot territory");
+
+     // -----------------------------------------------------------------------
+     // Algorithm: find opponent stones enclosed within the bot's territory.
+     //
+     // KataGo ownership: +1.0 = Black owns, -1.0 = White owns. Row-major,
+     // row 0 = top (y=0), col 0 = left (x=0). Index = y*19 + x.
+     //
+     // Step 1: Mark all intersections the bot strongly owns (ownership threshold).
+     //   bot=Black: ownership[i] >= +BOT_TERRITORY_THRESHOLD  → bot owns
+     //   bot=White: ownership[i] <= -BOT_TERRITORY_THRESHOLD  → bot owns
+     //
+     // Step 2: For each connected group of opponent stones, flood-fill the group.
+     //   The group is "enclosed in bot territory" if every empty intersection
+     //   adjacent to or reachable from the group (without crossing bot stones or
+     //   the board edge) has strong bot-ownership.
+     //   Simplified criterion: ≥ BOT_MAJORITY_FRACTION of the full group's
+     //   stones have strong bot-ownership. At ≥50 visits this is reliable.
+     //
+     // Step 3: For each confirmed dead group, send ONE "remove <seed>" command.
+     //   IGS removes the full connected group from a single seed coordinate.
+     //
+     // Step 4: After a 500ms server-readiness delay, send all removes then done.
+     // -----------------------------------------------------------------------
+
+     // At ~50-200 visits (1.5s window) ownership is reliable.
+     // Threshold 0.70 is tighter than old 0.50 — appropriate for higher visits.
+     const float BOT_TERRITORY_THRESHOLD = 0.70f;
+     const int   BOT_MAJORITY_PERCENT    = 65;   // ≥65% of group stones must be in bot territory
+
+     StoneColor opponent_color = (bot_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
+
+     // Build set of all intersections the bot strongly owns.
+     QSet<QPair<int,int>> bot_territory;
+     for (int y = 0; y < 19; ++y) {
+         for (int x = 0; x < 19; ++x) {
+             float own = ownership[y * 19 + x];
+             bool bot_owns = (bot_color == BLACK_STONE) ? (own >=  BOT_TERRITORY_THRESHOLD)
+                                                        : (own <= -BOT_TERRITORY_THRESHOLD);
+             if (bot_owns)
+                 bot_territory.insert(qMakePair(x, y));
+         }
+     }
+     output_console->append(QString("[BOT] Bot territory cells (threshold %.2f): %1")
+         .arg(BOT_TERRITORY_THRESHOLD).arg(bot_territory.size()));
+
+     // Find all opponent stone groups and test each for enclosure.
+     const int dx[] = {-1, 1, 0, 0};
+     const int dy[] = {0, 0, -1, 1};
+     QSet<QPair<int,int>> all_visited;        // prevents re-scanning same group
+     QList<QPair<int,int>> dead_group_seeds;  // one seed coord per confirmed dead group
+
+     for (int y = 0; y < 19; ++y) {
+         for (int x = 0; x < 19; ++x) {
+             QPair<int,int> start(x, y);
+             if (all_visited.contains(start)) continue;
+             if (board->getStoneAt(x, y) != opponent_color) continue;
+
+             // BFS: expand full connected group of opponent stones.
+             QQueue<QPair<int,int>> queue;
+             QList<QPair<int,int>> group;
+             queue.enqueue(start);
+             all_visited.insert(start);
+
+             while (!queue.isEmpty()) {
+                 auto cur = queue.dequeue();
+                 group.append(cur);
+                 for (int d = 0; d < 4; ++d) {
+                     int nx = cur.first  + dx[d];
+                     int ny = cur.second + dy[d];
+                     if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                     QPair<int,int> nb(nx, ny);
+                     if (all_visited.contains(nb)) continue;
+                     if (board->getStoneAt(nx, ny) == opponent_color) {
+                         all_visited.insert(nb);
+                         queue.enqueue(nb);
+                     }
+                 }
+             }
+
+             // Count stones from this group that fall inside bot's territory.
+             int in_territory = 0;
+             for (const auto &s : group)
+                 if (bot_territory.contains(s)) in_territory++;
+
+             int pct = (group.size() > 0) ? (in_territory * 100 / group.size()) : 0;
+             bool dead = (pct >= BOT_MAJORITY_PERCENT);
+             output_console->append(QString("[BOT] Opponent group of %1 stones: %2/%3 (%4%) in bot territory — %5")
+                 .arg(group.size()).arg(in_territory).arg(group.size()).arg(pct)
+                 .arg(dead ? "DEAD" : "alive"));
+
+             if (dead)
+                 dead_group_seeds.append(group.first());  // one seed per group for IGS remove
+         }
+     }
+
+     // Build remove list, then fire after 1500ms — gives IGS time to fully open
+     // the scoring window after CMD9 before we send remove commands.
+     // Both sides act independently: bot sends its removes+done, opponent sends theirs.
+     // IGS scores when both dones are received.
+     bot_pending_removes.clear();
+     bot_pending_remove_positions.clear();
+     for (const auto &pos : dead_group_seeds) {
+         int x = pos.first;
+         int y = pos.second;
+         char letter = (x < 8) ? ('A' + x) : ('A' + x + 1);
+         int igs_row = 19 - y;
+         bot_pending_removes.append(QString("%1%2").arg(letter).arg(igs_row));
+         bot_pending_remove_positions.append(pos);
+     }
+     if (bot_pending_removes.isEmpty()) {
+         output_console->append("[BOT] No dead groups found — sending done in 1500ms");
+     } else {
+         output_console->append(QString("[BOT] %1 dead group(s) identified — sending <coord> <game_id> + done in 1500ms")
+             .arg(bot_pending_removes.size()));
+     }
+
+     // Snapshot ownership now (while the parameter is in scope) for use in progressive renders.
+     bot_ownership_snapshot = ownership;
+
+     QTimer::singleShot(1500, this, [this]() {
+         if (!bot_scoring_pending || bot_done_sent) return;
+         bot_scoring_pending = false;
+         bot_done_sent = true;
+         // Mark bot's own dead groups visually on the engine board
+         for (const auto &pos : bot_pending_remove_positions) {
+             if (engine_board)
+                 engine_board->markStoneAsDead(pos.first, pos.second);
+         }
+         // Send dead stone toggle commands to IGS — format is "<coord> <game_id>" (no "remove" prefix)
+         for (const QString &coord : bot_pending_removes) {
+             socket->write((QString("%1 %2\n").arg(coord).arg(bot_game_id)).toUtf8());
+             socket->flush();
+             output_console->append(QString("[BOT] >>> %1 %2 (dead group toggle)").arg(coord).arg(bot_game_id));
+         }
+         bot_pending_removes.clear();
+         bot_pending_remove_positions.clear();
+         socket->write("done\n"); socket->flush();
+         output_console->append("[BOT] >>> done");
+         // Render pass 1: our view of territory the moment we send done.
+         // Opponent's dead groups not yet removed — their territory may show as dame.
+         applyBotTerritoryOverlay("Pass 1 (bot done)");
+     });
+ }
+
+ // Build territory map using local flood-fill scoring (same algorithm as the Score button)
+ // and apply to engine_board. Called progressively: Pass 1 when bot sends done,
+ // Pass 2 when opponent sends done. Dead stones are read from the board widget
+ // (marked by markStoneAsDead()) and excluded from the GoBoard so flood-fill treats
+ // them as empty intersections — identical to the in_edit_position_mode path.
+ void applyBotTerritoryOverlay(const QString &pass_label) {
+     BoardWindow *board = engine_board;
+     if (!board && docked_pane_mode) board = shared_board_window;
+     if (!board) return;
+
+     QSet<QPair<int,int>> dead = board->getDeadStones();
+
+     GoBoard score_board;
+     for (int x = 0; x < 19; x++)
+         for (int y = 0; y < 19; y++) {
+             StoneColor sc = board->getStoneAt(x, y);
+             if (sc != EMPTY && !dead.contains(qMakePair(x, y)))
+                 score_board.placeStone(x, y, sc);
+         }
+
+     QMap<QPair<int,int>, StoneColor> territory_map;
+     QSet<QPair<int,int>> dummy_dead, disputed;
+     int b_score = 0, w_score = 0;
+     ScoringMethod method = (settings->getScoringMethod() == "complex")
+                            ? ScoringMethod::Complex : ScoringMethod::Simple;
+     ScoreEngine::estimate(score_board, territory_map, dummy_dead, disputed, b_score, w_score, method);
+
+     output_console->append(QString("[BOT] Territory overlay — %1 (local scoring): B:%2 W:%3 dead:%4")
+         .arg(pass_label).arg(b_score).arg(w_score).arg(dead.size()));
+     bot_overlay_active = true;
+     board->setScoringModeWithTerritory(territory_map);
+ }
+
+ void onBotEngineResigned() {
+     if (bot_game_id == -1) return;
+     output_console->append("[BOT] Engine resigned — sending resign to IGS");
+     socket->write("resign\n");
+     socket->flush();
+ }
+
+ void botEndGame() {
+     if (bot_game_id == -1) return;
+     output_console->append(QString("[BOT] Game %1 ended — engine kept warm for next game").arg(bot_game_id));
+
+     // Thank the opponent — game is over so use tell (say only works in active games)
+     if (!bot_opponent.isEmpty()) {
+         QString farewell = QString("Thank you for the game %1!").arg(bot_opponent);
+         socket->write((QString("tell %1 %2\n").arg(bot_opponent, farewell)).toUtf8());
+         socket->flush();
+         output_console->append(QString("[BOT] >>> tell %1: %2").arg(bot_opponent, farewell));
+         if (GameSlot *bslot = findSlot(bot_game_id)) {
+             GameSlot::CommentEntry ce; ce.user = login_username; ce.text = farewell; ce.is_kibitz = false;
+             bslot->comments.append(ce);
+         }
+         if (engine_board)
+             engine_board->processComment(login_username, farewell, false);
+     }
+
+     bot_game_id          = -1;
+     bot_engine_ready     = false;
+     bot_scoring_pending  = false;
+     bot_done_sent        = false;
+     bot_pass2_rendered   = false;
+     bot_overlay_active   = false;
+     bot_pending_removes.clear();
+     bot_pending_remove_positions.clear();
+     bot_cached_ownership.clear();
+     bot_ownership_snapshot.clear();
+     bot_opponent         = "";
+     bot_handicap         = 0;
+     bot_time_remaining   = 0;
+     bot_stones_remaining = 0;
+     // Cancel any in-flight ownership request so its response doesn't fire
+     // onBotOwnershipReady after bot_game_id has been cleared to -1.
+     if (KataGoEngine *engine = engine_manager->currentEngine()) {
+         engine->cancelOwnership();
+         engine->enqueueRaw("clear_board");
+     }
+     engine_board = nullptr;
+
+     // Reopen to new challenges now that the game is finished
+     socket->write("toggle open true\n");
+     socket->flush();
+ }
+
+ // Convert board x,y coordinates to a GTP vertex string.
+ // x/y are 0-based from top-left; GTP skips 'I'; pass = x==-1.
+ static QString coordsToGtp(int x, int y) {
+     if (x < 0 || y < 0) return "pass";
+     char col = (x < 8) ? ('A' + x) : ('A' + x + 1); // skip 'I'
+     int row = 19 - y;
+     return QString("%1%2").arg(col).arg(row);
+ }
+
+ // Send a random canned reply to a tell received during bot mode
+ void botReplyToTell(const QString &sender) {
+     if (!bot_mode_active || bot_tell_responses.isEmpty()) return;
+     int idx = QRandomGenerator::global()->bounded(bot_tell_responses.size());
+     QString reply = QString("tell %1 %2").arg(sender).arg(bot_tell_responses.at(idx));
+     socket->write((reply + "\n").toUtf8());
+     socket->flush();
+     output_console->append(QString("[BOT] Auto-replied to tell from %1").arg(sender));
  }
 
  void resignGame(int game_id) {
@@ -6235,8 +8842,9 @@ private slots:
  
  // Send move command to IGS
  socket->write((igs_move + "\n").toUtf8());
+ socket->flush();
  if (!this->suppress_server_console) output_console->append(QString(">>> SENT MOVE: %1 (for game %2)").arg(igs_move).arg(game_id));
- 
+
  qDebug() << "Move sent to IGS server:" << igs_move;
  }
  
@@ -6282,18 +8890,8 @@ private slots:
  }
  
  QString findPlayerRank(const QString& player_name) {
- // Search through players_model to find the rank for this player
  if (!players_window) return "?";
- 
- // For now, check if we have the information in a map or return a default
- // This is a simplified approach - we'd need to access the players_model properly
- // in a real implementation, but this prevents crashes
- 
- // Common known ranks for testing
- if (player_name == "weakkyu") return "7k?";
- if (player_name == "quietone") return "7k?";
- 
- return "?"; // Default if not found
+ return players_window->getRankForPlayer(player_name);
  }
 };
 
@@ -6305,9 +8903,7 @@ int main(int argc, char *argv[]) {
 
  // VERSION BANNER - confirms correct binary is running
  qDebug() << "==========================================================================";
- qDebug() << ">>> XGOSPEL2 VERSION: BUILD-2026-01-14-v38-BOARD-TOP-TITLE";
- qDebug() << ">>> NEW: Teaching title moved to top of board frame (xgospel placement)";
- qDebug() << ">>> NEW: Title appears above board, not in info panel";
+ qDebug() << ">>> XGOSPEL2 VERSION:" << XGOSPEL_VERSION << XGOSPEL_BUILD_DATE;
  qDebug() << ">>> - All three vertical borders now resizable (board, comments, observers)";
  qDebug() << ">>> - Removed fixed 300px width limit on info panel";
  qDebug() << ">>> - Initial split: 75% board, 25% info panel";

@@ -57,6 +57,56 @@ bool GoBoard::isEmpty() const {
     return true;
 }
 
+void GoBoard::floodFillGroup(int x, int y, StoneColor color,
+                              bool visited[19][19],
+                              QList<QPair<int,int>> &group) const
+{
+    if (x < 0 || x >= 19 || y < 0 || y >= 19) return;
+    if (visited[x][y]) return;
+    if (board[x][y] != color) return;
+    visited[x][y] = true;
+    group.append({x, y});
+    floodFillGroup(x-1, y, color, visited, group);
+    floodFillGroup(x+1, y, color, visited, group);
+    floodFillGroup(x, y-1, color, visited, group);
+    floodFillGroup(x, y+1, color, visited, group);
+}
+
+int GoBoard::countLiberties(int x, int y) const
+{
+    StoneColor color = board[x][y];
+    if (color == EMPTY_STONE) return 0;
+    bool visited[19][19] = {};
+    QList<QPair<int,int>> group;
+    floodFillGroup(x, y, color, visited, group);
+    int liberties = 0;
+    int dx[] = {-1, 1, 0, 0};
+    int dy[] = {0, 0, -1, 1};
+    bool lib_seen[19][19] = {};
+    for (const auto &pos : group) {
+        for (int d = 0; d < 4; d++) {
+            int nx = pos.first + dx[d], ny = pos.second + dy[d];
+            if (nx >= 0 && nx < 19 && ny >= 0 && ny < 19 &&
+                board[nx][ny] == EMPTY_STONE && !lib_seen[nx][ny]) {
+                lib_seen[nx][ny] = true;
+                liberties++;
+            }
+        }
+    }
+    return liberties;
+}
+
+void GoBoard::removeGroup(int x, int y)
+{
+    StoneColor color = board[x][y];
+    if (color == EMPTY_STONE) return;
+    bool visited[19][19] = {};
+    QList<QPair<int,int>> group;
+    floodFillGroup(x, y, color, visited, group);
+    for (const auto &pos : group)
+        board[pos.first][pos.second] = EMPTY_STONE;
+}
+
 // ============================================================================
 // GameNode Implementation
 // ============================================================================
