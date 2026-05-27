@@ -1036,7 +1036,7 @@ void BoardWindow::setupUI() {
  game_info_layout->addStretch();
 
  game_info_label = new QLabel("Game Info");
- game_info_label->setStyleSheet("font-size: 11px; font-weight: bold;");
+ game_info_label->setStyleSheet("font-size: 13px; font-weight: bold;");
  game_info_label->setAlignment(Qt::AlignCenter);
  game_info_label->setWordWrap(false);
  game_info_label->setFrameStyle(QFrame::NoFrame);
@@ -1076,9 +1076,15 @@ void BoardWindow::setupUI() {
  white_stone_icon->setFixedSize(20, 20);
  white_name_layout->addWidget(white_stone_icon);
 
- white_player_label = new QLabel("White");
- white_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
- white_player_label->setWordWrap(false);
+ white_player_label = new QPushButton("White");
+ white_player_label->setStyleSheet(
+     "QPushButton { font-weight: bold; font-size: 14px; padding: 2px;"
+     " background: transparent; border: none; text-align: left; }"
+     "QPushButton:hover { text-decoration: underline; }" );
+ white_player_label->setCursor(Qt::PointingHandCursor);
+ connect(white_player_label, &QPushButton::clicked, this, [this]() {
+     if (!white_player.isEmpty()) emit whitePlayerClicked(white_player);
+ });
  white_name_layout->addWidget(white_player_label);
  white_name_layout->addStretch();
 
@@ -1100,7 +1106,7 @@ void BoardWindow::setupUI() {
 
  // White captures (borderless, minimal padding, bold)
  white_captures_label = new QLabel("Captures: 0");
- white_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+ white_captures_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 1px;");
  white_captures_label->setAlignment(Qt::AlignCenter);
  players_layout->addWidget(white_captures_label);
 
@@ -1121,9 +1127,15 @@ void BoardWindow::setupUI() {
  black_stone_icon->setFixedSize(20, 20);
  black_name_layout->addWidget(black_stone_icon);
 
- black_player_label = new QLabel("Black");
- black_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
- black_player_label->setWordWrap(false);
+ black_player_label = new QPushButton("Black");
+ black_player_label->setStyleSheet(
+     "QPushButton { font-weight: bold; font-size: 14px; padding: 2px;"
+     " background: transparent; border: none; text-align: left; }"
+     "QPushButton:hover { text-decoration: underline; }" );
+ black_player_label->setCursor(Qt::PointingHandCursor);
+ connect(black_player_label, &QPushButton::clicked, this, [this]() {
+     if (!black_player.isEmpty()) emit blackPlayerClicked(black_player);
+ });
  black_name_layout->addWidget(black_player_label);
  black_name_layout->addStretch();
 
@@ -1145,7 +1157,7 @@ void BoardWindow::setupUI() {
 
  // Black captures (borderless, minimal padding, bold)
  black_captures_label = new QLabel("Captures: 0");
- black_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+ black_captures_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 1px;");
  black_captures_label->setAlignment(Qt::AlignCenter);
  players_layout->addWidget(black_captures_label);
 
@@ -1153,7 +1165,7 @@ void BoardWindow::setupUI() {
 
  // Handicap/Komi/Game-type label (borderless, larger font, bold, no redundant captures)
  handicap_komi_label = new QLabel("Komi: 6.5 Handicap: 0 Free");
- handicap_komi_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 2px; border: none; background-");
+ handicap_komi_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 2px; border: none; background-");
  handicap_komi_label->setAlignment(Qt::AlignCenter);
  handicap_komi_label->setWordWrap(false);
  info_layout->addWidget(handicap_komi_label);
@@ -1373,7 +1385,7 @@ void BoardWindow::setupUI() {
  comment_display = new QTextEdit;
  comment_display->setReadOnly(true);
  comment_display->setStyleSheet(
- "QTextEdit {" " background-" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 10px;" "}"
+ "QTextEdit {" " background-" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 12px;" "}"
  );
  comment_display->setPlaceholderText("Comments and kibitz will appear here...");
  comment_layout->addWidget(comment_display);
@@ -1382,7 +1394,7 @@ void BoardWindow::setupUI() {
  comment_input = new QLineEdit;
  comment_input->setPlaceholderText("Type comment or kibitz...");
  comment_input->setStyleSheet(
- "QLineEdit {" " border: 1px solid #ccc;" " padding: 4px;" " font-size: 10px;" "}"
+ "QLineEdit {" " border: 1px solid #ccc;" " padding: 4px;" " font-size: 12px;" "}"
  );
  connect(comment_input, &QLineEdit::returnPressed, this, &BoardWindow::onCommentInputReturn);
  comment_layout->addWidget(comment_input);
@@ -1394,7 +1406,7 @@ void BoardWindow::setupUI() {
  send_comment_button = new QPushButton();
  updateCommentButtonText(); // Set initial text based on mode
  send_comment_button->setStyleSheet(
- "QPushButton {" " background-" " " " border: none;" " padding: 4px 8px;" " font-size: 10px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+ "QPushButton {" " background-" " " " border: none;" " padding: 4px 8px;" " font-size: 12px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
  );
  connect(send_comment_button, &QPushButton::clicked, [this]() {
  qDebug() << "Kibitz button clicked!";
@@ -1418,19 +1430,48 @@ void BoardWindow::setupUI() {
  observers_layout->setSpacing(5);
  observers_layout->setMargin(8);
  
- // Observers title
- QLabel *observers_title = new QLabel("Observers");
- observers_title->setAlignment(Qt::AlignCenter);
+ // Observers title row: "Observers (N)" label + sort toggle button
+ QHBoxLayout *observers_title_row = new QHBoxLayout;
+ observers_title_row->setSpacing(4);
+ observers_title_row->setContentsMargins(0, 0, 0, 0);
+
+ observers_title = new QLabel("Observers");
+ observers_title->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
  observers_title->setStyleSheet(
- "QLabel {" " font-weight: bold;" " font-size: 12px;" " " " background-" " border: 1px solid #ccc;" " padding: 3px;" "}"
+ "QLabel {" " font-weight: bold;" " font-size: 12px;" " background-color: transparent;" " border: none;" " padding: 3px;" "}"
  );
- observers_layout->addWidget(observers_title);
+
+ observers_sort_btn = new QPushButton("Rank");
+ observers_sort_btn->setCheckable(false);
+ observers_sort_btn->setToolTip("Toggle sort: by rank / by join order");
+ observers_sort_btn->setStyleSheet(
+ "QPushButton { font-size: 10px; font-weight: bold; padding: 2px 6px;"
+ " background-color: #4a90d9; color: white; border: none; border-radius: 3px; }"
+ "QPushButton:pressed { background-color: #357abd; }"
+ );
+ connect(observers_sort_btn, &QPushButton::clicked, this, &BoardWindow::toggleObserverSort);
+
+ observers_title_row->addWidget(observers_title, 1);
+ observers_title_row->addWidget(observers_sort_btn, 0);
+ observers_layout->addLayout(observers_title_row);
  
  // Observers list (resizable via splitter - no maximum height)
  observers_list = new QListWidget;
  observers_list->setStyleSheet(
- "QListWidget {" " background-" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 10px;" "}"
+ "QListWidget {" " background-color: #1a1a2e;" " border: 1px solid #ccc;" " font-family: monospace;" " font-size: 12px;" "}"
+ "QListWidget::item { color: #4fc3f7; padding: 1px 4px; }"
+ "QListWidget::item:hover { background-color: #2a2a4e; cursor: pointer; }"
+ "QListWidget::item:selected { background-color: #2a4a7f; }"
  );
+ observers_list->setCursor(Qt::PointingHandCursor);
+ connect(observers_list, &QListWidget::itemClicked, this, [this](QListWidgetItem *item) {
+     if (!item) return;
+     // Item text is "name rank" — extract just the name (first token)
+     QString text = item->text().trimmed();
+     QString name = text.section(' ', 0, 0);
+     if (!name.isEmpty())
+         emit observerClicked(name);
+ });
  observers_layout->addWidget(observers_list);
  
  // Observers refresh button
@@ -1588,8 +1629,15 @@ void BoardWindow::setupEditUI() {
     white_stone_icon->setPixmap(icon_white_pixmap);
     white_stone_icon->setFixedSize(20, 20);
 
-    white_player_label = new QLabel("White");
-    white_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+    white_player_label = new QPushButton("White");
+    white_player_label->setStyleSheet(
+        "QPushButton { font-weight: bold; font-size: 14px; padding: 2px;"
+        " background: transparent; border: none; text-align: left; }"
+        "QPushButton:hover { text-decoration: underline; }" );
+    white_player_label->setCursor(Qt::PointingHandCursor);
+    connect(white_player_label, &QPushButton::clicked, this, [this]() {
+        if (!white_player.isEmpty()) emit whitePlayerClicked(white_player);
+    });
 
     QHBoxLayout *white_row = new QHBoxLayout;
     white_row->setSpacing(4);
@@ -1607,7 +1655,7 @@ void BoardWindow::setupEditUI() {
     right_layout->addWidget(white_clock_label);
 
     white_captures_label = new QLabel("Captures: 0");
-    white_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+    white_captures_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 1px;");
     white_captures_label->setAlignment(Qt::AlignCenter);
     right_layout->addWidget(white_captures_label);
 
@@ -1621,8 +1669,15 @@ void BoardWindow::setupEditUI() {
     black_stone_icon->setPixmap(icon_black_pixmap);
     black_stone_icon->setFixedSize(20, 20);
 
-    black_player_label = new QLabel("Black");
-    black_player_label->setStyleSheet("font-weight: bold; font-size: 12px; padding: 2px;");
+    black_player_label = new QPushButton("Black");
+    black_player_label->setStyleSheet(
+        "QPushButton { font-weight: bold; font-size: 14px; padding: 2px;"
+        " background: transparent; border: none; text-align: left; }"
+        "QPushButton:hover { text-decoration: underline; }" );
+    black_player_label->setCursor(Qt::PointingHandCursor);
+    connect(black_player_label, &QPushButton::clicked, this, [this]() {
+        if (!black_player.isEmpty()) emit blackPlayerClicked(black_player);
+    });
 
     QHBoxLayout *black_row = new QHBoxLayout;
     black_row->setSpacing(4);
@@ -1640,12 +1695,12 @@ void BoardWindow::setupEditUI() {
     right_layout->addWidget(black_clock_label);
 
     black_captures_label = new QLabel("Captures: 0");
-    black_captures_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 1px;");
+    black_captures_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 1px;");
     black_captures_label->setAlignment(Qt::AlignCenter);
     right_layout->addWidget(black_captures_label);
 
     handicap_komi_label = new QLabel("Komi: 6.5");
-    handicap_komi_label->setStyleSheet("font-size: 10px; font-weight: bold; padding: 2px; border: none;");
+    handicap_komi_label->setStyleSheet("font-size: 12px; font-weight: bold; padding: 2px; border: none;");
     handicap_komi_label->setAlignment(Qt::AlignCenter);
     right_layout->addWidget(handicap_komi_label);
 
@@ -1765,6 +1820,8 @@ void BoardWindow::setupEditUI() {
     right_splitter = nullptr;
     info_splitter = nullptr;
     observers_list = nullptr;
+    observers_title = nullptr;
+    observers_sort_btn = nullptr;
     comment_input = nullptr;
     send_comment_button = nullptr;
 
@@ -1786,7 +1843,7 @@ void BoardWindow::setupEditUI() {
     comment_display = new QTextEdit;
     comment_display->setReadOnly(true);
     comment_display->setStyleSheet(
-        "QTextEdit { background- border: 1px solid #ccc; font-family: monospace; font-size: 10px; }"
+        "QTextEdit { background- border: 1px solid #ccc; font-family: monospace; font-size: 12px; }"
     );
     comment_display->setPlaceholderText("SGF node comments appear here...");
     comment_layout->addWidget(comment_display);
@@ -1964,6 +2021,7 @@ void BoardWindow::loadSlot(GameSlot *slot)
                  it != slot->territory_map.constEnd(); ++it)
                 tmap[it.key()] = static_cast<StoneColor>(it.value());
             board_widget->setTerritoryMap(tmap);
+            if (current_node) current_node->setTerritoryMap(tmap);
         } else if (slot->is_scoring_mode) {
             // Slot is in scoring mode but territory hasn't been computed yet — run it now
             board_widget->setTerritoryMap(tmap); // clear first
@@ -1987,19 +2045,33 @@ void BoardWindow::loadSlot(GameSlot *slot)
     updateClockDisplay();  // paint new slot's clock immediately, don't wait for next tick
 
     // --- observers list ---
+    // Finished games get no more server updates, so clear rather than restoring
+    // a stale list. Live games restore from the slot snapshot written by snapshotToSlot().
     clearObservers();
-    for (const auto &obs : slot->observers)
-        addObserver(obs.name, obs.rank);
+    if (!slot->game_finished) {
+        for (const auto &obs : slot->observers)
+            addObserver(obs.name, obs.rank);
+    }
 
     // --- comments ---
     if (comment_display) {
-        comment_display->clear();
-        for (const auto &c : slot->comments) {
-            QString prefix = c.is_kibitz
-                ? QString("<b>%1:</b> ").arg(c.user.toHtmlEscaped())
-                : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
-            comment_display->append(prefix + c.text.toHtmlEscaped());
+        if (!slot->comment_html.isEmpty()) {
+            // Restore the exact rendered history from the last time this slot was active
+            comment_display->setHtml(slot->comment_html);
+        } else {
+            // First load — rebuild from CommentEntry list
+            comment_display->clear();
+            for (const auto &c : slot->comments) {
+                QString prefix = c.is_kibitz
+                    ? QString("<b>%1:</b> ").arg(c.user.toHtmlEscaped())
+                    : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
+                comment_display->append(prefix + c.text.toHtmlEscaped());
+            }
         }
+        // Scroll to bottom
+        QTextCursor cursor = comment_display->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        comment_display->setTextCursor(cursor);
     }
     // --- game tree strip (edit windows only) ---
     if (game_tree_strip)
@@ -2076,6 +2148,18 @@ void BoardWindow::snapshotToSlot(GameSlot *slot)
     slot->move_history               = move_history;
     slot->white_groups               = white_groups;
     slot->black_groups               = black_groups;
+
+    // Preserve the exact rendered comment history so switching back restores it perfectly
+    if (comment_display)
+        slot->comment_html = comment_display->toHtml();
+
+    // Snapshot the live observer list from the widget back into the slot so that
+    // loadSlot() restores exactly what was on screen, not a stale server snapshot.
+    slot->observers.clear();
+    for (const auto &p : observers_raw) {
+        GameSlot::ObserverEntry e; e.name = p.first; e.rank = p.second;
+        slot->observers.append(e);
+    }
 
     // Board widget overlays
     slot->dead_stone_positions = board_widget->getDeadStonePositions();
@@ -3233,7 +3317,22 @@ void BoardWindow::sendComment() {
  
  comment_input->clear();
 
- if (is_playing) {
+ if (game_finished) {
+ // Game over — 'say' is rejected by IGS; use 'tell' to reach opponent directly
+ QString opponent = (my_username == white_player) ? black_player : white_player;
+ if (opponent.isEmpty()) {
+ if (comment_display)
+ comment_display->append("ERROR: Cannot send message — opponent name unknown");
+ return;
+ }
+ qDebug() << "Emitting tellRequested for opponent:" << opponent;
+ emit tellRequested(opponent, message);
+ if (comment_display) {
+ QString display_name = my_username.isEmpty() ? "You" : my_username;
+ QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss");
+ comment_display->append(QString("[%1] TELL %2: %3").arg(timestamp).arg(display_name).arg(message));
+ }
+ } else if (is_playing) {
  // Send "say" command for private player communication
  qDebug() << "Emitting sayRequested signal with game_id:" << observed_game_id;
  emit sayRequested(observed_game_id, message);
@@ -3284,31 +3383,9 @@ void BoardWindow::onCommentInputReturn() {
 }
 
 void BoardWindow::requestObservers() {
- qDebug() << "*** BUTTON CLICKED - requestObservers() called! ***";
- qDebug() << "*** is_observing:" << is_observing << "observed_game_id:" << observed_game_id;
- 
- // Force add test observer immediately to confirm button works
- clearObservers();
- addObserver("BUTTON_TEST", "1k");
- addObserver("CLICK_WORKS", "2d");
- 
- if (comment_display) {
- comment_display->append("*** BUTTON CLICKED - Test observers added! ***");
- }
- 
- if (is_observing) {
- qDebug() << "Emitting observersRequested signal for game:" << observed_game_id;
- emit observersRequested(observed_game_id);
- 
- if (comment_display) {
- comment_display->append(QString(">>> Requesting observers for game %1...").arg(observed_game_id));
- }
- } else {
- qDebug() << "Not observing a game - cannot request observers";
- if (comment_display) {
- comment_display->append("ERROR: Not observing a game");
- }
- }
+    clearObservers();
+    if (observed_game_id > 0)
+        emit observersRequested(observed_game_id);
 }
 
 void BoardWindow::updateGameSetup(int handicap_stones, double komi_points, const QString &time_ctrl) {
@@ -3517,17 +3594,70 @@ void BoardWindow::updateCommentButtonText() {
  }
 }
 
+// Converts an IGS rank string to a numeric strength for sorting.
+// Higher return value = stronger player (sorts to top).
+static int rankToStrength(const QString &rank) {
+    QString r = rank.trimmed().toLower();
+    r.remove('*').remove('+').remove('?');
+    if (r.endsWith("p")) {
+        bool ok; int n = r.left(r.size()-1).toInt(&ok);
+        return ok ? 10000 + n : 10000;
+    }
+    if (r.endsWith("d")) {
+        bool ok; int n = r.left(r.size()-1).toInt(&ok);
+        return ok ? 1000 + n : 1000;
+    }
+    if (r.endsWith("k")) {
+        bool ok; int n = r.left(r.size()-1).toInt(&ok);
+        return ok ? (100 - n) : 0;
+    }
+    return 0;
+}
+
 void BoardWindow::clearObservers() {
- if (observers_list) {
- observers_list->clear();
- }
+    observers_raw.clear();
+    if (observers_list) observers_list->clear();
+    if (observers_title) observers_title->setText("Observers");
 }
 
 void BoardWindow::addObserver(const QString &name, const QString &rank) {
- if (!observers_list) return;
- 
- QString observer_text = QString("%1 %2").arg(name, rank);
- observers_list->addItem(observer_text);
+    if (!observers_list) return;
+
+    observers_raw.append({name, rank});
+    int count = observers_raw.size();
+
+    // Rebuild list in correct order
+    observers_list->clear();
+    QList<QPair<QString,QString>> display = observers_raw;
+    if (observers_sort_by_rank) {
+        std::stable_sort(display.begin(), display.end(),
+            [](const QPair<QString,QString> &a, const QPair<QString,QString> &b) {
+                return rankToStrength(a.second) > rankToStrength(b.second);
+            });
+    }
+    for (const auto &entry : display)
+        observers_list->addItem(QString("%1 %2").arg(entry.first, entry.second));
+
+    if (observers_title)
+        observers_title->setText(QString("Observers (%1)").arg(count));
+}
+
+void BoardWindow::toggleObserverSort() {
+    observers_sort_by_rank = !observers_sort_by_rank;
+    observers_sort_btn->setText(observers_sort_by_rank ? "Rank" : "Order");
+
+    if (!observers_list || observers_raw.isEmpty()) return;
+
+    QList<QPair<QString,QString>> display = observers_raw;
+    if (observers_sort_by_rank) {
+        std::stable_sort(display.begin(), display.end(),
+            [](const QPair<QString,QString> &a, const QPair<QString,QString> &b) {
+                return rankToStrength(a.second) > rankToStrength(b.second);
+            });
+    }
+    observers_list->clear();
+    for (const auto &entry : display)
+        observers_list->addItem(QString("%1 %2").arg(entry.first, entry.second));
 }
 
 QString BoardWindow::generateSGF() {
@@ -4834,9 +4964,8 @@ void BoardWindow::goToMove(int move_number) {
  current_move_index = target->moveNumber();
 
  // AUTO-FOLLOW MODE MANAGEMENT (q5Go behavior):
- // Check if we're at the end of the game tree
- int total_moves = getTotalMoves();
- bool at_end = (current_node->moveNumber() == total_moves);
+ // Use leaf-node test for consistency with displayNode's is_final_position check.
+ bool at_end = !current_node->nextMove();
 
  if (at_end) {
  // Re-enable auto-follow when user returns to the end

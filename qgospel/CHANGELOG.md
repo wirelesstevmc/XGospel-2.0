@@ -6,6 +6,436 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 2026-05-27 (v186): Fix new game not launching board when IGS recycles a finished game ID
+
+**Bug fix: Playing or observed game failed to create a board when game ID was reused**
+
+When IGS assigned a new game the same number as a recently-finished game, both the
+playing-game slot creation path and the observe-game `observeGame()` path found the
+old finished slot via `findSlot(game_id)` and skipped creating a new one — leaving the
+dock with no board for the new game. Manually closing the old board and clicking the
+game again worked around it, confirming the stale slot was blocking creation.
+
+Fixed at both slot creation sites: before creating a new slot, check whether an existing
+slot with the same ID has `game_finished == true`. If so, remove it from `game_slots`,
+remove its button from the `GameSelectionDock`, and reset `active_slot_game_id` if needed
+— then proceed to create the fresh slot normally.
+
+This is the same recycled-game-ID class of bug as v183 (player name corruption), now
+addressed at the slot creation level.
+Location: `xgospel2_fixed.cpp` CMD15 playing-game path (~line 4658) / `observeGame()` (~line 7312).
+
+---
+
+## 2026-05-26 (v185): Fix observer list not updating correctly on slot switch
+
+**Bug fix: Slot switch showed wrong game's observer list**
+
+When switching the active slot in docked mode, the observer panel displayed the previous
+game's observers instead of the newly-selected game's. A manual Refresh also had no effect.
+
+Two fixes applied:
+1. **`snapshotToSlot`** now writes the widget's live `observers_raw` list back into
+   `slot->observers` before switching away, so each slot always holds exactly what was
+   on screen — not a stale snapshot from the last server refresh cycle.
+2. **`loadSlot`** clears the observer panel for finished games (no further server updates
+   will arrive) and restores from the freshly-snapshotted slot data for live games.
+
+Location: `board_window.cpp` `snapshotToSlot()` / `loadSlot()`.
+
+---
+
+## 2026-05-26 (v184): Fix observer list pollution from concurrent player stats responses
+
+**Bug fix: Idle times and stats lines appearing as fake observer entries**
+
+Player stats responses arriving concurrently with an observer list refresh (e.g. `9 Idle Time:  3s`,
+`9 Playing in game: 15`) were being parsed as name/rank pairs, inflating the observer count
+with nonsense entries like "3s 1p", "0s 8d".
+
+Three fixes applied:
+1. **Colon guard**: Any `9 ` line containing `:` is now rejected during observer parsing —
+   all IGS stats lines contain colons; genuine observer rows never do.
+2. **Rank token validation**: Each parsed pair's rank token must match `\d+[kdp][+*?]?` or
+   equal `"BC"`. Pairs that fail this check are silently skipped.
+3. **Alternate parsing block removed**: A vestigial fallback path (`waiting_for_observer_response
+   && !parsing_observers`) matched rank-like patterns in any `9 ` line, adding single fake
+   entries from stats interleaved between observer requests. Removed entirely.
+
+Location: `xgospel2_fixed.cpp` observer line parser (~line 4088).
+
+---
+
+## 2026-05-26 (v183): Fix game ID reuse corrupting finished slot player names
+
+**Bug fix: Finished slot player names overwritten when IGS recycles a game ID**
+
+When a bot game ended and IGS immediately reused that game number for a different game,
+the `9 Observing game N (PlayerA vs. PlayerB) :` response for the new game matched the
+old finished slot by ID and overwrote its `white_player`/`black_player` fields, causing
+the board display to show the wrong players when switching back to the finished slot.
+
+Fixed by adding a `game_finished` guard in the "update player names" branch of the
+`Observing game` parser — both dock mode (`GameSlot::game_finished`) and non-dock mode
+(`BoardWindow::isFinished()`). A finished slot is never updated with recycled-ID player names.
+Location: `xgospel2_fixed.cpp` `Observing game` line parser (~line 4022).
+
+---
+
+## 2026-05-24 (v182): Player dialog chat font, observer auto-refresh, comment history, player name buttons, bot crash resign
+
+**Fix 1: Player dialog chat font increased to 11px**
+
+The `message_display` QTextEdit in the player tell/chat dialog was styled at `font-size: 10px`.
+Increased to 11px to match match preferences and other chat areas. The `message_input` text
+field also receives `font-size: 11px` styling.
+Location: `xgospel2_fixed.cpp` player dialog construction.
+
+**Fix 2: Remove debug message from Refresh Observers button**
+
+The "*** BUTTON CLICKED - Test observers added! ***" debug string logged to the console
+whenever the Refresh Observers button was clicked has been removed. The handler now
+cleanly calls `clearObservers()` and `requestObservers()`.
+Location: `board_window.cpp` `requestObservers()`.
+
+**Fix 3: Observer list auto-refreshed at players refresh rate**
+
+The observer list now refreshes automatically on the same timer as the players list
+(every 30 seconds). In docked mode the active slot's observer list is refreshed; in
+non-docked mode every open board window with a live game refreshes its own list.
+Location: `xgospel2_fixed.cpp` `refreshPlayers()`.
+
+**Fix 4: Comment & Kibitz history no longer changes on slot switch**
+
+When switching the active game in docked mode, the Comments panel now correctly
+restores the full chat history of the newly-selected game. A snapshot of the rendered
+HTML is stored in `GameSlot::comment_html` on `snapshotToSlot()` and restored via
+`setHtml()` in `loadSlot()`, preserving formatting and scroll position.
+Location: `game_slot.h` `comment_html` field / `board_window.cpp` `snapshotToSlot()` / `loadSlot()`.
+
+**Fix 5: Player names on board window are now clickable**
+
+The white and black player name labels in the board window have been converted from
+`QLabel` to `QPushButton` with transparent background, no border, left-aligned text,
+hover underline, and a pointing-hand cursor. Clicking opens the player's stats/tell
+dialog via `openStatsDialogForPlayer()`. Signals `whitePlayerClicked(QString)` and
+`blackPlayerClicked(QString)` are wired at all five board-window connection sites.
+Location: `board_window.h` signals / `board_window.cpp` construction / `xgospel2_fixed.cpp` connect sites.
+
+**Fix 6: Bot sends resign when KataGo crashes mid-game**
+
+When KataGo crashes (e.g. SIGSEGV exit code 11) during an active bot game, xgospel2
+now immediately sends `resign` to IGS so the game ends cleanly rather than expiring on
+time. The `onEngineError` handler detects `bot_mode_active && bot_game_id != -1` and
+writes `resign\n` directly to the IGS socket, logging the crash message.
+Location: `xgospel2_fixed.cpp` `onEngineError()`.
+
+---
+
+## 2026-05-25 (v181): Observer list buttonization, count display, and rank sorting
+
+**Feature 1: Observer names are now clickable**
+
+Clicking any name in the Observers list opens that player's stats/tell dialog, exactly
+as double-clicking a name in the Players list does. The `observerClicked(QString)` signal
+is emitted by `BoardWindow` and wired to `players_window->openStatsDialogForPlayer()` at
+all five board-window connection sites (docked and non-docked paths, both the initial
+setup and the observe-specific path).
+Location: `board_window.cpp` `addObserver` / `board_window.h` signal / `xgospel2_fixed.cpp` connect sites.
+
+**Feature 2: Observer count in panel title**
+
+The Observers panel title now reads "Observers (N)" where N is the number of observers
+currently in the list. The count updates on each `addObserver()` call and resets to
+"Observers" on `clearObservers()`. `observers_title` is promoted from a local variable
+to a member pointer so it can be updated dynamically.
+Location: `board_window.h` member / `board_window.cpp` `clearObservers()` / `addObserver()`.
+
+**Feature 3: Sort by rank (default) with toggle**
+
+Observers are sorted by strength (strongest at top) by default, matching xgospel1
+behavior. A small "Rank" button to the right of the title toggles between rank order
+and join order; the button label changes to "Order" when join order is active. The raw
+join-order list is preserved in `observers_raw` so toggling is lossless.
+Rank parsing handles p/d/k suffixes with +/* modifiers correctly.
+Location: `board_window.cpp` `rankToStrength()` / `addObserver()` / `toggleObserverSort()`.
+
+---
+
+## 2026-05-24 (v180): Player dialog stats font size increase, remove redundant name label
+
+**Fix 1: Player name duplicated in dialog**
+
+The player stats box displayed the player name and rank in a centered label at the top
+of the info panel, redundant with the dialog title bar which already shows the same
+information. Removed `player_name_label` from the stats box. The member pointer is
+retained and initialized to `nullptr` so the existing `if (player_name_label)` guard
+in `updateDynamicLabels()` safely skips it.
+
+**Fix 2: Player stats font too small**
+
+All stats labels (Wins, Losses, Rated, Country, Info, Idle, Playing, Observing, last
+log) were styled at `font-size: 9px`. Increased to `font-size: 11px`. Vertical spacing
+between grid rows increased from 0 to 2px for readability.
+Location: `xgospel2_fixed.cpp` `PlayerStatsDialog` constructor.
+
+---
+
+## 2026-05-24 (v179): Observer list font size increase, match prefs font size increase
+
+**Fix 1: Observers list font too small**
+
+Observers list was rendered at `font-size: 10px` — smaller than the Comments & Kibitz
+panel (`font-size: 12px`). Increased observers list to `font-size: 12px` for consistency.
+Location: `board_window.cpp` observers_list stylesheet.
+
+**Fix 2: Match preferences text almost unreadable in player dialog**
+
+`dyn_matchprefs_label` was styled at `font-size: 8px`. Increased to `font-size: 11px`.
+Word wrap was already enabled so longer match preference strings wrap to a second line.
+Location: `xgospel2_fixed.cpp` PlayerStatsDialog constructor.
+
+---
+
+## 2026-05-24 (v178): Bot opponent blacklist in Preferences
+
+**Feature: Bot Opponent Blacklist**
+
+Added a "Bot Settings" tab to the Preferences dialog containing an "Opponent Blacklist"
+field. Comma-separated IGS usernames entered here will have their match and nmatch
+requests automatically declined by the bot.
+
+- Names are stored lowercase and matched case-insensitively
+- Both old `match` protocol and `nmatch` protocol requests are checked
+- Setting persists across sessions via the `bot_blacklist` key in settings file
+- Console logs `[BOT] Declining match/nmatch from X — player is blacklisted`
+
+New code:
+- `Settings::getBotBlacklist()` / `setBotBlacklist()` — `settings.h` / `settings.cpp`
+- `PreferencesDialog` — new "Bot Settings" tab with `m_bot_blacklist_edit` QLineEdit
+- `xgospel2_fixed.cpp` match/nmatch accept handlers — blacklist check before accepting
+
+---
+
+## 2026-05-24 (v177): Rebase onto v154 working overlay; restore v155–v176 bot/feature improvements
+
+**Background**
+
+Versions v155–v176 introduced a series of CMD22 territory overlay changes that
+progressively broke the scoring overlay for observed games in docked-pane mode. The
+root cause was a combination of:
+1. Incorrect CMD22 digit encoding (0/1 inverted vs server reality)
+2. Coordinate axis swap in `drawTerritoryMarkers` applied in wrong direction
+3. CMD22 routing rewrite (`cmd22_streams` map) that discarded data when games were
+   not yet in scoring mode at the time CMD22 arrived (before the result line)
+
+Rather than continuing to patch the broken state, v177 reverts `board_window.cpp` and
+`xgospel2_fixed.cpp` to the v154 baseline (confirmed working overlay) and surgically
+re-applies only the non-overlay improvements from v155–v176.
+
+**Bot improvements restored from v155–v176:**
+
+- `bot_time_forfeit_loser` — tracks who ran out of time from "9 X has run out of time."
+  so the "Removed game file" path can emit the correct `B+T` / `W+T` result
+- KataGo lag buffer — subtracts 2s from `time_left` sent to KataGo to account for IGS
+  network round-trip latency; floor at 1s so KataGo always gets a non-zero budget
+- Bot re-send `done` on re-negotiation — when opponent types `done` a second time after
+  additional stone removals, bot re-sends `done` to avoid getting stuck waiting for score
+- `bot_time_forfeit_loser.clear()` added to bot reset path
+
+**Other improvements restored:**
+
+- Console dump filename now includes version string (e.g. `xgospel2_console_dump_v177_...`)
+- Prompt suppression extended to cover IGS `"2"` and `"2 ..."` lines
+- `current_node->setTerritoryMap(tmap)` added in `loadSlot` territory restore so node
+  has territory for subsequent `displayNode` calls
+- `getScoringModeEnabled()` accessor added to `GoBoardWidget`
+- Leaf-node test for auto-follow `at_end` (`!current_node->nextMove()` instead of
+  move-count comparison) for consistency with game trees that have extra nodes
+
+**Omitted from restoration (requires Settings infrastructure not in v154):**
+
+- Bot opponent blacklist (added separately in v178)
+
+---
+
+## 2026-05-24 (v176): Bot re-send done on scoring re-negotiation
+
+**Fix: Bot stuck waiting for score when opponent removes additional stones**
+
+During IGS scoring, if the opponent removes a stone after both sides have typed `done`,
+IGS sends another "has typed done." message. The bot was logging "waiting for score"
+but not re-sending `done`, leaving the game stuck until manual intervention.
+
+Fix: when opponent types `done` a third (or subsequent) time after `bot_pass2_rendered`
+is already set, the bot immediately re-sends `done`.
+Location: `xgospel2_fixed.cpp` "has typed done." handler.
+
+---
+
+## 2026-05-21 (v154): Game-end result display fixes and kibitz console flood mute
+
+**Fix 1: Handicap shows 0 at game end (bot games)**
+
+`updateGameSetup()` was called from the CMD22 slot path using `slot->handicap`, which
+comes from `game_handicap_map` and may be stale (0) for a second game vs the same opponent
+if CMD7 hasn't updated the map yet. The authoritative `bot_handicap` and `bot_komi` values
+set during match acceptance were never propagated to the board display.
+
+Fix: in `onBotEngineReady()`, after confirming `bot_komi` and logging the engine-ready
+message, call `engine_board->updateGameSetup(bot_handicap, bot_komi, "")` so the board's
+handicap/komi label always reflects the match-acceptance values.
+
+**Fix 2: CMD20 result not shown in Comments & Kibitz (bot game not active slot)**
+
+In docked mode, the CMD20 score-result handler was skipping `updateGameResult()` when
+the bot game wasn't the currently displayed slot. The board window showed the other game's
+position without the result overlay.
+
+Fix: unconditionally call `switchActiveGame(slot->game_id)` and `updateGameResult()` when
+CMD20 matches the bot game, regardless of which slot is active.
+
+**Fix 3: Race between CMD20 and "9 game completed." double-cleanup**
+
+When both lines arrive in the same socket read cycle (as observed in game 567), CMD20
+fired `botEndGame()` and then `"9 game completed."` fired it again, resetting bot state
+twice and causing a log duplicate.
+
+Fix: new `bot_cmd20_received` flag — set in the CMD20 handler when the score is parsed,
+checked in the `"9 game completed."` fallback so it only runs when CMD20 was absent.
+
+**Fix 4: Kibitz from observed pro games floods the output console**
+
+Kibitz lines from observed games were always appended to the output console (the `>>> [OK]
+KIBITZ SUCCESS` summary line was unconditional). Kibitz content is already stored in the
+Comments & Kibitz pane and the slot comment list, making the console output redundant.
+
+Fix: gate the `KIBITZ SUCCESS` console append behind `!suppress_server_console`.
+
+---
+
+## 2026-05-21 (v153): Bot match fairness validation — decline unfair handicap/color requests
+
+When bot mode is open to all challengers, players can send manually crafted nmatch
+requests with incorrect handicap or wrong color assignment, exploiting the bot and
+damaging its rating.
+
+Added fairness validation in `botAcceptMatch()`:
+
+- **Rank conversion**: new `rankToStones()` helper converts IGS rank strings to a linear
+  stone scale (30k=-30 … 1k=-1, 1d=0 … 9d=8, 1p=9 … 9p=17), matching IGS server convention
+  where 1d vs 1k = 1 stone difference.
+
+- **Expected handicap**: `expectedHandicap()` computes the correct handicap from the rank
+  difference (capped at 9), and determines which player should be Black.
+
+- **Handicap check**: decline if offered handicap differs from expected by more than ±1
+  stone (±1 tolerance for borderline rank cases).
+
+- **Color check**: when rank diff ≥ 2 stones, color is not negotiable — decline if the
+  offered color assignment puts the stronger player as Black.
+
+- **Fallback**: if either rank is unknown ("?"), log a warning and accept anyway rather
+  than blocking legitimate games where ranks haven't loaded yet.
+
+Decline reasons are logged with full detail: offered vs expected values and both ranks.
+Also added missing `socket->flush()` calls to the existing boardsize and byoyomi decline
+paths.
+
+---
+
+## 2026-05-21 (v152): Bot resign handling — correct game_id, early farewell, result in Comments
+
+**Bug 1: Resignation not routed to bot game (wrong game_id in docked mode)**
+
+The simple resignation handler used `active_slot_game_id` to identify which game ended.
+When the user was also observing other games, the active slot was a different game, so
+`untrackFinishedGame` was called with the wrong ID — `botEndGame()` never fired, leaving
+`bot_game_id` set and causing the bot to decline the next match challenge as "game already
+in progress."
+
+Fix: in docked mode, when `bot_mode_active` and the resigner matches `bot_opponent`,
+use `bot_game_id` directly instead of `active_slot_game_id`.
+
+**Bug 2: Farewell `tell` hit "5 Cannot find recipient" — sent too late**
+
+`botEndGame()` sent the farewell after `"9 Removed game file"`, by which time the opponent
+had often already logged off. Added early farewell in the resignation handler (before
+`untrackFinishedGame`), guarded by a new `bot_farewell_sent` flag so `botEndGame()` skips
+it if already sent. Scored games (CMD20 path) still send via `botEndGame()` as before.
+
+**Bug 3: Resignation result not shown in Comments & Kibitz**
+
+When the bot game was not the active displayed slot, `updateGameResult()` was skipped.
+Fix: call `switchActiveGame(game_id)` then `updateGameResult()` unconditionally so the
+result always appears on the board regardless of which slot was active.
+
+---
+
+## 2026-05-21 (v151): Bot time management — send time_left before genmove
+
+**Bug: KataGo ignoring IGS time controls, moving too quickly**
+
+`onBotOpponentMove()` was calling `play` then `genmove` with no `time_left` in between.
+KataGo had no time context when starting to think, so it fell back to the `time_settings`
+sent during engine init (`time_settings 0 5 1` — 5 seconds per move, absolute). This
+capped thinking time to ~5s regardless of how much time was actually available on IGS.
+
+Fix: send `time_left <our_color> <seconds> <stones>` between `play` and `genmove` so
+KataGo knows the full remaining budget before it starts searching. With a canadian time
+control of 600s/25 stones, KataGo will now spread ~24s per move instead of 5s.
+
+Also fixed: in non-docked mode `bot_time_remaining` was never refreshed during the game
+(it stayed at the initial `bot_main_time` value). Both modes now pull current time from
+`findSlot(bot_game_id)` on every opponent move.
+
+---
+
+## 2026-05-21 (v150): UI polish — Close button fix, post-game tell, font sizes, format string
+
+**Fix 1: Player stats dialog — Close button duplicated on stats refresh**
+
+`updateStatsData()` previously tore down the entire layout and called `setupUI()` on every
+stats refresh, causing a new Close button to be added each time. After viewing a player's
+stats then re-requesting them, N stacked Close buttons appeared.
+
+Fix: added 10 `QLabel*` member pointers (`dyn_wins_label` … `dyn_matchprefs_label`);
+`setupUI()` now creates them once and calls `updateDynamicLabels()` at the end;
+`updateStatsData()` calls `updateDynamicLabels()` in-place instead of tearing down and
+rebuilding the layout. No layout teardown ever occurs after first construction.
+
+**Fix 2: Post-game discussion — Comments & Kibitz uses `tell` after game ends**
+
+After a game finishes, IGS rejects `say` commands. The send button in Comments & Kibitz
+now routes outgoing messages through `tell <opponent>` when `game_finished` is true, using
+the correct opponent name derived from `white_player`/`black_player` vs `my_username`.
+
+Added `tellRequested(player, message)` signal to `BoardWindow`; connected to
+`FixedXGospelWindow::sendTell` at all four board-creation sites (docked×2, standalone×2).
+
+**Fix 3: Font size increases — player info pane and Comments & Kibitz**
+
+- `game_info_label` (Game # | Color to Play): 11px → 13px
+- `white_player_label` / `black_player_label`: 12px → 14px
+- `white_captures_label` / `black_captures_label`: 10px → 12px
+- `handicap_komi_label`: 10px → 12px
+- `comment_display` (QTextEdit): 10px → 12px
+- `comment_input` (QLineEdit): 10px → 12px
+- Comments send button: 10px → 12px
+
+**Fix 4: Format string bug in bot territory log line**
+
+`QString("[BOT] Bot territory cells (threshold %.2f): %1")` — `%.2f` is C printf syntax;
+Qt ignores it and prints a literal `%.2f`. Changed to use `.arg(BOT_TERRITORY_THRESHOLD, 0, 'f', 2)`.
+
+**Fix 5: Bot mode board title in docked pane shows "No game" at game start**
+
+`botStartGame()` now calls `engine_board->updatePlayerNames(wname, bname)` for the docked
+case, ensuring the player name labels and game_info_label refresh immediately when the
+bot game begins (previously relied entirely on loadSlot having run first).
+
+---
+
 ## 2026-05-20 (v149): CMD22 wrong-slot routing fix; bot cleanup on missing CMD20
 
 **Bug 1: CMD22 territory data routed to finished game slot (rematch scenario)**

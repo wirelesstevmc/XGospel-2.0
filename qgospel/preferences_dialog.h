@@ -66,6 +66,9 @@ private:
     QCheckBox *m_docked_game_pane_check;
     QSpinBox  *m_hover_board_size_spin;
 
+    // Bot Settings tab
+    QLineEdit *m_bot_blacklist_edit;
+
     // Engines tab
     EnginesPrefsWidget *m_engines_widget;
 

@@ -193,6 +193,7 @@ public:
     // -----------------------------------------------------------------------
 
     QList<CommentEntry> comments;
+    QString             comment_html;   // Full rendered HTML snapshot of comment_display
 
     // -----------------------------------------------------------------------
     // Observers — current list for this game

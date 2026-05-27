@@ -119,6 +119,10 @@ public:
     double getUiFontScale() const;
     void setUiFontScale(double scale);
 
+    // Bot opponent blacklist — comma-separated IGS usernames; match requests declined automatically
+    QStringList getBotBlacklist() const;
+    void setBotBlacklist(const QStringList &names);
+
     // Save all settings to disk
     void save();
 

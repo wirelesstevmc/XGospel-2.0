@@ -101,6 +101,7 @@ public:
     
     // Scoring mode visualization
     void setScoringMode(bool enabled) { scoring_mode_enabled = enabled; update(); }
+    bool getScoringModeEnabled() const { return scoring_mode_enabled; }
     void setTerritoryMap(const QMap<QPair<int, int>, StoneColor> &map) { territory_map = map; update(); }
     const QMap<QPair<int, int>, StoneColor> &getTerritoryMap() const { return territory_map; }
     void setDeadStones(const QSet<QPair<int, int>> &dead_stones);
@@ -166,14 +167,14 @@ private:
     QLabel *handicap_komi_label;      // Komi, Handicap, Rated/Free, Captures (combined)
 
     // Player info groups (q5Go style - name/rank, clock, and captures)
-    QLabel *white_stone_icon;         // Small white stone image (q5Go style)
-    QLabel *white_player_label;      // Name + rank
-    QLabel *white_clock_label;        // Clock display (large font)
-    QLabel *white_captures_label;     // Capture count
-    QLabel *black_stone_icon;         // Small black stone image (q5Go style)
-    QLabel *black_player_label;       // Name + rank
-    QLabel *black_clock_label;        // Clock display (large font)
-    QLabel *black_captures_label;     // Capture count
+    QLabel      *white_stone_icon;        // Small white stone image (q5Go style)
+    QPushButton *white_player_label;     // Name + rank (clickable → player dialog)
+    QLabel      *white_clock_label;       // Clock display (large font)
+    QLabel      *white_captures_label;    // Capture count
+    QLabel      *black_stone_icon;        // Small black stone image (q5Go style)
+    QPushButton *black_player_label;     // Name + rank (clickable → player dialog)
+    QLabel      *black_clock_label;       // Clock display (large font)
+    QLabel      *black_captures_label;    // Capture count
     QLabel *to_play_stone_icon;       // Dynamic stone indicator for "to play" (q5Go style)
     QPixmap icon_black_pixmap;        // Cached 20px black stone icon
     QPixmap icon_white_pixmap;        // Cached 20px white stone icon
@@ -208,6 +209,10 @@ private:
     
     // Observers panel
     QListWidget *observers_list;
+    QLabel      *observers_title;
+    QPushButton *observers_sort_btn;
+    bool         observers_sort_by_rank = true;  // true=by strength, false=by join order
+    QList<QPair<QString,QString>> observers_raw;  // {name, rank} in join order
     
     // Game state
     int observed_game_id;
@@ -479,6 +484,7 @@ private slots:
     void sendComment();
     void onCommentInputReturn();
     void requestObservers();
+    void toggleObserverSort();
     void updateClockDisplay();
     void onBoardClicked(int x, int y);
     void makeMove(int x, int y);
@@ -535,8 +541,12 @@ signals:
     void saveRequested(int game_id);
     void resignRequested(int game_id);
     void commentRequested(int game_id, const QString &message);
-    void sayRequested(int game_id, const QString &message); // For private player communication
+    void sayRequested(int game_id, const QString &message);
+    void tellRequested(const QString &player, const QString &message);
     void observersRequested(int game_id);
+    void observerClicked(const QString &name);
+    void whitePlayerClicked(const QString &name);
+    void blackPlayerClicked(const QString &name);
     void moveRequested(int game_id, int x, int y);
     void passRequested(int game_id);
     void engineCmdRequested(const QString &cmd);  // Manual GTP command from console

@@ -215,6 +215,20 @@ void Settings::setUiFontScale(double scale) {
     m_params["ui_font_scale"] = QString::number(scale, 'f', 2);
 }
 
+QStringList Settings::getBotBlacklist() const {
+    QString raw = m_params.value("bot_blacklist", "");
+    if (raw.trimmed().isEmpty()) return QStringList();
+    QStringList names = raw.split(',', Qt::SkipEmptyParts);
+    for (auto &n : names) n = n.trimmed().toLower();
+    return names;
+}
+
+void Settings::setBotBlacklist(const QStringList &names) {
+    QStringList lower;
+    for (const auto &n : names) { QString t = n.trimmed(); if (!t.isEmpty()) lower << t.toLower(); }
+    m_params["bot_blacklist"] = lower.join(',');
+}
+
 void Settings::load() {
     QString configFile = getConfigFilePath();
     QFile file(configFile);

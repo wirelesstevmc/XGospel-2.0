@@ -237,6 +237,30 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
     app_tab_layout->addStretch();
     m_tab_widget->addTab(app_settings_tab, "Application Settings");
 
+    // ========== Bot Settings Tab ==========
+    QWidget *bot_tab = new QWidget();
+    QVBoxLayout *bot_tab_layout = new QVBoxLayout(bot_tab);
+
+    QGroupBox *blacklist_group = new QGroupBox("Opponent Blacklist");
+    QFormLayout *blacklist_form = new QFormLayout();
+
+    m_bot_blacklist_edit = new QLineEdit();
+    m_bot_blacklist_edit->setPlaceholderText("e.g. feeder,spammer,cheater");
+    m_bot_blacklist_edit->setText(settings->getBotBlacklist().join(", "));
+    blacklist_form->addRow("Blocked players:", m_bot_blacklist_edit);
+
+    QLabel *blacklist_help = new QLabel(
+        "Comma-separated IGS usernames. Match requests from these players will be\n"
+        "automatically declined. Names are case-insensitive.");
+    blacklist_help->setWordWrap(true);
+    blacklist_help->setStyleSheet("color: gray; font-size: 9pt;");
+    blacklist_form->addRow("", blacklist_help);
+
+    blacklist_group->setLayout(blacklist_form);
+    bot_tab_layout->addWidget(blacklist_group);
+    bot_tab_layout->addStretch();
+    m_tab_widget->addTab(bot_tab, "Bot Settings");
+
     // ========== Engines Tab ==========
     if (engine_manager) {
         m_engines_widget = new EnginesPrefsWidget(engine_manager, this);
@@ -505,6 +529,9 @@ void PreferencesDialog::onApply() {
     // Save engine profiles
     if (m_engines_widget) m_engines_widget->apply();
 
+    // Save bot settings
+    settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
+
     // Save to settings
     settings->setHosts(m_hosts);
     settings->save();
@@ -539,6 +566,9 @@ void PreferencesDialog::onOk() {
 
     // Save engine profiles
     if (m_engines_widget) m_engines_widget->apply();
+
+    // Save bot settings
+    settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
 
     // Save and close
     settings->setHosts(m_hosts);
