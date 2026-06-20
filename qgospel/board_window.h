@@ -299,7 +299,8 @@ private:
     int black_byo_moves;
     
     // Clock timing (for potential server lag compensation)
-    QTimer *clock_timer;
+    QTimer *clock_timer;      // currently active timer (may point to a slot's timer)
+    QTimer *own_clock_timer;  // the BoardWindow's own timer — always valid, never deleted
     QDateTime last_time_update;
     int white_time_seconds;
     int black_time_seconds;
@@ -353,6 +354,7 @@ public:
 
     // Docked-pane mode: load a GameSlot's state into this window's UI widgets.
     void loadSlot(GameSlot *slot);
+    void detachSlotClockTimer(); // revert clock_timer to own_clock_timer before deleting a slot
     // Docked-pane mode: snapshot current UI / widget state back into the slot
     // before switching away.
     void snapshotToSlot(GameSlot *slot);

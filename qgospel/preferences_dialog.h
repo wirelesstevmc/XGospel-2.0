@@ -9,6 +9,7 @@
 #include <QTabWidget>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QTableWidget>
 #include "settings.h"
 #include "engine_manager.h"
 
@@ -26,6 +27,8 @@ private slots:
     void onDeleteHost();
     void onBrowseSaveDir();
     void onBrowseConsoleDumpDir();
+    void onGreylistAddRow();
+    void onGreylistRemoveRow();
     void onApply();
     void onOk();
     void onCancel();
@@ -60,6 +63,7 @@ private:
     QSpinBox *m_games_refresh_spin;
     QSpinBox *m_players_refresh_spin;
     QCheckBox *m_use_focus_colors_check;
+    QCheckBox *m_auto_launch_shout_check;
     QComboBox *m_scoring_method_combo;
 
     // Game Pane tab
@@ -67,7 +71,8 @@ private:
     QSpinBox  *m_hover_board_size_spin;
 
     // Bot Settings tab
-    QLineEdit *m_bot_blacklist_edit;
+    QLineEdit    *m_bot_blacklist_edit;
+    QTableWidget *m_greylist_table;
 
     // Engines tab
     EnginesPrefsWidget *m_engines_widget;

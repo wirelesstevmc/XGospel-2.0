@@ -115,13 +115,34 @@ public:
     int getHoverBoardSize() const { return readIntEntry("hover_board_size", 200); }
     void setHoverBoardSize(int px) { writeIntEntry("hover_board_size", px); }
 
+    // Auto-launch Shout window minimized on login (default false — open manually via Windows menu)
+    bool getAutoLaunchShoutWindow() const { return readBoolEntry("auto_launch_shout_window", false); }
+    void setAutoLaunchShoutWindow(bool value) { writeBoolEntry("auto_launch_shout_window", value); }
+
     // Global UI font scale factor (1.0 = default; future font-scale feature)
     double getUiFontScale() const;
     void setUiFontScale(double scale);
 
+    // Bot mode persistent state — restored automatically on next login
+    bool getBotModeEnabled() const { return readBoolEntry("bot_mode_enabled", false); }
+    void setBotModeEnabled(bool v) { writeBoolEntry("bot_mode_enabled", v); }
+
+    // Last selected engine profile ID — restored at startup
+    QString getSelectedEngineProfile() const { return readEntry("selected_engine_profile", ""); }
+    void setSelectedEngineProfile(const QString &id) { writeEntry("selected_engine_profile", id); }
+
     // Bot opponent blacklist — comma-separated IGS usernames; match requests declined automatically
     QStringList getBotBlacklist() const;
     void setBotBlacklist(const QStringList &names);
+
+    // Bot opponent greylist — per-opponent max handicap + custom decline tell
+    struct GreylistEntry {
+        QString name;      // lowercase IGS username
+        int     max_hc;    // accept if handicap <= max_hc; decline if > max_hc
+        QString tell;      // message sent to opponent on decline (may be empty)
+    };
+    QList<GreylistEntry> getBotGreylist() const;
+    void setBotGreylist(const QList<GreylistEntry> &entries);
 
     // Save all settings to disk
     void save();

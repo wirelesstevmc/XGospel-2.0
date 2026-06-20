@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QVBoxLayout>
@@ -8,6 +9,7 @@
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTextEdit>
+#include <QtWidgets/QTextBrowser>
 #include <QtGui/QIcon>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenuBar>
@@ -57,22 +59,21 @@
 #include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v186";
-const QString XGOSPEL_BUILD_DATE = "2026-05-21";
+const QString XGOSPEL_VERSION = "v245";
+const QString XGOSPEL_BUILD_DATE = "2026-06-13";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
  FixedRankSortProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
- 
+
 protected:
  bool lessThan(const QModelIndex &left, const QModelIndex &right) const override {
- if (left.column() == 2) { // Rank column
- QString leftKey = sourceModel()->data(left, Qt::UserRole).toString();
+ // Use UserRole sort key for any column that stores one (rank columns in both
+ // players window [col 2] and games window [col 2=WR, col 4=BR]).
+ QString leftKey  = sourceModel()->data(left,  Qt::UserRole).toString();
  QString rightKey = sourceModel()->data(right, Qt::UserRole).toString();
- if (!leftKey.isEmpty() && !rightKey.isEmpty()) {
- return leftKey < rightKey;
- }
- }
+ if (!leftKey.isEmpty() && !rightKey.isEmpty())
+     return leftKey < rightKey;
  return QSortFilterProxyModel::lessThan(left, right);
  }
 };
@@ -548,6 +549,7 @@ public:
  }
  if (!rank_str.isEmpty()) {
  player_rank = rank_str;
+ setWindowTitle(QString("Player: %1 [%2]").arg(player_name, player_rank));
  qDebug() << "[STATS-UPDATE] Setting rank to:" << rank_str;
  }
  if (!country_str.isEmpty()) {
@@ -1073,6 +1075,21 @@ public:
  
  void addPlayerToTable(const Q5GoPlayer& player) {
  if (player.name.isEmpty() || player.rank.isEmpty()) return;
+
+ // Dedup guard: scan for existing row with same name (case-insensitive).
+ // The userlist_player_names set in the main window is the primary dedup
+ // mechanism, but it relies on the parser succeeding for every row. If a
+ // line fails the q5Go regex (unusual fields, wide chars, etc.) the name
+ // is never inserted into the set and the WHO supplement adds a duplicate.
+ // This catch-all at the model level ensures duplicates never reach the UI.
+ int rows = players_model->rowCount();
+ for (int r = 0; r < rows; ++r) {
+     QStandardItem *ni = players_model->item(r, 1); // Name column
+     if (ni && ni->text().compare(player.name, Qt::CaseInsensitive) == 0) {
+         qDebug() << "[DEDUP] Skipping duplicate player in model:" << player.name;
+         return;
+     }
+ }
  
  QList<QStandardItem*> row;
  
@@ -2123,6 +2140,82 @@ signals:
  void clicked(const QModelIndex& index);
 };
 
+// ============================================================
+// Shout Window — displays IGS CMD21 broadcast messages
+// ============================================================
+class FixedShoutWindow : public QMainWindow {
+    Q_OBJECT
+
+public:
+    FixedShoutWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
+        setWindowTitle("Shouts");
+        setMinimumSize(400, 250);
+        resize(500, 300);
+
+        QWidget *central = new QWidget(this);
+        setCentralWidget(central);
+        QVBoxLayout *layout = new QVBoxLayout(central);
+        layout->setSpacing(4);
+        layout->setContentsMargins(4, 4, 4, 4);
+
+        shout_display = new QTextBrowser(this);
+        shout_display->setOpenLinks(false);
+        shout_display->setStyleSheet("font-size: 11px;");
+        connect(shout_display, &QTextBrowser::anchorClicked, this, [this](const QUrl &url) {
+            if (url.scheme() == "player")
+                emit playerClicked(url.path());
+        });
+        layout->addWidget(shout_display);
+
+        QHBoxLayout *input_layout = new QHBoxLayout;
+        shout_input = new QLineEdit(this);
+        shout_input->setPlaceholderText("Type shout message...");
+        shout_input->setStyleSheet("font-size: 11px;");
+        send_button = new QPushButton("Shout", this);
+        send_button->setStyleSheet("font-size: 11px;");
+        input_layout->addWidget(shout_input);
+        input_layout->addWidget(send_button);
+        layout->addLayout(input_layout);
+
+        connect(send_button, &QPushButton::clicked, this, &FixedShoutWindow::onSendClicked);
+        connect(shout_input, &QLineEdit::returnPressed, this, &FixedShoutWindow::onSendClicked);
+    }
+
+    void addShout(const QString &sender, const QString &message) {
+        QString escaped_msg = message.toHtmlEscaped();
+        QString html = QString("<b><a href=\"player:%1\" style=\"color:#4488ff;\">%2</a></b>: %3")
+            .arg(sender.toHtmlEscaped(), sender.toHtmlEscaped(), escaped_msg);
+        shout_display->append(html);
+        QTextCursor cursor = shout_display->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        shout_display->setTextCursor(cursor);
+    }
+
+    // Called to bring the window to front and ensure cached shouts are visible
+    void showAndRaise() {
+        show();
+        raise();
+        activateWindow();
+    }
+
+signals:
+    void shoutRequested(const QString &message);
+    void playerClicked(const QString &name);
+
+private slots:
+    void onSendClicked() {
+        QString text = shout_input->text().trimmed();
+        if (text.isEmpty()) return;
+        emit shoutRequested(text);
+        shout_input->clear();
+    }
+
+private:
+    QTextBrowser *shout_display;
+    QLineEdit    *shout_input;
+    QPushButton  *send_button;
+};
+
 class FixedGamesWindow : public QMainWindow {
  Q_OBJECT
 
@@ -2920,6 +3013,7 @@ private:
  QTcpSocket *socket;
  FixedPlayersWindow *players_window;
  FixedGamesWindow *games_window;
+ FixedShoutWindow *shout_window;
     MatchDialog *pending_match_dialog;  // Bug 34: Track pending match dialog for server command
  QList<BoardWindow*> board_windows;
  BoardWindow *most_recently_observed_board; // Track most recent observation for teaching title assignment
@@ -2961,6 +3055,8 @@ private:
  QMap<int, QString> game_white_player_map; // Store white player names from Command 7
  QMap<int, QString> game_black_player_map; // Store black player names from Command 7
  QSet<int> games_with_moves_requested; // q5Go pattern: track which games have had "moves N" sent
+ QSet<int> games_pending_moves_request; // games waiting for IGS observation confirmation before sending "moves N"
+ QList<int> moves_dispatch_queue;       // serialized "moves N" queue: only one in-flight at a time
  QSet<int> observed_game_ids; // Track currently observed games for Games window highlighting (xgospel1 pattern)
 
  // Buffer Command 7 game lines during login to populate games window on auto-launch
@@ -2984,7 +3080,16 @@ private:
  QTimer *heartbeat_timer;
  int heartbeat_counter;
  bool hold_the_line;
- 
+
+ // Auto-reconnect state
+ QTimer *reconnect_timer;
+ int  reconnect_attempts;
+ bool manual_disconnect;    // true when user explicitly disconnected — suppresses auto-reconnect
+ QString reconnect_opponent; // opponent name saved at disconnect for post-reconnect load command
+ QString reconnect_game_file; // full IGS game filename (e.g. "woodnstone-weakkyu") from stored response
+ int cross_session_resume_game_id = -1; // set when CMD67 creates a fresh slot needing moves fetch + engine restart
+ int bot_restart_after_replay_game_id = -1; // when set, restart engine + genmove once this game's replay completes
+
  // Observer list parsing state
  bool waiting_for_observer_response;
  int observer_request_game_id;
@@ -2994,6 +3099,13 @@ private:
  // Manual observe command state
  bool pending_manual_observe;
  int pending_observe_game_id;
+
+ // Set when IGS confirms "X has restored/restarted your game" — next "9 Observing game N"
+ // for matching players should reassign the adjourned slot to the new game ID.
+ QString pending_resume_player;
+ bool    stored_header_seen = false;
+ QStringList stored_game_lines;
+ QSet<QString> stored_adjourned_opponents; // opponents with server-saved games from prior sessions
 
  // History replay: when "moves N" is sent, pin current_game_context to N until
  // the replay finishes so interleaved CMD15 headers from other games don't hijack
@@ -3056,8 +3168,14 @@ private:
  bool           bot_overlay_active   = false; // true while KataGo territory overlay is displayed (pass 1 or 2)
  bool           bot_farewell_sent    = false; // true after farewell tell sent (avoid double-send on resign)
  QString        bot_time_forfeit_loser;       // player name from "9 X has run out of time." — used to determine result in Removed game file path
- QStringList               bot_pending_removes;          // IGS coord strings for remove commands
- QList<QPair<int,int>>     bot_pending_remove_positions; // board (x,y) for markStoneAsDead
+ QStringList               bot_pending_removes;          // IGS coord strings for remove commands (one per group)
+ QList<QPair<int,int>>     bot_pending_remove_positions; // board (x,y) seed for markStoneAsDead
+ // Full group membership for each pending remove — index matches bot_pending_removes.
+ // Used to retry with an alternate stone if the seed coord is rejected by IGS
+ // (e.g. opponent already removed the group, leaving the seed as an empty liberty).
+ QList<QList<QPair<int,int>>> bot_pending_remove_groups;
+ int  bot_remove_index        = 0;    // index into bot_pending_removes currently being sent
+ int  bot_remove_retry_offset = 0;    // how many stones in current group we've tried as seed
  QVector<float> bot_cached_ownership;        // ownership prefetched during pass sequence; consumed at scoring
  QVector<float> bot_ownership_snapshot;     // ownership saved when bot sends done; used for progressive territory renders
  // Canned responses sent at random when a tell arrives during bot mode
@@ -3069,12 +3187,21 @@ private:
      "Good luck! I am powered by KataGo and will do my best. Feel free to review the game afterwards."
  };
 
+ // Three-clock display (local, GMT, server)
+ QLabel *clock_local  = nullptr;
+ QLabel *clock_gmt    = nullptr;
+ QLabel *clock_server = nullptr;
+ QDateTime server_time_value;          // server's wall-clock time at moment of receipt
+ QDateTime server_time_received;       // our local UTC time at moment of receipt
+ bool     server_time_set = false;     // true once IGS has responded to "time"
+
 public:
  FixedXGospelWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
  setWindowTitle("XGospel Console");
  setMinimumSize(700, 500);
  players_window = nullptr;
  games_window = nullptr;
+ shout_window = nullptr;
         pending_match_dialog = nullptr;  // Bug 34: Initialize pending match dialog tracker
  move_parser = new IGSMoveParser();
  current_game_context = -1; // No game context initially
@@ -3084,6 +3211,7 @@ public:
  my_account_rank = "NR"; // Default to unranked
  most_recently_observed_board = nullptr; // Initialize teaching title tracking
  docked_pane_mode = settings->getUseDockedGamePane();
+ m_pending_engine_profile_id = settings->getSelectedEngineProfile();
  engine_manager  = new EngineManager(this);
  engine_manager2 = new EngineManager(this);
  waiting_for_players = false;
@@ -3106,6 +3234,15 @@ public:
  heartbeat_timer = new QTimer(this);
  heartbeat_counter = 899; // 15 minutes like q5Go
  hold_the_line = false;
+
+ // Initialize auto-reconnect system
+ reconnect_timer = new QTimer(this);
+ reconnect_timer->setSingleShot(true);
+ reconnect_attempts = 0;
+ manual_disconnect  = false;
+ connect(reconnect_timer, &QTimer::timeout, this, &FixedXGospelWindow::attemptReconnect);
+
+ reconnect_game_file.clear();
  
  // Initialize observer parsing state
  parsing_observers = false;
@@ -3116,6 +3253,7 @@ public:
  // Initialize manual observe state
  pending_manual_observe = false;
  pending_observe_game_id = -1;
+ pending_resume_player.clear();
  
  // Initialize IGS territory data state
  receiving_territory_data = false;
@@ -3133,11 +3271,19 @@ public:
  connect(socket, &QTcpSocket::connected, this, &FixedXGospelWindow::onConnected);
  connect(socket, &QTcpSocket::disconnected, this, &FixedXGospelWindow::onDisconnected);
  connect(socket, &QTcpSocket::readyRead, this, &FixedXGospelWindow::onDataReceived);
+ connect(socket, &QTcpSocket::errorOccurred,
+         this, [this](QAbstractSocket::SocketError err) {
+             if (!manual_disconnect && reconnect_attempts > 0) {
+                 output_console->append(QString(">>> AUTO-RECONNECT: Connection error (%1) — retrying...").arg(socket->errorString()));
+                 scheduleReconnect();
+             }
+         });
  
  // Connect heartbeat timer - 1 second intervals like q5Go
  connect(heartbeat_timer, &QTimer::timeout, this, &FixedXGospelWindow::handleHeartbeat);
  heartbeat_timer->setInterval(1000); // 1 second
- 
+ heartbeat_timer->start(); // Start immediately so clocks tick from startup
+
  setupUI();
  setupMenu();
 
@@ -3189,7 +3335,40 @@ public:
  "QLabel { " " font-weight: bold; " " " " background- " " padding: 5px; " " border: 1px solid #ccc; " "}"
  );
  layout->addWidget(status_label);
- 
+
+ // Three-clock bar: Local | GMT | Server (xgospel1 style)
+ {
+     const QString clock_style =
+         "QLabel {"
+         "  background-color: #000000;"
+         "  color: #00FF00;"
+         "  font-family: monospace;"
+         "  font-size: 11px;"
+         "  padding: 3px 8px;"
+         "  border: 2px solid #007700;"
+         "}";
+     QFrame *clock_bar = new QFrame;
+     clock_bar->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+     QHBoxLayout *clock_layout = new QHBoxLayout(clock_bar);
+     clock_layout->setSpacing(6);
+     clock_layout->setMargin(2);
+
+     clock_local  = new QLabel("Local:  --");
+     clock_gmt    = new QLabel("GMT:    --");
+     clock_server = new QLabel("Server: -- (waiting)");
+     clock_local ->setStyleSheet(clock_style);
+     clock_gmt   ->setStyleSheet(clock_style);
+     clock_server->setStyleSheet(clock_style);
+     clock_local ->setAlignment(Qt::AlignCenter);
+     clock_gmt   ->setAlignment(Qt::AlignCenter);
+     clock_server->setAlignment(Qt::AlignCenter);
+
+     clock_layout->addWidget(clock_local);
+     clock_layout->addWidget(clock_gmt);
+     clock_layout->addWidget(clock_server);
+     layout->addWidget(clock_bar);
+ }
+
  // Output console with HIGH CONTRAST
  QFrame *console_frame = new QFrame;
  console_frame->setFrameStyle(QFrame::Sunken | QFrame::Panel);
@@ -3279,6 +3458,9 @@ public:
  QMenu *file_menu = menu->addMenu("File");
  QAction *open_sgf_action = file_menu->addAction("Open SGF...");
  connect(open_sgf_action, &QAction::triggered, this, &FixedXGospelWindow::openSGF);
+ file_menu->addSeparator();
+ QAction *exit_action = file_menu->addAction("Exit");
+ connect(exit_action, &QAction::triggered, this, []() { QApplication::quit(); });
 
  connection_menu = menu->addMenu("Connection");
  populateConnectionMenu();
@@ -3289,6 +3471,12 @@ public:
 
  QAction *games_action = windows_menu->addAction("Show Games");
  connect(games_action, &QAction::triggered, this, &FixedXGospelWindow::showGamesWindow);
+
+ QAction *shouts_action = windows_menu->addAction("Show Shouts");
+ connect(shouts_action, &QAction::triggered, this, [this]() {
+     if (!shout_window) return;
+     shout_window->showAndRaise();
+ });
 
  // Console menu with suppression options
  QMenu *console_menu = menu->addMenu("Console");
@@ -3370,7 +3558,7 @@ public:
  engines_menu->addSeparator();
  bot_mode_action = engines_menu->addAction("Bot Mode (IGS)");
  bot_mode_action->setCheckable(true);
- bot_mode_action->setChecked(false);
+ bot_mode_action->setChecked(settings->getBotModeEnabled());
  connect(bot_mode_action, &QAction::toggled, this, &FixedXGospelWindow::toggleBotMode);
  connect(engines_menu, &QMenu::aboutToShow, this, &FixedXGospelWindow::populateAttachSubmenu);
 
@@ -3513,25 +3701,29 @@ private slots:
  }
  
  void disconnectFromIGS() {
- if (socket->state() == QTcpSocket::ConnectedState) {
- socket->disconnectFromHost();
- }
+     manual_disconnect = true;
+     reconnect_timer->stop();
+     reconnect_attempts = 0;
+     if (socket->state() == QTcpSocket::ConnectedState)
+         socket->disconnectFromHost();
  }
  
  void onConnected() {
  if (!this->suppress_server_console) output_console->append(">>> CONNECTED to IGS successfully!");
  updateStatus(QString("Connected - logging in as %1").arg(login_username));
  connected_to_igs = true;
+ reconnect_timer->stop();
+ reconnect_attempts = 0;
+ manual_disconnect = false;
  // Disable Nagle algorithm so small move packets are sent immediately
  socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
  // Set account name for match dialogs
  my_account_name = login_username;
 
- // Start heartbeat system
+ // Activate keep-alive logic
  hold_the_line = true;
  heartbeat_counter = 899; // Reset to 15 minutes
- heartbeat_timer->start();
  if (!this->suppress_server_console) output_console->append(">>> Heartbeat system started");
  
  // Auto-login with selected credentials
@@ -3550,17 +3742,62 @@ private slots:
  }
  
  void onDisconnected() {
- if (!this->suppress_server_console) output_console->append(">>> DISCONNECTED from IGS");
- updateStatus("Not connected");
- connected_to_igs = false;
- auto_launched_windows = false;
- waiting_for_players = false;
- waiting_for_games = false;
- 
- // Stop heartbeat system
- hold_the_line = false;
- heartbeat_timer->stop();
- if (!this->suppress_server_console) output_console->append(">>> Heartbeat system stopped");
+     output_console->append(">>> DISCONNECTED from IGS");
+     updateStatus("Not connected");
+     connected_to_igs = false;
+     auto_launched_windows = false;
+     waiting_for_players = false;
+     waiting_for_games = false;
+
+     // Stop heartbeat system
+     hold_the_line = false;
+     heartbeat_timer->stop();
+     output_console->append(">>> Heartbeat system stopped");
+
+     if (manual_disconnect) {
+         // User-initiated disconnect — do not auto-reconnect
+         manual_disconnect = false;
+         reconnect_attempts = 0;
+         reconnect_opponent.clear();
+         return;
+     }
+
+     // Unexpected disconnect — save bot game opponent for post-reconnect load command
+     if (bot_mode_active && bot_game_id != -1 && !bot_opponent.isEmpty())
+         reconnect_opponent = bot_opponent;
+     else
+         reconnect_opponent.clear();
+
+     // Schedule first reconnect attempt after 5 seconds
+     reconnect_attempts = 0;
+     scheduleReconnect();
+ }
+
+ void scheduleReconnect() {
+     // Back-off: 5s, 10s, 20s, 30s cap. Give up after 10 attempts (~3.5 min total).
+     const int MAX_ATTEMPTS = 10;
+     if (reconnect_attempts >= MAX_ATTEMPTS) {
+         output_console->append(QString(">>> AUTO-RECONNECT: Giving up after %1 attempts — please reconnect manually").arg(MAX_ATTEMPTS));
+         reconnect_attempts = 0;
+         reconnect_opponent.clear();
+         return;
+     }
+     int delay_s = qMin(5 * (1 << qMin(reconnect_attempts, 3)), 30); // 5,10,20,30,30,...
+     output_console->append(QString(">>> AUTO-RECONNECT: Attempt %1/%2 in %3s...")
+         .arg(reconnect_attempts + 1).arg(MAX_ATTEMPTS).arg(delay_s));
+     reconnect_timer->start(delay_s * 1000);
+ }
+
+ void attemptReconnect() {
+     if (connected_to_igs) return; // already reconnected (e.g. user did it manually)
+     if (socket->state() != QTcpSocket::UnconnectedState) {
+         socket->abort(); // force immediate close — don't wait for graceful shutdown
+     }
+     reconnect_attempts++;
+     output_console->append(QString(">>> AUTO-RECONNECT: Connecting (attempt %1)...").arg(reconnect_attempts));
+     socket->connectToHost("igs.joyjoy.net", 6969);
+     // onConnected fires on success → login sequence runs automatically.
+     // If connection fails, QTcpSocket emits errorOccurred → we schedule next attempt.
  }
  
  void onDataReceived() {
@@ -3993,13 +4230,51 @@ private slots:
  }
  
  // Handle "9 Adding game to observation list" confirmation
- if (line.contains("Adding game to observation list") && pending_manual_observe) {
- if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG: IGS confirmed observation, waiting for game info..."));
+ if (line.contains("Adding game to observation list")) {
+     if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG: IGS confirmed observation, waiting for game info..."));
+     // Enqueue all pending games — we will dispatch them one at a time to avoid
+     // interleaved "moves N" history replies corrupting each other's board state.
+     for (int pending_id : games_pending_moves_request) {
+         if (findSlot(pending_id) && !moves_dispatch_queue.contains(pending_id))
+             moves_dispatch_queue.append(pending_id);
+     }
+     games_pending_moves_request.clear();
+     qDebug() << "[MOVES-QUEUE] enqueued" << moves_dispatch_queue.size() << "games for serialized moves N dispatch";
+     // Dispatch the first one immediately if no "moves N" reply is currently
+     // being received. REPLAYING means a reply is in-flight; WAITING_FOR_MOVES0
+     // just means the request hasn't been sent yet — not a blocking condition.
+     bool any_inflight = false;
+     for (GameSlot *s : game_slots) {
+         if (s->replay_state == GameSlot::REPLAYING) {
+             any_inflight = true;
+             break;
+         }
+     }
+     if (!any_inflight && !moves_dispatch_queue.isEmpty()) {
+         int next_id = moves_dispatch_queue.takeFirst();
+         if (GameSlot *slot = findSlot(next_id)) {
+             games_with_moves_requested.insert(next_id);
+             if (next_id == active_slot_game_id && shared_board_window) {
+                 shared_board_window->clearMoveHistoryBeforeMovesCommand();
+                 slot->game_root    = shared_board_window->getGameRoot();
+                 slot->current_node = shared_board_window->getGameRoot();
+                 slot->move_history.clear();
+             }
+             QString moves_cmd = QString("moves %1").arg(next_id);
+             socket->write((moves_cmd + "\n").toUtf8());
+             if (!suppress_server_console)
+                 output_console->append(QString(">>> SENT: %1 (serialized moves N dispatch)").arg(moves_cmd));
+             qDebug() << "[MOVES-QUEUE] dispatched moves" << next_id << "-> WAITING_FOR_MOVES0";
+         }
+     }
  }
  
  // IGS Command 9 Observer Parsing (based on q5Go protocol)
  // Pattern: "9 Observing game 89 (player1 vs. player2) :"
- if (line.startsWith("9 Observing game ") && line.contains(" (") && line.contains(") :")) {
+ // Skip observer-list refreshes for the bot's own game during scoring — the auto-refresh
+ // timer can fire mid-scoring and the resulting OBSERVE-MATCH update corrupts the board display.
+ if (line.startsWith("9 Observing game ") && line.contains(" (") && line.contains(") :") &&
+     !(bot_mode_active && bot_done_sent && line.contains(QString("game %1 ").arg(bot_game_id)))) {
  if (!this->suppress_server_console) output_console->append(QString(">>> DEBUG: Found potential observe response: %1").arg(line));
  
  // Try to extract player names using parseObserveStart
@@ -4024,8 +4299,70 @@ private slots:
  // Guard against IGS reusing a game ID: if findSlot returns a finished slot,
  // the ID has been recycled and we must not overwrite the old game's players.
  if (docked_pane_mode) {
-     if (GameSlot *slot = findSlot(game_id)) {
-         if (!slot->game_finished) {
+     // Check if this is a resumed adjourned game arriving under a new game ID.
+     // Two match paths:
+     // (a) Normal: slot still has original player names + adjourned_player set
+     // (b) Fallback: slot ID was recycled and names overwritten, but adjourned_player
+     //     still names the reconnecting player (pending_resume_player confirms it)
+     output_console->append(QString(">>> OBSERVE-MATCH: game=%1 w=%2 b=%3 findSlot=%4 pending_resume=%5")
+         .arg(game_id).arg(white_player).arg(black_player)
+         .arg(findSlot(game_id) ? "FOUND" : "null").arg(pending_resume_player.isEmpty() ? "(none)" : pending_resume_player));
+     GameSlot *adjourned_slot = nullptr;
+     if (!findSlot(game_id)) {
+         for (GameSlot *s : game_slots) {
+             if (s->game_finished || s->adjourned_player.isEmpty()) continue;
+             // Path (a): player names still intact
+             bool names_match = (s->white_player.compare(white_player, Qt::CaseInsensitive) == 0 &&
+                                 s->black_player.compare(black_player, Qt::CaseInsensitive) == 0);
+             // Path (b): names overwritten by ID recycle but restore signal names the player
+             bool resume_signal = (!pending_resume_player.isEmpty() &&
+                                   s->adjourned_player.compare(pending_resume_player, Qt::CaseInsensitive) == 0);
+             if (names_match || resume_signal) {
+                 adjourned_slot = s;
+                 break;
+             }
+         }
+     }
+     if (adjourned_slot) {
+         // Reassign slot to new game ID — game ID is the only thing that changes.
+         // Board position, move history, player names, comments all stay intact.
+         // If path (b) was used (names were overwritten by ID recycle), restore from slot's
+         // adjourned_player + the IGS "Observing game" line which has the correct names.
+         int old_id = adjourned_slot->game_id;
+         // Restore player names: trust the "Observing game" line since adjourned_player
+         // may have been the only survivor. white_player/black_player come from IGS.
+         adjourned_slot->white_player   = white_player;
+         adjourned_slot->black_player   = black_player;
+         adjourned_slot->game_id        = game_id;
+         adjourned_slot->adjourned_player.clear();
+         pending_resume_player.clear();
+         adjourned_slot->clock_timer->start();
+         GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+         if (dock_s) { dock_s->removeGame(old_id); dock_s->addGame(game_id, black_player, adjourned_slot->black_rank, white_player, adjourned_slot->white_rank); }
+         if (active_slot_game_id == old_id) active_slot_game_id = game_id;
+         if (observed_game_ids.remove(old_id)) {
+             observed_game_ids.insert(game_id);
+             if (games_window) games_window->updateObservedGames(observed_game_ids);
+         }
+         if (shared_board_window) {
+             shared_board_window->updatePlayerNames(white_player, black_player);
+             shared_board_window->processComment("*SYSTEM*", "Opponent reconnected — game resumed.", false);
+         }
+         // Update bot_game_id so bot end-of-game logic targets the correct ID
+         if (bot_mode_active && bot_game_id == old_id)
+             bot_game_id = game_id;
+         output_console->append(QString(">>> ADJOURN RESUME: Game %1 resumed as game %2 (%3 vs %4)").arg(old_id).arg(game_id).arg(white_player).arg(black_player));
+         // Game successfully resumed — clear reconnect state
+         reconnect_opponent.clear();
+         reconnect_game_file.clear();
+         // Request move history to restore board position (deferred moves N fires after confirm)
+         games_pending_moves_request.insert(game_id);
+         socket->write(QString("observe %1\n").arg(game_id).toUtf8());
+     } else if (GameSlot *slot = findSlot(game_id)) {
+         // Don't overwrite player names on an adjourned slot — it still belongs to
+         // the original players; IGS may recycle the same ID for a different game
+         // before the disconnected player reconnects.
+         if (!slot->game_finished && slot->adjourned_player.isEmpty()) {
              slot->white_player = white_player;
              slot->black_player = black_player;
              if (game_id == active_slot_game_id)
@@ -4306,30 +4643,56 @@ private slots:
  if (line.contains("1 1") && line.length() < 10) {
  updateStatus(QString("Connected as %1 - ready").arg(login_username));
  if (!this->suppress_server_console) output_console->append(">>> LOGIN SUCCESSFUL! Enabling enhanced rating protocol...");
- 
+
+ // Restore bot_mode_active immediately so incoming match requests are handled
+ // correctly. We only set the flag + update the UI here — socket commands
+ // (toggle open) are deferred into the 1s timer below so they don't inject
+ // server responses into the middle of the userlist/who data stream.
+ if (settings->getBotModeEnabled()) {
+     bot_mode_active = true;
+     if (bot_mode_action) bot_mode_action->setChecked(true);
+     output_console->append("[BOT] Bot mode restored from previous session.");
+ }
+
  // Initialize IGS enhanced protocol for numerical ratings (like q5Go)
  QTimer::singleShot(1000, this, [this]() {
  // Identify client to IGS (required for full protocol support)
  socket->write("id xgospel2 1.0\n");
  if (!this->suppress_server_console) output_console->append(">>> SENT: id xgospel2 1.0 (client identification)");
- 
+
  socket->write("toggle newrating\n");
  newrating_enabled = true; // Track newrating state
  qDebug() << "MAIN WINDOW: Setting newrating_enabled = true";
 
- // Ensure account is open to challenges on login (bot mode will close it when activated)
- socket->write("toggle open true\n");
- 
- // Send nmatch range parameters (required for rated games) 
+ // Send nmatch range parameters (required for rated games)
  // Format: nmatchrange BWN handicap boardsize maintime byotime byostones
  // Use broader ranges to be compatible with more clients
  socket->write("nmatchrange BWN 0-9 19-19 60-18000 60-18000 25-25 0 0 0-0\n");
  if (!this->suppress_server_console) output_console->append(">>> SENT: nmatchrange BWN 0-9 19-19 60-18000 60-18000 25-25 (broad compatibility)");
- 
+
  // Enable nmatch protocol (must be after nmatchrange)
  socket->write("toggle nmatch true\n");
  if (!this->suppress_server_console) output_console->append(">>> SENT: toggle nmatch true (enable nmatch protocol)");
- 
+
+ // Advertise open status if bot mode was restored
+ if (bot_mode_active) {
+     socket->write("toggle open true\n");
+     socket->flush();
+     output_console->append("[BOT] >>> toggle open true (bot accepting matches)");
+ }
+
+ // Check for adjourned games saved on the server from previous sessions
+ socket->write("stored\n");
+
+ // If this login follows an unexpected disconnect during a bot game,
+ // wait for the "stored" response (CMD18) to get the exact game filename,
+ // then send "load <filename>" from the CMD18 handler below.
+ if (!reconnect_opponent.isEmpty()) {
+     reconnect_game_file.clear();
+     reconnect_attempts = 0;
+     output_console->append(QString("[BOT] Auto-reconnect: waiting for 'stored' response to resume game vs %1...").arg(reconnect_opponent));
+ }
+
  // Update existing windows
  if (players_window) {
  players_window->setNewratingEnabled(newrating_enabled);
@@ -4504,11 +4867,30 @@ private slots:
  }
 
  if (!this->suppress_server_console) output_console->append(QString(">>> COMPLETED: Parsed %1 total players from IGS").arg(player_count));
+
+ // Refresh dock button ranks now that the player list is fully populated.
+ // addGame() was called at observe/play time when ranks were still "?".
+ if (docked_pane_mode && shared_board_window) {
+     if (GameSelectionDock *rank_dock = shared_board_window->getGameSelectionDock()) {
+         for (GameSlot *s : game_slots) {
+             if (s->game_finished) continue;
+             QString br = findPlayerRank(s->black_player);
+             QString wr = findPlayerRank(s->white_player);
+             if (br.isEmpty()) br = "?";
+             if (wr.isEmpty()) wr = "?";
+             if (br != "?" || wr != "?") {
+                 s->black_rank = br;
+                 s->white_rank = wr;
+                 rank_dock->updateGameRanks(s->game_id, br, wr);
+             }
+         }
+     }
  }
  }
  }
  }
- 
+ }
+
  // Parse games data with improved detection
  if (waiting_for_games) {
  // DEBUG: Check window status
@@ -4655,16 +5037,147 @@ private slots:
  // Dock mode: create a GameSlot (playing) and route through shared_board_window
  // -----------------------------------------------------------------------
  if (docked_pane_mode) {
-     // If a finished slot exists with this ID, IGS has recycled the game number —
-     // remove it so a fresh slot is created for the new game.
-     if (GameSlot *stale = findSlot(game_id)) {
-         if (stale->game_finished) {
+     // Guard: distinguish stale post-game CMD15 from a genuine IGS game-ID recycle.
+     // A CMD67 "67 N ..." always signals a real new game — evict the finished slot so
+     // a fresh one can be created.  A stale CMD15 never carries a CMD67 header, so it
+     // won't reach this path; the cmd15_is_cmd67 flag (set by the CMD67 parser before
+     // calling into this we_are_playing block) is used as the discriminator.
+     // For now: if a finished slot exists AND we arrived via the stale CMD15 path
+     // (detected by byo_moves == -1 as IGS only sends -1 in post-game cleanup lines),
+     // skip creation.  Otherwise evict and proceed normally.
+     if (GameSlot *finished_slot = findSlot(game_id)) {
+         if (finished_slot->game_finished) {
+             if (white_byo_moves == -1 || black_byo_moves == -1) {
+                 // Stale post-game CMD15 (byo=-1) — skip entirely.
+                 goto skip_playing_board_creation;
+             }
+             // Genuine IGS game-ID recycle (CMD67) — evict stale slot first.
              GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
              if (dock_s) dock_s->removeGame(game_id);
-             game_slots.removeOne(stale);
+             game_slots.removeOne(finished_slot);
              if (active_slot_game_id == game_id) active_slot_game_id = -1;
-             delete stale;
+             if (shared_board_window) shared_board_window->detachSlotClockTimer();
+             delete finished_slot;
          }
+     }
+     // If this CMD67 is the resumed game arriving under a new ID (pending_resume_player set),
+     // reassign the adjourned slot instead of creating a fresh one.
+     // Fallback: if pending_resume_player is empty but the opponent is a known stored-game
+     // opponent (from the "stored" query at login), treat this CMD67 as a cross-session resume
+     // so a fresh board is created without needing the "restored your old game" signal.
+     if (pending_resume_player.isEmpty()) {
+         QString opp = (white_name.compare(login_username, Qt::CaseInsensitive) == 0) ? black_name : white_name;
+         if (stored_adjourned_opponents.contains(opp.toLower())) {
+             output_console->append(QString(">>> ADJOURN RESUME (CMD67): %1 is a stored-game opponent — cross-session resume").arg(opp));
+             pending_resume_player = opp;
+         }
+     }
+     if (!pending_resume_player.isEmpty()) {
+         GameSlot *adjourned = nullptr;
+         for (GameSlot *s : game_slots) {
+             if (!s->game_finished && !s->adjourned_player.isEmpty() &&
+                 s->adjourned_player.compare(pending_resume_player, Qt::CaseInsensitive) == 0) {
+                 adjourned = s;
+                 break;
+             }
+         }
+         if (!adjourned) {
+             // Cross-session adjournment: no slot exists (adjourned in a prior session).
+             // Clear the flag so the normal slot-creation path below runs and builds a
+             // fresh board; move history will be fetched from the server via moves N.
+             output_console->append(QString(">>> ADJOURN RESUME (CMD67): No slot for %1 — cross-session resume, creating fresh board").arg(pending_resume_player));
+             stored_adjourned_opponents.remove(pending_resume_player.toLower());
+             pending_resume_player.clear();
+             cross_session_resume_game_id = game_id; // signal post-slot-creation to fetch moves
+             if (bot_mode_active) {
+                 bot_restart_after_replay_game_id = game_id; // restart engine after replay
+                 bot_game_id = game_id; // update bot's active game ID to the new one
+             }
+         }
+         if (adjourned) {
+             int old_id = adjourned->game_id;
+             adjourned->game_id       = game_id;
+             adjourned->white_player  = white_name;
+             adjourned->black_player  = black_name;
+             adjourned->adjourned_player.clear();
+             stored_adjourned_opponents.remove(pending_resume_player.toLower());
+             pending_resume_player.clear();
+             adjourned->clock_timer->start();
+             adjourned->is_playing    = true;
+             if (bot_mode_active && bot_game_id == old_id) bot_game_id = game_id;
+             // Board state is already intact in slot->board_cells and move_history.
+             // Set LIVE immediately — no server replay needed.
+             adjourned->replay_state = GameSlot::LIVE;
+             // Register new dock button BEFORE switchActiveGame so setActiveGame can find it.
+             GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+             if (dock_s) { dock_s->removeGame(old_id); dock_s->addGame(game_id, black_name, adjourned->black_rank, white_name, adjourned->white_rank); }
+             observed_game_ids.remove(old_id);
+             observed_game_ids.insert(game_id);
+             if (games_window) games_window->updateObservedGames(observed_game_ids);
+             output_console->append(QString(">>> ADJOURN RESUME (CMD67): Game %1 resumed as game %2 (%3 vs %4)").arg(old_id).arg(game_id).arg(white_name).arg(black_name));
+             // Game successfully resumed — clear reconnect state
+             reconnect_opponent.clear();
+             reconnect_game_file.clear();
+             // switchActiveGame checks (game_id == active_slot_game_id) — keep active_slot_game_id
+             // as the old ID so the switch executes fully (loadSlot + setActiveGame + highlight).
+             // active_slot_game_id is updated inside switchActiveGame.
+             switchActiveGame(game_id);
+             shared_board_window->setPlayingMode(true);
+             if (shared_board_window)
+                 shared_board_window->processComment("*SYSTEM*", "Opponent reconnected — game resumed.", false);
+             // Restart the bot: replay all moves into KataGo then request genmove if our turn.
+             if (bot_mode_active && bot_game_id == game_id) {
+                 KataGoEngine *engine = engine_manager ? engine_manager->currentEngine() : nullptr;
+                 if (engine && bot_engine_ready) {
+                     engine->enqueueRaw("clear_board");
+                     engine->enqueueRaw(QString("komi %1").arg(bot_komi));
+                     if (bot_handicap > 1) {
+                         QList<QPair<int,int>> hc_pos = IGSMoveParser::getHandicapPositions(bot_handicap);
+                         QStringList verts;
+                         for (const auto &p : hc_pos) verts << coordsToGtp(p.first, p.second);
+                         engine->enqueueRaw(QString("set_free_handicap %1").arg(verts.join(' ')));
+                     }
+                     // Replay all history moves into the engine
+                     for (const GameMove &m : adjourned->move_history) {
+                         if (m.x < 0) continue; // skip pass/handicap markers
+                         QString col_str = (m.color == BLACK_STONE) ? "black" : "white";
+                         engine->enqueueRaw(QString("play %1 %2").arg(col_str).arg(coordsToGtp(m.x, m.y)));
+                     }
+                     // If it is now our turn, request genmove
+                     StoneColor our_color = bot_color;
+                     StoneColor next_to_play = static_cast<StoneColor>(adjourned->current_player);
+                     if (next_to_play == our_color) {
+                         output_console->append(QString("[BOT] Resume: replayed %1 moves into engine — requesting genmove").arg(adjourned->move_history.size()));
+                         engine->requestGenmove(our_color);
+                     } else {
+                         output_console->append(QString("[BOT] Resume: replayed %1 moves into engine — waiting for opponent").arg(adjourned->move_history.size()));
+                     }
+                 }
+             }
+         }
+     }
+     if (pending_resume_player.isEmpty()) {
+     // Evict any pre-existing slot for this game ID that is NOT already our live playing slot.
+     // An observation slot means IGS recycled the number — evict and create fresh.
+     // A finished slot is stale — evict and create fresh.
+     // A live playing slot (is_playing=true, !game_finished) means IGS sent a duplicate CMD15
+     // confirmation (it sends two: one immediately, one after "Creating match [N]") — keep it.
+     if (GameSlot *stale = findSlot(game_id)) {
+         if (stale->is_playing && !stale->game_finished) {
+             // Duplicate CMD15 for a game we already set up — skip eviction entirely.
+             qDebug() << "[CMD15-PLAYING] Duplicate CMD15 for live playing slot game" << game_id << "— skipping";
+             goto skip_playing_board_creation;
+         }
+         qDebug() << "[CMD15-PLAYING] Evicting pre-existing slot for game" << game_id
+                  << "(finished=" << stale->game_finished << "is_playing=" << stale->is_playing
+                  << "is_observing=" << stale->is_observing << ")";
+         GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+         if (dock_s) dock_s->removeGame(game_id);
+         game_slots.removeOne(stale);
+         if (active_slot_game_id == game_id) active_slot_game_id = -1;
+         observed_game_ids.remove(game_id);
+         if (shared_board_window) shared_board_window->detachSlotClockTimer();
+         delete stale;
      }
      if (!findSlot(game_id)) {
          // Resolve correct player name order from CMD7 if available
@@ -4700,7 +5213,9 @@ private slots:
          slot->komi        = game_komi_map.value(game_id, 6.5);
          slot->handicap    = game_handicap_map.value(game_id, 0);
          slot->game_type   = game_type_map.value(game_id, "Rated");
-         slot->replay_state = GameSlot::LIVE;  // playing games arrive live, no replay needed
+         // Cross-session resume needs history replay via moves N; normal new games are LIVE.
+         slot->replay_state = (bot_restart_after_replay_game_id == game_id)
+                              ? GameSlot::WAITING_FOR_MOVES0 : GameSlot::LIVE;
 
          connect(slot, &GameSlot::clockTick, this, [this, slot]() {
              if (slot->game_finished) return;
@@ -4783,11 +5298,24 @@ private slots:
          most_recently_observed_game_id = game_id;
          observed_game_ids.insert(game_id);
          if (games_window) games_window->updateObservedGames(observed_game_ids);
-         games_with_moves_requested.insert(game_id);  // prevent spurious "moves N" request
+
+         if (cross_session_resume_game_id == game_id) {
+             // Cross-session resume: fetch move history to restore board position,
+             // then engine restart happens in the moves-N completion handler.
+             cross_session_resume_game_id = -1;
+             reconnect_opponent.clear();
+             reconnect_game_file.clear();
+             output_console->append(QString("[BOT] Cross-session resume: fetching move history for game %1").arg(game_id));
+             socket->write(QString("moves %1\n").arg(game_id).toUtf8());
+             // Do NOT add to games_with_moves_requested — we want replay to run.
+         } else {
+             games_with_moves_requested.insert(game_id);  // prevent spurious "moves N" request
+         }
 
          qDebug() << "[GAME] DOCK PLAYING BOARD: Game" << game_id
                   << "White:" << actual_white_name << "Black:" << actual_black_name;
      }
+     } // end if (pending_resume_player.isEmpty()) — skip new-slot creation on resume
  } else {
 
  // -----------------------------------------------------------------------
@@ -4912,6 +5440,7 @@ private slots:
  .arg(game_id).arg(white_name).arg(black_name).arg(login_username));
  } // end non-dock mode board creation
  } // end if (!board_exists)
+ skip_playing_board_creation:;
 
  // Bot mode: start engine for this IGS game
  if (bot_mode_active && bot_game_id == -1 && !bot_opponent.isEmpty()) {
@@ -4990,11 +5519,22 @@ private slots:
      if (slot) {
          {
              move.game_id = current_game_context;
-             if (current_game_context == active_slot_game_id) {
-                 // Active (viewed) slot — route directly to the shared board window.
+             if (current_game_context == active_slot_game_id &&
+                 slot->replay_state == GameSlot::LIVE) {
+                 // Active (viewed) slot, fully live — route to the shared board window,
+                 // but also keep slot->board_state in sync for CMD22 dead-stone detection.
                  slot->move_history.append(move);
                  slot->server_move_count++;
+                 applyMoveToSlotBoard(slot, move);
                  target_board = shared_board_window;
+             } else if (current_game_context == active_slot_game_id &&
+                        (slot->replay_state == GameSlot::WAITING_FOR_MOVES0 ||
+                         slot->replay_state == GameSlot::REPLAYING)) {
+                 // Active slot but still replaying history — run through the slot state
+                 // machine so board_state and move_history are built correctly.
+                 // The board window will be reloaded when replay completes (-> LIVE).
+                 // Fall through to the inactive-slot switch below.
+                 goto active_slot_replaying;
              } else if (slot->game_finished) {
                  // Game scored — drop all subsequent CMD15 lines (stone removals etc).
              } else if (slot->consecutive_passes >= 3 && move.x >= 0) {
@@ -5004,20 +5544,36 @@ private slots:
                  qDebug() << "[SCORING] Dropping post-triple-pass removal"
                           << move.x << move.y << "for game" << current_game_context;
              } else {
-                 // Inactive slot — per-slot state machine (no global pin).
+                 active_slot_replaying:
+                 // Inactive slot, OR active slot still in WAITING_FOR_MOVES0/REPLAYING.
+                 // Run through the per-slot state machine so board_state stays current.
                  switch (slot->replay_state) {
 
                  case GameSlot::WAITING_FOR_MOVES0:
-                     // Catch-up flood phase: IGS streams current live move(s) before
-                     // the moves N history reply.  Track the highest move_number seen
-                     // as the high-water mark; discard everything until move 0 arrives.
+                     // Catch-up flood phase: IGS streams live moves before the moves N
+                     // history reply arrives.  Buffer them so they can fill any gap after
+                     // history ends; track the highest move_number as the high-water mark.
+                     if (move.move_number == 0) {
+                         // moves N reply has started — transition to REPLAYING
+                         slot->replay_state = GameSlot::REPLAYING;
+                         qDebug() << "[SLOT] WAITING_FOR_MOVES0: game" << current_game_context
+                                  << "move 0 received, catchup_high=" << slot->catchup_high
+                                  << "buffered=" << slot->pending_catchup_moves.size()
+                                  << "-> REPLAYING";
+                         // Fall through into REPLAYING to process this move 0
+                         goto replaying_case;
+                     }
                      if (move.move_number > slot->catchup_high)
                          slot->catchup_high = move.move_number;
+                     // Buffer for gap-fill after history replay ends.
+                     slot->pending_catchup_moves.append(move);
                      qDebug() << "[SLOT] WAITING_FOR_MOVES0: game" << current_game_context
+                              << "buffered move" << move.move_number
                               << "catchup_high now" << slot->catchup_high;
                      break;
 
                  case GameSlot::REPLAYING:
+                 replaying_case:
                      // moves N history reply — apply every move cleanly from move 0.
                      // move_number == 0 is the first replay move; reset state first.
                      if (move.move_number == 0 && !slot->move_history.isEmpty()) {
@@ -5039,17 +5595,63 @@ private slots:
                      slot->server_move_count++;
                      applyMoveToSlotBoard(slot, move);
                      updateHoverPixmapForSlot(slot);
-                     // Transition to LIVE once replay has passed the catch-up high-water mark.
-                     if (move.move_number > slot->catchup_high) {
+                     // Transition to LIVE once replay has reached the catch-up high-water mark.
+                     if (move.move_number >= slot->catchup_high) {
                          slot->replay_state = GameSlot::LIVE;
                          qDebug() << "[SLOT] game" << current_game_context
                                   << "replay complete at move" << move.move_number
                                   << "(catchup_high=" << slot->catchup_high << ") -> LIVE";
+                         // Drain any buffered catch-up moves with move_number > what history gave us.
+                         // Sort by move_number so they apply in order.
+                         std::sort(slot->pending_catchup_moves.begin(),
+                                   slot->pending_catchup_moves.end(),
+                                   [](const GameMove &a, const GameMove &b){
+                                       return a.move_number < b.move_number; });
+                         for (const GameMove &pm : slot->pending_catchup_moves) {
+                             if (pm.move_number > move.move_number) {
+                                 slot->move_history.append(pm);
+                                 slot->server_move_count++;
+                                 applyMoveToSlotBoard(slot, pm);
+                                 updateHoverPixmapForSlot(slot);
+                                 qDebug() << "[SLOT] drained buffered catchup move"
+                                          << pm.move_number << "for game" << current_game_context;
+                             }
+                         }
+                         slot->pending_catchup_moves.clear();
                          // If the user switched to this slot while it was still replaying,
                          // the board widget shows a partial or empty position.  Reload now
                          // that the slot's board_state is complete.
                          if (current_game_context == active_slot_game_id && shared_board_window)
                              shared_board_window->loadSlot(slot);
+                         // Slot is now LIVE — dispatch the next queued "moves N" if any.
+                         dispatchNextMovesRequest();
+                         // Cross-session reconnect: replay is done — restart engine and genmove if our turn.
+                         if (bot_restart_after_replay_game_id == current_game_context) {
+                             bot_restart_after_replay_game_id = -1;
+                             KataGoEngine *engine = engine_manager ? engine_manager->currentEngine() : nullptr;
+                             if (engine && bot_engine_ready) {
+                                 engine->enqueueRaw("clear_board");
+                                 engine->enqueueRaw(QString("komi %1").arg(bot_komi));
+                                 if (bot_handicap > 1) {
+                                     QList<QPair<int,int>> hc_pos = IGSMoveParser::getHandicapPositions(bot_handicap);
+                                     QStringList verts;
+                                     for (const auto &p : hc_pos) verts << coordsToGtp(p.first, p.second);
+                                     engine->enqueueRaw(QString("set_free_handicap %1").arg(verts.join(' ')));
+                                 }
+                                 for (const GameMove &m : slot->move_history) {
+                                     if (m.x < 0) continue;
+                                     QString col_str = (m.color == BLACK_STONE) ? "black" : "white";
+                                     engine->enqueueRaw(QString("play %1 %2").arg(col_str).arg(coordsToGtp(m.x, m.y)));
+                                 }
+                                 StoneColor next_to_play = static_cast<StoneColor>(slot->current_player);
+                                 if (next_to_play == bot_color) {
+                                     output_console->append(QString("[BOT] Cross-session resume: replayed %1 moves — requesting genmove").arg(slot->move_history.size()));
+                                     engine->requestGenmove(bot_color);
+                                 } else {
+                                     output_console->append(QString("[BOT] Cross-session resume: replayed %1 moves — waiting for opponent").arg(slot->move_history.size()));
+                                 }
+                             }
+                         }
                      }
                      break;
 
@@ -5079,7 +5681,7 @@ private slots:
  for (BoardWindow* board : board_windows) {
  int board_game_id = board->getObservedGameId();
  qDebug() << "[BOARD-LOOKUP] Checking board with game_id" << board_game_id;
- if (board_game_id == current_game_context) {
+ if (board_game_id == current_game_context && !board->isFinished()) {
  target_board = board;
  qDebug() << "[BOARD-LOOKUP] FOUND matching board!";
  break;
@@ -5165,7 +5767,14 @@ private slots:
  // Bot mode: handle incoming moves — decoupled from UI routing.
  // The bot must respond to opponent moves even if target_board is temporarily null
  // (e.g. active_slot_game_id mismatch due to a concurrent UI update).
- if (bot_mode_active && bot_game_id != -1 && current_game_context == bot_game_id) {
+ // Skip during history replay — WAITING_FOR_MOVES0/REPLAYING moves are not live opponent moves.
+ bool bot_slot_replaying = false;
+ if (bot_mode_active && bot_game_id != -1) {
+     if (GameSlot *bslot = findSlot(bot_game_id))
+         bot_slot_replaying = (bslot->replay_state == GameSlot::WAITING_FOR_MOVES0 ||
+                               bslot->replay_state == GameSlot::REPLAYING);
+ }
+ if (bot_mode_active && bot_game_id != -1 && current_game_context == bot_game_id && !bot_slot_replaying) {
      // Special case: "0(B): Handicap N" — parser sets x=-2, y=N.
      if (move.x == -2 && move.y > 0) {
          bot_handicap = move.y;
@@ -5266,13 +5875,17 @@ private slots:
  // If we have a user and message, send to board
  if (!kibitz_user.isEmpty() && !kibitz_message.isEmpty()) {
  if (docked_pane_mode) {
-     // Route to active game slot (no game_id context here)
-     if (active_slot_game_id != -1 && shared_board_window) {
-         if (GameSlot *slot = findSlot(active_slot_game_id)) {
+     // Route to the game the kibitz belongs to (pending_kibitz_game),
+     // falling back to active slot only if we have no game context.
+     int target_id = (pending_kibitz_game > 0) ? pending_kibitz_game : active_slot_game_id;
+     if (target_id != -1 && shared_board_window) {
+         if (GameSlot *slot = findSlot(target_id)) {
              GameSlot::CommentEntry ce; ce.user = kibitz_user; ce.text = kibitz_message; ce.is_kibitz = true;
              slot->comments.append(ce);
+             // Only display immediately if this slot is currently visible
+             if (target_id == active_slot_game_id)
+                 shared_board_window->processComment(kibitz_user, kibitz_message, true);
          }
-         shared_board_window->processComment(kibitz_user, kibitz_message, true);
      }
  } else {
  for (BoardWindow* board : board_windows) {
@@ -5531,6 +6144,35 @@ private slots:
  }
  }
  
+ // Parse IGS server time responses (arrive passively with game time events)
+ // "9 The current time (GMT) is: Fri May 28 07:09:31 2026"  — use this as authoritative server time
+ // "9 The current IGS local time is: Fri May 28 16:09:31 2026"  — JST (UTC+9), secondary
+ if (line.startsWith("9 The current time (GMT) is:")) {
+     QString ts = line.mid(QString("9 The current time (GMT) is:").length()).trimmed();
+     QDateTime parsed = QDateTime::fromString(ts, "ddd MMM d hh:mm:ss yyyy");
+     if (!parsed.isValid())
+         parsed = QDateTime::fromString(ts, "ddd MMM  d hh:mm:ss yyyy");
+     if (parsed.isValid()) {
+         // Server is joyjoy.net (Tokyo, JST = UTC+9) — offset GMT to get server local time
+         server_time_value    = parsed.addSecs(9 * 3600);
+         server_time_received = QDateTime::currentDateTimeUtc();
+         server_time_set      = true;
+         qDebug() << "[CLOCK] Server time set from GMT:" << server_time_value.toString();
+     }
+ }
+ if (line.startsWith("9 The current IGS local time is:") && !server_time_set) {
+     QString ts = line.mid(QString("9 The current IGS local time is:").length()).trimmed();
+     QDateTime parsed = QDateTime::fromString(ts, "ddd MMM d hh:mm:ss yyyy");
+     if (!parsed.isValid())
+         parsed = QDateTime::fromString(ts, "ddd MMM  d hh:mm:ss yyyy");
+     if (parsed.isValid()) {
+         server_time_value    = parsed;
+         server_time_received = QDateTime::currentDateTimeUtc();
+         server_time_set      = true;
+         qDebug() << "[CLOCK] Server time set from local line:" << parsed.toString();
+     }
+ }
+
  // Parse IGS Command 9 - Komi messages
  if (line.startsWith("9 ")) {
  QString msg_part = line.mid(2); // Remove "9 " prefix
@@ -5764,6 +6406,13 @@ private slots:
  // when both dones are received. Bot waits 1500ms after ownership analysis
  // before sending removes+done to ensure IGS scoring window is fully open.
  if (bot_mode_active && bot_game_id != -1 && !bot_scoring_pending) {
+     // "Board is restored" re-sends this line — reset done/pass2 flags so the
+     // 1500ms timer lambda (guarded by !bot_done_sent) can fire again.
+     if (bot_done_sent) {
+         bot_done_sent      = false;
+         bot_pass2_rendered = false;
+         output_console->append("[BOT] Scoring phase re-entered (Board is restored) — resetting done flags");
+     }
      bot_scoring_pending = true;
      bot_cached_ownership.clear();
      KataGoEngine *engine = engine_manager->currentEngine();
@@ -6146,7 +6795,158 @@ private slots:
  untrackFinishedGame(game_id);
  }
  }
- 
+
+ // "9 Stored games for <user>:" — response to our "stored" command sent at login.
+ // Display a prominent notice so the user knows adjourned games are waiting on the server.
+ {
+ if (line.startsWith("9 Stored games for ") && line.endsWith(":")) {
+     stored_header_seen = true;
+     stored_game_lines.clear();
+ } else if (stored_header_seen) {
+     // Table header and separator lines — skip
+     if (line.startsWith("9  #") || line.startsWith("9 ---")) {
+         // skip
+     } else if (line.startsWith("9  ") && line.contains(":")) {
+         // Game entry line: "9  1: white [rank] black [rank]  ..."
+         // Extract both player names; record the one that isn't us as a known opponent.
+         QString entry = line.mid(2).trimmed(); // strip "9 " prefix
+         stored_game_lines.append(entry);
+         // Format after stripping index: "white [rank] black [rank] ..."
+         // Strip leading "N: "
+         QString rest = entry.section(':', 1).trimmed();
+         QRegExp stored_re("^(\\S+)\\s+\\[.*?\\]\\s+(\\S+)\\s+\\[");
+         if (stored_re.indexIn(rest) != -1) {
+             QString p1 = stored_re.cap(1);
+             QString p2 = stored_re.cap(2);
+             if (p1.compare(login_username, Qt::CaseInsensitive) != 0)
+                 stored_adjourned_opponents.insert(p1.toLower());
+             if (p2.compare(login_username, Qt::CaseInsensitive) != 0)
+                 stored_adjourned_opponents.insert(p2.toLower());
+         }
+     } else {
+         // End of stored games block
+         if (stored_header_seen) {
+             stored_header_seen = false;
+             if (stored_game_lines.isEmpty()) {
+                 output_console->append(">>> [STORED] No adjourned games on server.");
+             } else {
+                 output_console->append(QString(">>> [STORED] %1 adjourned game(s) waiting on server — opponent(s) can reconnect to resume:").arg(stored_game_lines.size()));
+                 for (const QString &entry : stored_game_lines)
+                     output_console->append(QString("    %1").arg(entry));
+             }
+             stored_game_lines.clear();
+         }
+     }
+ }
+ }
+
+ // CMD48: "48 Game N has been adjourned by <player>" — opponent dropped connection.
+ // The game may resume within 5 minutes if the player reconnects — do NOT mark finished.
+ // Just stop the clock and show Adjourned status; keep the slot alive for resumption.
+ // The true end signal is "*SYSTEM*: Disconnected game with X was removed." (5-min timeout).
+ {
+ QRegExp cmd48_re("^48\\s+Game\\s+(\\d+)\\s+has been adjourned by\\s+(\\S+)");
+ if (cmd48_re.indexIn(line) != -1) {
+     int game_id = cmd48_re.cap(1).toInt();
+     QString who_adjourned = cmd48_re.cap(2).trimmed();
+     output_console->append(QString(">>> CMD48 ADJOURN: Game %1 adjourned by %2 (may resume)").arg(game_id).arg(who_adjourned));
+     if (docked_pane_mode) {
+         if (GameSlot *slot = findSlot(game_id)) {
+             slot->adjourned_player = who_adjourned;
+             slot->clock_timer->stop();
+             // Show adjourned status but keep game_finished=false so slot stays active
+             if (game_id == active_slot_game_id && shared_board_window)
+                 shared_board_window->processComment("*SYSTEM*", "Game adjourned — waiting for opponent to reconnect...", false);
+         }
+     }
+ }
+ }
+
+ // "9 X has restored your old game." / "9 X has restarted your game." — player reconnected
+ // and issued the 'load' command. The next "9 Observing game N" will carry the new game ID.
+ // Set pending_resume_player so that "Observing game" handler can do the slot reassignment
+ // even if the old slot's ID was already recycled (player names may have been overwritten).
+ {
+ QRegExp restore_re("^9\\s+(\\S+)\\s+has\\s+(?:restored your old game|restarted your game)");
+ if (restore_re.indexIn(line) != -1) {
+     pending_resume_player = restore_re.cap(1).trimmed();
+     output_console->append(QString(">>> ADJOURN RESTORE: %1 reconnected — watching for new game ID").arg(pending_resume_player));
+ }
+ }
+
+ // CMD18: "18 <game-filename>" — IGS returns stored game filenames in response to "stored".
+ // Capture the filename so we can use "load <filename>" instead of "load <opponent>".
+ // The filename form (e.g. "woodnstone-weakkyu") works after the 5-min window closes.
+ {
+     QRegExp cmd18_re("^18\\s+(\\S+-\\S+)$");
+     if (!reconnect_opponent.isEmpty() && cmd18_re.indexIn(line) != -1) {
+         QString game_file = cmd18_re.cap(1);
+         // Only capture if it involves our reconnect opponent
+         if (game_file.contains(reconnect_opponent, Qt::CaseInsensitive) ||
+             game_file.contains(login_username, Qt::CaseInsensitive)) {
+             reconnect_game_file = game_file;
+             output_console->append(QString("[BOT] Stored game found: %1 — sending load command").arg(reconnect_game_file));
+             socket->write(QString("load %1\n").arg(reconnect_game_file).toUtf8());
+         }
+     }
+ }
+
+ // "You are in disconnected game" — IGS sends this when we reconnect while the game is
+ // still in the 5-minute active window. CMD67 should arrive automatically; no load needed.
+ if (line.contains("You are in disconnected game") && !reconnect_opponent.isEmpty()) {
+     output_console->append(QString("[BOT] IGS: game still active (disconnected window) — waiting for CMD67"));
+ }
+
+ // "*SYSTEM*: Disconnected game with <player> was removed." — opponent did not reconnect
+ // within the 5-minute window. Now truly mark the game finished and protect the slot
+ // from game ID reuse overwriting player names.
+ if (line.contains("Disconnected game with") && line.contains("was removed")) {
+     // Extract player name to find the right slot
+     QRegExp removed_re("Disconnected game with (\\S+) was removed");
+     if (removed_re.indexIn(line) != -1) {
+         QString dropped_player = removed_re.cap(1).trimmed();
+         if (!this->suppress_server_console)
+             output_console->append(QString(">>> DISCONNECT REMOVED: %1's game removed — marking finished").arg(dropped_player));
+         // If we were waiting for this player to resume, give up now.
+         if (pending_resume_player.compare(dropped_player, Qt::CaseInsensitive) == 0)
+             pending_resume_player.clear();
+         if (docked_pane_mode) {
+             for (GameSlot *slot : game_slots) {
+                 if (!slot->game_finished &&
+                     (slot->white_player.compare(dropped_player, Qt::CaseInsensitive) == 0 ||
+                      slot->black_player.compare(dropped_player, Qt::CaseInsensitive) == 0)) {
+                     // Dropped player loses by resign; opponent wins
+                     QString result_text;
+                     if (slot->white_player.compare(dropped_player, Qt::CaseInsensitive) == 0)
+                         result_text = "B+R"; // white dropped — black wins
+                     else
+                         result_text = "W+R"; // black dropped — white wins
+                     slot->game_result = result_text; slot->game_finished = true;
+                     slot->clock_timer->stop();
+                     if (slot->game_id == active_slot_game_id && shared_board_window)
+                         shared_board_window->updateGameResult(result_text);
+                     untrackFinishedGame(slot->game_id);
+                     break;
+                 }
+             }
+         } else {
+             for (BoardWindow *board : board_windows) {
+                 if (!board->isFinished() &&
+                     (board->getWhitePlayer().compare(dropped_player, Qt::CaseInsensitive) == 0 ||
+                      board->getBlackPlayer().compare(dropped_player, Qt::CaseInsensitive) == 0)) {
+                     QString result_text;
+                     if (board->getWhitePlayer().compare(dropped_player, Qt::CaseInsensitive) == 0)
+                         result_text = "B+R";
+                     else
+                         result_text = "W+R";
+                     board->updateGameResult(result_text);
+                     break;
+                 }
+             }
+         }
+     }
+ }
+
  // Fallback: "9 game completed." arrives when IGS finishes scoring but omits CMD20.
  // If the bot sent done but never received CMD20, clean up here so botEndGame() fires.
  if (line == "9 game completed." && bot_mode_active && bot_game_id != -1 && bot_done_sent && !bot_cmd20_received) {
@@ -6163,7 +6963,9 @@ private slots:
 
  // Time forfeit path: "9 Removed game file <login>-<opponent> from database."
  // This arrives when the bot (or opponent) runs out of time — no CMD20 is sent.
- if (bot_mode_active && bot_game_id != -1 && line.startsWith("9 Removed game file ") && line.contains(login_username)) {
+ // Guard with !bot_cmd20_received: a normal scored game also sends "Removed game file"
+ // after CMD20 + "9 game completed." — without this guard it fires as a false positive.
+ if (bot_mode_active && bot_game_id != -1 && !bot_cmd20_received && line.startsWith("9 Removed game file ") && line.contains(login_username)) {
      QString result_text;
      if (!bot_time_forfeit_loser.isEmpty()) {
          if (bot_time_forfeit_loser.compare(login_username, Qt::CaseInsensitive) == 0)
@@ -6201,6 +7003,14 @@ private slots:
      if (!this->suppress_server_console) output_console->append(QString(">>> STONE REMOVAL: %1").arg(coords_part));
  }
  
+ // CMD5 error: "5 You cannot remove a liberty." — sent when the bot tries to
+ // toggle a coordinate that is empty (opponent already removed that group).
+ // Retry the current dead group with an alternate stone from the group.
+ if (line.startsWith("5 ") && line.contains("cannot remove a liberty") && bot_mode_active) {
+     output_console->append("[BOT] Removal rejected (liberty) — trying alternate stone in group");
+     botHandleRemovalRejected();
+ }
+
  // Parse IGS Command 49 - Dead stone coordinate messages
  // Format: "49 Game <id> <player> is removing @ <coord>"
  if (line.startsWith("49 ") && line.contains("is removing @")) {
@@ -6286,12 +7096,17 @@ private slots:
  }
  }
 
- // CMD49 log
+ // CMD49 log + sequential removal advancement
  if (bot_mode_active && bot_game_id == game_id) {
-     if (who == login_username)
+     if (who == login_username) {
          output_console->append(QString("[BOT] Server confirmed our removal @ %1").arg(pt));
-     else
+         // Advance to next group and send its removal command
+         bot_remove_index++;
+         bot_remove_retry_offset = 0;
+         botSendNextRemoval();
+     } else {
          output_console->append(QString("[BOT] Opponent %1 removing @ %2 (board updated)").arg(who).arg(pt));
+     }
  }
  }
  
@@ -6463,6 +7278,20 @@ private slots:
  // output_console->append(QString("[INFO] DEBUG: All Command 9 messages: %1").arg(line));
  // }
  
+ // Parse IGS Command 21 - Shout (broadcast) messages
+ // Format: 21 !username!: message
+ if (line.startsWith("21 !")) {
+     QRegExp shout_re("^21 !([^!]+)!:\\s*(.*)$");
+     if (shout_re.indexIn(line) != -1) {
+         QString sender  = shout_re.cap(1).trimmed();
+         QString message = shout_re.cap(2).trimmed();
+         if (!this->suppress_server_console)
+             output_console->append(QString("!%1!: %2").arg(sender, message));
+         if (shout_window)
+             shout_window->addShout(sender, message);
+     }
+ }
+
  // Parse IGS Command 21 - Game resume notification
  // Format: 21 {Game <id>: <white> vs <black> @ Move <move_num>}
  if (line.startsWith("21 ")) {
@@ -6476,10 +7305,13 @@ private slots:
          output_console->append(QString(">>> GAME RESUMED: Game %1 (%2 vs %3) at move %4")
                                 .arg(game_id).arg(white).arg(black).arg(at_move));
 
-     // If we have an adjourned board/slot for this game, reactivate it
+     // Only reactivate if we already have a slot for this game (we were observing it).
+     // Do NOT auto-observe random server resume broadcasts for games we never requested.
      if (docked_pane_mode) {
-         // In docked mode, just re-observe via observeGame (handles slot reuse)
-         observeGame(game_id, white, black, "?", "?");
+         if (GameSlot *slot = findSlot(game_id)) {
+             if (!slot->game_finished)
+                 observeGame(game_id, white, black, "?", "?");
+         }
      } else {
      BoardWindow* existing = nullptr;
      for (BoardWindow* board : board_windows) {
@@ -6786,6 +7618,27 @@ private slots:
  // Show games window normally (don't minimize yet)
  games_window->show();
 
+ // Create Shout window (always, so shouts are cached from login regardless of preference)
+ if (!shout_window) {
+     shout_window = new FixedShoutWindow(this);
+     connect(shout_window, &FixedShoutWindow::shoutRequested, this, [this](const QString &msg) {
+         socket->write(QString("shout %1\n").arg(msg).toUtf8());
+         socket->flush();
+         if (!this->suppress_server_console)
+             output_console->append(QString(">>> SENT: shout %1").arg(msg));
+         // IGS does not echo our own shout back as CMD21 — display it locally
+         shout_window->addShout(login_username, msg);
+     });
+     connect(shout_window, &FixedShoutWindow::playerClicked, this, [this](const QString &name) {
+         if (players_window) players_window->openStatsDialogForPlayer(name);
+     });
+ }
+ // Only auto-show if user has enabled it in preferences
+ if (settings->getAutoLaunchShoutWindow()) {
+     shout_window->show();
+     QTimer::singleShot(2500, shout_window, &FixedShoutWindow::showMinimized);
+ }
+
  // Execute 'games' command to populate the games window after windows are created
  if (connected_to_igs) {
  // Schedule the games command after a short delay to ensure everything is initialized
@@ -6798,6 +7651,15 @@ private slots:
  sendCommandString("games");
  });
  });
+
+ // Seed server clock from UTC+9 (IGS joyjoy.net = JST) immediately so it shows on login.
+ // The clock will be corrected to the exact server time if/when IGS sends
+ // "9 The current time (GMT) is:" as a side effect of game time events.
+ if (!server_time_set) {
+     server_time_value    = QDateTime::currentDateTimeUtc().addSecs(9 * 3600);
+     server_time_received = QDateTime::currentDateTimeUtc();
+     server_time_set      = true;
+ }
  }
  }
  
@@ -7195,6 +8057,38 @@ private slots:
      }
  }
 
+ // Send the next queued "moves N" request if no slot is still replaying.
+ // Called whenever a slot transitions to LIVE so the queue drains one-by-one.
+ void dispatchNextMovesRequest() {
+     if (moves_dispatch_queue.isEmpty()) return;
+     // Don't dispatch while a "moves N" reply is actively being received (REPLAYING).
+     // WAITING_FOR_MOVES0 slots have not had their request sent yet — not blocking.
+     for (GameSlot *s : game_slots) {
+         if (s->replay_state == GameSlot::REPLAYING)
+             return;
+     }
+     int next_id = moves_dispatch_queue.takeFirst();
+     GameSlot *slot = findSlot(next_id);
+     if (!slot) {
+         // Slot gone (evicted); skip and try the next one.
+         qDebug() << "[MOVES-QUEUE] slot" << next_id << "gone, skipping";
+         dispatchNextMovesRequest();
+         return;
+     }
+     games_with_moves_requested.insert(next_id);
+     if (next_id == active_slot_game_id && shared_board_window) {
+         shared_board_window->clearMoveHistoryBeforeMovesCommand();
+         slot->game_root    = shared_board_window->getGameRoot();
+         slot->current_node = shared_board_window->getGameRoot();
+         slot->move_history.clear();
+     }
+     QString moves_cmd = QString("moves %1").arg(next_id);
+     socket->write((moves_cmd + "\n").toUtf8());
+     if (!suppress_server_console)
+         output_console->append(QString(">>> SENT: %1 (serialized moves N dispatch)").arg(moves_cmd));
+     qDebug() << "[MOVES-QUEUE] dispatched moves" << next_id << "(queue remaining:" << moves_dispatch_queue.size() << ")";
+ }
+
  // Apply a move directly to a slot's board_state array (for inactive slots).
  // Places the stone and removes any captures listed in move.captured.
  void applyMoveToSlotBoard(GameSlot *slot, const GameMove &move) {
@@ -7441,29 +8335,14 @@ private slots:
      if (!suppress_server_console)
          output_console->append(QString(">>> SENT: %1 (observing game)").arg(observe_cmd));
 
-     // Immediately request full move history. IGS sends a catch-up moves flood
-     // right after the observe confirmation, but it arrives before our slot is
-     // ready — those moves are skipped. Sending "moves N" explicitly here gives
-     // us a clean replay once the slot exists. Mark it so the first-live-move
-     // path in the Command 15 handler doesn't send a duplicate request.
-     games_with_moves_requested.insert(game_id);
-     if (game_id == active_slot_game_id) {
-         shared_board_window->clearMoveHistoryBeforeMovesCommand();
-         // Sync slot pointer after the tree reset to prevent dangling slot->game_root.
-         if (GameSlot *active_slot = findSlot(game_id)) {
-             active_slot->game_root    = shared_board_window->getGameRoot();
-             active_slot->current_node = shared_board_window->getGameRoot();
-             active_slot->move_history.clear();
-         }
-     }
-     QString moves_cmd = QString("moves %1").arg(game_id);
-     // Send moves N immediately — no deferral, no global pin.
-     // The slot's replay_state machine handles all routing independently.
-     slot->replay_state = GameSlot::REPLAYING;
-     socket->write((moves_cmd + "\n").toUtf8());
-     if (!suppress_server_console)
-         output_console->append(QString(">>> SENT: %1 (requesting move history)").arg(moves_cmd));
-     qDebug() << "[SLOT] game" << game_id << "moves N sent -> REPLAYING";
+     // Defer "moves N" until IGS confirms with "9 Adding game to observation list."
+     // Sending moves N in the same tick as observe causes IGS to silently drop it
+     // because the observation isn't registered server-side yet.
+     slot->replay_state = GameSlot::WAITING_FOR_MOVES0;
+     slot->catchup_high = -1;
+     slot->pending_catchup_moves.clear();
+     games_pending_moves_request.insert(game_id);
+     qDebug() << "[SLOT] game" << game_id << "observe sent, waiting for IGS confirmation before moves N";
 
      return;
  }
@@ -7771,6 +8650,8 @@ private slots:
      }
      for (const EngineProfile &p : profiles) {
          QAction *act = attach_submenu->addAction(p.name);
+         act->setCheckable(true);
+         act->setChecked(p.id == m_pending_engine_profile_id);
          QString pid = p.id;
          connect(act, &QAction::triggered, this, [this, pid]() {
              attachEngine(pid);
@@ -7786,6 +8667,8 @@ private slots:
      // Attachment happens at game-start time (we need komi/handicap from the dialog)
      // Just record which profile the user selected
      m_pending_engine_profile_id = profileId;
+     settings->setSelectedEngineProfile(profileId);
+     settings->save();
      // Update menu state
      QString name;
      for (const EngineProfile &p : engine_manager->profiles())
@@ -8096,6 +8979,7 @@ private slots:
      if (!suppress_server_console)
          output_console->append(QString(">>> SENT: %1 (stopped observing)").arg(unobserve_cmd));
      games_with_moves_requested.remove(game_id);
+     games_pending_moves_request.remove(game_id);
 
      // Remove from dock and slot list
      GameSelectionDock *dock = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
@@ -8186,27 +9070,43 @@ private slots:
  }
 
  void untrackFinishedGame(int game_id) {
- // Remove finished game from observed games tracking
- // Called when a game ends (result received) to unhighlight it in Games window
- // Board window can stay open for review, but game is no longer actively observed
- qDebug() << "[untrackFinishedGame] Removing finished game" << game_id << "from observed tracking";
+ // Called when a game ends (result received).
+ // Removes the game from live-tracking (observed_game_ids, moves flags, bot cleanup)
+ // but intentionally leaves the GameSlot and dock button in place so the user can
+ // review or save the completed game.  The slot's game_finished=true flag is the
+ // guard that prevents it from being mistaken for a live game.
+ // Actual slot eviction happens lazily in the v206/v208 recycle paths when IGS
+ // reuses the game ID, or via detachSlotClockTimer() + delete there.
+ qDebug() << "[untrackFinishedGame] Game" << game_id << "finished — stopping clock, keeping slot on dock for review";
 
  // Bot mode: clean up engine if this was the bot game
  if (bot_mode_active && bot_game_id == game_id)
      botEndGame();
 
- // Clear moves-requested flag so IGS game ID reuse doesn't block the next game's history
+ // Clear moves-requested flags so IGS game ID reuse doesn't block the next game's history
  games_with_moves_requested.remove(game_id);
+ games_pending_moves_request.remove(game_id);
+
+ // Stop the finished slot's clock timer so it doesn't tick after game over.
+ if (docked_pane_mode) {
+     if (GameSlot *slot = findSlot(game_id)) {
+         if (slot->game_finished) {
+             slot->clock_timer->stop();
+             // If this slot's timer is currently active in the board window, revert
+             // to the board window's own timer so it stays valid.
+             if (shared_board_window) shared_board_window->detachSlotClockTimer();
+             qDebug() << "[untrackFinishedGame] Clock stopped for game" << game_id;
+         }
+     }
+ }
 
  if (observed_game_ids.contains(game_id)) {
  observed_game_ids.remove(game_id);
- qDebug() << "[untrackFinishedGame] Removed game" << game_id << ", observed_game_ids size now:" << observed_game_ids.size();
+ qDebug() << "[untrackFinishedGame] Removed game" << game_id << "from observed_game_ids, size now:" << observed_game_ids.size();
 
  // Update Games window to remove highlighting
  if (games_window) {
- qDebug() << "[untrackFinishedGame] Calling games_window->clearSelectionForGame()";
  games_window->clearSelectionForGame(game_id);
- qDebug() << "[untrackFinishedGame] Calling games_window->updateObservedGames()";
  games_window->updateObservedGames(observed_game_ids);
  } else {
  qDebug() << "[untrackFinishedGame] WARNING: games_window is NULL!";
@@ -8223,6 +9123,8 @@ private slots:
  void toggleBotMode(bool enabled) {
      bot_mode_active = enabled;
      if (bot_mode_action) bot_mode_action->setChecked(enabled);
+     settings->setBotModeEnabled(enabled);
+     settings->save();
      QString state = enabled ? "ON" : "OFF";
      output_console->append(QString("[BOT] Bot mode %1").arg(state));
      if (socket && socket->state() == QAbstractSocket::ConnectedState) {
@@ -8303,7 +9205,41 @@ private slots:
          return;
      }
 
-     // Fairness check: validate handicap and color against rank difference
+     // Greylist check: per-opponent maximum handicap with custom tell.
+     // For old match protocol (handicap==0), estimate via rank difference since
+     // IGS won't reveal the actual handicap until CMD67.
+     int effective_handicap = handicap;
+     if (handicap == 0 && suggested_cmd.startsWith("match ")) {
+         QString my_r  = findPlayerRank(login_username);
+         QString opp_r = findPlayerRank(opponent);
+         if (my_r != "?" && opp_r != "?") {
+             bool dummy = false;
+             effective_handicap = expectedHandicap(rankToStones(my_r), rankToStones(opp_r), dummy);
+         }
+     }
+     for (const auto &entry : settings->getBotGreylist()) {
+         if (entry.name == opponent.toLower() && effective_handicap > entry.max_hc) {
+             QString hc_note = (effective_handicap != handicap)
+                 ? QString("%1 (estimated from ranks)").arg(effective_handicap)
+                 : QString::number(effective_handicap);
+             output_console->append(QString("[BOT] Declining %1 — %2-stone handicap exceeds greylist limit of %3.")
+                 .arg(opponent).arg(hc_note).arg(entry.max_hc));
+             socket->write(QString("decline %1\n").arg(opponent).toUtf8());
+             socket->flush();
+             if (!entry.tell.isEmpty()) {
+                 socket->write(QString("tell %1 %2\n").arg(opponent).arg(entry.tell).toUtf8());
+                 socket->flush();
+                 output_console->append(QString("[BOT] >>> tell %1: %2").arg(opponent).arg(entry.tell));
+             }
+             return;
+         }
+     }
+
+     // Fairness check: validate handicap and color against rank difference.
+     // Old "match" protocol always sends handicap=0 — IGS assigns it server-side at CMD67.
+     // In that case we skip the handicap comparison (we have no information yet) and only
+     // enforce the color assignment where the rank gap makes it unambiguous.
+     bool is_old_match = (handicap == 0 && suggested_cmd.startsWith("match "));
      QString my_rank_str  = findPlayerRank(login_username);
      QString opp_rank_str = findPlayerRank(opponent);
      if (my_rank_str != "?" && opp_rank_str != "?") {
@@ -8312,13 +9248,18 @@ private slots:
          bool bot_should_be_black = false;
          int exp_hc = expectedHandicap(my_stones, opp_stones, bot_should_be_black);
 
-         // Allow ±1 stone tolerance for borderline rank differences
-         if (qAbs(handicap - exp_hc) > 1) {
+         // Skip handicap check for old match protocol — handicap unknown until CMD67
+         if (!is_old_match && qAbs(handicap - exp_hc) > 1) {
              output_console->append(QString("[BOT] Declining %1 — unfair handicap: offered %2, expected %3 (me:%4 opp:%5)")
                  .arg(opponent).arg(handicap).arg(exp_hc).arg(my_rank_str).arg(opp_rank_str));
              socket->write(QString("decline %1\n").arg(opponent).toUtf8());
              socket->flush();
              return;
+         }
+
+         if (is_old_match && exp_hc > 0) {
+             output_console->append(QString("[BOT] Old match protocol from %1 — expected hc %2, trusting IGS to assign (me:%3 opp:%4)")
+                 .arg(opponent).arg(exp_hc).arg(my_rank_str).arg(opp_rank_str));
          }
 
          // Color check: if rank diff >= 2, color is not negotiable
@@ -8751,6 +9692,7 @@ private slots:
      const int dy[] = {0, 0, -1, 1};
      QSet<QPair<int,int>> all_visited;        // prevents re-scanning same group
      QList<QPair<int,int>> dead_group_seeds;  // one seed coord per confirmed dead group
+     QList<QList<QPair<int,int>>> dead_group_members; // full membership for retry on rejection
 
      for (int y = 0; y < 19; ++y) {
          for (int x = 0; x < 19; ++x) {
@@ -8786,13 +9728,137 @@ private slots:
                  if (bot_territory.contains(s)) in_territory++;
 
              int pct = (group.size() > 0) ? (in_territory * 100 / group.size()) : 0;
-             bool dead = (pct >= BOT_MAJORITY_PERCENT);
-             output_console->append(QString("[BOT] Opponent group of %1 stones: %2/%3 (%4%) in bot territory — %5")
-                 .arg(group.size()).arg(in_territory).arg(group.size()).arg(pct)
-                 .arg(dead ? "DEAD" : "alive"));
+             bool dead_by_ownership = (pct >= BOT_MAJORITY_PERCENT);
 
-             if (dead)
+             // Enclosure test: flood-fill all empty intersections reachable from the
+             // group's liberties without crossing bot stones. If every reachable empty
+             // cell is inside bot_territory, the group has no escape and is dead
+             // regardless of the ownership percentage KataGo assigns its stones.
+             bool dead_by_enclosure = false;
+             {
+                 QSet<QPair<int,int>> liberty_visited;
+                 QQueue<QPair<int,int>> lib_queue;
+                 bool escaped = false;
+
+                 // Seed with all immediate empty liberties of the group.
+                 for (const auto &s : group) {
+                     for (int d = 0; d < 4; ++d) {
+                         int nx = s.first  + dx[d];
+                         int ny = s.second + dy[d];
+                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                         QPair<int,int> nb(nx, ny);
+                         if (liberty_visited.contains(nb)) continue;
+                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
+                         liberty_visited.insert(nb);
+                         lib_queue.enqueue(nb);
+                     }
+                 }
+
+                 // BFS: expand through empty intersections only.
+                 // If we reach an empty cell NOT in bot_territory the group can escape.
+                 while (!lib_queue.isEmpty() && !escaped) {
+                     auto cur = lib_queue.dequeue();
+                     if (!bot_territory.contains(cur)) {
+                         escaped = true;
+                         break;
+                     }
+                     for (int d = 0; d < 4; ++d) {
+                         int nx = cur.first  + dx[d];
+                         int ny = cur.second + dy[d];
+                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                         QPair<int,int> nb(nx, ny);
+                         if (liberty_visited.contains(nb)) continue;
+                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
+                         liberty_visited.insert(nb);
+                         lib_queue.enqueue(nb);
+                     }
+                 }
+                 dead_by_enclosure = !escaped;
+             }
+
+             // Geometric enclosure test (KataGo-independent guard):
+             // Flood-fill from every liberty of this group, expanding through empty
+             // cells only, blocked by bot stones (not by bot_territory ownership).
+             // If the entire reachable empty region is bounded — no cell in the fill
+             // is adjacent to a bot-stone-free edge that connects outside — the group
+             // is geometrically walled in and dead regardless of KataGo's opinion.
+             // Concretely: if every cell in the fill is surrounded on all 4 sides by
+             // either a bot stone, an opponent stone, or another fill cell (i.e. the
+             // region has no "open" adjacency to empty space beyond the wall), the
+             // pocket is closed. We detect this by checking whether the fill can reach
+             // any cell adjacent to a region not bounded by bot stones — i.e. whether
+             // any fill cell has a neighbour that is empty and NOT yet in the fill after
+             // BFS completes (impossible by definition), OR more simply: after the BFS,
+             // check if the total reachable empty region is small enough to be a pocket
+             // AND every boundary stone of the region is a bot stone or opponent stone.
+             // Simplest reliable criterion: BFS blocked by bot stones; if every
+             // reachable empty cell has ALL its non-empty neighbours being bot stones
+             // or opponent stones (no "unknown" adjacency), the group is enclosed.
+             bool dead_by_geometry = false;
+             if (!dead_by_enclosure) {
+                 QSet<QPair<int,int>> geo_visited;
+                 QQueue<QPair<int,int>> geo_queue;
+                 bool geo_escaped = false;
+
+                 // Seed with liberties of this group.
+                 for (const auto &s : group) {
+                     for (int d = 0; d < 4; ++d) {
+                         int nx = s.first  + dx[d];
+                         int ny = s.second + dy[d];
+                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                         QPair<int,int> nb(nx, ny);
+                         if (geo_visited.contains(nb)) continue;
+                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
+                         geo_visited.insert(nb);
+                         geo_queue.enqueue(nb);
+                     }
+                 }
+
+                 // BFS: expand through empty cells, blocked by bot stones.
+                 // Escape = reach an empty cell adjacent to a bot stone that is on
+                 // the convex hull — i.e. not all 4 neighbours are bot/opponent stones.
+                 // Simpler escape criterion: any neighbour that is EMPTY and not yet
+                 // in our visited set after we fully drain the queue means the region
+                 // is open (but that's always false by BFS). Instead: escape if the
+                 // region grows beyond a reasonable pocket size (heuristic cap: 40
+                 // empty cells — a genuine pocket rarely exceeds this in practice).
+                 while (!geo_queue.isEmpty() && !geo_escaped) {
+                     auto cur = geo_queue.dequeue();
+                     if (geo_visited.size() > 40) { geo_escaped = true; break; }
+                     for (int d = 0; d < 4; ++d) {
+                         int nx = cur.first  + dx[d];
+                         int ny = cur.second + dy[d];
+                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                         QPair<int,int> nb(nx, ny);
+                         if (geo_visited.contains(nb)) continue;
+                         StoneColor nc = board->getStoneAt(nx, ny);
+                         if (nc == bot_color) continue;  // bot stone = wall
+                         if (nc == EMPTY) {
+                             geo_visited.insert(nb);
+                             geo_queue.enqueue(nb);
+                         }
+                         // opponent stones: don't enqueue (treat as part of pocket wall)
+                     }
+                 }
+                 dead_by_geometry = !geo_escaped;
+                 if (dead_by_geometry)
+                     output_console->append(QString("[BOT] Group of %1 stones: geometric enclosure confirmed (%2 empty cells in pocket)")
+                         .arg(group.size()).arg(geo_visited.size()));
+             }
+
+             bool dead = dead_by_ownership || dead_by_enclosure || dead_by_geometry;
+             QString reason = dead_by_ownership ? (dead_by_enclosure ? "ownership+enclosed" : "ownership")
+                                                : (dead_by_enclosure ? "enclosed"
+                                                : (dead_by_geometry  ? "geometric"          : ""));
+             output_console->append(QString("[BOT] Opponent group of %1 stones: %2/%3 (%4%) in bot territory — %5%6")
+                 .arg(group.size()).arg(in_territory).arg(group.size()).arg(pct)
+                 .arg(dead ? "DEAD" : "alive")
+                 .arg(dead ? QString(" (%1)").arg(reason) : QString()));
+
+             if (dead) {
                  dead_group_seeds.append(group.first());  // one seed per group for IGS remove
+                 dead_group_members.append(group);        // full group for retry if seed rejected
+             }
          }
      }
 
@@ -8802,13 +9868,16 @@ private slots:
      // IGS scores when both dones are received.
      bot_pending_removes.clear();
      bot_pending_remove_positions.clear();
-     for (const auto &pos : dead_group_seeds) {
+     bot_pending_remove_groups.clear();
+     for (int gi = 0; gi < dead_group_seeds.size(); ++gi) {
+         const auto &pos = dead_group_seeds[gi];
          int x = pos.first;
          int y = pos.second;
          char letter = (x < 8) ? ('A' + x) : ('A' + x + 1);
          int igs_row = 19 - y;
          bot_pending_removes.append(QString("%1%2").arg(letter).arg(igs_row));
          bot_pending_remove_positions.append(pos);
+         bot_pending_remove_groups.append(dead_group_members[gi]);
      }
      if (bot_pending_removes.isEmpty()) {
          output_console->append("[BOT] No dead groups found — sending done in 1500ms");
@@ -8823,25 +9892,16 @@ private slots:
      QTimer::singleShot(1500, this, [this]() {
          if (!bot_scoring_pending || bot_done_sent) return;
          bot_scoring_pending = false;
-         bot_done_sent = true;
          // Mark bot's own dead groups visually on the engine board
          for (const auto &pos : bot_pending_remove_positions) {
              if (engine_board)
                  engine_board->markStoneAsDead(pos.first, pos.second);
          }
-         // Send dead stone toggle commands to IGS — format is "<coord> <game_id>" (no "remove" prefix)
-         for (const QString &coord : bot_pending_removes) {
-             socket->write((QString("%1 %2\n").arg(coord).arg(bot_game_id)).toUtf8());
-             socket->flush();
-             output_console->append(QString("[BOT] >>> %1 %2 (dead group toggle)").arg(coord).arg(bot_game_id));
-         }
-         bot_pending_removes.clear();
-         bot_pending_remove_positions.clear();
-         socket->write("done\n"); socket->flush();
-         output_console->append("[BOT] >>> done");
-         // Render pass 1: our view of territory the moment we send done.
-         // Opponent's dead groups not yet removed — their territory may show as dame.
-         applyBotTerritoryOverlay("Pass 1 (bot done)");
+         // Send removals one at a time. botSendNextRemoval() sends the first and
+         // sets bot_done_sent=true + sends "done" once all groups are confirmed.
+         bot_remove_index        = 0;
+         bot_remove_retry_offset = 0;
+         botSendNextRemoval();
      });
  }
 
@@ -8850,6 +9910,61 @@ private slots:
  // Pass 2 when opponent sends done. Dead stones are read from the board widget
  // (marked by markStoneAsDead()) and excluded from the GoBoard so flood-fill treats
  // them as empty intersections — identical to the in_edit_position_mode path.
+ // Send the next pending removal to IGS. Called after 1500ms initial delay and
+ // again after each CMD49 confirmation. When all groups are sent, sends "done".
+ // If IGS rejects a coordinate with "You cannot remove a liberty" (the group was
+ // already removed by the opponent), botHandleRemovalRejected() retries with the
+ // next stone in the group, or skips the group if all stones are exhausted.
+ void botSendNextRemoval() {
+     if (bot_game_id == -1) return;
+     if (bot_remove_index >= bot_pending_removes.size()) {
+         // All groups handled — send done
+         bot_done_sent = true;
+         socket->write("done\n"); socket->flush();
+         output_console->append("[BOT] >>> done");
+         bot_pending_removes.clear();
+         bot_pending_remove_positions.clear();
+         bot_pending_remove_groups.clear();
+         applyBotTerritoryOverlay("Pass 1 (bot done)");
+         return;
+     }
+     const QString &coord = bot_pending_removes[bot_remove_index];
+     socket->write((QString("%1 %2\n").arg(coord).arg(bot_game_id)).toUtf8());
+     socket->flush();
+     output_console->append(QString("[BOT] >>> %1 %2 (dead group toggle)").arg(coord).arg(bot_game_id));
+ }
+
+ // Called when IGS returns "You cannot remove a liberty" for the current removal.
+ // This means the group's seed coordinate is empty (opponent already removed it).
+ // Try the next stone in the group as an alternate seed. If all stones exhausted,
+ // skip this group (opponent handled it) and move to the next.
+ void botHandleRemovalRejected() {
+     if (bot_remove_index >= bot_pending_removes.size()) return;
+
+     bot_remove_retry_offset++;
+     const QList<QPair<int,int>> &group = bot_pending_remove_groups[bot_remove_index];
+
+     if (bot_remove_retry_offset < group.size()) {
+         // Try the next stone in the group
+         const auto &pos = group[bot_remove_retry_offset];
+         int x = pos.first, y = pos.second;
+         char letter = (x < 8) ? ('A' + x) : ('A' + x + 1);
+         int igs_row = 19 - y;
+         QString alt_coord = QString("%1%2").arg(letter).arg(igs_row);
+         bot_pending_removes[bot_remove_index] = alt_coord;
+         output_console->append(QString("[BOT] Removal rejected — retrying group %1 with alternate stone %2")
+             .arg(bot_remove_index + 1).arg(alt_coord));
+         botSendNextRemoval();
+     } else {
+         // All stones in this group exhausted — opponent already removed it; skip
+         output_console->append(QString("[BOT] Group %1 already removed by opponent — skipping")
+             .arg(bot_remove_index + 1));
+         bot_remove_index++;
+         bot_remove_retry_offset = 0;
+         botSendNextRemoval();
+     }
+ }
+
  void applyBotTerritoryOverlay(const QString &pass_label) {
      BoardWindow *board = engine_board;
      if (!board && docked_pane_mode) board = shared_board_window;
@@ -8914,6 +10029,9 @@ private slots:
      bot_time_forfeit_loser.clear();
      bot_pending_removes.clear();
      bot_pending_remove_positions.clear();
+     bot_pending_remove_groups.clear();
+     bot_remove_index        = 0;
+     bot_remove_retry_offset = 0;
      bot_cached_ownership.clear();
      bot_ownership_snapshot.clear();
      bot_opponent         = "";
@@ -9107,38 +10225,45 @@ private slots:
  }
  }
  
+ void updateClocks() {
+     QDateTime now_local = QDateTime::currentDateTime();
+     QDateTime now_utc   = QDateTime::currentDateTimeUtc();
+     if (clock_local)
+         clock_local->setText("Local:  " + now_local.toString("ddd MMM dd hh:mm:ss yyyy"));
+     if (clock_gmt)
+         clock_gmt->setText("GMT:    " + now_utc.toString("ddd MMM dd hh:mm:ss yyyy"));
+     if (clock_server) {
+         if (server_time_set) {
+             qint64 elapsed_secs = server_time_received.secsTo(QDateTime::currentDateTimeUtc());
+             QDateTime srv = server_time_value.addSecs(elapsed_secs);
+             clock_server->setText("Server: " + srv.toString("ddd MMM dd hh:mm:ss yyyy"));
+         }
+         // else stays "Server: -- (waiting)" until IGS responds to "time"
+     }
+ }
+
  void handleHeartbeat() {
+ updateClocks();
+
  if (!hold_the_line || !connected_to_igs) {
  return;
  }
- 
+
  heartbeat_counter--;
- 
- // Every 5 minutes (300 seconds), check status
- if (heartbeat_counter % 300 == 0) {
- if (!this->suppress_server_console) output_console->append(QString(">>> Heartbeat check: %1 seconds remaining").arg(heartbeat_counter));
- 
- // If counter reaches 0, send AYT and reset
+
  if (heartbeat_counter <= 0) {
- if (socket->state() == QTcpSocket::ConnectedState) {
- socket->write("ayt\n");
- if (!this->suppress_server_console) output_console->append(">>> SENT: ayt (heartbeat keep-alive)");
- }
- 
- // Reset counter to 15 minutes (899 seconds)
- heartbeat_counter = 899;
- 
- // Stop sending AYT after 1 hour if not observing games
- if (board_windows.isEmpty()) {
- if (!this->suppress_server_console) output_console->append(">>> No games being observed - reducing heartbeat frequency");
- // Could modify behavior here if needed
- }
- }
+     if (socket->state() == QTcpSocket::ConnectedState) {
+         socket->write("ayt\n");
+         if (!this->suppress_server_console) output_console->append(">>> SENT: ayt (heartbeat keep-alive)");
+     }
+     // During an active bot game use 60s interval — silent drops must be detected
+     // quickly so the game isn't lost on time. Otherwise use 15 minutes (899s).
+     heartbeat_counter = (bot_mode_active && bot_game_id != -1) ? 59 : 899;
  }
  }
  
  void resetHeartbeatCounter() {
- heartbeat_counter = 899;
+     heartbeat_counter = (bot_mode_active && bot_game_id != -1) ? 59 : 899;
  }
  
  QString findPlayerRank(const QString& player_name) {

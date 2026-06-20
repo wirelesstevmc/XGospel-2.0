@@ -6,6 +6,7 @@
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QDebug>
 
 PreferencesDialog::PreferencesDialog(EngineManager *engine_manager, QWidget *parent)
@@ -234,6 +235,25 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
     game_pane_group->setLayout(game_pane_form);
     app_tab_layout->addWidget(game_pane_group);
 
+    // Shout window group
+    QGroupBox *shout_group = new QGroupBox("Shout Window");
+    QFormLayout *shout_form = new QFormLayout();
+
+    m_auto_launch_shout_check = new QCheckBox("Auto-launch Shout window on login");
+    m_auto_launch_shout_check->setChecked(settings->getAutoLaunchShoutWindow());
+    shout_form->addRow("", m_auto_launch_shout_check);
+
+    QLabel *shout_help = new QLabel(
+        "When enabled, the Shout window opens minimized automatically on login.  "
+        "Shout messages are always cached from login regardless of this setting — "
+        "open the window via Windows > Show Shouts to read them.");
+    shout_help->setWordWrap(true);
+    shout_help->setStyleSheet("color: gray; font-size: 9pt;");
+    shout_form->addRow("", shout_help);
+
+    shout_group->setLayout(shout_form);
+    app_tab_layout->addWidget(shout_group);
+
     app_tab_layout->addStretch();
     m_tab_widget->addTab(app_settings_tab, "Application Settings");
 
@@ -258,6 +278,50 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
 
     blacklist_group->setLayout(blacklist_form);
     bot_tab_layout->addWidget(blacklist_group);
+
+    // ---- Greylist group ----
+    QGroupBox *greylist_group = new QGroupBox("Opponent Greylist (Handicap Limits)");
+    QVBoxLayout *greylist_layout = new QVBoxLayout();
+
+    QLabel *greylist_help = new QLabel(
+        "Per-opponent handicap limit. Positive value: decline if offered handicap exceeds limit (weaker opponent asking too many stones). "
+        "Negative value: decline if opponent offers an even or reverse-handicap game (stronger opponent offering unfavorable conditions). "
+        "Example: -1 declines any even or handicap game from a consistently stronger opponent. Names are case-insensitive.");
+    greylist_help->setWordWrap(true);
+    greylist_help->setStyleSheet("color: gray; font-size: 9pt;");
+    greylist_layout->addWidget(greylist_help);
+
+    m_greylist_table = new QTableWidget(0, 3);
+    m_greylist_table->setHorizontalHeaderLabels({"Player", "HC Limit", "Custom Tell"});
+    m_greylist_table->horizontalHeader()->setStretchLastSection(true);
+    m_greylist_table->horizontalHeader()->resizeSection(0, 120);
+    m_greylist_table->horizontalHeader()->resizeSection(1, 60);
+    m_greylist_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_greylist_table->setMinimumHeight(120);
+
+    // Populate from saved settings
+    for (const auto &e : settings->getBotGreylist()) {
+        int row = m_greylist_table->rowCount();
+        m_greylist_table->insertRow(row);
+        m_greylist_table->setItem(row, 0, new QTableWidgetItem(e.name));
+        m_greylist_table->setItem(row, 1, new QTableWidgetItem(QString::number(e.max_hc)));
+        m_greylist_table->setItem(row, 2, new QTableWidgetItem(e.tell));
+    }
+    greylist_layout->addWidget(m_greylist_table);
+
+    QHBoxLayout *greylist_btn_layout = new QHBoxLayout();
+    QPushButton *greylist_add_btn    = new QPushButton("Add Row");
+    QPushButton *greylist_remove_btn = new QPushButton("Remove Row");
+    greylist_btn_layout->addWidget(greylist_add_btn);
+    greylist_btn_layout->addWidget(greylist_remove_btn);
+    greylist_btn_layout->addStretch();
+    greylist_layout->addLayout(greylist_btn_layout);
+
+    connect(greylist_add_btn,    &QPushButton::clicked, this, &PreferencesDialog::onGreylistAddRow);
+    connect(greylist_remove_btn, &QPushButton::clicked, this, &PreferencesDialog::onGreylistRemoveRow);
+
+    greylist_group->setLayout(greylist_layout);
+    bot_tab_layout->addWidget(greylist_group);
     bot_tab_layout->addStretch();
     m_tab_widget->addTab(bot_tab, "Bot Settings");
 
@@ -480,6 +544,33 @@ void PreferencesDialog::onBrowseSaveDir() {
     }
 }
 
+void PreferencesDialog::onGreylistAddRow() {
+    int row = m_greylist_table->rowCount();
+    m_greylist_table->insertRow(row);
+    m_greylist_table->setItem(row, 0, new QTableWidgetItem(""));
+    m_greylist_table->setItem(row, 1, new QTableWidgetItem("8"));
+    m_greylist_table->setItem(row, 2, new QTableWidgetItem(""));
+    m_greylist_table->editItem(m_greylist_table->item(row, 0));
+}
+
+void PreferencesDialog::onGreylistRemoveRow() {
+    int row = m_greylist_table->currentRow();
+    if (row >= 0)
+        m_greylist_table->removeRow(row);
+}
+
+static QList<Settings::GreylistEntry> greylistFromTable(QTableWidget *t) {
+    QList<Settings::GreylistEntry> entries;
+    for (int r = 0; r < t->rowCount(); ++r) {
+        QString name = t->item(r, 0) ? t->item(r, 0)->text().trimmed().toLower() : QString();
+        int     hc   = t->item(r, 1) ? t->item(r, 1)->text().trimmed().toInt()  : 0;
+        QString tell = t->item(r, 2) ? t->item(r, 2)->text().trimmed()          : QString();
+        if (!name.isEmpty())
+            entries.append({name, hc, tell});
+    }
+    return entries;
+}
+
 void PreferencesDialog::onBrowseConsoleDumpDir() {
     QString currentDir = m_consoledump_dir_edit->text();
     if (currentDir.startsWith("$HOME/"))
@@ -522,6 +613,7 @@ void PreferencesDialog::onApply() {
     settings->setGamesWindowRefreshInterval(m_games_refresh_spin->value());
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
+    settings->setAutoLaunchShoutWindow(m_auto_launch_shout_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
     settings->setUseDockedGamePane(m_docked_game_pane_check->isChecked());
     settings->setHoverBoardSize(m_hover_board_size_spin->value());
@@ -531,6 +623,7 @@ void PreferencesDialog::onApply() {
 
     // Save bot settings
     settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
+    settings->setBotGreylist(greylistFromTable(m_greylist_table));
 
     // Save to settings
     settings->setHosts(m_hosts);
@@ -562,6 +655,7 @@ void PreferencesDialog::onOk() {
     settings->setGamesWindowRefreshInterval(m_games_refresh_spin->value());
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
+    settings->setAutoLaunchShoutWindow(m_auto_launch_shout_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
 
     // Save engine profiles
@@ -569,6 +663,7 @@ void PreferencesDialog::onOk() {
 
     // Save bot settings
     settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
+    settings->setBotGreylist(greylistFromTable(m_greylist_table));
 
     // Save and close
     settings->setHosts(m_hosts);

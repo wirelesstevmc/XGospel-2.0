@@ -832,9 +832,10 @@ BoardWindow::BoardWindow(QWidget *parent, const QString &username, bool edit_win
      setupUI();
 
  // Initialize clock timer for server lag compensation
- clock_timer = new QTimer(this);
- connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
- clock_timer->start(1000); // Update every second to compensate for server lag
+ own_clock_timer = new QTimer(this);
+ connect(own_clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+ own_clock_timer->start(1000); // Update every second to compensate for server lag
+ clock_timer = own_clock_timer; // clock_timer may be swapped to a slot's timer by loadSlot
  
  // Set initial window title
  updateWindowTitle();
@@ -2007,8 +2008,11 @@ void BoardWindow::loadSlot(GameSlot *slot)
                     static_cast<StoneColor>(slot->board_state[x][y]));
     board_widget->setLastMove(slot->last_move_x, slot->last_move_y);
     board_widget->setDeadStones(slot->dead_stone_positions);
+    qDebug() << "[LOADSLOT-DEBUG] A: setDeadStones done";
     board_widget->setDisputedPoints(slot->disputed_positions);
+    qDebug() << "[LOADSLOT-DEBUG] B: setDisputedPoints done";
     board_widget->setScoringMode(slot->is_scoring_mode);
+    qDebug() << "[LOADSLOT-DEBUG] C: setScoringMode done";
     {
         QMap<QPair<int,int>, StoneColor> tmap;
         if (slot->is_scoring_mode && !slot->territory_map.isEmpty()) {
@@ -2030,63 +2034,101 @@ void BoardWindow::loadSlot(GameSlot *slot)
             board_widget->setTerritoryMap(tmap); // clears overlay
         }
     }
+    qDebug() << "[LOADSLOT-DEBUG] D: setTerritoryMap done";
     current_player = static_cast<StoneColor>(slot->current_player);
 
     // --- clock: disconnect previous timer from display refresh, connect new slot's timer ---
     // Do NOT stop the previous timer — if it belongs to another slot it must keep ticking.
+    qDebug() << "[LOADSLOT-DEBUG] E: about to swap clock_timer";
     disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
     clock_timer = slot->clock_timer;
     connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+    qDebug() << "[LOADSLOT-DEBUG] F: clock_timer swapped";
 
     // Inactive slots never get updateByoyomi() called, so last_time_update stays null.
     // Seed it to now so the clock countdown starts ticking immediately on switch.
     if (last_time_update.isNull() && (white_time_seconds > 0 || black_time_seconds > 0))
         last_time_update = QDateTime::currentDateTime();
     updateClockDisplay();  // paint new slot's clock immediately, don't wait for next tick
+    qDebug() << "[LOADSLOT-DEBUG] G: updateClockDisplay done";
 
     // --- observers list ---
     // Finished games get no more server updates, so clear rather than restoring
     // a stale list. Live games restore from the slot snapshot written by snapshotToSlot().
     clearObservers();
+    qDebug() << "[LOADSLOT-DEBUG] H: clearObservers done";
     if (!slot->game_finished) {
         for (const auto &obs : slot->observers)
             addObserver(obs.name, obs.rank);
     }
+    qDebug() << "[LOADSLOT-DEBUG] I: addObserver loop done";
 
     // --- comments ---
+    // Always rebuild from the authoritative CommentEntry list so that kibitzes
+    // appended while this slot was in the background are not lost.
     if (comment_display) {
-        if (!slot->comment_html.isEmpty()) {
-            // Restore the exact rendered history from the last time this slot was active
-            comment_display->setHtml(slot->comment_html);
-        } else {
-            // First load — rebuild from CommentEntry list
-            comment_display->clear();
-            for (const auto &c : slot->comments) {
-                QString prefix = c.is_kibitz
-                    ? QString("<b>%1:</b> ").arg(c.user.toHtmlEscaped())
-                    : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
-                comment_display->append(prefix + c.text.toHtmlEscaped());
-            }
+        comment_display->clear();
+        for (const auto &c : slot->comments) {
+            QString prefix = c.is_kibitz
+                ? QString("<b>%1:</b> ").arg(c.user.toHtmlEscaped())
+                : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
+            comment_display->append(prefix + c.text.toHtmlEscaped());
         }
         // Scroll to bottom
         QTextCursor cursor = comment_display->textCursor();
         cursor.movePosition(QTextCursor::End);
         comment_display->setTextCursor(cursor);
     }
+    qDebug() << "[LOADSLOT-DEBUG] J: comments rebuilt";
     // --- game tree strip (edit windows only) ---
     if (game_tree_strip)
         updateGameTreeStrip();
+    qDebug() << "[LOADSLOT-DEBUG] K: gameTreeStrip done";
 
     // --- if the game already finished while this was an inactive slot, show result ---
-    if (game_finished && !game_result.isEmpty())
-        updateGameResult(game_result);
+    // Skip if the result line is already present in the restored HTML to avoid duplicates.
+    if (game_finished && !game_result.isEmpty()) {
+        bool already_shown = comment_display &&
+                             comment_display->toPlainText().contains("Game finished:");
+        if (!already_shown)
+            updateGameResult(game_result);
+    }
+    qDebug() << "[LOADSLOT-DEBUG] L: updateGameResult done";
 
     // --- all labels and title ---
     updateLabels();
+    qDebug() << "[LOADSLOT-DEBUG] M: updateLabels done";
     updatePlayerInfoGroups();
+    qDebug() << "[LOADSLOT-DEBUG] N: updatePlayerInfoGroups done";
     updateWindowTitle();
+    qDebug() << "[LOADSLOT-DEBUG] O: updateWindowTitle done";
     updateCommentButtonText();
+    qDebug() << "[LOADSLOT-DEBUG] P: updateCommentButtonText done";
     updateMoveNavigation();
+    // Release the mv_counter guard so live moves are accepted after slot load.
+    // When loadSlot is called after replay (inactive slot going LIVE), mv_counter
+    // is still -1 from the clearMoveHistoryBeforeMovesCommand() call, causing all
+    // subsequent live moves to be skipped. Set it to the replay endpoint so the
+    // board window accepts moves from here onward.
+    if (mv_counter == -1 && slot->replay_state == GameSlot::LIVE)
+        mv_counter = slot->server_move_count;
+    qDebug() << "[LOADSLOT-DEBUG] Q: loadSlot complete for game" << slot->game_id
+             << "mv_counter now" << mv_counter;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Revert clock_timer to the BoardWindow's own timer.
+// Must be called before deleting a GameSlot whose clock_timer is currently
+// active in this BoardWindow, to prevent a dangling pointer crash in loadSlot.
+// ---------------------------------------------------------------------------
+void BoardWindow::detachSlotClockTimer()
+{
+    if (clock_timer != own_clock_timer) {
+        disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+        clock_timer = own_clock_timer;
+        connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -3695,8 +3737,8 @@ QString BoardWindow::generateSGF() {
  if (!positions.isEmpty()) {
  sgf += "PL[W]AB"; // Player to move is White, Add Black setup stones
  for (const auto& pos : positions) {
- char col = 'a' + pos.second; // x coordinate
- char row = 'a' + pos.first; // y coordinate
+ char col = 'a' + pos.first;  // getHandicapPositions: first=col(x), second=row(y)
+ char row = 'a' + pos.second;
  sgf += QString("[%1%2]").arg(col).arg(row);
  }
  }
@@ -5514,8 +5556,10 @@ void BoardWindow::displayNode(GameNode* node) {
  } else {
  bool is_final_position = (node->moveNumber() == total_moves);
 
- if (!is_final_position) {
- // Clear territory markers when viewing historical positions without scored data
+ if (!is_final_position && !is_scoring_mode) {
+ // Clear territory markers when viewing historical positions without scored data.
+ // Do NOT clear if is_scoring_mode: a CMD15 during the scoring phase (e.g. IGS
+ // "board restored" re-scoring) would wipe dead stone markers that were already set.
  board_widget->setTerritoryMap(QMap<QPair<int, int>, StoneColor>());
  board_widget->setDeadStones(QSet<QPair<int, int>>());
  board_widget->setScoringMode(false);

@@ -123,12 +123,13 @@ public:
 
     // Per-slot replay state machine (replaces global history_replay_game_id pin)
     enum ReplayState {
-        WAITING_FOR_MOVES0, // catch-up flood phase: discard moves, track high-water mark
+        WAITING_FOR_MOVES0, // catch-up flood phase: buffer moves, track high-water mark
         REPLAYING,          // moves N history replay from move 0: apply all moves
         LIVE                // replay done: apply live moves, drop re-sends <= catchup_high
     };
-    ReplayState      replay_state       = WAITING_FOR_MOVES0;
-    int              catchup_high       = -1;  // highest move_number seen in catch-up flood
+    ReplayState        replay_state            = WAITING_FOR_MOVES0;
+    int                catchup_high            = -1;   // highest move_number seen in catch-up flood
+    QList<GameMove>    pending_catchup_moves;           // catch-up moves buffered before history arrives
 
     int              current_move        = 0;
     int              current_move_index  = 0;   // move slider position
@@ -187,6 +188,7 @@ public:
 
     QString          game_result;
     bool             game_finished       = false;
+    QString          adjourned_player;   // set on CMD48; used to compute resign result if not resumed
 
     // -----------------------------------------------------------------------
     // Comments — full accumulated history for this game

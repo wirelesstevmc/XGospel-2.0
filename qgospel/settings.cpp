@@ -229,6 +229,37 @@ void Settings::setBotBlacklist(const QStringList &names) {
     m_params["bot_blacklist"] = lower.join(',');
 }
 
+QList<Settings::GreylistEntry> Settings::getBotGreylist() const {
+    QList<GreylistEntry> result;
+    QString raw = m_params.value("bot_greylist", "");
+    if (raw.trimmed().isEmpty()) return result;
+    // Records separated by "||"; fields separated by "|" within each record.
+    // This avoids embedded newlines or tabs that break the single-line KEY [value] file format.
+    for (const QString &rec : raw.split("||", Qt::SkipEmptyParts)) {
+        QStringList fields = rec.split('|');
+        if (fields.size() < 2) continue;
+        GreylistEntry e;
+        e.name   = fields[0].trimmed().toLower();
+        e.max_hc = fields[1].trimmed().toInt();
+        e.tell   = (fields.size() >= 3) ? fields[2].trimmed() : QString();
+        if (!e.name.isEmpty())
+            result.append(e);
+    }
+    return result;
+}
+
+void Settings::setBotGreylist(const QList<GreylistEntry> &entries) {
+    QStringList recs;
+    for (const auto &e : entries) {
+        QString name = e.name.trimmed().toLower();
+        if (name.isEmpty()) continue;
+        // Strip any pipe characters from the tell to avoid breaking the separator scheme.
+        QString tell = e.tell.trimmed().replace('|', ' ');
+        recs << QString("%1|%2|%3").arg(name).arg(e.max_hc).arg(tell);
+    }
+    m_params["bot_greylist"] = recs.join("||");
+}
+
 void Settings::load() {
     QString configFile = getConfigFilePath();
     QFile file(configFile);

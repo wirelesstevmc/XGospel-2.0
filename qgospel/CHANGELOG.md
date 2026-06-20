@@ -6,6 +6,604 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 2026-06-19 (v245): Fix post-reconnect game resume — use stored filename + restore board + restart engine
+
+**Root cause:** Four separate failures in the cross-session reconnect resume path:
+1. `load <opponent>` was sent speculatively — IGS needs the full game filename (e.g. `load woodnstone-weakkyu`) not just the opponent name
+2. Fresh slot created for cross-session resume had no move history — `moves N` was never requested
+3. KataGo engine was not restarted after reconnect, so bot could not generate moves
+4. `bot_game_id` was never updated to the new game ID — opponent moves arrived but bot did not recognize them as its own game
+
+**Fix:**
+- Removed speculative `load <opponent>` timer; replaced with CMD18 parser that captures the game filename from the `stored` response and sends `load <filename>` immediately
+- Cross-session CMD67 path now sets `cross_session_resume_game_id` and sends `moves <game_id>` after fresh slot creation (instead of suppressing it)
+- When `moves N` replay completes for a reconnect game (`bot_restart_after_replay_game_id`), engine is cleared, all history moves replayed into KataGo, and `genmove` requested if it is the bot's turn
+- Removed `load_retry_timer` and `load_retry_count` entirely — no longer needed
+
+---
+
+## 2026-06-19 (v244): Fix auto-reconnect socket state — abort stale socket + log errors
+
+**Root cause:** After `ss --kill` drops the TCP connection, QTcpSocket may remain in a non-`UnconnectedState`. Previous code waited 5s and retried without forcing the socket closed, so `connectToHost` never fired.
+
+**Fix:**
+- `attemptReconnect()` now calls `socket->abort()` if socket is not already in `UnconnectedState`
+- `errorOccurred` handler now logs the socket error string to the console
+- Removed redundant `!connected_to_igs` guard from `errorOccurred` handler
+
+---
+
+## 2026-06-19 (v243): Fix post-reconnect "load" timing — retry until IGS 5-minute window closes
+
+**Root cause:** v242 sent `load <opponent>` immediately in the 1s setup timer after reconnect. But if the TCP drop and reconnect happen within IGS's 5-minute "disconnected game" window, IGS still considers the game live and rejects `load` with `"You can not load this game."` The game was never resumed.
+
+**Fix:** Replaced the immediate `load` with a staged retry system:
+- First `load` attempt deferred 10s after login (gives IGS time to settle post-reconnect)
+- `"You can not load this game"` and `"You are in disconnected game"` responses schedule a 30s retry via `load_retry_timer`
+- Up to 9 retries × 30s = 4.5 minutes — covers the full IGS 5-minute disconnected window
+- When CMD67 arrives (game successfully resumed by either path), `load_retry_timer` is stopped and `reconnect_opponent` cleared in both resume paths (OBSERVE-MATCH and CMD67)
+- If all retries exhausted, logs a warning that the game may be forfeited
+
+---
+
+## 2026-06-19 (v242): Auto-reconnect to IGS on unexpected disconnect + post-reconnect game resume
+
+**Feature:** When the TCP connection to IGS drops unexpectedly (network hiccup, server blip, interface drop), the client now automatically attempts to reconnect and restore the session.
+
+**Reconnect logic:**
+- `onDisconnected()` detects unexpected drops (vs. user-initiated disconnect via Connection > Disconnect or File > Exit)
+- Schedules reconnect with exponential back-off: 5s → 10s → 20s → 30s cap, max 10 attempts (~3.5 min total)
+- Each attempt calls `connectToHost()` — `onConnected()` fires on success and runs the full login + setup sequence automatically
+- Failed connection attempts (socket error) schedule the next retry via `errorOccurred` signal
+- User-initiated disconnect sets `manual_disconnect = true` to suppress auto-reconnect
+
+**Bot game resume:**
+- At disconnect time, if a bot game is active (`bot_game_id != -1`), the opponent name is saved to `reconnect_opponent`
+- After successful reconnect and login setup, `load <opponent>` is sent automatically
+- IGS adjournment machinery (CMD67 + existing v237/v239 resume logic) handles the rest — board state, move history, and engine restart are all recovered
+
+---
+
+## 2026-06-19 (v241): Add geometric enclosure test for dead stone detection (KataGo-independent guard)
+
+**Root cause:** In game 131 vs so2828427, KataGo rated the area around K17 (a lone black stone deep in white territory) at 0% white ownership — likely due to low visit count uncertainty. Both the ownership test (0% < 65% threshold) and the existing KataGo-based enclosure test (which uses `bot_territory` built from 70% ownership threshold) failed to mark it dead. The server's flood-fill scoring was then disrupted by unremoved dead stones on both sides, producing a badly wrong result (B+61.5 instead of the correct ~B+15.5).
+
+**Fix:** Added a third detection pass — a **geometric enclosure test** fully independent of KataGo. For each opponent group not already marked dead, a BFS flood-fills from the group's liberties through empty cells, blocked only by bot stones (actual board state, not ownership estimates). If the entire reachable empty region fits within 40 cells (a genuine dead pocket is always small), the group is geometrically walled in and marked dead regardless of KataGo's ownership values. The 40-cell cap prevents falsely marking large live groups.
+
+The three-tier detection now is: ownership (KataGo ≥65%) → KataGo-based enclosure → geometric enclosure (board-state only).
+
+---
+
+## 2026-06-18 (v240): Increase AYT heartbeat frequency during active bot game
+
+**Problem:** The AYT keep-alive was sent every 15 minutes regardless of game state. During an active bot game a silent TCP drop could go undetected for up to 15 minutes, causing the game to be lost on time with no warning.
+
+**Fix:** During an active bot game (`bot_mode_active && bot_game_id != -1`), the heartbeat interval is reduced to 60 seconds. Outside of an active bot game the 15-minute interval is unchanged. Both the send path and `resetHeartbeatCounter()` (called on AYT response and user command) use the same context-aware interval.
+
+---
+
+## 2026-06-17 (v239): Use stored-game list to prime cross-session resume without requiring restore signal
+
+**Feature:** The `stored_adjourned_opponents` set (populated at login from the `stored` command response) is now used as a fallback in the CMD67 handler. If `pending_resume_player` is empty when CMD67 arrives but the opponent is a known stored-game opponent, the client immediately treats the CMD67 as a cross-session resume and creates a fresh board — without needing the `"9 X has restored your old game"` signal to arrive first. The opponent is removed from the set once the resume is handled to prevent stale matches.
+
+This makes cross-session resume reliable even if the `"restored"` message is missed, delayed, or arrives after CMD67.
+
+---
+
+## 2026-06-17 (v238): Send "stored" at login and display adjourned game notice in console
+
+**Feature:** At login (in the 1s setup timer), the `stored` command is sent to IGS to query any games saved on the server from previous sessions. The response is parsed and displayed in the console as a prominent notice:
+- If stored games exist: `>>> [STORED] N adjourned game(s) waiting on server — use 'load <player>' to resume:` followed by each game entry
+- If none: `>>> [STORED] No adjourned games on server.`
+
+This ensures the user is immediately aware of cross-session adjourned games at startup rather than discovering them only if the opponent reconnects.
+
+---
+
+## 2026-06-17 (v237): Fix cross-session adjournment — no board appearing for game adjourned in prior session
+
+**Root cause:** When a game is adjourned and the client is restarted, there is no `GameSlot` in memory for that game. On reconnect, IGS sends `"9 X has restored your old game."` (sets `pending_resume_player`) followed by `CMD67` with the new game ID. The CMD67 resume path searched `game_slots` for a slot with `adjourned_player == X` — found nothing — and silently did nothing. The `pending_resume_player` flag then stayed set, blocking new slot creation for all subsequent CMD67s until cleared. Additionally, if the opponent ultimately failed to reconnect, `"Disconnected game with X was removed"` never cleared `pending_resume_player`, leaving it poisoned for the rest of the session.
+
+**Fix 1:** In the CMD67 resume path, when no adjourned slot is found (cross-session case), log a diagnostic message and clear `pending_resume_player` immediately, allowing the standard slot-creation path to run and build a fresh board. Move history is fetched from the server via `moves N` as normal.
+
+**Fix 2:** In the "Disconnected game with X was removed" handler, clear `pending_resume_player` if it names the dropped player, so a failed cross-session resume never poisons subsequent game setups.
+
+---
+
+## 2026-06-17 (v236): Fix resumed playing game not highlighted in games list + fix ranks in CMD67 resume path
+
+**Root cause:** There are two adjournment/resume code paths. The v235 fix covered the "Observing game" path (non-dock or observer-initiated resume). The CMD67 path — which handles the bot's own playing game resumption — was missing both fixes: it still passed `"?"` for ranks to `addGame`, and never updated `observed_game_ids`, so the resumed game row was never highlighted in the Games list.
+
+**Fix:** In the CMD67 resume path, replaced hardcoded `"?"` with `adjourned->black_rank`/`adjourned->white_rank`, and added the `observed_game_ids` remove/insert + `updateObservedGames()` call, matching the v235 fix in the other path.
+
+---
+
+## 2026-06-17 (v235): Fix stale games list highlight after adjournment/resume
+
+**Root cause:** On adjournment/resume the game ID changes (e.g. game 1 → game 114). The ADJOURN RESUME handler correctly updated `active_slot_game_id`, `bot_game_id`, and the dock button, but never updated `observed_game_ids` — the set that drives bold/highlighted rendering in the Games list window. The old ID remained in the set and the new ID was never inserted, leaving the old game row permanently highlighted and the new one unhighlighted even after Refresh Games.
+
+**Fix:** In the ADJOURN RESUME handler, swap the old ID for the new ID in `observed_game_ids` and call `games_window->updateObservedGames()` to repaint immediately.
+
+---
+
+## 2026-06-17 (v234): Fix rank not showing on resumed game dock button
+
+**Root cause:** After adjournment/resume, IGS assigns a new game ID (e.g. game 6 → game 90). The ADJOURN RESUME handler removed the old dock button and created a new one, but always passed `"?"` as the rank strings for both players. The slot's `black_rank` and `white_rank` fields were already populated from the stats response that arrived earlier during the original game — those stored ranks were simply not being passed to `addGame`.
+
+**Fix:** In the ADJOURN RESUME handler, replaced the hardcoded `"?"` strings with `adjourned_slot->black_rank` and `adjourned_slot->white_rank`. The resumed game dock button now shows the correct rank (e.g. "7k+") immediately rather than "?" indefinitely.
+
+---
+
+## 2026-06-17 (v233): Fix board corruption during scoring from mid-game observer refresh
+
+**Root cause:** The auto-refresh players timer can fire while the bot is in the scoring phase (after `done` is sent, before CMD20 is received). The players list refresh causes IGS to send `"9 Observing game N (got2go vs. kagg) :"` as part of the observer count update. This line was processed by the OBSERVE-MATCH handler which updated player names and potentially triggered board state changes, corrupting the territory overlay display. The board was left showing "Black to Play" with incorrect territory counts rather than the scoring result.
+
+**Fix:** Added a guard to skip `"9 Observing game"` processing for the bot's own active game while `bot_done_sent=true`. The line is matched by game ID and suppressed during the scoring window so the OBSERVE-MATCH handler cannot interfere with the board display.
+
+**Note:** This fix is believed to resolve the corruption but requires live testing to confirm — CMD22 territory data arriving mid-scoring is a separate interaction that may warrant further investigation if corruption persists.
+
+---
+
+## 2026-06-17 (v232): Fix false positive ?+T time forfeit result after scored games
+
+**Root cause:** IGS sends `"9 Removed game file <login>-<opponent> from database."` after every game end — including normal scored games (after CMD20 + `"9 game completed."`). The time forfeit handler fired on this line whenever `bot_game_id != -1`, producing a spurious `[BOT] Game N ended via time forfeit — ?+T` log entry even for games that ended cleanly by scoring. In game 258, the correct result was B+4.5 but the log showed `?+T`.
+
+**Fix:** Added `!bot_cmd20_received` guard to the time forfeit path. If CMD20 was already received for this game, the "Removed game file" line is ignored by the forfeit handler — the game ended by scoring and cleanup was already handled by `botEndGame()`.
+
+---
+
+## 2026-06-16 (v231): Greylist negative HC Limit for stronger opponents
+
+**Feature:** The greylist "Max HC" column is renamed "HC Limit" and now accepts negative values, enabling the bot to decline matches from consistently stronger opponents (sandbagged ratings, AI-assisted players, etc.) who offer even or unfavorable conditions.
+
+- **Positive limit (e.g. 8)**: decline if offered handicap > limit — same behaviour as before (weaker opponent asking too many stones)
+- **Zero**: decline any handicap game; only accept even games from this opponent
+- **Negative limit (e.g. -1)**: decline even games and any game where the bot would receive handicap stones — used for opponents who are stronger than their listed rank suggests
+
+Example: yaonie9d listed at 6d+ but consistently defeats the bot — set HC Limit = -1 to decline all match requests. When they offer an even game (handicap=0), `0 > -1` triggers the decline with the custom tell.
+
+The `> 0` validation guards that previously silently dropped zero and negative entries have been removed from `settings.cpp` (load and save paths) and `preferences_dialog.cpp` (`greylistFromTable`). The comparison logic in `botAcceptMatch()` (`effective_handicap > entry.max_hc`) already handled negatives correctly — only the storage layer needed fixing.
+
+---
+
+## 2026-06-16 (v230): Fix corrupt scoring + sequential removal + File > Exit menu item
+
+### File > Exit
+Added "Exit" item to the File menu (below a separator after "Open SGF..."). Calls `QApplication::quit()` which sends close events to all windows and exits the event loop cleanly — board windows, players list, games list, shout window, and all stats dialogs are all properly destroyed. Workaround for cases where closing the main console window left orphan child windows running.
+
+### Fix corrupt scoring when opponent removes same dead groups simultaneously
+
+**Root cause:** Dead stone removal commands were sent in a tight fire-and-forget loop followed immediately by `done`, with no confirmation waiting and no error recovery. When both the bot and opponent independently identified the same dead groups and sent removal commands concurrently, IGS rejected the bot's commands with "5 You cannot remove a liberty." — the group stones were already gone, leaving the coordinate as an empty point. With 3 of 9 removal commands rejected in game 91, IGS was left in an inconsistent scoring state: 52 white stones remained on the board but the CMD22 territory grid showed W:0 territory and B:117 territory, producing a corrupt result of B+134.5 instead of the correct ~B+7.5.
+
+**Fix:** Removals are now sent one at a time with server confirmation required before the next is sent:
+1. Send seed coordinate for first dead group
+2. Wait for CMD49 confirmation → advance index, send next group's seed
+3. On "5 You cannot remove a liberty" rejection → retry with the next stone in the group as alternate seed (full group membership now stored alongside the seed)
+4. If all stones in a group exhausted → opponent already removed it; skip and continue
+5. After all groups confirmed or skipped → send `done`
+
+Full group membership (`bot_pending_remove_groups`) is stored at identification time so retry candidates are always available. State variables `bot_remove_index` and `bot_remove_retry_offset` track progress through the sequential send.
+
+**Policy confirmed:** Bot marks only dead opponent stones within its own rightful territory. It never touches stones in the opponent's territory — that is the opponent's responsibility. The retry/skip logic is purely to handle concurrent removals gracefully, not to expand the bot's marking scope.
+
+---
+
+## 2026-06-16 (v229): Fix intermittent duplicate player entries in players list
+
+**Root cause:** The `userlist_player_names` dedup set is populated by parsing each `< 42` line with the q5Go regex (`parseIGSPlayer`). When the regex fails for an unusual line (wide characters, non-standard field widths, special info strings), the name is never inserted into the set. The WHO supplement phase then adds a second row for that player — identifiable by empty Won/Lost/Rated/Country columns (WHO format provides no extended stats).
+
+**Fix:** Added a model-level dedup guard in `addPlayerToTable()`: before appending a new row, scan column 1 (Name) for a case-insensitive match. If found, silently drop the duplicate. This is O(n) per player but runs only during list population. It catches all cases regardless of which parser path was taken, including any future regex failures.
+
+---
+
+## 2026-06-15 (v228): Greylist max_hc enforcement for old match protocol clients
+
+**Problem:** The old `match` protocol (used by xgospel1 and clients like BusyBee) always sends `handicap=0` in the match request — the actual handicap is assigned by IGS server-side at CMD67. The greylist check compared `handicap > entry.max_hc`, so it always evaluated `0 > max_hc` and never fired for old-protocol opponents.
+
+**Fix:** Before the greylist loop, compute `effective_handicap`: if `handicap==0` and the suggested command starts with `"match "` (old protocol), estimate the handicap from rank difference using `expectedHandicap()`. The greylist check then uses `effective_handicap` instead of the raw (always-zero) handicap. The decline log message notes when the value is estimated from ranks vs. explicitly stated by the opponent.
+
+**Limitation (documented):** For old-protocol clients, the estimate is based on the players-list rank snapshot and may differ from what IGS actually assigns at boundary rank values. This is an inherent IGS protocol constraint — old `match` clients cannot communicate handicap in the request. To be noted in the user manual.
+
+---
+
+## 2026-06-15 (v227): Fix bot incorrectly declining old match protocol requests
+
+**Root cause:** The fairness check in `botAcceptMatch()` compared `|handicap - exp_hc| > 1` and declined if the difference exceeded 1 stone. For old `match` protocol requests, `handicap` is always 0 (IGS assigns it server-side), so any opponent with a rank difference of 2+ stones would be declined with "unfair handicap: offered 0, expected N".
+
+**Fix:** Detect old match protocol via `handicap == 0 && suggested_cmd.startsWith("match ")`. When detected, skip the handicap comparison entirely (log a note instead) and only enforce the color check where the rank gap makes color unambiguous. The nmatch path is unaffected — handicap is always explicit there.
+
+---
+
+## 2026-06-15 (v226): Fix players list and game observation broken by early toggle open
+
+**Root cause (v225 regression):** The v225 fix called `toggleBotMode(true)` synchronously at the `"1 1"` login line. `toggleBotMode` sends `toggle open true` to the socket immediately, injecting a server response (`"1 Setting open to be True"`) into the middle of the `userlist`/`who` data stream. The end-of-list detection for both the players list and games list triggers on lines matching `"1 1"` with length < 10 — the server's response to `toggle open` was close enough in format to trip this guard, terminating the lists prematurely and leaving the board observation path broken.
+
+**Fix:** At login, set `bot_mode_active = true` and update the menu checkmark directly without touching the socket. Defer `toggle open true` into the existing 1-second protocol-setup timer (alongside `id`, `toggle newrating`, `nmatchrange`, `toggle nmatch`) where it can't interfere with the data stream. Bot mode is active from the moment login completes, catching early match requests; socket state stays clean until the timer fires.
+
+---
+
+## 2026-06-15 (v225): Fix bot not accepting matches after client restart (reverted — caused regression)
+
+Attempted to restore bot mode before the 1-second protocol timer by calling `toggleBotMode(true)` synchronously at login. This caused the players list and game observation to break (see v226). The correct fix is in v226.
+
+---
+
+## 2026-06-15 (v224): Fix greylist not persisting after client restart
+
+**Root cause:** The greylist was stored in `m_params["bot_greylist"]` as tab-delimited records joined by `\n` (newline). The settings file format writes one `KEY [value]` per line — embedded newlines in a value span multiple lines without key prefixes, so on reload only the text up to the first embedded newline was associated with the key. Subsequent records were read as orphan lines and discarded, leaving the greylist empty after every restart.
+
+**Fix:** Changed the storage format to use `||` as the record separator and `|` as the field separator within each record. The entire greylist now fits on a single line in the settings file and survives the read/write round-trip correctly. Any pipe characters in a custom tell are silently replaced with spaces to avoid breaking the separator scheme.
+
+---
+
+## 2026-06-13 (v223): Persist selected engine profile across sessions
+
+Selected engine profile ID is now saved to settings whenever the user picks an engine via Engines → Attach Engine. On startup, `m_pending_engine_profile_id` is restored from settings before the menu is built, so the checkmark reflects the previous selection immediately and bot mode launches with the correct engine automatically.
+
+---
+
+## 2026-06-13 (v222): Checkmark on currently selected engine in Attach Engine submenu
+
+Each engine listed under Engines → Attach Engine is now a checkable action. The currently selected engine (matching `m_pending_engine_profile_id`) shows a checkmark when the submenu opens. The submenu is rebuilt on every show so the checkmark always reflects the current selection.
+
+---
+
+## 2026-06-13 (v221): Persist bot mode across sessions
+
+**Root cause:** Bot mode was initialised to off every startup (hardcoded `setChecked(false)`) and never saved to settings. After a restart, match requests arrived but `bot_mode_active` was false so the nmatch handler silently ignored them — no accept, no decline.
+
+**Fix:** `toggleBotMode()` now saves `bot_mode_enabled` to settings immediately on each toggle. After login completes (post-nmatch setup), the setting is read back and `toggleBotMode(true)` is called automatically if it was on in the previous session. The menu checkmark is also initialised from settings at startup so the UI reflects the restored state.
+
+---
+
+## 2026-06-12 (v220): Bot opponent greylist — per-opponent handicap limits with custom tells
+
+**Feature:** New "Opponent Greylist" table in Preferences → Bot Settings tab. Each row specifies a player name, a maximum acceptable handicap (inclusive), and an optional custom tell message. When a match or nmatch is offered with a handicap exceeding the limit, the bot declines and sends the custom tell to the opponent explaining the reason. The greylist is checked after the blacklist and before the fairness check in botAcceptMatch(). Stored as tab-delimited records in the settings file (newline-separated), preserving commas freely in the tell text.
+
+---
+
+## 2026-06-08 (v219): Add liberty-enclosure test for dead stone detection
+
+**Root cause:** The bot's dead stone detection used only KataGo ownership percentage: a group was marked dead only if ≥65% of its stones fell on intersections with ≥0.70 KataGo ownership. At low visit counts (~50-200) KataGo's ownership signal for enclosed groups can be below the threshold (e.g. 60%) even when the group is geometrically enclosed with no escape. In game 170, a white group near H5 was genuinely enclosed in black territory but only scored 60% — below the 65% cutoff — so the bot failed to remove it, causing a scoring discrepancy of the entire group's territory.
+
+**Fix:** Add a liberty flood-fill enclosure test as a second dead-stone criterion alongside the ownership percentage check. For each opponent group, BFS-expand all empty intersections reachable from the group's liberties without crossing bot stones. If every reachable empty cell is inside bot territory (KataGo ownership ≥0.70), the group has no escape path and is declared dead regardless of ownership percentage. Either test alone is sufficient to flag a group as dead. The log now reports the reason: "ownership", "enclosed", or "ownership+enclosed".
+
+---
+
+## 2026-06-07 (v218): Fix bot scoring silent no-op on repeated opponent disputes
+
+**Root cause:** When an opponent disputes dead stone removal ("Board is restored"), IGS re-sends the "check your score with the score command" line, re-triggering the bot's scoring entry path. On the first entry `bot_done_sent=false`, so the 1500ms timer lambda (guarded by `!bot_done_sent`) fires correctly. However `bot_done_sent` and `bot_pass2_rendered` were only reset in `botEndGame()` — never on a mid-game "Board is restored" re-entry. On the second and subsequent rounds, the timer lambda returned immediately without sending stone removal commands or `done` to IGS, leaving the server waiting indefinitely and producing incorrect scoring.
+
+**Fix:** At the top of the "check your score" handler, if `bot_done_sent` is already true (indicating a re-entry after "Board is restored"), reset `bot_done_sent=false` and `bot_pass2_rendered=false` before setting `bot_scoring_pending=true`. This allows the 1500ms timer lambda to proceed normally on every re-negotiation round.
+
+---
+
+## 2026-06-06 (v217): Fix dead stone markers cleared by CMD15 during scoring phase
+
+**Root cause:** `displayNode()` unconditionally clears dead stone markers (`setDeadStones({})`) whenever the current node is not the final position. During the IGS scoring phase, any CMD15 line (e.g. the "Board is restored" re-scoring sequence) advances the game tree to a new node and triggers `displayNode` — which treats it as a non-final position and wipes the 6 correctly-set dead stone markers. The scoring result then shows territory without dead stone removal.
+
+**Fix:** Guard the dead stone clear in `displayNode` with `!is_scoring_mode` — if scoring is already active, do not clear the overlay when a non-final node is displayed. Dead stone state is preserved through the re-scoring sequence.
+
+---
+
+## 2026-06-06 (v216): Fix live moves skipped after inactive-slot replay completes
+
+**Root cause:** When a slot replays history via the inactive path (serialized `moves N` queue), the board window's `mv_counter` is set to `-1` by `clearMoveHistoryBeforeMovesCommand()` before the request is sent. After replay finishes and `loadSlot()` reloads the board from slot state, `mv_counter` was never reset — it stayed at `-1`. The `[q5Go]` live-move guard in `processMove()` skips any move with `move_number > 0` while `mv_counter == -1`, so all live moves arriving after replay were silently dropped. Result: the board and `board_state` were missing every move played after the initial history replay caught up.
+
+**Fix:** At the end of `loadSlot()`, if `mv_counter == -1` and `slot->replay_state == LIVE`, set `mv_counter = slot->server_move_count` to release the guard. This correctly initialises the counter to the replay endpoint so subsequent live moves are accepted without skipping.
+
+---
+
+## 2026-06-06 (v215): Fix CMD22 dead stone detection wrong for active slot
+
+**Root cause:** For the active (currently viewed) slot in `LIVE` state, CMD15 moves are routed to the board widget via `target_board = shared_board_window` — the board widget renders them correctly on screen. However `applyMoveToSlotBoard()` was never called for active-slot live moves, so `slot->board_state` (the flat array) was only current up to the end of the initial history replay (e.g. move 7 out of 284). When CMD22 territory data arrived at game end, the inactive-slot dead-stone detection checked `slot->board_state[pos]` against territory digit 4/5 — but `board_state` was 277 moves stale, identifying only a few stones as dead instead of the correct 19.
+
+**Fix:** In the active-slot LIVE path, call `applyMoveToSlotBoard(slot, move)` in addition to routing to the board widget, keeping `slot->board_state` current throughout the game so CMD22 dead-stone detection is accurate at game end.
+
+---
+
+## 2026-06-05 (v213): Fix corrupt CMD22 scoring — active slot history replay bypassed board_state
+
+**Root cause:** When the first observed game is the active (currently viewed) slot, CMD15 history moves routed through the fast active-board path (`current_game_context == active_slot_game_id`) which updated `move_history` and the board widget but **never wrote to `board_state`** and never advanced `replay_state` out of `WAITING_FOR_MOVES0`. The slot remained stuck in `WAITING_FOR_MOVES0` indefinitely with an empty `board_state`, so CMD22 territory scoring read all-empty intersections and marked the board incorrectly.
+
+**Fix:** The active-slot fast path now checks `slot->replay_state == GameSlot::LIVE` before routing directly to the board window. During `WAITING_FOR_MOVES0` or `REPLAYING`, even the active slot is routed through the per-slot state machine (via `goto active_slot_replaying`) so `board_state` is built correctly. When replay completes and the slot transitions to `LIVE`, `loadSlot()` redraws the board window with the complete position.
+
+---
+
+## 2026-06-05 (v212): Fix corrupt CMD22 scoring when multiple games observed in rapid succession
+
+**Root cause:** When the user observes several games in quick succession, all outstanding `moves N` history requests were dispatched simultaneously (all at once in the "Adding game to observation list" handler). IGS replies to each `moves N` with a stream of CMD15 moves tagged by game ID; when multiple streams are in-flight concurrently, the `current_game_context` tracking can route history moves to the wrong slot, causing some slots to remain forever in `WAITING_FOR_MOVES0` with their `board_state` never updated. At game end, CMD22 territory scoring reads the stale (empty/partial) `board_state` and marks the wrong intersections, producing a visually corrupt territory display.
+
+**Fix 1 — serialized `moves N` dispatch:** A new `moves_dispatch_queue` (ordered list) replaces the old set-based simultaneous flush. When "Adding game to observation list" arrives, all pending game IDs are enqueued but only the first is dispatched immediately. Each time a slot transitions to `LIVE` (replay complete), `dispatchNextMovesRequest()` is called to send the next `moves N`. Only `REPLAYING` state counts as "in-flight"; `WAITING_FOR_MOVES0` (request not yet sent) does not block dispatch. This ensures at most one history stream is in-flight at any time, eliminating the interleaving problem.
+
+**Fix 2 — active slot replay routed through slot state machine:** When the active (currently viewed) slot is in `WAITING_FOR_MOVES0` or `REPLAYING` state, CMD15 moves are now routed through the per-slot state machine (same path as inactive slots) instead of the fast active-board path. Previously the fast path bypassed `board_state` updates entirely for the active slot, leaving `board_state` empty for CMD22 scoring. The board window is refreshed via `loadSlot()` once replay completes and the slot transitions to `LIVE`.
+
+---
+
+## 2026-06-05 (v211): Keep completed games on dock for review/save; fix clock_timer ownership
+
+**Root cause (regression introduced in v207):** `untrackFinishedGame()` was evicting the `GameSlot` and removing the dock button immediately when a game ended. This prevented the user from reviewing or saving the completed game. The original intent of the v207 immediate eviction was only to prevent recycled-ID crashes — but that is already handled by the v206/v208/v209 guards at the CMD15/CMD67 recycle paths, which check `game_finished=true` and evict lazily when the ID is actually reused.
+
+**Fix:** `untrackFinishedGame()` now only: stops the slot's clock timer, calls `detachSlotClockTimer()` to prevent a dangling pointer in `BoardWindow`, removes from `observed_game_ids`, and updates the Games window highlighting. The `GameSlot` and dock button remain intact. Lazy eviction at ID-recycle time (v206/v208/v209 paths) is sufficient to prevent the recycled-ID crash.
+
+---
+
+## 2026-06-05 (v210): Fix dangling BoardWindow::clock_timer after slot eviction
+
+**Root cause:** `BoardWindow::clock_timer` is swapped to point at the active `GameSlot`'s `clock_timer` during `loadSlot()`. When `untrackFinishedGame()` (or any eviction path) calls `delete slot`, the slot's `clock_timer` is destroyed — but `BoardWindow::clock_timer` still holds the now-dangling pointer. The next time a new game starts and `loadSlot()` calls `disconnect(clock_timer, ...)`, it dereferences freed memory and crashes. This explains the step-E crash in the debug instrumentation.
+
+**Fix:** Added `own_clock_timer` member to `BoardWindow` (the timer created in the constructor, never deleted). Added `detachSlotClockTimer()` method that safely reverts `clock_timer` back to `own_clock_timer` when a slot is being evicted. Called before every `delete slot` in: `untrackFinishedGame()`, the v206 CMD67 recycle path, and the v208/v209 CMD15 playing-path evictions.
+
+---
+
+## 2026-06-05 (v209): Fix crash on duplicate CMD15 for new playing game
+
+**Root cause:** IGS sends CMD15 twice when a new nmatch/match is created — once immediately on acceptance, and again after the "Creating match [N]" server confirmation. The v208 eviction guard unconditionally deleted any pre-existing slot for the game ID, including the live playing slot that was correctly set up by the first CMD15. The second CMD15 evicted that slot (freeing its `GameSlot` and its `clock_timer`), then called `loadSlot` on a new fresh slot — but `BoardWindow::clock_timer` was still pointing to the just-freed timer. The `disconnect(clock_timer, ...)` call at line E of `loadSlot` then dereferenced a dangling pointer and crashed.
+
+**Fix:** In the eviction guard, if the existing slot is already a live playing slot (`is_playing=true`, `!game_finished`), treat the CMD15 as a duplicate confirmation and skip entirely via `goto skip_playing_board_creation`. Only evict observation slots and finished slots (genuine ID recycles).
+
+---
+
+## 2026-06-05 (v208): Fix crash when IGS recycles an observed game ID for a new playing game
+
+**Root cause:** When IGS assigned a new match to a game ID that the client was already observing (e.g. got2go accepted an nmatch from zmb413 and IGS reused game 76 which we were watching), the `we_are_playing` path in CMD15 found an existing **observation** slot for that ID with `game_finished=false`. The eviction guard at the time only removed slots where `game_finished==true`, so the live observation slot survived. `findSlot(game_id)` then returned non-null, suppressing new slot creation, and the code fell through to `loadSlot` on the stale observation slot — which called `setDeadStones` on an inconsistent board and crashed.
+
+**Fix:** In the `we_are_playing` / `pending_resume_player.isEmpty()` path, evict **any** pre-existing slot for the game ID unconditionally (whether it is a finished slot, an active observation slot, or any other state). When `we_are_playing=true`, IGS has told us this is our game — no prior slot for that ID is valid. Also clears `observed_game_ids` for the evicted ID so the observation tracking stays consistent.
+
+---
+
+## 2026-06-05 (v207): Fix segfault on game-ID recycle — evict finished slot in untrackFinishedGame
+
+**Root cause:** The v205/v206 guards tried to detect the stale-vs-recycle distinction at CMD15/CMD67 arrival time, but this was fundamentally fragile — the `match` protocol (as opposed to `nmatch`) can bring a new CMD15 with valid byoyomi values before CMD67 arrives, bypassing both guards. The underlying problem was that finished slots were never removed from `game_slots` — they sat there with `game_finished=true` until something evicted them, creating a window where any incoming CMD15 for a recycled ID could call `loadSlot`/`setDeadStones` on a dead slot and crash.
+
+**Fix:** Evict the finished `GameSlot` immediately inside `untrackFinishedGame()` — the earliest reliable point where we know the game is truly over. This removes the slot from `game_slots`, removes its dock button, and resets `active_slot_game_id`. Any subsequent CMD15/CMD67 for a recycled ID finds no slot and creates a fresh one cleanly. The v205/v206 guards remain as a secondary safety net.
+
+---
+
+## 2026-06-02 (v206): Fix new game slot not created when IGS recycles a finished game ID
+
+**Root cause:** The v205 `goto skip_playing_board_creation` guard correctly blocked stale post-game CMD15 lines from recreating a just-finished slot, but it was too broad — it also blocked the legitimate case where IGS immediately recycles the same game ID for the very next game (observed repeatedly with Blanks: game 40 ended then game 40 restarted, game 49 three times, etc). The new game's CMD67 hit the guard, found the finished slot, and skipped slot creation entirely — leaving the bot playing into the old board.
+
+**Fix:** The two cases are now distinguished by `white_byo_moves == -1 || black_byo_moves == -1` — IGS only sends `-1` byoyomi in the stale post-game CMD15 cleanup line, never in a real CMD67. Stale CMD15 → `goto skip`. Real CMD67 recycling a finished ID → evict the finished slot first, then proceed with fresh slot creation.
+
+---
+
+## 2026-06-01 (v205): Fix crash after time forfeit — stale CMD15 triggers board recreation
+
+**Root cause:** When an opponent runs out of time, IGS sends a scoring-phase cleanup CMD15 (`"15 Game N I: got2go (0 60 -1) vs Blanks (0 60 -1)"`) a few milliseconds after the `"9 Removed game file"` game-over message. By this point `slot->game_finished = true` and `untrackFinishedGame` has already run. However, the CMD15 handler's `we_are_playing` check sees `got2go` in the player list and enters the board-creation path, calling `loadSlot` on the just-finished slot — which calls `board_widget->setDeadStones` on an inconsistent board state, crashing.
+
+**Fix:** Added a `game_finished` guard at the top of the dock-mode `if (!board_exists)` branch. If a finished slot already exists for the game_id, the stale CMD15 is skipped via `goto skip_playing_board_creation` without touching the board widget.
+
+---
+
+## 2026-05-31 (v204): Fix kibitz routed to wrong game slot (bot game)
+
+**Root cause:** When a kibitz header `"11 Kibitz user [rank]: Game X vs Y [N]"` arrived, the game ID was parsed into `pending_kibitz_game`. But the continuation line routing used `active_slot_game_id` instead — so when the bot game became active (slot 443), all subsequent kibitzes for the observed game (slot 326) were incorrectly displayed in the bot game's comment pane.
+
+**Fix 1 — Correct routing in first kibitz block:** Changed the docked-mode routing to use `pending_kibitz_game` as the target slot ID (falling back to `active_slot_game_id` only when no game context is known). Comments are stored in the correct slot and only displayed immediately if that slot is currently visible.
+
+**Fix 2 — Rebuild comments from authoritative list on slot switch:** `loadSlot` previously restored from a `comment_html` snapshot taken when the slot was last active — missing any kibitzes appended while the slot was in the background. Changed to always rebuild from the `slot->comments` list, which is always up to date regardless of which slot is displayed.
+
+---
+
+## 2026-05-31 (v203): Fix CMD21 unintended observations; fix dock button ranks showing "?"
+
+**Bug 1 — Unintended game observations from CMD21:**
+- CMD21 `"21 {Game N: X vs Y @ Move M}"` is a server-wide broadcast announcing any game resumption; it was unconditionally calling `observeGame()` for every such broadcast, auto-subscribing to random games
+- Fix: added `findSlot(game_id)` guard — only call `observeGame()` if we already have a live slot for that game (i.e. we were already observing it before it adjourned)
+
+**Bug 2 — Dock button ranks showing "?" for all games:**
+- `addGame()` is called at observe/play time, but the players list (CMD5/who) may not have loaded yet — `findPlayerRank()` returns "?" at that moment
+- Fix: after the players list finishes loading (`waiting_for_players = false`), iterate all live game slots, look up ranks from the now-populated players list, update `slot->black_rank`/`white_rank`, and call `dock->updateGameRanks()` to refresh the button labels
+
+---
+
+## 2026-05-31 (v202): toggle open true only sent when bot mode is enabled
+
+**Change:** `toggle open true` was unconditionally sent at login, overriding whatever open/closed state the user had last set on the IGS server. IGS remembers this preference server-side, so forcing it open on every login was wrong for human-player sessions
+- Removed the unconditional `toggle open true` from the login sequence
+- The `toggle open true` in the bot-mode activation path (when bot mode is explicitly enabled) is kept — the bot needs to be open to receive challenges
+
+---
+
+## 2026-05-31 (v201): Fix resume dock button not appearing / slot not becoming active
+
+**Root cause:** `active_slot_game_id` was updated to the new game ID before `switchActiveGame(game_id)` was called. `switchActiveGame` checks `if (game_id == active_slot_game_id) return` at entry — since the IDs already matched, it returned immediately without calling `loadSlot`, `dock->setActiveGame`, or raising the window. The dock button was added but never highlighted; the board was never loaded
+
+**Fix:** Remove the premature `active_slot_game_id = game_id` assignment. `switchActiveGame` now sees `active_slot_game_id` as the old game ID, executes the full switch (snapshot old slot, load new slot, highlight dock button, raise window). `active_slot_game_id` is updated inside `switchActiveGame` as normal. Dock `addGame` is called before `switchActiveGame` so the button exists when `setActiveGame` fires
+
+---
+
+## 2026-05-31 (v200): Fix resume — use existing board state, restart bot from move history
+
+**Root cause of v199 failure:** `moves N` sent to IGS for a playing game is silently dropped — IGS only honours it for observed games. No CMD15 history lines ever arrived, so `replay_state` was stuck in `WAITING_FOR_MOVES0` permanently, blocking all bot genmove triggers including the first live opponent move after resume
+
+**Fix: Don't request history from server — it's already in the slot**
+- `slot->board_cells` and `slot->move_history` are fully intact from before the adjournment
+- Set `replay_state = LIVE` immediately on resume — no server replay needed
+- `switchActiveGame` + `loadSlot` renders the existing board state into the shared window
+
+**Fix: Restart bot by replaying move history into KataGo via GTP**
+- Send `clear_board`, `komi`, `set_free_handicap` (if applicable) to reset the engine
+- Replay all `move_history` entries as GTP `play` commands to reconstruct engine state
+- If `current_player == bot_color`, immediately request `genmove` — bot was to move next
+- If waiting for opponent, log and wait for the next live move to trigger normal genmove flow
+
+---
+
+## 2026-05-31 (v199): Fix resume board display and bot genmove storm during history replay
+
+**Bug fix: Resumed game board not visible — active slot not switched on resume**
+- Root cause: `switchActiveGame()` was never called after slot reassignment. The shared board window remained on whatever slot was previously active; the resumed slot existed but was not displayed and could not be clicked in the dock
+- Fix: Call `switchActiveGame(game_id)` + `setPlayingMode(true)` immediately after slot reassignment in the CMD67 resume block, matching the same sequence used for new playing games
+
+**Bug fix: Bot sent genmove for every history move replayed on resume**
+- Root cause: The CMD15 bot trigger (`onBotOpponentMove`) had no guard for replay state. During `WAITING_FOR_MOVES0`/`REPLAYING`, all history moves routed through the normal live-move bot path, sending a `genmove` for each replayed opponent move — 9 consecutive genmoves in v198 test
+- Fix: Check `bslot->replay_state` before calling `onBotOpponentMove`. Suppress the entire bot trigger block while the slot is in `WAITING_FOR_MOVES0` or `REPLAYING` state. The bot will respond normally to the first live opponent move after replay transitions to `LIVE`
+
+---
+
+## 2026-05-31 (v198): Fix resume move history — send "moves N" directly, not "observe N"
+
+**Root cause of v197 failure:** On resume the bot and game routing worked correctly (slot reassigned, bot responded to moves), but the board position was not restored. The resume block sent `observe N` + deferred `moves N`. IGS rejected the observe with `"5 You cannot observe your own game."` — meaning the `"Adding game to observation list"` confirmation never arrived, so `games_pending_moves_request` was never drained and `moves N` was never sent
+- Confirmed in v197 log: `5 You cannot observe your own game.` immediately after the resume
+
+**Fix:** For a playing game resume, send `moves N` directly (same as the normal playing-game history path). No `observe` needed — the slot is already playing. `replay_state` set to `WAITING_FOR_MOVES0` before the send so the history handler clears the board and replays from move 1
+
+---
+
+## 2026-05-31 (v197): Fix adjourned game resume — intercept at CMD67, not "Observing game"
+
+**Root cause of v195/v196 failure:** CMD67 (`67 N ...`) fires *before* `"9 Observing game N"` and creates a fresh playing slot for the resumed game ID. By the time `"9 Observing game N"` arrived, `findSlot(N)` returned the newly-created slot, bypassing the adjourned-slot search entirely
+- Observed in v196 diagnostics: `OBSERVE-MATCH: game=66 findSlot=FOUND` — slot 66 already existed because CMD67 had just created it
+
+**Fix:** Resume interception moved to the CMD67 playing-slot creation path (dock mode). When `pending_resume_player` is set:
+1. Search `game_slots` for an adjourned slot matching `adjourned_player == pending_resume_player`
+2. If found: reassign `game_id`, restore player names, clear `adjourned_player`/`pending_resume_player`, restart clock, set `replay_state = WAITING_FOR_MOVES0`, update dock button/`active_slot_game_id`/`bot_game_id`, send `observe N` with deferred `moves N`
+3. Skip the normal new-slot creation entirely — existing slot with board position, history, and comments is reused
+
+**Diagnostics kept:** `>>> CMD48 ADJOURN`, `>>> ADJOURN RESTORE`, `>>> ADJOURN RESUME (CMD67)`, `>>> OBSERVE-MATCH` remain always-on for now
+
+---
+
+## 2026-05-31 (v196): Add always-on diagnostics to adjourn/resume path for debugging
+
+**Diagnostic: CMD48, ADJOURN RESTORE, ADJOURN RESUME, and OBSERVE-MATCH debug lines now always printed**
+- Previously guarded by `suppress_server_console` — invisible during normal operation, making the resume path impossible to trace
+- `>>> CMD48 ADJOURN: Game N adjourned by X` — confirms CMD48 fired and adjourned_player was set
+- `>>> ADJOURN RESTORE: X reconnected` — confirms "restored/restarted your game" parser fired
+- `>>> OBSERVE-MATCH: game=N w=X b=Y findSlot=FOUND/null pending_resume=X` — shows state at the decision point in the "Observing game" handler
+- `>>> ADJOURN RESUME: Game N resumed as game M` — confirms slot reassignment executed
+
+---
+
+## 2026-05-31 (v195): Enforce slot identity contract on adjourned game resumption
+
+**Refactor: Game ID is the only mutable field during adjourn/resume — all other slot state is preserved**
+- On resume, only `game_id` is updated; board position, move history, comments, and clocks survive unchanged
+- Player names are restored from the authoritative IGS `"9 Observing game N (white vs. black) :"` line (not from potentially-corrupted slot state left by a recycled ID)
+- Dock button: old ID removed, new ID registered atomically in the same block
+- `active_slot_game_id` and `bot_game_id` updated to new ID in the same pass
+
+---
+
+## 2026-05-31 (v194): Fix adjourned game resumption — player name pollution + board restore
+
+**Bug fix: Player names overwritten on adjourned slot when IGS immediately recycles its game ID**
+- Root cause: After CMD48, IGS can reassign the same game ID to a completely different game within seconds (before the disconnected player reconnects). The `"9 Observing game N (latke vs. ssmu) :"` for the recycled ID passed the `adjourned_player.isEmpty()` guard in v193 and overwrote white/black player names on the still-adjourned slot. When the original player then reconnected under a new game ID (e.g. 76), the player-name match in the adjourned slot lookup failed because the names were now latke/ssmu
+- Fix: Guard in the `"9 Observing game"` handler now skips the name-update path entirely if `adjourned_player` is set on the slot — the slot belongs to the original game until explicitly resumed or removed
+
+**Bug fix: Adjourned slot not found for resumption when ID was recycled**
+- Root cause: Even with the name-pollution guard, if the slot ID was recycled first, `findSlot(new_game_id)` returns nothing and the player-name match fails because names were already corrupted before the guard was added
+- Fix: Two-path lookup for adjourned slot: (a) player names still intact — match on white/black, (b) fallback — match on `adjourned_player` field against `pending_resume_player` (set when `"9 X has restored/restarted your game"` arrives). Path (b) survives name corruption
+
+**Enhancement: Parse `"9 X has restored your old game."` / `"9 X has restarted your game."` as reconnect signal**
+- Set `pending_resume_player` to X; next `"9 Observing game N"` uses it as a fallback identity for the slot reassignment
+
+**Enhancement: Restore board position after resumption**
+- On successful slot reassignment: send `observe N` + deferred `moves N` (via `games_pending_moves_request`) so the server replays the full game history into the existing slot. Player names and `bot_game_id` are also corrected to the new game ID
+
+---
+
+## 2026-05-31 (v193): Handle adjourned game resumption with reassigned game ID
+
+**Enhancement: Adjourned game slot survives reconnect even if IGS assigns a new game ID**
+- When a disconnected player reconnects within the 5-minute window, IGS may resume the game under a different game ID than the one that was adjourned
+- Previously: the new game ID would not match any slot, causing `observeGame()` to create a duplicate slot or silently do nothing
+- Fix: When `"9 Observing game N (white vs. black) :"` arrives for an unknown game ID, the slot list is searched for an adjourned (unfinished + `adjourned_player` set) slot whose white/black player names match. If found, the slot's `game_id` is updated to N, the dock button is re-registered under the new ID, `adjourned_player` is cleared, the clock is restarted, and "Opponent reconnected — game resumed." is appended to the comments panel
+- `active_slot_game_id` is also updated if the adjourned slot was the active slot
+
+---
+
+## 2026-05-31 (v192): Fix CMD48 adjourn — suspend on disconnect, resign on removal
+
+**Bug fix: Adjourned game incorrectly marked finished immediately on disconnect (dock mode)**
+- Root cause: v191 CMD48 handler set `game_finished=true` immediately when IGS sent `"48 Game N has been adjourned by <player>"`. This was wrong because the disconnected player has a 5-minute window to reconnect and resume the game. Premature `game_finished=true` caused the slot to be evicted, allowing game ID reuse to overwrite player names — exactly the bug that was being fixed
+- Correct IGS behaviour: CMD48 suspends the game; `"*SYSTEM*: Disconnected game with <player> was removed."` is the definitive end signal if the player does not reconnect within 5 minutes, at which point IGS awards the opponent a win by resign
+- Fix: Two-stage handling:
+  - CMD48 (`"48 Game N has been adjourned by <player>"`) — stops clock, records `adjourned_player` on the slot, posts "Game adjourned — waiting for opponent to reconnect..." to comments panel. `game_finished` remains false; slot stays active for potential resumption
+  - Disconnect-removed (`"*SYSTEM*: Disconnected game with X was removed."`) — finds slot by player name, computes result: `B+R` if white dropped, `W+R` if black dropped, calls `updateGameResult` and `untrackFinishedGame`. Slot is now protected from game ID reuse
+- Non-dock mode: same B+R/W+R result logic applied to board_windows lookup
+- `adjourned_player` field added to `GameSlot` (full clean rebuild required)
+
+---
+
+## 2026-05-31 (v191): Fix handicap SGF coordinate swap
+
+**Bug fix: Handicap stones written with swapped coordinates in generated SGF**
+- Root cause: `generateSGF()` encoded `AB[]` handicap setup stones using `col='a'+pos.second`, `row='a'+pos.first` — but `getHandicapPositions()` returns `QPair<col,row>` (first=col, second=row). For symmetric corner positions the swap was invisible, but asymmetric side points (D10, Q10 in 6-stone handicap; top/bottom in 8-stone) were written to wrong coordinates. E.g. D10 was written as K4 (`[jd]` instead of `[dj]`) and Q10 as K16 (`[jp]` instead of `[pj]`)
+- Affected handicap counts: 6 (side points), 7 (side points + center), 8 (all sides), 9 (all sides + center). Counts 2-5 use only corner points which are symmetric and appeared correct
+- Fix: swapped to `col='a'+pos.first`, `row='a'+pos.second` to match the pair convention
+- Impact: edit board launched from a 6+ stone handicap game was missing the side handicap stones; saved SGF had incorrect handicap stone placement
+
+---
+
+## 2026-05-30 (v190): Fix move history never arriving due to premature "moves N" send
+
+**Bug fix: Complete move history silently dropped when observing a game (dock mode)**
+- Root cause: `observe N` and `moves N` were sent back-to-back in the same Qt event loop tick. IGS requires the observation to be fully registered server-side before it will honour a `moves N` request. When both commands arrived at IGS in the same burst, IGS silently dropped `moves N` — producing no response. The slot remained stuck in `WAITING_FOR_MOVES0` forever, buffering live moves but never receiving the history reply. Result: SGF saved with only the live moves seen after joining (e.g. 56 moves instead of 766 for a long game), with corrupted board position and wrong scoring
+- Diagnosed from session log: `[SLOT] game 69 moves N sent -> WAITING_FOR_MOVES0` appeared **before** `"9 Adding game to observation list."` — proving the moves request was sent before IGS confirmed the observation
+- Fix: `moves N` is now deferred into a `games_pending_moves_request` set. When IGS sends `"9 Adding game to observation list."` confirming the observation is registered, all pending `moves N` commands are sent. This guarantees IGS honours the request
+- Confirmed in session log for other games (25, 67, 32, 131): their `moves N` was already sent after the confirmation and worked correctly — only games where the confirmation arrived after the send were affected
+
+---
+
+## 2026-05-30 (v189): Game result duplicate fix + catch-up move buffer fix
+
+**Bug fix: Game result duplicated in comments panel after slot switch (dock mode)**
+- When switching away from a finished game slot then switching back, `loadSlot` restored the HTML snapshot (which already contained the "Game finished:" line) and then called `updateGameResult` again — appending a second copy
+- Fix: `loadSlot` now skips the `updateGameResult` call if "Game finished:" is already present in the restored comment panel text
+
+**Bug fix: Catch-up moves lost when joining a nearly-finished game (dock mode)**
+- Root cause: When IGS floods live moves before the `moves N` history reply, those moves were discarded in `WAITING_FOR_MOVES0` state — only `catchup_high` was tracked. For a 310-move game joined near the end, IGS might flood moves 293-310 before the history, then deliver history only up to move 292. With `catchup_high=310` but history ending at 292, the slot was stuck in REPLAYING forever, never transitioning to LIVE — leaving the board frozen at move 292 with 18 moves missing
+- Fix: Pre-history catch-up moves are now buffered in `pending_catchup_moves` instead of discarded. After history replay reaches its natural end, buffered moves with `move_number > last_history_move` are sorted and drained in order, filling the gap
+- Confirmed against reference SGF: game 335 (guyome vs takasi2007, 310 moves) now replays completely with correct final position and W+2.5 score
+
+**Bug fix: Object layout mismatch segfault on fresh start**
+- Adding `pending_catchup_moves` (QList<GameMove>) to GameSlot changed its memory layout; the previous partial rebuild left board_window.o and xgospel2_fixed.o compiled against the old layout, causing a segfault in `loadSlot` at the `time_control` QString assignment
+- Fix: full `make clean && make` required after any GameSlot member additions; documented as mandatory procedure
+
+---
+
+## 2026-05-29 (v188): Three-clock bar + critical move-history replay fix
+
+**New: Three-clock bar (Local / GMT / Server)**
+- Clock bar added between the status label and the console, ticking every second from startup
+- Local and GMT clocks derived from the system clock
+- Server clock seeded from UTC+9 (IGS joyjoy.net = JST) on login; self-corrects if IGS sends `9 The current time (GMT) is:` during a session
+- Green-on-black monospace styling with border, matching console color scheme
+
+**Bug fix: Move history replay truncated when joining a game mid-stream (dock mode)**
+- Root cause: `observeGame` set `replay_state = REPLAYING` immediately. When IGS sent the live catch-up move (e.g. move 101) before the `moves N` history reply, the REPLAYING→LIVE threshold (`move_number > catchup_high`) fired instantly because `catchup_high` was still `-1`. The slot transitioned to LIVE before the history arrived, so all 100+ history moves were dropped as "duplicates" and the board record started from the catch-up move — producing a truncated SGF with the wrong first move
+- Fix: `observeGame` now sets `replay_state = WAITING_FOR_MOVES0`. Pre-history live catch-up moves are tracked into `catchup_high`. When the `moves N` reply arrives (move 0), the state transitions to REPLAYING and the full history is replayed cleanly. REPLAYING→LIVE transition threshold changed from `>` to `>=` so the last replay move correctly completes the transition
+- Confirmed against reference SGF from independent client: `B[qd]` (R16) is now correctly the first recorded move
+
+**Bug fix: Finished BoardWindow could receive moves from a recycled game ID (non-dock mode)**
+- The CMD15 board-lookup loop did not check `!board->isFinished()`, so a finished board still open for review could be found and have moves from a new game (same recycled ID) routed into it
+- Fix: added `!board->isFinished()` guard to the board-lookup loop
+
+---
+
+## 2026-05-26 (v187): Shout window, BR column sort fix, player dialog rank title fix
+
+**New: Shout (CMD21 broadcast) window**
+- Dedicated Shout window shows all IGS broadcast messages with clickable sender names
+- Sender names open the Player Stats dialog (same as clicking a name anywhere else)
+- Send bar at bottom lets you broadcast your own shout to IGS; own message echoed locally since IGS does not reflect it back
+- Shout messages are cached from login regardless of whether the window is open — open via `Windows > Show Shouts` to read accumulated messages
+- New `Windows > Show Shouts` menu item to open/raise the Shout window
+- New preference in Application Settings tab: "Auto-launch Shout window on login" (default off) — when on, window opens minimized at login
+
+**Bug fix: Games list BR column sort was broken**
+- `FixedRankSortProxyModel::lessThan()` was checking `column == 2` (hardcoded) before using the UserRole sort key, so every other column (including BR at column 3) fell back to default lexicographic sort, clustering all rank strings around "10kyu"
+- Fixed: UserRole sort key is now used for any column when both sides have a key, regardless of column index
+
+**Bug fix: Player Stats dialog title showed `[NR]` even when rank was known**
+- Title was set once at construction from the initial (empty) rank string and never updated
+- Fixed: `updateStatsData()` now calls `setWindowTitle` when a non-empty rank arrives from the server
+
+---
+
 ## 2026-05-27 (v186): Fix new game not launching board when IGS recycles a finished game ID
 
 **Bug fix: Playing or observed game failed to create a board when game ID was reused**
