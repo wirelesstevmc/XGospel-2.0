@@ -59,8 +59,8 @@
 #include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v245";
-const QString XGOSPEL_BUILD_DATE = "2026-06-13";
+const QString XGOSPEL_VERSION = "v252";
+const QString XGOSPEL_BUILD_DATE = "2026-06-20";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -3119,6 +3119,7 @@ private:
  BoardWindow* territory_board;
  GameSlot*    territory_slot;   // non-null when territory data is for an inactive docked slot
  QString territory_player_name; // Track first player name from Command 22 to match board
+ int cmd22_first_captures;     // Prisoner count from CMD22 first header line (first player)
  
  // TCP buffering variables (from q5Go)
  char *saved_data;
@@ -3261,7 +3262,8 @@ public:
  territory_board = nullptr;
  territory_slot  = nullptr;
  territory_player_name = "";
- 
+ cmd22_first_captures = 0;
+
  // Initialize TCP buffering
  saved_data = nullptr;
  len_saved_data = 0;
@@ -6220,19 +6222,22 @@ private slots:
  // Territory encoding: 0=black stone, 1=white stone, 4=white territory, 5=black territory
 
  // Match Command 22 header: "22 PlayerName Rank Captures Time..."
- QRegExp cmd22_header_re("^22\\s+(\\w+)\\s+"); // Capture player name
+ // Format: 22 <name> <rank> <captures> <rating> <wins> T <komi> <handicap>
+ QRegExp cmd22_header_re("^22\\s+(\\w+)\\s+\\S+\\s+(\\d+)\\s+"); // name + captures
  QRegExp cmd22_row_re("^22\\s+(\\d+):\\s+([012345]+)$"); // Match "22 0: 0550501..."
 
  if (cmd22_header_re.indexIn(line) != -1) {
  // This is one of the two header lines
  QString player_name = cmd22_header_re.cap(1);
+ int player_captures = cmd22_header_re.cap(2).toInt();
 
  if (!receiving_territory_data) {
- // First header line - begin territory data reception
+ // First header line — begin territory data reception, save capture count
  receiving_territory_data = true;
  territory_data_column = 0;
- territory_player_name = player_name; // Save first player name
- if (!this->suppress_server_console) output_console->append(QString(">>> CMD22: Territory data beginning for player: %1").arg(player_name));
+ territory_player_name = player_name;
+ cmd22_first_captures  = player_captures;
+ if (!this->suppress_server_console) output_console->append(QString(">>> CMD22: Territory data beginning for player: %1 (captures=%2)").arg(player_name).arg(player_captures));
 
  // Find the board window matching this player name
  territory_board = nullptr;
@@ -6276,6 +6281,42 @@ private slots:
  if (!territory_board && !territory_slot) {
  if (!this->suppress_server_console) output_console->append(QString(">>> CMD22 WARNING: Could not find board matching player %1").arg(player_name));
  }
+ } else {
+     // Second header line — both capture counts now known; update the board.
+     // The CMD22 header prisoner counts are authoritative (server-tracked).
+     // They replace any replay-counted white_captures/black_captures which
+     // can be inflated by scoring-phase removals replayed as regular moves.
+     if (territory_board) {
+         // Active slot — update board window directly.
+         int white_caps, black_caps;
+         if (territory_board->getWhitePlayer() == territory_player_name) {
+             white_caps = cmd22_first_captures;
+             black_caps = player_captures;
+         } else {
+             white_caps = player_captures;
+             black_caps = cmd22_first_captures;
+         }
+         territory_board->updateCaptures(white_caps, black_caps);
+         if (!this->suppress_server_console) output_console->append(
+             QString(">>> CMD22: Set captures (active) W=%1 B=%2 from server header").arg(white_caps).arg(black_caps));
+     } else if (territory_slot) {
+         // Inactive slot — write CMD22 header captures into the slot directly.
+         // The counting result handler reads slot->white_captures for its prisoner
+         // calculation, so setting them here ensures the authoritative server values
+         // are used instead of the replay-counted values.
+         int white_caps, black_caps;
+         if (territory_slot->white_player == territory_player_name) {
+             white_caps = cmd22_first_captures;
+             black_caps = player_captures;
+         } else {
+             white_caps = player_captures;
+             black_caps = cmd22_first_captures;
+         }
+         territory_slot->white_captures = white_caps;
+         territory_slot->black_captures = black_caps;
+         if (!this->suppress_server_console) output_console->append(
+             QString(">>> CMD22: Set captures (inactive) W=%1 B=%2 from server header").arg(white_caps).arg(black_caps));
+     }
  }
  } else if (cmd22_row_re.indexIn(line) != -1 && receiving_territory_data) {
  // This is a territory row - process it
@@ -9795,56 +9836,8 @@ private slots:
              // reachable empty cell has ALL its non-empty neighbours being bot stones
              // or opponent stones (no "unknown" adjacency), the group is enclosed.
              bool dead_by_geometry = false;
-             if (!dead_by_enclosure) {
-                 QSet<QPair<int,int>> geo_visited;
-                 QQueue<QPair<int,int>> geo_queue;
-                 bool geo_escaped = false;
-
-                 // Seed with liberties of this group.
-                 for (const auto &s : group) {
-                     for (int d = 0; d < 4; ++d) {
-                         int nx = s.first  + dx[d];
-                         int ny = s.second + dy[d];
-                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
-                         QPair<int,int> nb(nx, ny);
-                         if (geo_visited.contains(nb)) continue;
-                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
-                         geo_visited.insert(nb);
-                         geo_queue.enqueue(nb);
-                     }
-                 }
-
-                 // BFS: expand through empty cells, blocked by bot stones.
-                 // Escape = reach an empty cell adjacent to a bot stone that is on
-                 // the convex hull — i.e. not all 4 neighbours are bot/opponent stones.
-                 // Simpler escape criterion: any neighbour that is EMPTY and not yet
-                 // in our visited set after we fully drain the queue means the region
-                 // is open (but that's always false by BFS). Instead: escape if the
-                 // region grows beyond a reasonable pocket size (heuristic cap: 40
-                 // empty cells — a genuine pocket rarely exceeds this in practice).
-                 while (!geo_queue.isEmpty() && !geo_escaped) {
-                     auto cur = geo_queue.dequeue();
-                     if (geo_visited.size() > 40) { geo_escaped = true; break; }
-                     for (int d = 0; d < 4; ++d) {
-                         int nx = cur.first  + dx[d];
-                         int ny = cur.second + dy[d];
-                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
-                         QPair<int,int> nb(nx, ny);
-                         if (geo_visited.contains(nb)) continue;
-                         StoneColor nc = board->getStoneAt(nx, ny);
-                         if (nc == bot_color) continue;  // bot stone = wall
-                         if (nc == EMPTY) {
-                             geo_visited.insert(nb);
-                             geo_queue.enqueue(nb);
-                         }
-                         // opponent stones: don't enqueue (treat as part of pocket wall)
-                     }
-                 }
-                 dead_by_geometry = !geo_escaped;
-                 if (dead_by_geometry)
-                     output_console->append(QString("[BOT] Group of %1 stones: geometric enclosure confirmed (%2 empty cells in pocket)")
-                         .arg(group.size()).arg(geo_visited.size()));
-             }
+             // Geometric enclosure test disabled — false positives on live groups with eyes.
+             // The liberty enclosure test (dead_by_enclosure) is sufficient for now.
 
              bool dead = dead_by_ownership || dead_by_enclosure || dead_by_geometry;
              QString reason = dead_by_ownership ? (dead_by_enclosure ? "ownership+enclosed" : "ownership")

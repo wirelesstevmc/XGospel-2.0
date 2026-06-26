@@ -2040,8 +2040,9 @@ void BoardWindow::loadSlot(GameSlot *slot)
     // --- clock: disconnect previous timer from display refresh, connect new slot's timer ---
     // Do NOT stop the previous timer — if it belongs to another slot it must keep ticking.
     qDebug() << "[LOADSLOT-DEBUG] E: about to swap clock_timer";
-    disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
-    clock_timer = slot->clock_timer;
+    if (clock_timer && clock_timer != own_clock_timer)
+        disconnect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
+    clock_timer = (slot->clock_timer) ? slot->clock_timer : own_clock_timer;
     connect(clock_timer, &QTimer::timeout, this, &BoardWindow::updateClockDisplay);
     qDebug() << "[LOADSLOT-DEBUG] F: clock_timer swapped";
 
@@ -3117,8 +3118,12 @@ void BoardWindow::updateLabels() {
  // Subtract dead white stones from count (q5Go only counts living stones)
  white_stones -= dead_white_stones;
 
- // Total captures = prisoners taken during play + dead stones marked during scoring
- int white_total_captures = white_captures + dead_black_stones;
+ // When CMD22 data is present, white_captures was set directly from the server
+ // header and already includes dead stones — do not add dead_black_stones again.
+ // Only add dead stones when falling back to client flood-fill (no CMD22).
+ int white_total_captures = territory_ownership.isEmpty()
+     ? white_captures + dead_black_stones
+     : white_captures;
  double white_total = white_territory + white_total_captures + komi;
  white_captures_label->setText(QString("Stones: %1\nCap: %2\nTerr: %3\nTotal: %4")
  .arg(white_stones)
@@ -3167,8 +3172,12 @@ void BoardWindow::updateLabels() {
  // Subtract dead black stones from count (q5Go only counts living stones)
  black_stones -= dead_black_stones;
 
- // Total captures = prisoners taken during play + dead stones marked during scoring
- int black_total_captures = black_captures + dead_white_stones;
+ // When CMD22 data is present, black_captures was set directly from the server
+ // header and already includes dead stones — do not add dead_white_stones again.
+ // Only add dead stones when falling back to client flood-fill (no CMD22).
+ int black_total_captures = territory_ownership.isEmpty()
+     ? black_captures + dead_white_stones
+     : black_captures;
  double black_total = black_territory + black_total_captures;
  black_captures_label->setText(QString("Stones: %1\nCap: %2\nTerr: %3\nTotal: %4")
  .arg(black_stones)
@@ -3493,12 +3502,11 @@ void BoardWindow::updateGameResult(const QString &result) {
 
  QString result_message;
  if (is_scored_result) {
- // Use the pre-computed prisoner totals (set by CMD9 or calculateScore()).
- // These already include dead stones as prisoners and are authoritative.
- // Re-counting from dead_stones here is unreliable for inactive slots because
- // dead_stones may not be fully synced at the moment updateGameResult() is called.
- double white_total = white_territory + white_prisoners + komi;
- double black_total = black_territory + black_prisoners;
+ // Use white_captures/black_captures — set from CMD22 header by updateCaptures()
+ // and matching the stats panel exactly. white_prisoners is not updated after
+ // enterScoringModeForResult() so it can be stale; white_captures is authoritative.
+ double white_total = white_territory + white_captures + komi;
+ double black_total = black_territory + black_captures;
 
  result_message = QString("Game finished: %1\nW %2 B %3")
  .arg(standard_result)
@@ -5554,12 +5562,12 @@ void BoardWindow::displayNode(GameNode* node) {
  board_widget->setTerritoryMap(node->getTerritory());
  board_widget->setScoringMode(true);
  } else {
- bool is_final_position = (node->moveNumber() == total_moves);
+ // Use leaf-node test: immune to getTotalMoves() being wrong due to game ID recycling.
+ bool is_final_position = (node->childCount() == 0) || (node->moveNumber() == total_moves);
 
- if (!is_final_position && !is_scoring_mode) {
- // Clear territory markers when viewing historical positions without scored data.
- // Do NOT clear if is_scoring_mode: a CMD15 during the scoring phase (e.g. IGS
- // "board restored" re-scoring) would wipe dead stone markers that were already set.
+ if (!is_final_position) {
+ // Clear all scoring markers (territory, dead stones, dame) when viewing historical
+ // positions — these only apply at the final board position.
  board_widget->setTerritoryMap(QMap<QPair<int, int>, StoneColor>());
  board_widget->setDeadStones(QSet<QPair<int, int>>());
  board_widget->setScoringMode(false);

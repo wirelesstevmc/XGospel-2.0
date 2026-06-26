@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 2026-06-24 (v252r): Fix CMD22 capture counts for inactive slots — observed game scoring fully aligned with q5go
+
+**Root cause:** When CMD22 arrives for a game that is not the currently active slot (user is viewing a different game), the territory data is buffered in the slot rather than the shared board window. The v249 fix that reads authoritative capture counts from the CMD22 header only applied the `updateCaptures()` call when `territory_board` (active path) was set — the `territory_slot` (inactive path) branch was missing. Result: inactive slot games retained replay-counted captures which were inflated by scoring-phase stone removals being replayed as regular moves.
+
+**Fix (v252):** Added `else if (territory_slot)` branch in the CMD22 second-header handler. Writes CMD22 header capture counts directly into `slot->white_captures` / `slot->black_captures`. The counting result handler already reads `slot->white_captures` for its prisoner calculation, so no further changes needed downstream.
+
+**All three capture fixes together (v249–v252):**
+- v249: CMD22 header regex expanded to extract prisoner count (field 3, e.g. `22 maiakari 1k  17 ...`). On second header line, `updateCaptures()` called with server values — replaces inflated replay-counted captures for active slot.
+- v250: `updateLabels()` stops adding `dead_black_stones` / `dead_white_stones` on top of captures when `territory_ownership` is non-empty (CMD22 data present). CMD22 header prisoner counts already include dead stones — adding them again was double-counting.
+- v251: `updateGameResult()` Comments & Kibitz "Game finished" line now computes totals using `white_captures` / `black_captures` directly (same source as stats panel) instead of stale `white_prisoners` / `black_prisoners`.
+- v252: Inactive slot CMD22 path also writes server capture counts into slot (was active-slot only in v249).
+
+**Verified:** Stats panel (Stones/Cap/Terr/Total) and Comments & Kibitz totals now match q5go exactly for both active and inactive slots across multiple scored games.
+
+---
+
+## 2026-06-20 (v248): Fix scoring markers not showing at final position after game ID recycling
+
+**Root cause:** `is_final_position` in `displayNode()` tested `node->moveNumber() == getTotalMoves()`. After a game ends and IGS recycles the same game ID for a new game, `getTotalMoves()` returns the new game's move count, so the final node of the old game never matches and scoring markers are never rendered.
+
+**Fix:** Use leaf-node test: `node->childCount() == 0`. A node with no children is definitionally the final position regardless of what `getTotalMoves()` returns. Retains the `moveNumber() == total_moves` fallback for non-leaf cases.
+
+---
+
+## 2026-06-21 (v247): Fix segfault in loadSlot() clock_timer swap when slot deleted during navigation
+
+**Root cause:** User navigating move history slider on a finished game while a new game starts. `loadSlot()` called `disconnect(clock_timer, ...)` on a dangling pointer — the finished slot's clock_timer had already been deleted by `detachSlotClockTimer()` + slot eviction. The `clock_timer` member was left pointing to freed memory.
+
+**Fix:** Guard clock_timer disconnect with null check and `!= own_clock_timer`; fall back to `own_clock_timer` if `slot->clock_timer` is null.
+
+---
+
+## 2026-06-21 (v246): Fix scoring markers persisting during move history navigation; disable geometric enclosure
+
+**Scoring marker fix:** Dead stone, territory, and dame markers were visible at all positions when navigating the move history slider. The `!is_scoring_mode` guard in `displayNode()` prevented clearing markers during scoring phase, but this caused them to persist at historical positions after scoring completed. Fix: clear all scoring markers unconditionally at any non-final position — they are only meaningful at the final board position.
+
+**Geometric enclosure disabled:** The v241 geometric enclosure BFS treated opponent stones as walls, flagging live groups with two eyes as dead. Mass false-positive dead stone removals corrupted scoring in nearly every game. Disabled pending a correct algorithm. Liberty enclosure test (v219) remains active.
+
+**Note:** Game 110 SGF appeared corrupt but was correctly recorded — Yoda (10d) passed 40+ times from move 52, producing sequential W[] passes while got2go bot continued playing.
+
+---
+
+**Root cause:** The v241 geometric enclosure BFS treated opponent stones as walls, causing it to flag live groups with two eyes as dead. Any opponent group whose liberty space happened to be bounded by a mix of bot stones and other opponent stones (including its own eyes) was incorrectly declared enclosed. This produced mass false-positive dead stone removals, corrupting scoring in nearly every game.
+
+**Fix:** Geometric enclosure test disabled. The liberty enclosure test (v219, BFS through bot_territory) is sufficient and correct. Geometric enclosure needs a fundamentally different algorithm (e.g. must verify the pocket has no two-eye potential) before it can be re-enabled safely.
+
+**Note:** Game 110 SGF appeared corrupt but was correctly recorded — Yoda resigned by passing repeatedly after move 51, producing 40+ sequential W[] passes in the SGF.
+
+---
+
 ## 2026-06-19 (v245): Fix post-reconnect game resume — use stored filename + restore board + restart engine
 
 **Root cause:** Four separate failures in the cross-session reconnect resume path:
