@@ -131,8 +131,8 @@ help:
 .PHONY: all clean rebuild debug install config help both
 
 # Dependencies
-$(MAIN_OBJECT): $(MAIN_SOURCE) xgospel2_fixed.moc xgospel2_parser.h xgospel2_games_parser.h igs_move_parser.h settings.h
-board_window.o: board_window.cpp board_window.h board_window.moc igs_move_parser.h score_engine.h
+$(MAIN_OBJECT): $(MAIN_SOURCE) xgospel2_fixed.moc xgospel2_parser.h xgospel2_games_parser.h igs_move_parser.h settings.h game_slot.h
+board_window.o: board_window.cpp board_window.h board_window.moc igs_move_parser.h score_engine.h game_slot.h game_tree.h
 score_engine.o: score_engine.cpp score_engine.h game_tree.h
 game_slot.o: game_slot.cpp game_slot.h game_slot.moc game_tree.h igs_move_parser.h
 game_button_widget.o: game_button_widget.cpp game_button_widget.h game_button_widget.moc

@@ -857,11 +857,13 @@ BoardWindow::~BoardWindow() {
 
 void BoardWindow::closeEvent(QCloseEvent *event) {
  // In docked (shared) mode the window is reused across games.
- // Pressing X should unobserve the active game only — not destroy the window.
- // closeBoardWindow() will hide it if no games remain.
- if (is_shared_window && observed_game_id > 0) {
+ // Pressing X should close the active slot only — not destroy the window.
+ // observed_game_id may be negative (synthetic ID for a remapped finished slot).
+ // closeBoardWindow() will hide the window if no slots remain.
+ if (is_shared_window) {
      event->ignore();
-     emit boardClosed(observed_game_id);
+     if (observed_game_id != 0)
+         emit boardClosed(observed_game_id);
      return;
  }
 
@@ -1917,6 +1919,8 @@ void BoardWindow::loadSlot(GameSlot *slot)
     black_player               = slot->black_player;
     white_rank                 = slot->white_rank;
     black_rank                 = slot->black_rank;
+    white_rank_at_start        = slot->white_rank_at_start;
+    black_rank_at_start        = slot->black_rank_at_start;
     my_username                = slot->my_username;
     custom_game_title          = slot->custom_game_title;
     if (teaching_title_label) {
@@ -2075,6 +2079,9 @@ void BoardWindow::loadSlot(GameSlot *slot)
                 : QString("<i>%1:</i> ").arg(c.user.toHtmlEscaped());
             comment_display->append(prefix + c.text.toHtmlEscaped());
         }
+        // Append system messages (save confirmations etc.) that are not in the structured list
+        for (const QString &msg : slot->system_messages)
+            comment_display->append(msg);
         // Scroll to bottom
         QTextCursor cursor = comment_display->textCursor();
         cursor.movePosition(QTextCursor::End);
@@ -2240,6 +2247,8 @@ void BoardWindow::startObserving(int game_id, const QString &white, const QStrin
  black_player = black;
  white_rank = w_rank;
  black_rank = b_rank;
+ white_rank_at_start = w_rank;
+ black_rank_at_start = b_rank;
  current_move = 0;
  current_player = BLACK_STONE;
  is_observing = true;
@@ -3033,6 +3042,7 @@ void BoardWindow::saveGame() {
         file.close();
         if (comment_display)
             comment_display->append(QString("✓ Game saved to: %1").arg(filename));
+        emit gameSaved(observed_game_id, filename);
         qDebug() << "[saveGame] Saved to:" << filename;
     } else {
         QString msg = QString("✗ Error saving game to: %1").arg(filename);
@@ -3724,8 +3734,8 @@ QString BoardWindow::generateSGF() {
 
  sgf += QString("PW[%1]\n").arg(white_player);
  sgf += QString("PB[%1]\n").arg(black_player);
- sgf += QString("WR[%1]\n").arg(white_rank);
- sgf += QString("BR[%1]\n").arg(black_rank);
+ sgf += QString("WR[%1]\n").arg(white_rank_at_start.isEmpty() ? white_rank : white_rank_at_start);
+ sgf += QString("BR[%1]\n").arg(black_rank_at_start.isEmpty() ? black_rank : black_rank_at_start);
  sgf += QString("DT[%1]\n").arg(game_start_time.toString("yyyy-MM-dd"));
  sgf += "PC[IGS]\n";
 
@@ -5232,12 +5242,24 @@ void BoardWindow::receiveScoreEnd() {
 
  QSet<QPair<int, int>> cmd22_dead_stones;
 
+ // Walk to the final node in the main line so dead stone detection uses the
+ // actual end-of-game board, not whatever position the slider is currently at.
+ const GoBoard *final_board = nullptr;
+ GameNode *leaf = game_root;
+ if (leaf) {
+     while (leaf->nextMove()) leaf = leaf->nextMove();
+     final_board = &leaf->getBoard();
+ }
+
  for (auto it = territory_ownership.begin(); it != territory_ownership.end(); ++it) {
  QPair<int, int> pos = it.key();
  int digit = it.value();
 
- // Check what's actually on the board at this position
- StoneColor actual_stone = board_widget->getStoneAt(pos.first, pos.second);
+ // Read stone color from the final game tree position, not the widget (which
+ // reflects the slider-selected move and may not be the end of the game).
+ StoneColor actual_stone = final_board
+     ? final_board->getStone(pos.first, pos.second)
+     : board_widget->getStoneAt(pos.first, pos.second);
 
  // Detect dead stones: black stones in white territory, or white stones in black territory
  if (digit == 4 && actual_stone == BLACK_STONE) {

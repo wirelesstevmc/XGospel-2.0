@@ -38,7 +38,8 @@ void GameSelectionDock::addGame(int game_id,
     if (findButton(game_id)) return;   // already present — ignore duplicate
 
     auto *btn = new GameButtonWidget(game_id, black, b_rank, white, w_rank, m_container);
-    connect(btn, &GameButtonWidget::clicked, this, &GameSelectionDock::gameSelected);
+    connect(btn, &GameButtonWidget::clicked,        this, &GameSelectionDock::gameSelected);
+    connect(btn, &GameButtonWidget::closeRequested, this, &GameSelectionDock::gameCloseRequested);
 
     // Insert before the trailing stretch (second-to-last position)
     const int insert_pos = std::max(0, m_layout->count() - 1);
@@ -78,6 +79,21 @@ void GameSelectionDock::updateGameRanks(int game_id, const QString &b_rank, cons
 {
     if (GameButtonWidget *btn = findButton(game_id))
         btn->updateRanks(b_rank, w_rank);
+}
+
+void GameSelectionDock::setGameCloseable(int game_id, bool closeable)
+{
+    if (GameButtonWidget *btn = findButton(game_id))
+        btn->setCloseable(closeable);
+}
+
+void GameSelectionDock::updateGameId(int old_id, int new_id)
+{
+    if (GameButtonWidget *btn = findButton(old_id)) {
+        btn->setGameId(new_id);
+        if (m_active_game_id == old_id)
+            m_active_game_id = new_id;
+    }
 }
 
 void GameSelectionDock::updateHoverPixmap(int game_id, const QPixmap &px)

@@ -37,15 +37,25 @@ public:
     // Update ranks on an existing button (called when who response arrives after addGame).
     void updateGameRanks(int game_id, const QString &b_rank, const QString &w_rank);
 
+    // Remap a button's game ID — used when a finished slot is reassigned a
+    // synthetic negative ID so its history stays in the dock without conflicting
+    // with a recycled game ID for a new game.
+    void updateGameId(int old_id, int new_id);
+
     // Push a fresh board pixmap to the correct button's hover popup.
     void updateHoverPixmap(int game_id, const QPixmap &px);
 
     int  activeGameId() const { return m_active_game_id; }
     bool hasGame(int game_id) const;
 
+    // Mark a game's close button as hidden (active bot game must not be closed).
+    void setGameCloseable(int game_id, bool closeable);
+
 signals:
     // Emitted when the user clicks a game button.
     void gameSelected(int game_id);
+    // Emitted when the user clicks the × on a game button.
+    void gameCloseRequested(int game_id);
 
 private:
     GameButtonWidget *findButton(int game_id) const;

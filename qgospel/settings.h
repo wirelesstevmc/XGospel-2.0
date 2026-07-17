@@ -135,6 +135,10 @@ public:
     QStringList getBotBlacklist() const;
     void setBotBlacklist(const QStringList &names);
 
+    // Experimental: Sabaki-style areaMap dead stone detection (geometric flood-fill + KataGo confirm)
+    bool getBotUseAreaMapDetection() const { return readBoolEntry("bot_use_area_map_detection", false); }
+    void setBotUseAreaMapDetection(bool v) { writeBoolEntry("bot_use_area_map_detection", v); }
+
     // Bot opponent greylist — per-opponent max handicap + custom decline tell
     struct GreylistEntry {
         QString name;      // lowercase IGS username

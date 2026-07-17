@@ -51,6 +51,13 @@ void GameButtonWidget::setActive(bool active)
     update();
 }
 
+void GameButtonWidget::setCloseable(bool closeable)
+{
+    if (m_closeable == closeable) return;
+    m_closeable = closeable;
+    update();
+}
+
 void GameButtonWidget::updateRanks(const QString &b_rank, const QString &w_rank)
 {
     m_b_rank = b_rank;
@@ -90,12 +97,27 @@ void GameButtonWidget::paintEvent(QPaintEvent *)
         p.drawRect(r.adjusted(2, 2, -3, -3));
     }
 
+    // Close (×) button — top-right corner, only when closeable
+    const int close_sz = 14;
+    const int close_x  = r.right() - close_sz - 3;
+    const int close_y  = 3;
+    m_close_rect = QRect(close_x, close_y, close_sz, close_sz);
+    if (m_closeable) {
+        p.setPen(QPen(QColor(180, 60, 60), 1));
+        p.setBrush(QColor(220, 80, 80, 180));
+        p.drawRoundedRect(m_close_rect, 2, 2);
+        p.setPen(QPen(Qt::white, 1.5));
+        const int pad = 3;
+        p.drawLine(close_x + pad, close_y + pad, close_x + close_sz - pad, close_y + close_sz - pad);
+        p.drawLine(close_x + close_sz - pad, close_y + pad, close_x + pad, close_y + close_sz - pad);
+    }
+
     // Layout constants
     const int border   = 5;
     const int stone_w  = m_black_stone.width();
     const int stone_h  = m_black_stone.height();
     const int text_x   = border + stone_w + 6;   // left edge of name text
-    const int inner_w  = r.width() - text_x - border;
+    const int inner_w  = r.width() - text_x - border - (m_closeable ? close_sz + 6 : 0);
     const int half_h   = (r.height() - 2 * border) / 2;
 
     QFont f = QApplication::font();
@@ -158,8 +180,12 @@ void GameButtonWidget::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && m_pressed) {
         m_pressed = false;
         update();
-        if (rect().contains(event->pos()))
-            emit clicked(m_game_id);
+        if (rect().contains(event->pos())) {
+            if (m_closeable && m_close_rect.contains(event->pos()))
+                emit closeRequested(m_game_id);
+            else
+                emit clicked(m_game_id);
+        }
     }
 }
 

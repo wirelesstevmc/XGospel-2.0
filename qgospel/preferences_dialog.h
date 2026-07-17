@@ -73,6 +73,7 @@ private:
     // Bot Settings tab
     QLineEdit    *m_bot_blacklist_edit;
     QTableWidget *m_greylist_table;
+    QCheckBox    *m_bot_area_map_check;
 
     // Engines tab
     EnginesPrefsWidget *m_engines_widget;

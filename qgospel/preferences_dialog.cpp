@@ -322,6 +322,29 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
 
     greylist_group->setLayout(greylist_layout);
     bot_tab_layout->addWidget(greylist_group);
+
+    // ---- Dead stone detection algorithm group ----
+    QGroupBox *dead_stone_group = new QGroupBox("Dead Stone Detection");
+    QVBoxLayout *dead_stone_layout = new QVBoxLayout();
+
+    m_bot_area_map_check = new QCheckBox("Use geometric area-map detection (experimental)");
+    m_bot_area_map_check->setChecked(settings->getBotUseAreaMapDetection());
+    dead_stone_layout->addWidget(m_bot_area_map_check);
+
+    QLabel *dead_stone_help = new QLabel(
+        "When enabled, uses a two-phase Sabaki-style flood-fill algorithm to identify dead groups:\n"
+        "Phase 1 — flood-fill empty regions; any region bordered exclusively by bot stones is bot\n"
+        "territory; opponent stones inside are dead candidates.\n"
+        "Phase 2 — KataGo ownership confirms candidates (ownership > 0.80 or |ownership| < 0.40).\n"
+        "Iterates until stable. When disabled, uses the original KataGo ownership + liberty enclosure\n"
+        "algorithm. Disable for overnight rated play until testing is complete.");
+    dead_stone_help->setWordWrap(true);
+    dead_stone_help->setStyleSheet("color: gray; font-size: 9pt;");
+    dead_stone_layout->addWidget(dead_stone_help);
+
+    dead_stone_group->setLayout(dead_stone_layout);
+    bot_tab_layout->addWidget(dead_stone_group);
+
     bot_tab_layout->addStretch();
     m_tab_widget->addTab(bot_tab, "Bot Settings");
 
@@ -624,6 +647,7 @@ void PreferencesDialog::onApply() {
     // Save bot settings
     settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
     settings->setBotGreylist(greylistFromTable(m_greylist_table));
+    settings->setBotUseAreaMapDetection(m_bot_area_map_check->isChecked());
 
     // Save to settings
     settings->setHosts(m_hosts);
@@ -664,6 +688,7 @@ void PreferencesDialog::onOk() {
     // Save bot settings
     settings->setBotBlacklist(m_bot_blacklist_edit->text().split(',', Qt::SkipEmptyParts));
     settings->setBotGreylist(greylistFromTable(m_greylist_table));
+    settings->setBotUseAreaMapDetection(m_bot_area_map_check->isChecked());
 
     // Save and close
     settings->setHosts(m_hosts);

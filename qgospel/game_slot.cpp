@@ -107,6 +107,7 @@ void GameSlot::reset()
 
     // Comments & observers
     comments.clear();
+    system_messages.clear();
     observers.clear();
 
     // Group tracking

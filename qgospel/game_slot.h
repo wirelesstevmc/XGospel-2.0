@@ -83,6 +83,8 @@ public:
     QString          black_player;
     QString          white_rank;
     QString          black_rank;
+    QString          white_rank_at_start;   // rank frozen at game creation — used in result/SGF records
+    QString          black_rank_at_start;
     QString          my_username;
     QString          custom_game_title;   // non-empty for teaching games
 
@@ -189,6 +191,8 @@ public:
     QString          game_result;
     bool             game_finished       = false;
     QString          adjourned_player;   // set on CMD48; used to compute resign result if not resumed
+    QString          expected_white_player; // player names at observe-click time; empty = unknown
+    QString          expected_black_player; // compared vs IGS confirmation to detect recycled game IDs
 
     // -----------------------------------------------------------------------
     // Comments — full accumulated history for this game
@@ -196,6 +200,7 @@ public:
 
     QList<CommentEntry> comments;
     QString             comment_html;   // Full rendered HTML snapshot of comment_display
+    QStringList         system_messages; // System-only lines (e.g. "✓ Saved to: ...") not in comments
 
     // -----------------------------------------------------------------------
     // Observers — current list for this game

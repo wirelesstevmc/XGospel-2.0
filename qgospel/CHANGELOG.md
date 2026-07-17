@@ -6,6 +6,198 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 2026-07-14 (v266): Fix dead stone display for observed games; fix save confirmation lost on slot switch
+
+### Bug 1 — Observed game dead stones not shown when user is at a non-final move position
+
+**Root cause:** `receiveScoreEnd()` detected dead stones by calling `board_widget->getStoneAt()` — the widget's current visual position. When the user had navigated the slider to an earlier move (e.g. move 280 of 298), the widget showed that mid-game position, so stones that are dead at the final board position were absent or in different locations, yielding zero dead stones detected. Territory squares (digit 4/5 → green overlay) still appeared correctly because they are stored independently of the board widget.
+
+**Fix:** Walk `game_root` forward via `nextMove()` to the final leaf node and read stone colors from `leaf->getBoard().getStone(r,c)` instead of the widget. Falls back to `board_widget->getStoneAt()` if the game tree is empty.
+
+### Bug 2 — "✓ Game saved to: ..." message vanishes from Comments & Kibitz after switching slots
+
+**Root cause:** `saveGame()` appended the save confirmation directly to the `comment_display` widget. `loadSlot()` rebuilds `comment_display` from `slot->comments` (the structured SAY/KIBITZ list), which never included the save message. Every slot switch discarded it.
+
+**Fix:** Added `QStringList system_messages` to `GameSlot`. `saveGame()` emits `gameSaved(game_id, filename)`; the signal handler in `xgospel2_fixed.cpp` appends the confirmation to `slot->system_messages`. `loadSlot()` appends all `system_messages` entries after rebuilding from the structured comment list. `slot->reset()` clears `system_messages` with the rest of the slot state.
+
+---
+
+## 2026-07-13 (v265): Fix segfault when background finished-game slot ends while a different slot is active
+
+### Bug 1 — `refreshPlayers()` sends `all <id>` for finished games (noisy + IGS errors)
+
+**Root cause:** The observer auto-refresh in `refreshPlayers()` guarded with `active_slot_game_id > 0`, which is true for finished positive-ID slots (e.g. a taROU game that ended but kept its original ID). IGS replied `< 5 Invalid game number.` for every 120s timer tick while such a slot was the active view.
+
+**Fix:** Added `!active_s->game_finished` to the guard. Observer refresh is now suppressed when the active slot is finished.
+
+### Bug 2 — `untrackFinishedGame()` unconditionally calls `detachSlotClockTimer()` (segfault path)
+
+**Root cause:** `detachSlotClockTimer()` reverts the board window's `clock_timer` pointer from a specific slot's timer back to `own_clock_timer`. When a background finished game (not the currently displayed slot) triggered `untrackFinishedGame`, the call would erroneously detach the *active* slot's clock timer instead. This left the board window's `clock_timer` pointing at `own_clock_timer` while the active slot's timer was disconnected. Subsequent `switchActiveGame` calls then connected and disconnected wrong timers, eventually leaving a dangling pointer that caused a segfault during the next paint event (`drawDeadStoneMarkers`).
+
+**Reproducer:** Browse finished taROU game (e.g. #384) with slider, switch to another finished game (#-51), then game #384's `untrackFinishedGame` fires asynchronously while #-51 is active, corrupting the clock timer chain, and the next slot switch (#-302) crashes.
+
+**Fix:** Added `game_id == active_slot_game_id` guard in `untrackFinishedGame` before the `detachSlotClockTimer()` call. Background finished games stop their own clock timer as before; only the active slot detaches from the board window.
+
+---
+
+## 2026-07-11 (v264): Fix new-game slot skipped on game ID reuse; freeze ranks at game start
+
+### Bug 1 & 2 — New slot not created when IGS recycles a game ID to the same sequence opponent
+
+**Root cause:** The stale CMD15 guard at the dock-mode playing-board creation path reads:
+
+```cpp
+if (white_byo_moves == -1 || black_byo_moves == -1) goto skip_playing_board_creation;
+```
+
+This guard was designed to skip phantom post-game CMD15 echoes (which arrive with `byo=-1` as a cleanup side-effect). However, the **first** CMD15 for any brand-new game also has `byo_moves=-1` because the clocks have not started yet. When IGS assigned game ID #21 to a new opponent (pickletenn) immediately after the previous game #21 (Taco3) ended, the guard fired on the first genuine CMD15, skipping new-slot creation entirely. Consequences:
+
+- `switchActiveGame(21)` was never called → `active_slot_game_id` stayed on the finished game 55
+- SAY delivery in dock mode routes to `findSlot(active_slot_game_id)` and checks `!game_finished` — the finished slot's guard blocked it → "0 playing board(s)"
+- `botStartGame(21)` still fired (it is after the `skip` label) but `findSlot(21)` returned null → greeting comment lost, engine board pointed at wrong slot
+- Comments & Kibitz widget continued showing the old game's history rather than opening a fresh board
+
+**Fix:** Added `int newly_confirmed_game_id = -1` member variable. When `9 Creating match [N]` arrives, `newly_confirmed_game_id` is set to `N`. The stale guard now requires BOTH `byo_moves == -1` AND `game_id != newly_confirmed_game_id`. A genuine new game that IGS has just confirmed is exempt; stale post-game echoes (which arrive without a preceding "Creating match" line) still get skipped. `newly_confirmed_game_id` is reset to `-1` once the new slot is created.
+
+**Why "Creating match [N]" is the right discriminator:** IGS always sends `9 Creating match [N] with opponent.` immediately before the CMD15 flood for a newly accepted game, including when it recycles an ID. Stale post-game CMD15 lines never have a preceding "Creating match" line.
+
+### Bug 3 — SGF WR[]/BR[] used ranks at game end, not game start
+
+**Root cause:** `slot->white_rank` and `slot->black_rank` are updated during the game whenever the bot fetches `stats <opponent>` (the response triggers `upsertPlayerRank` → `bslot->white_rank = stats_rank`). The SGF `WR[]/BR[]` properties were written from these live-updated fields, so they could reflect rank changes that occurred after the game started rather than the rank at the moment the game began.
+
+**Fix:**
+- Added `white_rank_at_start` / `black_rank_at_start` fields to `GameSlot` (game_slot.h) and `BoardWindow` (board_window.h)
+- Set once at slot creation (`slot->white_rank_at_start = slot->white_rank`) alongside the existing `white_rank` / `black_rank` assignment — never overwritten
+- Copied into `BoardWindow` via `loadSlot` and `startObserving`
+- SGF `WR[]/BR[]` output now uses `*_at_start` (falls back to live rank if empty, e.g. for SGFs loaded from file)
+- The `*SYSTEM*` "IGS Game #N started" comment now includes player names and ranks at start, so the record is visible in Comments & Kibitz even for games that are never saved
+
+---
+
+## 2026-07-10 (v263): Observer count in panel title; observer names as clickable buttons
+
+*(v181 plan items)*
+
+**Feature — observer count in panel title:** The Observers panel header label now shows the live count: "Observers (N)" where N updates with each observer list refresh.
+
+**Feature — observer name buttonization:** Each observer name in the Observers panel is rendered as a clickable flat button. Clicking opens the player stats dialog for that observer (same as double-clicking a name in the Players list).
+
+---
+
+## 2026-07-09 (v262): Fix segfault when closing ~10 slots — stale moves_dispatch_queue IDs + recursive drain
+
+**Bug:** Closing an observation slot removed it from `game_slots` but did not remove its ID from `moves_dispatch_queue`. When `dispatchNextMovesRequest()` later ran, it found the dead ID, called itself recursively to skip it, and left the next dead ID for another recursive call. After ~10 slot closures, enough dead IDs had accumulated that the recursive chain exhausted the call stack and segfaulted.
+
+**Fix 1:** `closeBoardWindow` now calls `moves_dispatch_queue.removeAll(game_id)` immediately when a slot is closed, so stale IDs never accumulate in the queue.
+
+**Fix 2:** `dispatchNextMovesRequest` replaced its tail-recursive skip (`dispatchNextMovesRequest(); return;`) with an iterative `while` loop that drains all stale entries in one pass before dispatching the first live slot. Eliminates the stack growth entirely regardless of queue length.
+
+---
+
+## 2026-07-07 (v261): Fix crash when closing an active observation slot — delete after switchActiveGame
+
+**Bug:** In `closeBoardWindow`, after snapshotting and removing the closing slot from `game_slots`, the code called `delete slot` and then `switchActiveGame()`. `switchActiveGame` calls `loadSlot(new_slot)` on the `BoardWindow`, but `shared_board_window` still held an internal pointer into the deleted slot's `game_root` tree. Accessing it inside `loadSlot` (via `getTotalMoves()` etc.) caused a use-after-free crash.
+
+**Fix:** Moved `delete slot` to after `switchActiveGame()` completes. `switchActiveGame → loadSlot` redirects the board window's `game_root` to the new slot first; only then is the old slot's memory freed. In the no-remaining-slots path, `delete slot` happens before `clearBoard()`/`hide()` since there is no `loadSlot` call to worry about.
+
+---
+
+## 2026-07-07 (v260): Tighten slot close lock — applies to all playing games, not just bot games
+
+**Change:** The close button lock (`!slot->is_observing && !slot->game_finished`) now applies to any playing game slot, not only bot-mode games. Observation slots (`is_observing = true`) remain freely closeable at all times — the user may have clicked the wrong game. Playing slots have the × hidden and close attempts are rejected with a `*SYSTEM*` message until `untrackFinishedGame` re-enables the button.
+
+---
+
+## 2026-07-07 (v259): Per-slot × close button in dock; board window no longer destroyed on close
+
+**Bug:** The only way to close a game slot was to close the entire `shared_board_window`, which destroyed all slots and set `shared_board_window = nullptr`. Subsequent `observeGame()` calls could not reopen the window. Closing during an active bot game terminated all game tracking.
+
+**Fix — per-slot close button:** Added a small red × button to the top-right corner of each `GameButtonWidget`. Clicking × emits `closeRequested(game_id)` → `GameSelectionDock::gameCloseRequested(game_id)` → `closeBoardWindow(game_id)`, closing only that one slot.
+
+**Fix — close lock for playing games:** Playing slots (`is_observing = false, game_finished = false`) have their × hidden (`setCloseable(false)`) when the slot is created. `untrackFinishedGame` re-enables it (`setCloseable(true)`) when the game ends. `closeBoardWindow` rejects close attempts on live playing slots with a `*SYSTEM*` message.
+
+**Fix — board window survival:** `closeBoardWindow` no longer destroys `shared_board_window`. When the last slot is closed, the window is hidden (`hide()`) and can be re-shown by a subsequent `observeGame()` call. When a non-last slot is closed and it was the active slot, the code switches to the next available slot (preferring the active bot game).
+
+**New files/methods:** `GameButtonWidget::setCloseable()`, `GameButtonWidget::closeRequested` signal, `GameSelectionDock::gameCloseRequested` signal, `GameSelectionDock::setGameCloseable()`, `GameSelectionDock::updateGameId()`.
+
+---
+
+## 2026-07-07 (v258): Retain finished slot history on ID recycle; print IGS game ID at game start
+
+**Bug (v257):** When IGS recycled a finished slot's game ID, v257 deleted the slot — erasing the completed game's board history and move record from the dock entirely.
+
+**Fix — history preservation:** Instead of deleting the finished slot, remap it to a synthetic negative ID (`-game_id`). `dock->updateGameId(game_id, -game_id)` keeps the dock button visible and the slot browsable. The new game for the recycled ID proceeds normally through the observe/play path without interference.
+
+**Fix — game ID in Comments & Kibitz:** When a bot/playing game slot is created, `processComment("*SYSTEM*", "IGS Game #N started.")` is written immediately. This ensures the original IGS game number is visible in the kibitz log even after the server recycles the ID and the slot is remapped.
+
+---
+
+## 2026-07-07 (v257): Fix v256 regression — evict finished slot without sending spurious observe command
+
+**Bug (v256 regression):** The v256 OBSERVE-MATCH fix called `observeGame(game_id, ...)` to evict a finished slot. However, the OBSERVE-MATCH handler fires for **every game in the IGS server game list** (periodic refresh lines like "9 Observing game N"), not only for games the bot explicitly observes. Calling `observeGame()` from this handler sends `socket->write("observe N\n")`, inadvertently subscribing to a random active game whose ID happened to be recycled. This caused unexpected move data floods and likely contributed to the segfault.
+
+**Fix:** Replaced the `observeGame()` call with a direct inline eviction: remove the finished slot from `game_slots`, remove its dock button, clear the board widget if it was the active slot, detach the clock timer, and delete the slot. No `observe N` command is sent. The new game will be observed only if the user or bot explicitly requests it via the normal observe path.
+
+**Why this is safe:** The OBSERVE-MATCH line that triggers this code is a server push — it tells us IGS has recycled the game ID. We only need to clean up our stale slot. We do not need to re-subscribe; that happens later when the bot plays or the user clicks the game.
+
+---
+
+## 2026-07-06 (v256): Fix board corruption when IGS recycles a finished slot's game ID for a new observed game
+
+**Bug:** When IGS reused a game ID that belonged to a finished slot (e.g. game ID 16 finishes, then IGS assigns ID 16 to an entirely different observed game), the OBSERVE-MATCH handler in dock mode found the slot via `findSlot(game_id)` and entered the `else if` branch. Inside that branch, the only path that did any work required `!slot->game_finished && slot->adjourned_player.isEmpty()`. Since the slot was finished (`game_finished=true`), the condition was false and the entire block was skipped silently. The stale finished slot remained in `game_slots`, the board retained all stones from the old game, and the new game's moves were overlaid on top — producing phantom-stone corruption (e.g. game #168: gogame1 vs woodnstone stones mixed with chentom vs taROU stones).
+
+**Fix:** Added a `slot->game_finished` guard at the top of the `else if (findSlot)` branch. When the slot is finished, `observeGame()` is called directly with the new game's players. `observeGame()` already handles the finished-slot case: it removes the stale slot from `game_slots`, removes its dock button, clears the board widget if it was the active slot, creates a fresh slot, and sends `observe N` + deferred `moves N`. A `*SYSTEM*` console message announces the eviction with both old and new player names. After `observeGame()` returns, the handler returns immediately (the slot is already fully set up).
+
+**Verified:** Compiles cleanly (no new warnings). Covers all three sub-cases: same players recycled (e.g. same opponent re-challenges immediately), different players recycled (the common case), and recycled-to-observed game that was never a bot game.
+
+---
+
+## 2026-07-04 (v255): Fix board corruption when new game starts with same ID as just-finished game
+
+**Bug:** When IGS reused a game ID immediately (e.g. tanukida resigns game 67 then instantly re-challenges as game 67), the board showed stale stones from the previous game. Two related failure modes:
+
+1. **ID-recycle eviction without visual clear:** When the finished slot was evicted and a new empty slot was created, the board widget was cleared by `loadSlot()`. However, as a defensive measure, the explicit `clearBoard()` call was missing from the eviction path itself — so if `loadSlot()` was not reached (e.g. due to `switchActiveGame()` early-out returning before calling `loadSlot()`), the board retained old stones.
+
+2. **Spurious `moves N` replay on live game:** If `moves N` was sent for a game already in progress (manually via console, or as a side effect of the ID-recycle sequence), the history reply arrived as move_number=0 on a LIVE slot. The LIVE path appended moves without clearing first, replaying all moves (including captures) on top of the existing position. Captured stones were re-placed, creating phantom stones at positions that should be empty.
+
+**Fix 1 (eviction path):** Added `shared_board_window->clearBoard()` immediately when the finished-slot eviction also resets `active_slot_game_id`. This ensures the visual board is blank before the new slot's `loadSlot()` call. Added `BoardWindow::clearBoard()` inline method to the header as a thin wrapper over `board_widget->clearBoard()`.
+
+**Fix 2 (spurious replay detection):** In the dock-mode LIVE active-slot move path, when `move_number == 0` arrives while the slot already has move history, the code now recognizes this as a spurious `moves N` replay. It resets all slot state (`board_state`, `move_history`, `server_move_count`, captures, `game_root`), clears the board widget, sets `replay_state = REPLAYING` with `catchup_high = server_move_count - 1`, and falls through to `replaying_case` so the history replays cleanly from a blank board. The `*SYSTEM*` log message `[BOARD] Spurious moves-N reply for live game N — resetting board for clean replay` identifies when this path fires.
+
+**Verified:** Both fixes compile cleanly. Fix 1 is active whenever an ID-recycle eviction happens with the finished game as the active slot. Fix 2 covers the general case where `moves N` is accidentally sent for an already-live game.
+
+---
+
+## 2026-06-30 (v254): Fix area-map dead stone detection — opponent stone cells always -1, not +1
+
+**Bug:** The v253 area-map algorithm was a complete no-op. After building the flood-fill areaMap, the group-scan loop tested `areaMap[gy][gx] != 1` on the opponent stone's own cell. But opponent stone cells are assigned `-1` by the flood-fill (only empty regions get `+1` for bot territory). The gate was therefore always true and every opponent group was skipped before any analysis ran. Result: area-map always reported 0 dead groups.
+
+**Fix:** BFS the full connected opponent group first, then check whether any stone in the group has a 4-neighbour empty cell with `areaMap == +1`. This correctly identifies groups enclosed in bot territory — including groups fully surrounded by other opponent stones (no direct empty-cell neighbour) since the full group extent is collected before the territory check.
+
+**Also fixed:** Game ID recycling guard (v253): when a game ends and IGS assigns the same ID to a new game before the games list refreshes, clicking the stale dock button now posts a `*SYSTEM*` warning in the Comments & Kibitz panel identifying the expected vs actual players.
+
+**Also fixed (v253):** Segfault from stale `.o` files — `game_slot.h` dependency added to `board_window.o` and `xgospel2_fixed.o` rules in Makefile so header changes trigger recompilation of all dependents.
+
+---
+
+## 2026-06-26 (v253): Two-phase Sabaki-style area-map dead stone detection (experimental)
+
+**Feature:** Adds a configurable alternative dead stone detection algorithm for bot end-game scoring, selectable via Preferences → Bot Settings → "Dead Stone Detection" checkbox. Default off — classic algorithm remains active for overnight rated play.
+
+**Problem with classic algorithm:** KataGo ownership values are probabilistic near the dame boundary. Stones adjacent to dame are in contested zones; the engine assigns them low ownership, causing them to fall below the 0.70 threshold and be missed. The liberty enclosure BFS also misses them because their liberties expand into dame points which are not in `bot_territory`.
+
+**New algorithm (two phases):**
+- Phase 1 — Geometric flood-fill (deterministic, no KataGo thresholds): flood-fill every contiguous empty region on a working board copy. A region bordered exclusively by bot stones is bot territory. Any opponent stone inside a bot-territory region is a dead candidate. Candidates are removed and the pass repeats until stable — handles cascading chains where removing one group exposes another.
+- Phase 2 — KataGo ownership confirmation (safety check): ownership > 0.80 (clearly bot-owned) OR |ownership| < 0.40 (unresolved aji — KataGo hedging on an obvious dead group) → confirmed dead. Groups where fewer than 50% of stones pass confirmation are left alive (conservative).
+
+**Algorithm source:** Mirrors the `@sabaki/influence` `areaMap()` function (45 lines of pure geometry): flood-fill empty regions, single-color border → that color's territory, mixed border → dame. KataGo demoted to confirming role rather than primary detector.
+
+**Configuration:** `bot_use_area_map_detection` setting (bool, default false). Saved in preferences file. UI checkbox with descriptive help text explaining both phases and the testing requirement.
+
+**Console output:** Tagged `[BOT] [area-map]` — shows pass number, group size, KataGo confirmation count, and DEAD/alive verdict per group.
+
+---
+
 ## 2026-06-24 (v252r): Fix CMD22 capture counts for inactive slots — observed game scoring fully aligned with q5go
 
 **Root cause:** When CMD22 arrives for a game that is not the currently active slot (user is viewing a different game), the territory data is buffered in the slot rather than the shared board window. The v249 fix that reads authoritative capture counts from the CMD22 header only applied the `updateCaptures()` call when `territory_board` (active path) was set — the `territory_slot` (inactive path) branch was missing. Result: inactive slot games retained replay-counted captures which were inflated by scoring-phase stone removals being replayed as regular moves.

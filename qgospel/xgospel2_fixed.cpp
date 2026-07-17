@@ -59,8 +59,8 @@
 #include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v252";
-const QString XGOSPEL_BUILD_DATE = "2026-06-20";
+const QString XGOSPEL_VERSION = "v266";
+const QString XGOSPEL_BUILD_DATE = "2026-07-14";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -3089,6 +3089,7 @@ private:
  QString reconnect_game_file; // full IGS game filename (e.g. "woodnstone-weakkyu") from stored response
  int cross_session_resume_game_id = -1; // set when CMD67 creates a fresh slot needing moves fetch + engine restart
  int bot_restart_after_replay_game_id = -1; // when set, restart engine + genmove once this game's replay completes
+ int newly_confirmed_game_id = -1; // set by "9 Creating match [N]" so stale-CMD15 guard skips genuine new games
 
  // Observer list parsing state
  bool waiting_for_observer_response;
@@ -4361,14 +4362,69 @@ private slots:
          games_pending_moves_request.insert(game_id);
          socket->write(QString("observe %1\n").arg(game_id).toUtf8());
      } else if (GameSlot *slot = findSlot(game_id)) {
+         // Finished-slot ID recycle: IGS reused the game ID for a different game.
+         // This OBSERVE-MATCH line is from a server game-list refresh (not a command
+         // we sent), so we must NOT call observeGame() — that would send "observe N"
+         // and subscribe us to a random game.  Instead, just evict the stale finished
+         // slot and clear the board so no phantom stones remain.  The new game will be
+         // observed properly only if the user or bot explicitly clicks/requests it.
+         if (slot->game_finished) {
+             // IGS recycled this game ID for a new game.  Remap the finished slot
+             // to a synthetic negative ID so the game history stays in the dock for
+             // review.  The new game will be observed via the normal path later.
+             int synthetic_id = -game_id;
+             output_console->append(QString(
+                 "[EVICT] Game ID %1 recycled: finished slot (%2 vs %3) remapped to ID %4 to preserve history")
+                 .arg(game_id).arg(slot->white_player).arg(slot->black_player).arg(synthetic_id));
+             // If this slot is currently visible, note the original game ID in Comments.
+             if (active_slot_game_id == game_id && shared_board_window)
+                 shared_board_window->processComment("*SYSTEM*",
+                     QString("IGS game ID %1 recycled for new game (%2 vs %3). This finished game history retained as ID %4.")
+                         .arg(game_id).arg(white_player).arg(black_player).arg(synthetic_id),
+                     false);
+             slot->game_id = synthetic_id;
+             GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+             if (dock_s) dock_s->updateGameId(game_id, synthetic_id);
+             if (active_slot_game_id == game_id) {
+                 active_slot_game_id = synthetic_id;
+                 // Board already shows this finished game; no need to clear it.
+             }
+             // Slot is retained with synthetic ID; nothing more to do here.
+             return;
+         }
          // Don't overwrite player names on an adjourned slot — it still belongs to
          // the original players; IGS may recycle the same ID for a different game
          // before the disconnected player reconnects.
          if (!slot->game_finished && slot->adjourned_player.isEmpty()) {
+             // Guard: detect recycled game ID — IGS names differ from what we clicked on
+             bool id_recycled = false;
+             if (!slot->expected_white_player.isEmpty() && !slot->expected_black_player.isEmpty()) {
+                 bool white_ok = slot->expected_white_player.compare(white_player, Qt::CaseInsensitive) == 0 ||
+                                 slot->expected_white_player == "?" || slot->expected_white_player == "Unknown";
+                 bool black_ok = slot->expected_black_player.compare(black_player, Qt::CaseInsensitive) == 0 ||
+                                 slot->expected_black_player == "?" || slot->expected_black_player == "Unknown";
+                 if (!white_ok || !black_ok) {
+                     id_recycled = true;
+                     output_console->append(QString(
+                         ">>> WARNING: Game ID %1 was recycled! Clicked on %2 vs %3 but IGS reports %4 vs %5")
+                         .arg(game_id)
+                         .arg(slot->expected_white_player).arg(slot->expected_black_player)
+                         .arg(white_player).arg(black_player));
+                 }
+             }
              slot->white_player = white_player;
              slot->black_player = black_player;
-             if (game_id == active_slot_game_id)
+             if (game_id == active_slot_game_id) {
                  shared_board_window->updatePlayerNames(white_player, black_player);
+                 if (id_recycled) {
+                     shared_board_window->processComment("*SYSTEM*",
+                         QString("WARNING: Game ID recycled! You clicked on %1 vs %2 but this game is now %3 vs %4. "
+                                 "The game list has been refreshed.")
+                             .arg(slot->expected_white_player).arg(slot->expected_black_player)
+                             .arg(white_player).arg(black_player),
+                         false);
+                 }
+             }
          }
      }
  } else {
@@ -5049,15 +5105,22 @@ private slots:
      // skip creation.  Otherwise evict and proceed normally.
      if (GameSlot *finished_slot = findSlot(game_id)) {
          if (finished_slot->game_finished) {
-             if (white_byo_moves == -1 || black_byo_moves == -1) {
-                 // Stale post-game CMD15 (byo=-1) — skip entirely.
+             if ((white_byo_moves == -1 || black_byo_moves == -1) &&
+                 game_id != newly_confirmed_game_id) {
+                 // Stale post-game CMD15 (byo=-1) and no "Creating match [N]" for this ID.
+                 // Skip — this is a server cleanup echo, not a real new game.
                  goto skip_playing_board_creation;
              }
-             // Genuine IGS game-ID recycle (CMD67) — evict stale slot first.
+             // Genuine IGS game-ID recycle — evict stale slot first.
              GameSelectionDock *dock_s = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
              if (dock_s) dock_s->removeGame(game_id);
              game_slots.removeOne(finished_slot);
-             if (active_slot_game_id == game_id) active_slot_game_id = -1;
+             if (active_slot_game_id == game_id) {
+                 active_slot_game_id = -1;
+                 // Clear the board widget immediately so no stale stones from the
+                 // finished game remain visible while the new slot is being set up.
+                 if (shared_board_window) shared_board_window->clearBoard();
+             }
              if (shared_board_window) shared_board_window->detachSlotClockTimer();
              delete finished_slot;
          }
@@ -5198,8 +5261,10 @@ private slots:
          slot->game_id      = game_id;
          slot->white_player = actual_white_name;
          slot->black_player = actual_black_name;
-         slot->white_rank   = findPlayerRank(actual_white_name);
-         slot->black_rank   = findPlayerRank(actual_black_name);
+         slot->white_rank         = findPlayerRank(actual_white_name);
+         slot->black_rank         = findPlayerRank(actual_black_name);
+         slot->white_rank_at_start = slot->white_rank;
+         slot->black_rank_at_start = slot->black_rank;
          slot->my_username  = login_username;
          slot->is_playing   = true;
          slot->is_observing = false;
@@ -5232,6 +5297,8 @@ private slots:
          });
 
          game_slots.append(slot);
+         if (newly_confirmed_game_id == game_id)
+             newly_confirmed_game_id = -1;  // consumed — clear so stale guard works again
 
          // Create shared_board_window if this is the first game in dock
          if (!shared_board_window) {
@@ -5240,6 +5307,11 @@ private slots:
                      this, &FixedXGospelWindow::closeBoardWindow);
              connect(shared_board_window, &BoardWindow::saveRequested,
                      this, &FixedXGospelWindow::saveBoardGame);
+             connect(shared_board_window, &BoardWindow::gameSaved,
+                     this, [this](int game_id, const QString &filename) {
+                         if (GameSlot *slot = findSlot(game_id))
+                             slot->system_messages.append(QString("✓ Game saved to: %1").arg(filename));
+                     });
              connect(shared_board_window, &BoardWindow::resignRequested,
                      this, &FixedXGospelWindow::resignGame);
              connect(shared_board_window, &BoardWindow::passRequested,
@@ -5269,13 +5341,18 @@ private slots:
                  dock->show();
                  connect(dock, &GameSelectionDock::gameSelected,
                          this, &FixedXGospelWindow::switchActiveGame);
+                 connect(dock, &GameSelectionDock::gameCloseRequested,
+                         this, &FixedXGospelWindow::closeBoardWindow);
              }
              shared_board_window->setSharedWindow(true);
              shared_board_window->show();
          }
 
          GameSelectionDock *dock2 = shared_board_window->getGameSelectionDock();
-         if (dock2) dock2->addGame(game_id, actual_black_name, slot->black_rank, actual_white_name, slot->white_rank);
+         if (dock2) {
+             dock2->addGame(game_id, actual_black_name, slot->black_rank, actual_white_name, slot->white_rank);
+             dock2->setGameCloseable(game_id, false);  // playing game — close disabled until finished
+         }
 
          // Always switch to the playing game — we need to be able to make moves
          // Use switchActiveGame so the dock button highlight updates correctly
@@ -5295,6 +5372,15 @@ private slots:
          shared_board_window->updateCaptures(white_captures, black_captures);
          shared_board_window->updateByoyomi(white_time, black_time, white_byo_moves, black_byo_moves);
          updateHoverPixmapForSlot(slot);
+
+         // Print the IGS game ID and ranks at game start — visible in Comments & Kibitz
+         // even after the ID is later recycled by the server.
+         shared_board_window->processComment("*SYSTEM*",
+             QString("IGS Game #%1 started. %2 [%3] vs %4 [%5]")
+                 .arg(game_id)
+                 .arg(actual_white_name).arg(slot->white_rank_at_start.isEmpty() ? QString("?") : slot->white_rank_at_start)
+                 .arg(actual_black_name).arg(slot->black_rank_at_start.isEmpty() ? QString("?") : slot->black_rank_at_start),
+             false);
 
          most_recently_observed_board = shared_board_window;
          most_recently_observed_game_id = game_id;
@@ -5523,6 +5609,31 @@ private slots:
              move.game_id = current_game_context;
              if (current_game_context == active_slot_game_id &&
                  slot->replay_state == GameSlot::LIVE) {
+                 // Detect spurious "moves N" history replay arriving while the game is
+                 // already live (e.g. user typed "moves N" in console, or ID-recycle
+                 // board was never cleared).  move_number == 0 while we already have
+                 // history means a full replay is starting — reset and replay cleanly.
+                 if (move.move_number == 0 && !slot->move_history.isEmpty()) {
+                     // server_move_count == number of events processed; last move_number == count-1
+                     int last_move_number = slot->server_move_count - 1;
+                     memset(slot->board_state, 0, sizeof(slot->board_state));
+                     slot->move_history.clear();
+                     slot->server_move_count = 0;
+                     slot->white_captures = 0;
+                     slot->black_captures = 0;
+                     slot->consecutive_passes = 0;
+                     slot->catchup_high = last_move_number; // replay transitions to LIVE at this move
+                     slot->pending_catchup_moves.clear();
+                     if (slot->game_root) {
+                         delete slot->game_root;
+                         slot->game_root = new GameNode();
+                         slot->current_node = slot->game_root;
+                     }
+                     slot->replay_state = GameSlot::REPLAYING;
+                     if (shared_board_window) shared_board_window->clearBoard();
+                     output_console->append(QString("[BOARD] Spurious moves-N reply for live game %1 — resetting board for clean replay").arg(current_game_context));
+                     goto replaying_case;
+                 }
                  // Active (viewed) slot, fully live — route to the shared board window,
                  // but also keep slot->board_state in sync for CMD22 dead-stone detection.
                  slot->move_history.append(move);
@@ -7314,11 +7425,19 @@ private slots:
  }
  }
  
+ // "9 Creating match [N] with opponent." — IGS confirms the new game ID.
+ // Record it so the stale-CMD15 guard does not block the genuine first CMD15 for this game.
+ if (line.startsWith("9 ") && line.contains("Creating match [")) {
+     QRegExp creating_re("9 Creating match \\[(\\d+)\\]");
+     if (creating_re.indexIn(line) != -1)
+         newly_confirmed_game_id = creating_re.cap(1).toInt();
+ }
+
  // Debug: Log all Command 9 messages to help identify actual format (DISABLED to reduce spam)
  // if (line.startsWith("9 ")) {
  // output_console->append(QString("[INFO] DEBUG: All Command 9 messages: %1").arg(line));
  // }
- 
+
  // Parse IGS Command 21 - Shout (broadcast) messages
  // Format: 21 !username!: message
  if (line.startsWith("21 !")) {
@@ -7732,7 +7851,8 @@ private slots:
  // Auto-refresh observer lists (piggyback on players timer).
  // Dock mode: active slot only. Non-dock: all open board windows.
  if (docked_pane_mode) {
-     if (active_slot_game_id > 0 && shared_board_window) {
+     GameSlot *active_s = findSlot(active_slot_game_id);
+     if (active_slot_game_id > 0 && active_s && !active_s->game_finished && shared_board_window) {
          shared_board_window->clearObservers();
          requestObservers(active_slot_game_id);
      }
@@ -8108,14 +8228,16 @@ private slots:
          if (s->replay_state == GameSlot::REPLAYING)
              return;
      }
-     int next_id = moves_dispatch_queue.takeFirst();
-     GameSlot *slot = findSlot(next_id);
-     if (!slot) {
-         // Slot gone (evicted); skip and try the next one.
+     // Drain stale entries (slots already closed) iteratively — never recurse.
+     GameSlot *slot = nullptr;
+     int next_id = -1;
+     while (!moves_dispatch_queue.isEmpty()) {
+         next_id = moves_dispatch_queue.takeFirst();
+         slot = findSlot(next_id);
+         if (slot) break;
          qDebug() << "[MOVES-QUEUE] slot" << next_id << "gone, skipping";
-         dispatchNextMovesRequest();
-         return;
      }
+     if (!slot) return;
      games_with_moves_requested.insert(next_id);
      if (next_id == active_slot_game_id && shared_board_window) {
          shared_board_window->clearMoveHistoryBeforeMovesCommand();
@@ -8276,6 +8398,8 @@ private slots:
      slot->black_player = black;
      slot->white_rank   = white_rank;
      slot->black_rank   = black_rank;
+     slot->expected_white_player = white;
+     slot->expected_black_player = black;
      slot->my_username  = login_username;
      slot->is_observing = true;
      slot->observation_state = GameSlot::JOINING_GAME;
@@ -8319,6 +8443,11 @@ private slots:
                  this, &FixedXGospelWindow::closeBoardWindow);
          connect(shared_board_window, &BoardWindow::saveRequested,
                  this, &FixedXGospelWindow::saveBoardGame);
+         connect(shared_board_window, &BoardWindow::gameSaved,
+                 this, [this](int game_id, const QString &filename) {
+                     if (GameSlot *slot = findSlot(game_id))
+                         slot->system_messages.append(QString("✓ Game saved to: %1").arg(filename));
+                 });
          connect(shared_board_window, &BoardWindow::resignRequested,
                  this, &FixedXGospelWindow::resignGame);
              connect(shared_board_window, &BoardWindow::passRequested,
@@ -8341,12 +8470,14 @@ private slots:
          connect(shared_board_window, &BoardWindow::moveRequested,
                  this, &FixedXGospelWindow::sendMove);
 
-         // Wire dock button clicks to switchActiveGame
+         // Wire dock button clicks to switchActiveGame / close
          GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
          if (dock) {
              dock->show();
              connect(dock, &GameSelectionDock::gameSelected,
                      this, &FixedXGospelWindow::switchActiveGame);
+             connect(dock, &GameSelectionDock::gameCloseRequested,
+                     this, &FixedXGospelWindow::closeBoardWindow);
          }
          shared_board_window->setSharedWindow(true);
          shared_board_window->show();
@@ -9014,50 +9145,57 @@ private slots:
      GameSlot *slot = findSlot(game_id);
      if (!slot) return;
 
-     // Send unobserve before removing the slot
-     QString unobserve_cmd = QString("unobserve %1").arg(game_id);
-     socket->write((unobserve_cmd + "\n").toUtf8());
-     if (!suppress_server_console)
-         output_console->append(QString(">>> SENT: %1 (stopped observing)").arg(unobserve_cmd));
+     // Never allow a live playing slot to be closed mid-game.
+     // Pure observation slots can always be closed (user may have clicked by mistake).
+     if (!slot->game_finished && !slot->is_observing && game_id > 0) {
+         output_console->append(QString("[WARN] Cannot close game %1 — game is still in progress.").arg(game_id));
+         if (shared_board_window)
+             shared_board_window->processComment("*SYSTEM*",
+                 QString("Cannot close game %1 — game is still in progress.").arg(game_id), false);
+         return;
+     }
+
+     // Only send unobserve for live (non-finished, non-negative-synthetic) slots.
+     if (!slot->game_finished && game_id > 0) {
+         QString unobserve_cmd = QString("unobserve %1").arg(game_id);
+         socket->write((unobserve_cmd + "\n").toUtf8());
+         if (!suppress_server_console)
+             output_console->append(QString(">>> SENT: %1 (stopped observing)").arg(unobserve_cmd));
+     }
      games_with_moves_requested.remove(game_id);
      games_pending_moves_request.remove(game_id);
+     moves_dispatch_queue.removeAll(game_id);
 
      // Remove from dock and slot list
      GameSelectionDock *dock = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
      if (dock) dock->removeGame(game_id);
 
-     // If closing the active game, switch to another one first
+     // If closing the active game, switch to another slot first — delete AFTER
+     // switchActiveGame so the board window's game_root pointer stays valid until
+     // loadSlot() in switchActiveGame has redirected it to the new slot.
      if (active_slot_game_id == game_id) {
-         if (game_slots.size() > 1) {
-             // Switch the board window to the next slot BEFORE deleting the
-             // closing slot.  shared_board_window->game_root points into the
-             // closing slot's tree; deleting the slot first leaves a dangling
-             // pointer that causes a crash when loadSlot() (called from
-             // switchActiveGame) touches game_root via getTotalMoves() etc.
-             //
-             // Snapshot the closing slot manually (switchActiveGame would try
-             // to do this but the slot is still in the list at this point, so
-             // we call it explicitly and then remove before switching).
-             if (shared_board_window)
-                 shared_board_window->snapshotToSlot(slot);
-             game_slots.removeOne(slot);
-             // Clear active id so switchActiveGame's early-out doesn't fire
-             active_slot_game_id = -1;
-             // Redirect game_root to the new slot before freeing old one
-             switchActiveGame(game_slots.first()->game_id);
-             delete slot;
-         } else if (shared_board_window) {
-             // Last game closed — destroy the shared window properly
-             game_slots.removeOne(slot);
-             active_slot_game_id = -1;
-             delete slot;
-             shared_board_window->setSharedWindow(false);
-             shared_board_window->close();
-             shared_board_window = nullptr;
+         if (shared_board_window)
+             shared_board_window->snapshotToSlot(slot);
+         game_slots.removeOne(slot);
+         active_slot_game_id = -1;
+
+         // Find another slot to display — prefer a live bot game, then any slot.
+         GameSlot *next = nullptr;
+         for (GameSlot *s : game_slots) {
+             if (bot_mode_active && s->game_id == bot_game_id) { next = s; break; }
+         }
+         if (!next && !game_slots.isEmpty()) next = game_slots.first();
+
+         if (next) {
+             switchActiveGame(next->game_id);  // loadSlot redirects board's game_root
+             delete slot;                       // safe to free now
          } else {
-             game_slots.removeOne(slot);
-             active_slot_game_id = -1;
              delete slot;
+             if (shared_board_window) {
+                 // No slots left — clear and hide; don't destroy so it can be re-shown.
+                 shared_board_window->clearBoard();
+                 shared_board_window->hide();
+             }
          }
      } else {
          game_slots.removeOne(slot);
@@ -9133,10 +9271,14 @@ private slots:
      if (GameSlot *slot = findSlot(game_id)) {
          if (slot->game_finished) {
              slot->clock_timer->stop();
-             // If this slot's timer is currently active in the board window, revert
-             // to the board window's own timer so it stays valid.
-             if (shared_board_window) shared_board_window->detachSlotClockTimer();
+             // Only detach if THIS is the active slot — detaching for a background
+             // finished game incorrectly disconnects the active slot's clock timer.
+             if (shared_board_window && game_id == active_slot_game_id)
+                 shared_board_window->detachSlotClockTimer();
              qDebug() << "[untrackFinishedGame] Clock stopped for game" << game_id;
+             // Re-enable the per-slot close button now that the game is finished.
+             GameSelectionDock *fdock = shared_board_window ? shared_board_window->getGameSelectionDock() : nullptr;
+             if (fdock) fdock->setGameCloseable(game_id, true);
          }
      }
  }
@@ -9684,173 +9826,281 @@ private slots:
 
      output_console->append("[BOT] Ownership analysis complete — identifying dead groups in bot territory");
 
-     // -----------------------------------------------------------------------
-     // Algorithm: find opponent stones enclosed within the bot's territory.
-     //
-     // KataGo ownership: +1.0 = Black owns, -1.0 = White owns. Row-major,
-     // row 0 = top (y=0), col 0 = left (x=0). Index = y*19 + x.
-     //
-     // Step 1: Mark all intersections the bot strongly owns (ownership threshold).
-     //   bot=Black: ownership[i] >= +BOT_TERRITORY_THRESHOLD  → bot owns
-     //   bot=White: ownership[i] <= -BOT_TERRITORY_THRESHOLD  → bot owns
-     //
-     // Step 2: For each connected group of opponent stones, flood-fill the group.
-     //   The group is "enclosed in bot territory" if every empty intersection
-     //   adjacent to or reachable from the group (without crossing bot stones or
-     //   the board edge) has strong bot-ownership.
-     //   Simplified criterion: ≥ BOT_MAJORITY_FRACTION of the full group's
-     //   stones have strong bot-ownership. At ≥50 visits this is reliable.
-     //
-     // Step 3: For each confirmed dead group, send ONE "remove <seed>" command.
-     //   IGS removes the full connected group from a single seed coordinate.
-     //
-     // Step 4: After a 500ms server-readiness delay, send all removes then done.
-     // -----------------------------------------------------------------------
-
-     // At ~50-200 visits (1.5s window) ownership is reliable.
-     // Threshold 0.70 is tighter than old 0.50 — appropriate for higher visits.
-     const float BOT_TERRITORY_THRESHOLD = 0.70f;
-     const int   BOT_MAJORITY_PERCENT    = 65;   // ≥65% of group stones must be in bot territory
+     const int dx[] = {-1, 1, 0, 0};
+     const int dy[] = {0, 0, -1, 1};
 
      StoneColor opponent_color = (bot_color == BLACK_STONE) ? WHITE_STONE : BLACK_STONE;
 
-     // Build set of all intersections the bot strongly owns.
-     QSet<QPair<int,int>> bot_territory;
-     for (int y = 0; y < 19; ++y) {
-         for (int x = 0; x < 19; ++x) {
-             float own = ownership[y * 19 + x];
-             bool bot_owns = (bot_color == BLACK_STONE) ? (own >=  BOT_TERRITORY_THRESHOLD)
-                                                        : (own <= -BOT_TERRITORY_THRESHOLD);
-             if (bot_owns)
-                 bot_territory.insert(qMakePair(x, y));
-         }
-     }
-     output_console->append(QString("[BOT] Bot territory cells (threshold %1): %2")
-         .arg(BOT_TERRITORY_THRESHOLD, 0, 'f', 2).arg(bot_territory.size()));
+     QList<QPair<int,int>> dead_group_seeds;
+     QList<QList<QPair<int,int>>> dead_group_members;
 
-     // Find all opponent stone groups and test each for enclosure.
-     const int dx[] = {-1, 1, 0, 0};
-     const int dy[] = {0, 0, -1, 1};
-     QSet<QPair<int,int>> all_visited;        // prevents re-scanning same group
-     QList<QPair<int,int>> dead_group_seeds;  // one seed coord per confirmed dead group
-     QList<QList<QPair<int,int>>> dead_group_members; // full membership for retry on rejection
+     bool use_area_map = settings->getBotUseAreaMapDetection();
+     output_console->append(QString("[BOT] Dead stone algorithm: %1")
+         .arg(use_area_map ? "geometric area-map (experimental)" : "KataGo ownership + liberty enclosure (classic)"));
 
-     for (int y = 0; y < 19; ++y) {
-         for (int x = 0; x < 19; ++x) {
-             QPair<int,int> start(x, y);
-             if (all_visited.contains(start)) continue;
-             if (board->getStoneAt(x, y) != opponent_color) continue;
+     if (use_area_map) {
+         // -----------------------------------------------------------------------
+         // EXPERIMENTAL: Two-phase Sabaki-style area-map dead stone detection
+         //
+         // Phase 1 — Geometric flood-fill (deterministic, no KataGo thresholds):
+         //   Flood-fill every contiguous empty region on the working board.
+         //   A region whose entire border is bot stones is bot territory.
+         //   Any opponent stone inside a bot-territory region is a dead candidate.
+         //   Remove candidates and repeat until stable (handles chained groups).
+         //
+         // Phase 2 — KataGo ownership confirmation:
+         //   ownership strongly bot (> 0.80)  -> confirmed dead (clear case)
+         //   ownership near zero (|own| < 0.40) -> confirmed dead (unresolved aji)
+         //   Groups that fail confirmation are left alive (conservative).
+         //
+         // Mirrors the @sabaki/influence areaMap algorithm: flood-fill empty
+         // regions, single-color border check -> sign * indicator. KataGo is
+         // demoted to a confirming role rather than the primary detector.
+         // -----------------------------------------------------------------------
 
-             // BFS: expand full connected group of opponent stones.
-             QQueue<QPair<int,int>> queue;
-             QList<QPair<int,int>> group;
-             queue.enqueue(start);
-             all_visited.insert(start);
+         const float AREA_CONFIRM_STRONG  = 0.80f;
+         const float AREA_CONFIRM_AJI_MAX = 0.40f;
 
-             while (!queue.isEmpty()) {
-                 auto cur = queue.dequeue();
-                 group.append(cur);
-                 for (int d = 0; d < 4; ++d) {
-                     int nx = cur.first  + dx[d];
-                     int ny = cur.second + dy[d];
-                     if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
-                     QPair<int,int> nb(nx, ny);
-                     if (all_visited.contains(nb)) continue;
-                     if (board->getStoneAt(nx, ny) == opponent_color) {
-                         all_visited.insert(nb);
-                         queue.enqueue(nb);
+         QSet<QPair<int,int>> removed_cells;
+         bool changed = true;
+         int pass_num = 0;
+
+         while (changed) {
+             changed = false;
+             ++pass_num;
+
+             // Build area map on current board (removed_cells treated as empty).
+             // areaMap[y][x]: +1 = bot territory, -1 = opponent territory, 0 = dame/mixed.
+             QVector<QVector<int>> areaMap(19, QVector<int>(19, 0));
+             QSet<QPair<int,int>> area_visited;
+
+             for (int sy = 0; sy < 19; ++sy) {
+                 for (int sx = 0; sx < 19; ++sx) {
+                     QPair<int,int> start(sx, sy);
+                     if (area_visited.contains(start)) continue;
+
+                     StoneColor sc = board->getStoneAt(sx, sy);
+                     bool is_removed = removed_cells.contains(start);
+
+                     if (sc != EMPTY && !is_removed) {
+                         areaMap[sy][sx] = (sc == bot_color) ? 1 : -1;
+                         area_visited.insert(start);
+                         continue;
                      }
+
+                     // Flood-fill the contiguous empty/removed region.
+                     QQueue<QPair<int,int>> q;
+                     QList<QPair<int,int>> region;
+                     q.enqueue(start);
+                     area_visited.insert(start);
+                     int border_sign = 0;
+                     int indicator   = 1;
+
+                     while (!q.isEmpty()) {
+                         auto cur = q.dequeue();
+                         region.append(cur);
+                         for (int d = 0; d < 4; ++d) {
+                             int nx = cur.first  + dx[d];
+                             int ny = cur.second + dy[d];
+                             if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                             QPair<int,int> nb(nx, ny);
+                             StoneColor nc = board->getStoneAt(nx, ny);
+                             bool nb_removed = removed_cells.contains(nb);
+                             if (nc != EMPTY && !nb_removed) {
+                                 int nsign = (nc == bot_color) ? 1 : -1;
+                                 if (border_sign == 0)      border_sign = nsign;
+                                 else if (border_sign != nsign) indicator = 0;
+                             } else if (!area_visited.contains(nb)) {
+                                 area_visited.insert(nb);
+                                 q.enqueue(nb);
+                             }
+                         }
+                     }
+                     int region_value = border_sign * indicator;
+                     for (const auto &rc : region)
+                         areaMap[rc.second][rc.first] = region_value;
                  }
              }
 
-             // Count stones from this group that fall inside bot's territory.
-             int in_territory = 0;
-             for (const auto &s : group)
-                 if (bot_territory.contains(s)) in_territory++;
+             // Find opponent stone groups inside bot-territory regions (value == +1).
+             // NOTE: opponent stone cells are assigned areaMap -1 (not +1) so we
+             // cannot test areaMap[gy][gx] == 1.  Instead: BFS the full group first,
+             // then check whether any stone in the group borders a bot-territory empty
+             // cell (areaMap == +1).  This handles groups fully surrounded by other
+             // opponent stones as well as groups with direct empty-cell neighbours.
+             QSet<QPair<int,int>> group_visited;
+             for (int gy = 0; gy < 19; ++gy) {
+                 for (int gx = 0; gx < 19; ++gx) {
+                     QPair<int,int> gstart(gx, gy);
+                     if (group_visited.contains(gstart)) continue;
+                     if (removed_cells.contains(gstart)) continue;
+                     if (board->getStoneAt(gx, gy) != opponent_color) continue;
 
-             int pct = (group.size() > 0) ? (in_territory * 100 / group.size()) : 0;
-             bool dead_by_ownership = (pct >= BOT_MAJORITY_PERCENT);
+                     // BFS the full connected group first.
+                     QQueue<QPair<int,int>> gq;
+                     QList<QPair<int,int>> group;
+                     gq.enqueue(gstart);
+                     group_visited.insert(gstart);
+                     while (!gq.isEmpty()) {
+                         auto cur = gq.dequeue();
+                         group.append(cur);
+                         for (int d = 0; d < 4; ++d) {
+                             int nx = cur.first  + dx[d];
+                             int ny = cur.second + dy[d];
+                             if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                             QPair<int,int> nb(nx, ny);
+                             if (group_visited.contains(nb)) continue;
+                             if (removed_cells.contains(nb)) continue;
+                             if (board->getStoneAt(nx, ny) == opponent_color) {
+                                 group_visited.insert(nb);
+                                 gq.enqueue(nb);
+                             }
+                         }
+                     }
 
-             // Enclosure test: flood-fill all empty intersections reachable from the
-             // group's liberties without crossing bot stones. If every reachable empty
-             // cell is inside bot_territory, the group has no escape and is dead
-             // regardless of the ownership percentage KataGo assigns its stones.
-             bool dead_by_enclosure = false;
-             {
-                 QSet<QPair<int,int>> liberty_visited;
-                 QQueue<QPair<int,int>> lib_queue;
-                 bool escaped = false;
+                     // Check whether any stone in the group borders a bot-territory
+                     // empty cell.  If not, this group is not enclosed in bot territory.
+                     bool in_bot_territory = false;
+                     for (const auto &s : group) {
+                         for (int d = 0; d < 4; ++d) {
+                             int nx = s.first + dx[d], ny = s.second + dy[d];
+                             if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                             if (board->getStoneAt(nx, ny) == EMPTY
+                                 && !removed_cells.contains(qMakePair(nx, ny))
+                                 && areaMap[ny][nx] == 1) { in_bot_territory = true; break; }
+                         }
+                         if (in_bot_territory) break;
+                     }
+                     if (!in_bot_territory) continue;
 
-                 // Seed with all immediate empty liberties of the group.
-                 for (const auto &s : group) {
-                     for (int d = 0; d < 4; ++d) {
-                         int nx = s.first  + dx[d];
-                         int ny = s.second + dy[d];
-                         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
-                         QPair<int,int> nb(nx, ny);
-                         if (liberty_visited.contains(nb)) continue;
-                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
-                         liberty_visited.insert(nb);
-                         lib_queue.enqueue(nb);
+                     // Phase 2: KataGo confirmation.
+                     int confirmed = 0;
+                     for (const auto &s : group) {
+                         float own = ownership[s.second * 19 + s.first];
+                         float bot_own = (bot_color == BLACK_STONE) ? own : -own;
+                         if (bot_own > AREA_CONFIRM_STRONG || qAbs(own) < AREA_CONFIRM_AJI_MAX)
+                             ++confirmed;
+                     }
+                     int pct = (group.size() > 0) ? (confirmed * 100 / group.size()) : 0;
+                     bool dead = (pct >= 50);
+
+                     output_console->append(QString("[BOT] [area-map] Pass %1: opponent group of %2 stones in bot territory: %3/%4 (%5%) KataGo-confirmed -> %6")
+                         .arg(pass_num).arg(group.size()).arg(confirmed).arg(group.size()).arg(pct)
+                         .arg(dead ? "DEAD" : "alive (KataGo disagrees -- skipping)"));
+
+                     if (dead) {
+                         for (const auto &s : group)
+                             removed_cells.insert(s);
+                         dead_group_seeds.append(group.first());
+                         dead_group_members.append(group);
+                         changed = true;
                      }
                  }
+             }
+             output_console->append(QString("[BOT] [area-map] Pass %1 complete -- %2 dead group(s) found so far")
+                 .arg(pass_num).arg(dead_group_seeds.size()));
+         }
 
-                 // BFS: expand through empty intersections only.
-                 // If we reach an empty cell NOT in bot_territory the group can escape.
-                 while (!lib_queue.isEmpty() && !escaped) {
-                     auto cur = lib_queue.dequeue();
-                     if (!bot_territory.contains(cur)) {
-                         escaped = true;
-                         break;
-                     }
+     } else {
+         // -----------------------------------------------------------------------
+         // CLASSIC: KataGo ownership threshold + liberty enclosure BFS
+         // -----------------------------------------------------------------------
+
+         const float BOT_TERRITORY_THRESHOLD = 0.70f;
+         const int   BOT_MAJORITY_PERCENT    = 65;
+
+         QSet<QPair<int,int>> bot_territory;
+         for (int y = 0; y < 19; ++y) {
+             for (int x = 0; x < 19; ++x) {
+                 float own = ownership[y * 19 + x];
+                 bool bot_owns = (bot_color == BLACK_STONE) ? (own >=  BOT_TERRITORY_THRESHOLD)
+                                                            : (own <= -BOT_TERRITORY_THRESHOLD);
+                 if (bot_owns)
+                     bot_territory.insert(qMakePair(x, y));
+             }
+         }
+         output_console->append(QString("[BOT] Bot territory cells (threshold %1): %2")
+             .arg(BOT_TERRITORY_THRESHOLD, 0, 'f', 2).arg(bot_territory.size()));
+
+         QSet<QPair<int,int>> all_visited;
+         for (int y = 0; y < 19; ++y) {
+             for (int x = 0; x < 19; ++x) {
+                 QPair<int,int> start(x, y);
+                 if (all_visited.contains(start)) continue;
+                 if (board->getStoneAt(x, y) != opponent_color) continue;
+
+                 QQueue<QPair<int,int>> queue;
+                 QList<QPair<int,int>> group;
+                 queue.enqueue(start);
+                 all_visited.insert(start);
+                 while (!queue.isEmpty()) {
+                     auto cur = queue.dequeue();
+                     group.append(cur);
                      for (int d = 0; d < 4; ++d) {
                          int nx = cur.first  + dx[d];
                          int ny = cur.second + dy[d];
                          if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
                          QPair<int,int> nb(nx, ny);
-                         if (liberty_visited.contains(nb)) continue;
-                         if (board->getStoneAt(nx, ny) != EMPTY) continue;
-                         liberty_visited.insert(nb);
-                         lib_queue.enqueue(nb);
+                         if (all_visited.contains(nb)) continue;
+                         if (board->getStoneAt(nx, ny) == opponent_color) {
+                             all_visited.insert(nb);
+                             queue.enqueue(nb);
+                         }
                      }
                  }
-                 dead_by_enclosure = !escaped;
-             }
 
-             // Geometric enclosure test (KataGo-independent guard):
-             // Flood-fill from every liberty of this group, expanding through empty
-             // cells only, blocked by bot stones (not by bot_territory ownership).
-             // If the entire reachable empty region is bounded — no cell in the fill
-             // is adjacent to a bot-stone-free edge that connects outside — the group
-             // is geometrically walled in and dead regardless of KataGo's opinion.
-             // Concretely: if every cell in the fill is surrounded on all 4 sides by
-             // either a bot stone, an opponent stone, or another fill cell (i.e. the
-             // region has no "open" adjacency to empty space beyond the wall), the
-             // pocket is closed. We detect this by checking whether the fill can reach
-             // any cell adjacent to a region not bounded by bot stones — i.e. whether
-             // any fill cell has a neighbour that is empty and NOT yet in the fill after
-             // BFS completes (impossible by definition), OR more simply: after the BFS,
-             // check if the total reachable empty region is small enough to be a pocket
-             // AND every boundary stone of the region is a bot stone or opponent stone.
-             // Simplest reliable criterion: BFS blocked by bot stones; if every
-             // reachable empty cell has ALL its non-empty neighbours being bot stones
-             // or opponent stones (no "unknown" adjacency), the group is enclosed.
-             bool dead_by_geometry = false;
-             // Geometric enclosure test disabled — false positives on live groups with eyes.
-             // The liberty enclosure test (dead_by_enclosure) is sufficient for now.
+                 int in_territory = 0;
+                 for (const auto &s : group)
+                     if (bot_territory.contains(s)) in_territory++;
+                 int pct = (group.size() > 0) ? (in_territory * 100 / group.size()) : 0;
+                 bool dead_by_ownership = (pct >= BOT_MAJORITY_PERCENT);
 
-             bool dead = dead_by_ownership || dead_by_enclosure || dead_by_geometry;
-             QString reason = dead_by_ownership ? (dead_by_enclosure ? "ownership+enclosed" : "ownership")
-                                                : (dead_by_enclosure ? "enclosed"
-                                                : (dead_by_geometry  ? "geometric"          : ""));
-             output_console->append(QString("[BOT] Opponent group of %1 stones: %2/%3 (%4%) in bot territory — %5%6")
-                 .arg(group.size()).arg(in_territory).arg(group.size()).arg(pct)
-                 .arg(dead ? "DEAD" : "alive")
-                 .arg(dead ? QString(" (%1)").arg(reason) : QString()));
+                 bool dead_by_enclosure = false;
+                 {
+                     QSet<QPair<int,int>> liberty_visited;
+                     QQueue<QPair<int,int>> lib_queue;
+                     bool escaped = false;
+                     for (const auto &s : group) {
+                         for (int d = 0; d < 4; ++d) {
+                             int nx = s.first  + dx[d];
+                             int ny = s.second + dy[d];
+                             if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                             QPair<int,int> nb(nx, ny);
+                             if (liberty_visited.contains(nb)) continue;
+                             if (board->getStoneAt(nx, ny) != EMPTY) continue;
+                             liberty_visited.insert(nb);
+                             lib_queue.enqueue(nb);
+                         }
+                     }
+                     while (!lib_queue.isEmpty() && !escaped) {
+                         auto cur = lib_queue.dequeue();
+                         if (!bot_territory.contains(cur)) { escaped = true; break; }
+                         for (int d = 0; d < 4; ++d) {
+                             int nx = cur.first  + dx[d];
+                             int ny = cur.second + dy[d];
+                             if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
+                             QPair<int,int> nb(nx, ny);
+                             if (liberty_visited.contains(nb)) continue;
+                             if (board->getStoneAt(nx, ny) != EMPTY) continue;
+                             liberty_visited.insert(nb);
+                             lib_queue.enqueue(nb);
+                         }
+                     }
+                     dead_by_enclosure = !escaped;
+                 }
 
-             if (dead) {
-                 dead_group_seeds.append(group.first());  // one seed per group for IGS remove
-                 dead_group_members.append(group);        // full group for retry if seed rejected
+                 bool dead = dead_by_ownership || dead_by_enclosure;
+                 QString reason = dead_by_ownership ? (dead_by_enclosure ? "ownership+enclosed" : "ownership")
+                                                    : (dead_by_enclosure ? "enclosed" : "");
+                 output_console->append(QString("[BOT] Opponent group of %1 stones: %2/%3 (%4%) in bot territory -- %5%6")
+                     .arg(group.size()).arg(in_territory).arg(group.size()).arg(pct)
+                     .arg(dead ? "DEAD" : "alive")
+                     .arg(dead ? QString(" (%1)").arg(reason) : QString()));
+
+                 if (dead) {
+                     dead_group_seeds.append(group.first());
+                     dead_group_members.append(group);
+                 }
              }
          }
      }

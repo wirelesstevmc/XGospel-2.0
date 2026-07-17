@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPixmap>
+#include <QRect>
 #include <QTimer>
 #include <QString>
 #include "stone_renderer.h"
@@ -28,12 +29,17 @@ public:
     bool    isActive() const { return m_active; }
 
     void setActive(bool active);
+    void setGameId(int id)   { m_game_id = id; }
     void updateRanks(const QString &b_rank, const QString &w_rank);
     // Called by FixedXGospelWindow whenever this game's board state changes.
     void updateBoardPixmap(const QPixmap &px);
 
+    // Mark button as non-closeable (active bot game — X hidden)
+    void setCloseable(bool closeable);
+
 signals:
     void clicked(int game_id);
+    void closeRequested(int game_id);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -53,6 +59,8 @@ private:
     QString  m_white,  m_w_rank;
     bool     m_active       = false;
     bool     m_pressed      = false;
+    bool     m_closeable    = true;
+    QRect    m_close_rect;
 
     QPixmap  m_board_pixmap;    // cached hover board render — updated on each move
     QPixmap  m_black_stone;     // board-quality black stone icon

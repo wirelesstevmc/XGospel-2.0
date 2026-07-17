@@ -218,6 +218,7 @@ private:
     int observed_game_id;
     QString white_player, black_player;
     QString white_rank, black_rank;
+    QString white_rank_at_start, black_rank_at_start;  // frozen at game creation for SGF/result records
     QString my_username;  // Logged-in user's name
     QString custom_game_title;
     int current_move;
@@ -371,6 +372,7 @@ public:
                  const QString &game_name = QString());
     void stopObserving();
     void clearMoveHistoryBeforeMovesCommand();  // Clear move_history before requesting moves to prevent duplicates
+    void clearBoard() { if (board_widget) board_widget->clearBoard(); }  // Clear visual board widget (dock: slot owns the state)
     GameNode* getGameRoot() const { return game_root; } // For slot sync after tree reset
     void setPlayingMode(bool playing);
     bool isObserving() const { return is_observing; }
@@ -541,6 +543,7 @@ private:
 signals:
     void boardClosed(int game_id);
     void saveRequested(int game_id);
+    void gameSaved(int game_id, QString filename);
     void resignRequested(int game_id);
     void commentRequested(int game_id, const QString &message);
     void sayRequested(int game_id, const QString &message);
