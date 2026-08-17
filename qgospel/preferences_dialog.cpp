@@ -271,7 +271,7 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
 
     QLabel *blacklist_help = new QLabel(
         "Comma-separated IGS usernames. Match requests from these players will be\n"
-        "automatically declined. Names are case-insensitive.");
+        "automatically declined. Names are case-sensitive (match IGS account exactly).");
     blacklist_help->setWordWrap(true);
     blacklist_help->setStyleSheet("color: gray; font-size: 9pt;");
     blacklist_form->addRow("", blacklist_help);
@@ -286,7 +286,7 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
     QLabel *greylist_help = new QLabel(
         "Per-opponent handicap limit. Positive value: decline if offered handicap exceeds limit (weaker opponent asking too many stones). "
         "Negative value: decline if opponent offers an even or reverse-handicap game (stronger opponent offering unfavorable conditions). "
-        "Example: -1 declines any even or handicap game from a consistently stronger opponent. Names are case-insensitive.");
+        "Example: -1 declines any even or handicap game from a consistently stronger opponent. Names are case-sensitive.");
     greylist_help->setWordWrap(true);
     greylist_help->setStyleSheet("color: gray; font-size: 9pt;");
     greylist_layout->addWidget(greylist_help);

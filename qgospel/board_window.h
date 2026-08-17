@@ -68,6 +68,7 @@ private:
     bool scoring_mode_enabled;
     QMap<QPair<int, int>, StoneColor> territory_map;  // Empty points and their territory owner
     QSet<QPair<int, int>> dead_stone_positions;
+    QMap<QPair<int, int>, StoneColor> dead_stone_colors; // color captured at mark time, for post-CMD22 draw
     QSet<QPair<int, int>> disputed_positions;          // Seki / false-eye points (complex scoring)
 
     // Board texture (xgospel 1.X style)
@@ -181,6 +182,7 @@ private:
 
     QPushButton *save_button;          // Save game to SGF
     QPushButton *edit_button;          // Edit/Analyze button (q5Go style)
+    QPushButton *refresh_board_button; // Refresh Board button (sends "moves N")
     QPushButton *resign_button;
     QPushButton *done_button;
     QPushButton *close_button;
@@ -339,6 +341,7 @@ private:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
 public:
     BoardWindow(QWidget *parent = nullptr, const QString &username = "", bool edit_window = false);
@@ -559,6 +562,7 @@ signals:
     void engineClearRequested();                  // User pressed "Clear Board"
     void undoRequested();                         // User pressed "Undo" in local play mode
     void doneRequested(int game_id);              // User pressed "Done" in scoring phase
+    void refreshRequested(int game_id);           // User pressed "Refresh Board" button
 };
 
 #endif // BOARD_WINDOW_H

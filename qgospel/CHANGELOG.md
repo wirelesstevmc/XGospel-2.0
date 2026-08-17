@@ -5,6 +5,320 @@ All notable changes to the XGospel2 Qt5-based IGS Go client will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
+### 2026-08-12 The below refenced mapping/encoding mistakes appear to be a recurring issue with Claude!
+### For this reason I insisted that he create a reference document to avoid such mistakes in the future.
+### We should probably make a comment in the code that illustrates the existing (correct) mapping/encoding
+### Here is the document that Claude created: IGS_CMD22_TERRITORY_ENCODING.md
+
+## 2026-08-09 (v286): Revert v285 coordinate/encoding changes — repeat of v270 mistake
+
+### Revert — Restore v266/v275-consistent QPair(row, col) convention throughout
+
+v285 changed `receiveScoreLine` to store `QPair(col, 18-row)` and changed black territory detection from `digit==5` to `digit==3`. This was a repeat of the v270 mistake that was deliberately reverted at v272. The CHANGELOG documents at v272:
+
+> "Reverted all changes from v270 and v271-debug. The QPair storage convention change caused cascading regressions: incorrect territory overlays on all scored games, dead stone detection errors."
+
+And at v275:
+
+> "v274 swapped boardToScreen and getStoneAt arguments... This broke the editor scoring overlay. Root cause: the QPair (row, col) convention is used self-consistently throughout. Changing only some of the call sites breaks the self-consistency. All four sites restored to pos.first, pos.second matching v266."
+
+**v285's encoding claim was also wrong.** The claim was that IGS CMD22 value 3 = black territory. Cross-checking game 417's CMD22 against CMD20 arithmetic proved definitively: value 4 = white territory (58 cells + 1 cap − 5.5 komi = 53.5 ✓ matches CMD20), and therefore **value 5 = black territory** (the original v266 code was correct all along).
+
+**Reverts applied:**
+
+`board_window.cpp` — `receiveScoreLine`:
+- `QPair<int, int> pos(col, 18 - row)` → `QPair<int, int> pos(row, col)`
+- `digit == 4 || digit == 3` debug guard → `digit == 4 || digit == 5`
+
+`board_window.cpp` — `receiveScoreEnd` territory_map building:
+- `digit == 3` for black territory → `digit == 5`
+- dame: `digit == 0 || digit == 2 || digit == 5` → `digit == 2 || digit == 3`
+
+`board_window.cpp` — `receiveScoreEnd` dead stone detection:
+- `digit == 3 && actual_stone == WHITE_STONE` → `digit == 5 && actual_stone == WHITE_STONE`
+
+`board_window.cpp` — SGF TW/TB generation:
+- `char col = 'a' + pos.first; char row = 'a' + pos.second` → `char col = 'a' + pos.second; char row = 'a' + pos.first`
+- `ownership == 3` for black territory → `ownership == 5`
+
+`xgospel2_fixed.cpp` — inactive-slot CMD22 buffer:
+- `QPair<int,int>(col, 18 - row_number)` → `QPair<int,int>(row_number, col)`
+
+`xgospel2_fixed.cpp` — inactive-slot territory decode:
+- `digit == 3` for black territory → `digit == 5`
+- dame: `digit == 0 || digit == 2 || digit == 5` → `digit == 2 || digit == 3`
+
+`xgospel2_fixed.cpp` — inactive-slot prisoner counting:
+- `digit == 3` for black prisoner → `digit == 5`
+
+**Established invariant (DO NOT CHANGE):**
+
+The self-consistent convention is:
+- `receiveScoreLine` stores `QPair(row, col)` — row first, col second
+- IGS CMD22: 0=dame, 1=W-stone, 2=B-stone, 3=dame/neutral, **4=W-territory, 5=B-territory**
+- All draw functions use `boardToScreen(pos.first, pos.second)` — matching row/col order
+- SGF generation: `col = 'a' + pos.second; row = 'a' + pos.first`
+
+v284 anomaly detection code is retained unchanged.
+
+---
+
+## 2026-08-09 (v285): Fix CMD22 territory overlay — coordinate inversion and encoding [REVERTED in v286]
+
+*(This was a repeat of the v270 mistake. See v286 for revert details.)*
+
+---
+
+## 2026-08-09 (v284): IGS scoring anomaly detection and persistent log
+
+### Feature — CMD20 vs local-score discrepancy detection
+
+When a bot game ends and the server's CMD20 score disagrees with our local KataGo-based territory calculation (from the Pass 2 overlay) by 10 or more points, xgospel2 now:
+
+1. **Emits a `*SYSTEM*` warning** in Comments & Kibitz identifying the game number, server score, local score, gap, and whether the winner disagrees.
+2. **Appends a timestamped entry** to `~/xgospel2_scoring_anomalies.log` with full details (player names, raw CMD20 values, local raw values) for documentation and potential reporting to IGS administrators.
+
+The Pass 2 local scores (`bot_local_white_score` / `bot_local_black_score`) are captured in `applyBotTerritoryOverlay` when both players have typed done. The comparison happens in the CMD20 handler immediately after score delivery. The 10-point threshold absorbs komi rounding and minor positional disagreements while flagging genuine algorithmic failures like the game 350 F16 incident (37-point gap, winner wrong: B+21.5 server vs W+20.5 local).
+
+---
+
+## 2026-08-09 (v283): Dead stone markers survive CMD22 board replacement
+
+### Bug — Dead stone X markers erased when CMD22 territory map arrives
+
+`drawDeadStoneMarkers` called `getStoneAt(pos)` to determine the stone color for the X marker. After CMD22 arrives, `receiveScoreEnd` replaces the board display with the territory map — stones the server already removed (e.g. F16, a dead black stone toggled via CMD49) become empty (`5`/dame) in the CMD22 encoding. So `getStoneAt` returned EMPTY → `continue` → marker silently suppressed.
+
+Fix: added `dead_stone_colors: QMap<QPair<int,int>, StoneColor>` to `GoBoardWidget`. `setDeadStones()` populates this map by reading `getBoardState()` for each position **at mark time** (while the stone is still on the board). `drawDeadStoneMarkers` falls back to `dead_stone_colors` when `getStoneAt` returns EMPTY, so the X marker persists correctly after CMD22 replaces the board.
+
+---
+
+## 2026-08-08 (v282): Three fixes: bot dead stone visual marking, server score in C&K, board geometry persistence
+
+### Fix A — Bot's own dead stones not visually marked in docked mode
+The 1500ms pre-removal timer marked dead stones only on `engine_board`, which is null in normal docked bot games (non-Eve mode). The CMD49 echo handler was correctly skipping bot's own removals to avoid double-toggle, leaving them permanently unmarked. Restored the v273 fallback: when `engine_board` is null, fall back to `shared_board_window` (docked) or the matching `board_windows` entry (non-docked). Added already-marked guard to prevent double-toggle.
+
+### Fix B — Comments & Kibitz showed locally calculated score instead of server score
+`updateGameResult()` computed `white_territory + white_captures + komi` locally for the "Game finished" comment line, ignoring the server-provided CMD20 values (`server_white_score`, `server_black_score`). Now uses server values when `has_server_score` is true. Core principle: never recalculate what the server already computed.
+
+### Fix C — Board window geometry not persisted across sessions in docked mode
+`closeEvent` saves geometry correctly, but in docked mode the shared board window is hidden (not destroyed) between sessions — `closeEvent` never fires. Added `hideEvent` override that saves geometry, splitter sizes, and calls `settings->save()` whenever the window is hidden. Constructor already restores from settings on first show; now the saved values are always up to date.
+
+---
+
+## 2026-08-07 (v281): Fix SIGSEGV — getBotBlacklist() dangling iterator in match/nmatch handler
+
+### Bug — Crash in bot match/nmatch accept handler when blacklist is non-empty
+
+`settings->getBotBlacklist()` returns `QStringList` by value. The two calls `settings->getBotBlacklist().constBegin()` and `settings->getBotBlacklist().constEnd()` in `std::any_of(...)` each created a separate temporary `QStringList`. The iterators from the first temporary were dangling by the time `std::any_of` iterated — undefined behavior → SIGSEGV. Reproduced when qzg sent an nmatch request to the bot. Fixed by binding the result to a local `const QStringList bl` in both the `match` (line ~7418) and `nmatch` (line ~7456) suggested-command handlers before calling `any_of`.
+
+---
+
+## 2026-08-07 (v280): Board window not re-shown after close + re-observe
+
+### Bug — Board window stays hidden after user closes it and re-observes a game
+
+`closeBoardWindow` correctly calls `shared_board_window->hide()` when the last slot is closed and sets `active_slot_game_id = -1`. When the user then clicks a game to observe, `observeGame` creates a new slot, calls `loadSlot`, but never calls `show()` on the already-existing (hidden) `shared_board_window` — the `if (!shared_board_window)` creation block is skipped because the window already exists. Fix: after the creation block, added `if (!shared_board_window->isVisible()) shared_board_window->show()` so the window re-appears whenever a game is loaded into a previously-hidden board window.
+
+---
+
+## 2026-08-07 (v279): SIGSEGV crash handler — backtrace to session log
+
+Added a `SIGSEGV` signal handler in `main()` that calls `backtrace()` and `backtrace_symbols_fd()` to write a stack trace to stderr (redirected to the session log) before re-raising the signal. This makes previously silent UI-thread crashes (e.g. splitter drag crash in v278) produce an actionable call chain in the session log.
+
+---
+
+## 2026-08-07 (v278): closeBoardWindow — detachSlotClockTimer before slot delete (all branches)
+
+### Bug — shared_board_window->clock_timer dangled after slot delete causing segfault on re-observe
+
+`closeBoardWindow` deleted a `GameSlot` without first detaching its `clock_timer` from `shared_board_window`. On the next `loadSlot` call, `disconnect(clock_timer, ...)` operated on the freed QTimer pointer → segfault. Fixed by calling `shared_board_window->detachSlotClockTimer()` before `delete slot` in both the active-slot and non-active-slot branches of `closeBoardWindow`.
+
+---
+
+## 2026-08-07 (v277): closeBoardWindow — stop clock_timer before delete (non-active-slot path)
+
+### Bug — clock_timer fire on freed GameSlot causing segfault on board close
+
+Non-active-slot path in `closeBoardWindow` deleted the slot without stopping its `clock_timer` first. The timer could fire between `delete slot` and GC, invoking a callback on freed memory. Fixed by adding `slot->clock_timer->stop()` before `delete slot`.
+
+---
+
+## 2026-08-07 (v276): Full revert to v266 baseline + re-apply v267/v268/v269/v271 fixes
+
+Reverted all source files from v266 backup (`xgospel2_v266-DEAD-STONE-MARKERS-AND-SAVE-GAME-RETENTION-FIXES_07142026.tar.gz`) after v275 left scoring overlay, editor/score function, and SGF generation in broken states. Re-applied v267 (observed-game ID recycle eviction + blacklist case sensitivity), v268 (bot desync recovery + Refresh Board button), v269 (systematic game-ID reuse hardening + "Board is restored" handler), and v271 (editGame guard) cleanly on top.
+
+---
+
+## 2026-08-07 (v275): Revert v274 draw-function swap; restore v266-consistent coordinate convention
+
+v274 swapped `boardToScreen` and `getStoneAt` arguments in the three draw functions and in `receiveScoreEnd` dead stone detection. This broke the editor scoring overlay and made the observed-game overlay worse. Root cause: the QPair `(row, col)` convention is used self-consistently throughout — draw functions, stone lookup, and dead stone detection all use `pos.first` as the first board_state index. Changing only some of the call sites breaks the self-consistency. All four sites restored to `pos.first, pos.second` matching v266.
+
+v273 fixes (double-toggle prevention, bot dead stone pre-marking) are retained.
+
+---
+
+## 2026-08-07 (v274): Fix territory/dead stone overlay screen position transposition
+
+### Bug — All overlay markers drawn at transposed board positions
+
+**Root cause:** `GoBoardWidget::drawTerritoryMarkers`, `drawDeadStoneMarkers`, and `drawDisputedMarkers` all called `boardToScreen(pos.first, pos.second)` where QPair stores `(row_number, col)`. `boardToScreen(x, y)` maps x→horizontal (column axis) and y→vertical (row axis). With `pos.first=row_number` as x, the horizontal and vertical axes were swapped — a 90° transposition of the entire overlay. Territory markers landed at wrong positions. Dead stone markers additionally called `getStoneAt(pos.first, pos.second)` with the same transposition: for most dead stone positions the transposed cell is empty, hitting the `continue` guard and silently suppressing the marker entirely.
+
+**Fix:** Swapped to `boardToScreen(pos.second, pos.first)` and `getStoneAt(pos.second, pos.first)` in all three draw functions. `pos.second=col` maps correctly to the horizontal axis and `pos.first=row_number=row_from_top` maps correctly to the vertical axis. Change is self-contained in the paint path — no QPair storage convention changed.
+
+---
+
+## 2026-08-07 (v273): Dead stone overlay — double-toggle fix + bot's own stones marked
+
+### Bug A — Opponent's second CMD49 for same group un-marks all dead stone markers
+
+**Symptom:** When an opponent sent multiple CMD49 stone-removal messages for the same connected group (e.g., carlson sending B16 then C17 for a group of 4 white stones), the first CMD49 correctly flood-filled and marked the entire connected group. The second CMD49 found the seed coordinate already in `dead_stones`, triggered `markStoneAsDead`'s toggle-off branch, and un-marked the entire group. Net result: no dead stone markers visible for the opponent's removed group.
+
+**Root cause:** `markStoneAsDead` uses a toggle: if the seed is already marked, it un-marks the full connected group. This is correct for interactive user clicks (allowing players to unmark stones), but wrong when called programmatically from CMD49 — where each message is an independent confirmation of the same agreed removal, not a reversal.
+
+**Fix:** In the CMD49 handler (both docked active-slot path and non-docked path), check if the seed coordinate is already in `dead_stones` before calling `markStoneAsDead`. If already marked, skip — the group was fully captured by the first CMD49 flood-fill. Same guard added to the inactive-slot flood-fill path.
+
+### Bug B — Bot's own dead stones never shown with dead stone markers
+
+**Symptom:** Dead stone overlay showed no markers on the bot's own removed groups (M14, E12, Q10, L4 in game #41). Only the opponent's removals (when not double-toggled) showed markers.
+
+**Root cause:** The 1500ms scoring timer (which fires before the bot sends its first removal) was supposed to pre-mark the bot's dead groups visually. The code called `engine_board->markStoneAsDead()` — but `engine_board` is only non-null in Eve mode (KataGo vs KataGo). In normal bot games it is null, so the if-guard silently skipped all marking. The CMD49 echo handler skipped bot's own removes (`is_bot_own_remove_docked` guard) to prevent double-toggle — but since the pre-marking never ran, nothing marked the stones.
+
+**Fix:** Extended the 1500ms timer to fall back to `shared_board_window` (docked mode) or the active `BoardWindow` (non-docked) when `engine_board` is null. Added `already_marked` guard before calling `markStoneAsDead` to prevent double-toggle if the CMD49 echo fires anyway.
+
+---
+
+## 2026-08-07 (v272): Revert v270 territory QPair transposition fix
+
+Reverted all changes from v270 and v271-debug. The QPair storage convention change (`QPair(row,col)` → `QPair(col,row)`) caused cascading regressions: incorrect territory overlays on all scored games, dead stone detection errors, and suspected game ID corruption. Root cause of the original S7/T7/R8/T8 green-dame issue in game #55 was confirmed as an IGS server mis-encoding (S7 coded as digit `1` alive white stone instead of digit `4` white territory), not a client rendering bug. The overlay transposition was a pre-existing cosmetic issue that is visually tolerable; the regressions from the fix were not.
+
+Restored: `QPair(row,col)` storage in `receiveScoreLine()` and inactive-slot CMD22 buffer; `getStone(pos.second, pos.first)` in dead stone detection (both active and inactive slot paths); `pos.second/pos.first` swap in SGF generation; all draw functions left unchanged at `boardToScreen(pos.first, pos.second)`.
+
+---
+
+## 2026-08-04 (v271): Edit Game available for SGF files opened from disk
+
+### Bug — Edit Game button rejected SGF files loaded via Open SGF
+
+**Symptom:** Opening a saved SGF file via File → Open SGF and then clicking Edit Game showed "No game currently being observed. Edit Game is available when observing a game." — making it impossible to edit or annotate any saved game record.
+
+**Root cause:** `BoardWindow::editGame()` guarded entry with `!is_observing && !is_playing && !game_finished`. A board loaded via Open SGF has all three flags false (it is not a live IGS game), so the guard fired. The condition was written only with live-game states in mind and never accounted for the SGF-from-disk case.
+
+**Fix:** Added `&& !game_root` to the guard. `game_root` is non-null whenever a game tree has been loaded (either from a live game or from an SGF file). A board with no game tree at all (`game_root == nullptr`) is genuinely empty and has nothing to edit — the message is appropriate there. Updated the message text to mention SGF files as a valid context. One-line change in `board_window.cpp`.
+
+---
+
+## 2026-08-02 (v270): Territory overlay row/column transposition fix
+
+### Bug — Scoring overlay rendered at wrong positions (90° rotated)
+
+**Symptom:** After scoring, the territory markers (white/black territory boxes and dame/dead stone green squares) appeared at completely wrong intersections. Dead stone markers from near the bottom-centre of the board (CMD22 digit `3`) rendered as green squares in the wrong quadrant — in game #55 (got2go vs Raul, B+1.5) the dead-stone cells around L-N rows 1-4 appeared as green dame at S7/T7/R8/T8, causing white's territory count to show as 74 instead of the correct 78. The visual result misled players into thinking valid territory was uncounted dame.
+
+**Root cause:** `territory_ownership` stores `QPair<int,int>` keys. Both insertion paths (active-slot `receiveScoreLine()` and inactive-slot CMD22 buffer in `xgospel2_fixed.cpp`) stored `QPair(cmd22_row_number, cmd22_col)` — row index first. But all rendering functions call `boardToScreen(pos.first, pos.second)` and all stone-lookup calls use `board_state[pos.first][pos.second]` / `getStone(pos.first, pos.second)`, where the first argument is always the column (x-axis) and the second is the row from top (y-axis). The entire territory overlay was transposed 90° — row rendered as column and column as row.
+
+The same transposition affected the SGF generation code, but that code accidentally compensated: the comment said `pos.second = col` while pos.second was actually `cmd22_row`, so the labels were wrong but the variable usage happened to produce correct SGF output anyway. After the QPair insertion fix, the SGF code needed its comments updated to reflect the new order.
+
+**Fix:** Corrected `QPair` insertion order at both CMD22 storage sites to store `QPair(col, row_from_top)`:
+- `receiveScoreLine()` in `board_window.cpp`: `QPair<int,int>(col, row)` (was `QPair(row, col)`)
+- Inactive-slot CMD22 buffer in `xgospel2_fixed.cpp`: `QPair<int,int>(col, row_number)` (was `QPair(row_number, col)`)
+
+All rendering functions (`drawTerritoryMarkers`, `drawDeadStoneMarkers`, `drawDisputedMarkers`) and all stone-lookup calls (`receiveScoreEnd`, inactive-slot dead stone detection) remain unchanged — they already use `pos.first` as column and `pos.second` as row, which is now correct. SGF generation comments updated to reflect the new QPair convention.
+
+**Impact:** Every game that showed a CMD22 scoring overlay was displaying territory and dead stone markers at transposed positions. The score_engine overlay (from KataGo analysis) was always correct — it stored QPairs as `(col, row)` from the start. The server score (CMD20) was also always correct — only the CMD22 visual overlay was wrong.
+
+---
+
+## 2026-07-28 (v269): Systematic game ID reuse hardening across all protocol handlers
+
+### Root cause (recurring)
+IGS aggressively recycles game IDs. When a game ends its slot is remapped to a negative ID (`-N`, `game_finished=true`). If a new game is assigned ID `N` before a late server message for the old game arrives, `findSlot(N)` returns the NEW game's slot — corrupting it. Similarly, player-name loops that skip `game_finished` but don't check `is_scoring_mode` can match a new active game when looking for a just-finished one. This class of bug caused the v268 territory overlay corruption (CMD22 from an unrelated game painted over a finished game's board).
+
+### Bug — Bot fails to re-send dead stone removals after IGS "Board is restored"
+
+**IGS scoring protocol:** After both players pass, IGS opens a scoring negotiation phase. Each player independently marks dead stones in their own territory and types `done`. However, if either player continues marking stones they missed AFTER already typing `done`, IGS resets the entire scoring board for BOTH players with `9 Board is restored to what it was when you started scoring` / `9 Please type 'done again.` Both players must then re-submit all their dead stone removals from scratch before typing `done` again.
+
+**Root cause:** The bot's scoring re-entry handler only triggered on `check your score with the score command` — the initial scoring trigger. The "Board is restored" message uses entirely different text and was never caught. When IGS fired the restore (as happened in game 23 vs happyman77, who disputed the bot's correct removals of J18/H17/K16/H8+H7+G7), the bot silently re-sent `done` via the "has typed done" re-send path — without re-submitting any removals. All six dead opponent stones were treated as alive, flipping the result from W+1.5 to B+37.5 — a 39-point swing.
+
+**Fix:** Added a dedicated handler for the "Board is restored" line that fully resets all scoring state (`bot_done_sent=false`, `bot_scoring_pending=true`, clears `bot_pending_removes/positions/groups`, resets retry counters) and re-requests KataGo ownership analysis from scratch. The 1500ms timer then re-identifies dead groups and re-sends all removals before sending `done` again — exactly as if scoring had just started.
+
+**Testing required:** Must be verified with a mock game where the opponent disputes the bot's removals after already typing done, forcing a board restore. The console log should show `[BOT] Board restored by IGS — re-running ownership analysis and re-sending removals` followed by a full new set of removal commands.
+
+---
+
+### Fixes — seven handlers hardened
+
+**CMD22 territory header (docked loop, line ~6422):** Added `if (slot->is_playing && !slot->is_scoring_mode) continue;` after the `game_finished` guard. This precisely targets only the bot's own playing slot (`is_playing=true`): it must have entered scoring mode before receiving CMD22. Purely observed game slots (`is_playing=false`) are always eligible and pass through unconditionally. A pure `!is_scoring_mode` guard was first attempted but caused a regression (v269 patch): observed games never have `is_scoring_mode` set before CMD22 arrives, so that guard silently blocked all territory data for observed games.
+
+**CMD20 counting result (docked loop, line ~7657):** Added `if (!slot->is_scoring_mode) continue;` alongside the existing `game_finished` guard. CMD20 follows CMD9/CMD22 so the matching slot must already be in scoring mode; this prevents a new rematch (same two players, not yet in scoring) from being falsely matched.
+
+**Counting result / `{Game N: W score B score}` handler (line ~6720):** Changed `findSlot(game_id)` to `findSlot(game_id); slot && !slot->game_finished`. A late counting result for old game N can no longer corrupt a newly started game N.
+
+**Resign result (structured `{Game N: ...}` format, line ~6835):** Same `!slot->game_finished` guard added.
+
+**Simple resign (`has resigned the game`, line ~6894):** Same guard.
+
+**No-move time loss (line ~6944) and time forfeit (line ~6975) and adjourned result (line ~7000):** Same `!slot->game_finished` guard added to all three.
+
+**CMD49 dead stone removal (line ~7286):** Added `!slot->game_finished` guard. A late CMD49 for a finished game can no longer mark stones dead on a recycled new game's slot.
+
+### Regression caught and fixed (v269 patch)
+The initial CMD22 guard (`!slot->is_scoring_mode`) blocked territory data for all observed game slots because observed slots never have `is_scoring_mode` set before CMD22 arrives — only the CMD22 inactive path sets it, which runs AFTER the match. The refined guard (`slot->is_playing && !slot->is_scoring_mode`) fixes this: observed slots (`is_playing=false`) always receive CMD22; only bot playing slots are gated on `is_scoring_mode`.
+
+### Invariant established
+Every docked-mode handler that calls `findSlot(game_id)` to modify slot state or route data to `shared_board_window` now verifies `!slot->game_finished` before proceeding. Every player-name loop that produces scoring output (`CMD22`, `CMD20`) also requires `slot->is_scoring_mode`. CMD22 additionally gates bot playing slots on `is_scoring_mode` while leaving observed slots unconditionally eligible.
+
+---
+
+## 2026-07-27 (v268): Bot engine desync recovery; Refresh Board button
+
+### Bug — Territory overlay from a new game painted onto a just-finished game's display
+
+**Symptom:** After a bot game ended, the board display (still showing the finished game) was overwritten with territory squares and dead-stone markers from a completely different game. The Comments & Kibitz panel showed a different score total. Live black groups appeared marked dead. The server score (CMD20) was correct; only the visual overlay was corrupted.
+
+**Root cause:** CMD22 territory data is matched to a slot by player name in the docked-mode loop (line ~6422). The loop skipped `game_finished` slots (correct), but did **not** require the slot to be in `is_scoring_mode`. When the finished game's slot was remapped to a negative ID, and IGS issued CMD22 for an unrelated game that happened to include `got2go` as a player, the loop found the new active slot and routed `territory_board = shared_board_window`. `shared_board_window` was still displaying the finished game's board position → the new game's CMD22 territory grid was painted over the wrong board.
+
+**Fix:** Added `if (!slot->is_scoring_mode) continue;` to the CMD22 docked-mode slot lookup (one line, after the `game_finished` guard). CMD22 territory data is now only routed to slots that have explicitly entered scoring mode via the `9 ... check your score` trigger. Slots in normal play, finished games, and unrelated observers are all skipped correctly.
+
+---
+
+## 2026-07-27 (v268): Bot engine desync recovery; Refresh Board button
+
+### Bug 1 — Bot engine board desyncs from IGS when server rejects a move with "5 It is not your turn"
+
+**Root cause (race condition):** When a warm KataGo engine cleared its board almost instantly after a new game started, the "engine ready late" path in `onBotEngineReady` immediately called `onBotOpponentMove` and requested `genmove`. KataGo returned a move (e.g. C4) in milliseconds. The bot sent it to IGS before the server had finished committing the opponent's first move server-side. IGS rejected the bot's move with `< 5 It is not your turn`. KataGo had already placed the stone on its internal board; there was no handler to undo it. The boards diverged silently.
+
+**Cascade failure:** When the opponent later played the same intersection (C4) as a legal move on the IGS board, the bot sent `play black C4` to KataGo. KataGo already had White at C4, so it replied `? illegal move`. `KataGoEngine` cleared its command queue (cancelling the pending genmove) and emitted `illegalMove`. There was no `illegalMove` handler connected in bot mode, so the engine went permanently silent and the bot stopped responding.
+
+**Fix — Part A (prevention): 500ms delay in "engine ready late" path.** When `onBotEngineReady` detects a missed opponent move and the warm engine path responds faster than IGS can settle, a 500ms `QTimer::singleShot` is inserted before calling `onBotOpponentMove`. This gives the IGS server time to complete its internal state transition after the opponent's move.
+
+**Fix — Part B (IGS rejection recovery): CMD5 "not your turn" handler.** When IGS sends any `5 ...` error and the bot just sent a move (`bot_last_sent_vertex` is set), the handler sends GTP `undo` to KataGo (removing the rejected stone from KataGo's board), then re-requests `genmove` after an additional 500ms pause. `bot_last_sent_vertex` is set in `onBotMoveReady` and cleared on rejection or game end.
+
+**Fix — Part C (KataGo desync recovery): `onBotIllegalMove` handler.** Connected to `KataGoEngine::illegalMove` in both warm and cold bot engine setups. When KataGo rejects a `play` command with `? illegal move`, the handler calls `botReplayMovesIntoEngine()`: clears KataGo's board, restores game parameters (komi, time settings, rules, handicap stones), replays all IGS-confirmed moves from `slot->move_history` in order, then requests `genmove` if it is the bot's turn. This fully resyncs KataGo's internal board to the IGS server's authoritative state.
+
+### Feature — Refresh Board button on board window
+
+Added a "Refresh Board" button to the board window info panel, positioned between "Edit Game" and "Close Board". Clicking it sends `moves <game_id>` to the IGS server, which responds with the full move history for the current game — useful when a board opens empty mid-game. Uses the black-on-gold xgospel1-style button (matching the Refresh Players and Refresh Games buttons). Signal: `BoardWindow::refreshRequested(int game_id)`.
+
+**Bug fix during implementation:** `shared_board_window` has two creation paths in `xgospel2_fixed.cpp`: the CMD15 playing-game path (line ~5342) and the observe/cross-session-resume path (line ~8529). The `refreshRequested` signal connection (and `doneRequested`) were only wired in the first path. When the session started via the second path, the button click emitted the signal but no handler was connected, so nothing happened. Fixed by adding the missing connections to the second creation path. Three non-dock board creation paths were also audited; the CMD15 first-move path (line ~5876) and the manual-observe path (line ~8634) were missing the connection and were fixed as well.
+
+---
+
+## 2026-07-26 (v267): Fix observed game ID recycle corrupting bot game slot; fix blacklist/greylist case sensitivity
+
+### Bug 1 — Observed game slot not evicted on ID recycle when game_finished is false
+
+**Root cause:** The OBSERVE-MATCH eviction guard (`if (slot->game_finished)`) only fires for slots whose game ended via `untrackFinishedGame()`. That function is only called for the bot's own playing games. When a purely observed third-party game ends on IGS, the slot stays in `game_slots` with `game_finished=false`. When IGS silently recycles the ID for a new game, the OBSERVE-MATCH handler falls through to the player-name update path, overwriting `white_player`/`black_player` on the stale slot without clearing board state, move history, ranks, or handicap. After multiple recyclings, rank and handicap from an earlier game (e.g. a 10d player in a -5.5 komi game) corrupt the new bot game slot — producing wrong `WR[]` in the saved SGF and wrong handicap display.
+
+**Evidence:** Session log showed game ID 188 recycled twice for observed games (komi=-5.5 → komi=6.5 → komi=0.5 bot game). The SGF for the bot game showed `WR[10d]` from the original observed game 188 player. The `untrackFinishedGame` log for game 188 only appeared once, confirming the intermediate recyclings were never evicted.
+
+**Fix:** Added player-mismatch detection before the name-update path in the OBSERVE-MATCH handler. When the slot is a pure observation (`is_observing=true, !is_playing, !adjourned`), the slot has known players, and both white and black in the OBSERVE-MATCH line differ from the slot's current players, the slot is remapped to `-game_id` (same as the `game_finished` eviction path) and `game_finished` is set to true on the synthetic slot. The new game proceeds with a clean slate.
+
+### Bug 2 — Blacklist and greylist player names forced to lowercase, breaking case-sensitive IGS accounts
+
+**Root cause:** `settings.cpp` `getBotGreylist()` and `setBotGreylist()` applied `.toLower()` when loading and saving entries. Same for `getBotBlacklist()`/`setBotBlacklist()`. The match-time comparisons used `opponent.toLower()` / `QStringList::contains(opp.toLower())`. IGS account names are case-sensitive — a name entered as "K831114831" was stored as "k831114831" and never matched incoming challenges that used the original casing.
+
+**Fix:** Removed all `.toLower()` calls from the settings load/save paths for both blacklist and greylist. Updated match-time comparisons to use `Qt::CaseInsensitive` (`QString::compare()` for greylist, `std::any_of` with case-insensitive compare for blacklist). Updated preferences dialog help text to say "case-sensitive" instead of "case-insensitive".
+
+---
 
 ## 2026-07-14 (v266): Fix dead stone display for observed games; fix save confirmation lost on slot switch
 

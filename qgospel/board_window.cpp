@@ -458,6 +458,16 @@ void GoBoardWidget::drawTerritoryMarkers(QPainter &painter) {
 void GoBoardWidget::setDeadStones(const QSet<QPair<int, int>> &dead_stones) {
  qDebug() << "[DEAD-MARKER-DEBUG] setDeadStones called with" << dead_stones.size() << "dead stones";
  dead_stone_positions = dead_stones;
+ // Rebuild the color cache. Capture stone colors now while the board still has
+ // the stones. After CMD22 arrives the scoring board erases removed stones, so
+ // getStoneAt() returns EMPTY at draw time. We store the color here so
+ // drawDeadStoneMarkers can render the X even after CMD22 clears the position.
+ dead_stone_colors.clear();
+ for (const auto &pos : dead_stones) {
+     StoneColor c = getBoardState(pos.first, pos.second);
+     if (c != EMPTY)
+         dead_stone_colors[pos] = c;
+ }
  update();
 }
 
@@ -467,18 +477,20 @@ void GoBoardWidget::drawDeadStoneMarkers(QPainter &painter) {
  for (const auto& pos : dead_stone_positions) {
  QPoint center = boardToScreen(pos.first, pos.second);
 
- // Get the stone color to determine rectangle color (inverted)
+ // Get the stone color. After CMD22 arrives the scoring board may have already
+ // erased the stone (it becomes dame/empty in the territory map). Fall back to
+ // the color captured at mark time in dead_stone_colors.
  StoneColor stone_color = getStoneAt(pos.first, pos.second);
+ if (stone_color == EMPTY)
+     stone_color = dead_stone_colors.value(pos, EMPTY);
 
- // Draw inverted rectangle on dead stones (same style as territory markers)
- // Black stones get white rectangles, white stones get black rectangles
  QColor fill_color;
  if (stone_color == BLACK_STONE) {
  fill_color = QColor(255, 255, 255, 160); // Semi-transparent white
  } else if (stone_color == WHITE_STONE) {
  fill_color = QColor(0, 0, 0, 160); // Semi-transparent black
  } else {
- continue; // Skip if no stone at this position
+ continue; // Skip if no stone at this position and no stored color
  }
 
  // Draw filled rectangle with border (same size as territory markers)
@@ -895,6 +907,22 @@ void BoardWindow::closeEvent(QCloseEvent *event) {
  QMainWindow::closeEvent(event);
 }
 
+void BoardWindow::hideEvent(QHideEvent *event) {
+ // Save geometry whenever the window is hidden — covers the docked-mode path where
+ // hide() is called instead of close(), so geometry is persisted across sessions.
+ if (settings) {
+     settings->saveWindowGeometry("board", geometry());
+     if (main_splitter)
+         settings->saveSplitterSizes("board_main_splitter", main_splitter->sizes());
+     if (right_splitter)
+         settings->saveSplitterSizes("board_right_splitter", right_splitter->sizes());
+     if (info_splitter)
+         settings->saveSplitterSizes("board_info_splitter", info_splitter->sizes());
+     settings->save();
+ }
+ QMainWindow::hideEvent(event);
+}
+
 void BoardWindow::setupUI() {
  QWidget *central = new QWidget;
  setCentralWidget(central);
@@ -1190,6 +1218,20 @@ void BoardWindow::setupUI() {
  );
  connect(edit_button, &QPushButton::clicked, this, &BoardWindow::editGame);
  info_layout->addWidget(edit_button);
+
+ // Refresh Board button — sends "moves N" to re-sync board from server history
+ refresh_board_button = new QPushButton("Refresh Board");
+ refresh_board_button->setStyleSheet(
+     "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f0c000, stop:1 #c09000);"
+     " border: 2px outset #f8d840; border-radius: 4px; padding: 6px; font-weight: bold; color: black; }"
+     "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8d840, stop:1 #d4a800); }"
+     "QPushButton:pressed { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c09000, stop:1 #f0c000);"
+     " border: 2px inset #f0c000; }"
+ );
+ connect(refresh_board_button, &QPushButton::clicked, this, [this]() {
+     emit refreshRequested(observed_game_id);
+ });
+ info_layout->addWidget(refresh_board_button);
 
  // Resign button (shown when playing, replaces Close button)
  resign_button = new QPushButton("Resign");
@@ -2929,9 +2971,9 @@ void BoardWindow::rebuildGameTreeFromMoveHistory()
 }
 
 void BoardWindow::editGame() {
- if (!is_observing && !is_playing && !game_finished) {
+ if (!is_observing && !is_playing && !game_finished && !game_root) {
  QMessageBox::information(this, "Edit Game",
- "No game currently being observed.\n\n" "Edit Game is available when observing a game.");
+ "No game to edit.\n\n" "Edit Game is available when observing a game or after opening an SGF file.");
  return;
  }
 
@@ -3512,16 +3554,16 @@ void BoardWindow::updateGameResult(const QString &result) {
 
  QString result_message;
  if (is_scored_result) {
- // Use white_captures/black_captures — set from CMD22 header by updateCaptures()
- // and matching the stats panel exactly. white_prisoners is not updated after
- // enterScoringModeForResult() so it can be stale; white_captures is authoritative.
- double white_total = white_territory + white_captures + komi;
- double black_total = black_territory + black_captures;
-
- result_message = QString("Game finished: %1\nW %2 B %3")
- .arg(standard_result)
- .arg(white_total, 0, 'f', 1)
- .arg(black_total, 0, 'f', 1);
+ // Always use the server-provided scores (CMD20). Never recalculate on the
+ // client what the server already computed.
+ if (has_server_score) {
+     result_message = QString("Game finished: %1\nW %2 B %3")
+         .arg(standard_result)
+         .arg(server_white_score, 0, 'f', 1)
+         .arg(server_black_score, 0, 'f', 1);
+ } else {
+     result_message = QString("Game finished: %1").arg(standard_result);
+ }
  } else {
  // Non-scored result - keep both readable message and standard notation
  result_message = QString("Game finished: %1 (%2)").arg(display_result).arg(standard_result);
@@ -3833,16 +3875,17 @@ QString BoardWindow::generateSGF() {
  QPair<int, int> pos = it.key();
  int ownership = it.value();
 
- // Convert to SGF coordinates (a-s)
+ // Convert to SGF coordinates (a-s).
+ // pos = QPair(row, col); SGF: [colChar][rowChar] both from 'a'.
  if (pos.first >= 0 && pos.first < 19 && pos.second >= 0 && pos.second < 19) {
- char col = 'a' + pos.second; // pos.second = col (x coordinate)
- char row = 'a' + pos.first; // pos.first = row (y coordinate)
+ char col = 'a' + pos.second; // pos.second = col (A=0)
+ char row = 'a' + pos.first;  // pos.first = row (0=IGS row 1 bottom)
  QString coord = QString("%1%2").arg(col).arg(row);
 
- if (ownership == 4) { // White territory
+ if (ownership == 4) { // White territory (IGS CMD22 value 4)
  white_territory_coords.append(coord);
  white_count++;
- } else if (ownership == 5) { // Black territory
+ } else if (ownership == 5) { // Black territory (IGS CMD22 value 5)
  black_territory_coords.append(coord);
  black_count++;
  }
@@ -5167,8 +5210,9 @@ void BoardWindow::receiveScoreLine(int row, const QString &line) {
  DEBUG_SCORING << "*** IGS TERRITORY: Enabled scoring mode for game" << observed_game_id;
  }
 
- // Process each character in the line
- // 0=black stone, 1=white stone, 2=free, 3=neutral, 4=white territory, 5=black territory
+ // Process each character in the line.
+ // CMD22 encoding: 0=dame, 1=W-stone, 2=B-stone, 3=dame/neutral, 4=W-territory, 5=B-territory.
+ // Storage convention: QPair(row, col) — row first, col second.
  for (int col = 0; col < line.length() && col < 19; col++) {
  int digit = line[col].digitValue();
  QPair<int, int> pos(row, col);
@@ -5178,8 +5222,8 @@ void BoardWindow::receiveScoreLine(int row, const QString &line) {
 
  if (digit == 4 || digit == 5) {
  DEBUG_SCORING << "*** IGS TERRITORY: Position" << row << col << "=" << (digit == 4 ? "WHITE" : "BLACK") << "territory";
- } else if (digit == 0 || digit == 1) {
- DEBUG_SCORING << "*** IGS TERRITORY: Position" << row << col << "=" << (digit == 0 ? "BLACK" : "WHITE") << "stone";
+ } else if (digit == 1) {
+ DEBUG_SCORING << "*** IGS TERRITORY: Position" << row << col << "= WHITE stone";
  }
  }
 
@@ -5217,17 +5261,17 @@ void BoardWindow::receiveScoreEnd() {
  QPair<int, int> pos = it.key();
  int digit = it.value();
 
- if (digit == 4) { // White territory (empty point)
+ if (digit == 4) { // White territory (IGS CMD22 value 4)
  territory_map[pos] = WHITE_STONE;
  white_territory_count++;
- } else if (digit == 5) { // Black territory (empty point)
+ } else if (digit == 5) { // Black territory (IGS CMD22 value 5)
  territory_map[pos] = BLACK_STONE;
  black_territory_count++;
- } else if (digit == 2 || digit == 3) { // Dame / neutral territory (empty point)
- territory_map[pos] = EMPTY; // Use EMPTY to represent dame/neutral
+ } else if (digit == 2 || digit == 3) { // Dame / neutral
+ territory_map[pos] = EMPTY;
  dame_count++;
  }
- // Ignore digits 0, 1 - they represent stones, not territory
+ // Ignore digits 0 (dame), 1 (white stone), 2 (black stone) — not territory points
  }
 
  DEBUG_SCORING << "*** IGS TERRITORY: Empty territory marked - White:" << white_territory_count
@@ -5263,11 +5307,11 @@ void BoardWindow::receiveScoreEnd() {
 
  // Detect dead stones: black stones in white territory, or white stones in black territory
  if (digit == 4 && actual_stone == BLACK_STONE) {
- // Black stone in white territory = dead black stone
+ // Black stone in white territory (digit 4) = dead black stone
  qDebug() << " Found dead BLACK stone at" << pos.first << pos.second << "(in white territory)";
  cmd22_dead_stones.insert(pos);
  } else if (digit == 5 && actual_stone == WHITE_STONE) {
- // White stone in black territory = dead white stone
+ // White stone in black territory (digit 5) = dead white stone
  qDebug() << " Found dead WHITE stone at" << pos.first << pos.second << "(in black territory)";
  cmd22_dead_stones.insert(pos);
  }

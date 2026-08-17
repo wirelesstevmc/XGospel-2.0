@@ -219,14 +219,14 @@ QStringList Settings::getBotBlacklist() const {
     QString raw = m_params.value("bot_blacklist", "");
     if (raw.trimmed().isEmpty()) return QStringList();
     QStringList names = raw.split(',', Qt::SkipEmptyParts);
-    for (auto &n : names) n = n.trimmed().toLower();
+    for (auto &n : names) n = n.trimmed();
     return names;
 }
 
 void Settings::setBotBlacklist(const QStringList &names) {
-    QStringList lower;
-    for (const auto &n : names) { QString t = n.trimmed(); if (!t.isEmpty()) lower << t.toLower(); }
-    m_params["bot_blacklist"] = lower.join(',');
+    QStringList cleaned;
+    for (const auto &n : names) { QString t = n.trimmed(); if (!t.isEmpty()) cleaned << t; }
+    m_params["bot_blacklist"] = cleaned.join(',');
 }
 
 QList<Settings::GreylistEntry> Settings::getBotGreylist() const {
@@ -239,7 +239,7 @@ QList<Settings::GreylistEntry> Settings::getBotGreylist() const {
         QStringList fields = rec.split('|');
         if (fields.size() < 2) continue;
         GreylistEntry e;
-        e.name   = fields[0].trimmed().toLower();
+        e.name   = fields[0].trimmed();
         e.max_hc = fields[1].trimmed().toInt();
         e.tell   = (fields.size() >= 3) ? fields[2].trimmed() : QString();
         if (!e.name.isEmpty())
@@ -251,7 +251,7 @@ QList<Settings::GreylistEntry> Settings::getBotGreylist() const {
 void Settings::setBotGreylist(const QList<GreylistEntry> &entries) {
     QStringList recs;
     for (const auto &e : entries) {
-        QString name = e.name.trimmed().toLower();
+        QString name = e.name.trimmed();
         if (name.isEmpty()) continue;
         // Strip any pipe characters from the tell to avoid breaking the separator scheme.
         QString tell = e.tell.trimmed().replace('|', ' ');
