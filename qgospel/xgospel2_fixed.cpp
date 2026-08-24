@@ -42,6 +42,8 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QCursor>
 #include <QtGui/QCloseEvent>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QTimer>
 #include <QtCore/QRandomGenerator>
@@ -62,8 +64,8 @@
 #include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v286";
-const QString XGOSPEL_BUILD_DATE = "2026-08-09";
+const QString XGOSPEL_VERSION = "v290";
+const QString XGOSPEL_BUILD_DATE = "2026-08-24";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -751,6 +753,16 @@ signals:
  void clicked(const QModelIndex& index);
 };
 
+// Position a dialog on the rightmost screen (second monitor if available).
+// Falls back to primary screen top-left if only one screen exists.
+static void positionOnRightScreen(QWidget *dialog) {
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    QScreen *target = screens.isEmpty() ? QGuiApplication::primaryScreen() : screens.last();
+    if (!target) return;
+    const QRect avail = target->availableGeometry();
+    dialog->move(avail.left() + 20, avail.top() + 40);
+}
+
 class FixedPlayersWindow : public QMainWindow {
  Q_OBJECT
 
@@ -841,33 +853,17 @@ public:
  layout->setSpacing(10);
  layout->setMargin(10);
  
- // Refresh button with xgospel1-style colors (black on darker gold #edd20d)
  QPushButton *refresh_btn = new QPushButton("Refresh Players");
  refresh_btn->setMinimumWidth(180);
  refresh_btn->setStyleSheet(
- "QPushButton {"
- " background-color: #edd20d;"
- " color: black;"
- " border: 4px outset #f5e030;"
- " border-top-color: #fffacd;"
- " border-left-color: #fffacd;"
- " border-right-color: #b8960a;"
- " border-bottom-color: #b8960a;"
- " padding: 10px 15px;"
- " font-weight: bold;"
- " font-size: 13px;"
- "}"
- "QPushButton:pressed {"
- " border: 4px inset #d4b909;"
- " border-top-color: #b8960a;"
- " border-left-color: #b8960a;"
- " border-right-color: #fffacd;"
- " border-bottom-color: #fffacd;"
- " background-color: #d4b909;"
- "}"
- "QPushButton:hover {"
- " background-color: #f5e030;"
- "}"
+ "QPushButton { background-color: #EDD20D; color: black; border: 4px outset #f5e030;"
+ " border-top-color: #fffacd; border-left-color: #fffacd;"
+ " border-right-color: #b8960a; border-bottom-color: #b8960a;"
+ " padding: 10px 15px; font-weight: bold; font-size: 13px; }"
+ "QPushButton:pressed { background-color: #c8a800; border: 4px inset #c8a800;"
+ " border-top-color: #b8960a; border-left-color: #b8960a;"
+ " border-right-color: #fffacd; border-bottom-color: #fffacd; }"
+ "QPushButton:hover { background-color: #f5e030; }"
  );
  connect(refresh_btn, &QPushButton::clicked, this, &FixedPlayersWindow::refreshRequested);
  layout->addWidget(refresh_btn);
@@ -1636,6 +1632,7 @@ private slots:
  players_table->viewport()->repaint();  // Trigger immediate unhighlight
  });
 
+ positionOnRightScreen(dialog);
  dialog->show();
  }
 
@@ -1767,6 +1764,7 @@ public:
  });
 
  // Show dialog with window activation hints for multi-desktop support
+ positionOnRightScreen(dialog);
  dialog->show();
  dialog->raise();
  dialog->activateWindow();
@@ -2147,76 +2145,47 @@ signals:
 // Shout Window — displays IGS CMD21 broadcast messages
 // ============================================================
 class FixedShoutWindow : public QMainWindow {
-    Q_OBJECT
-
+ Q_OBJECT
 public:
-    FixedShoutWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
-        setWindowTitle("Shouts");
-        setMinimumSize(400, 250);
-        resize(500, 300);
-
-        QWidget *central = new QWidget(this);
-        setCentralWidget(central);
-        QVBoxLayout *layout = new QVBoxLayout(central);
-        layout->setSpacing(4);
-        layout->setContentsMargins(4, 4, 4, 4);
-
-        shout_display = new QTextBrowser(this);
-        shout_display->setOpenLinks(false);
-        shout_display->setStyleSheet("font-size: 11px;");
-        connect(shout_display, &QTextBrowser::anchorClicked, this, [this](const QUrl &url) {
-            if (url.scheme() == "player")
-                emit playerClicked(url.path());
-        });
-        layout->addWidget(shout_display);
-
-        QHBoxLayout *input_layout = new QHBoxLayout;
-        shout_input = new QLineEdit(this);
-        shout_input->setPlaceholderText("Type shout message...");
-        shout_input->setStyleSheet("font-size: 11px;");
-        send_button = new QPushButton("Shout", this);
-        send_button->setStyleSheet("font-size: 11px;");
-        input_layout->addWidget(shout_input);
-        input_layout->addWidget(send_button);
-        layout->addLayout(input_layout);
-
-        connect(send_button, &QPushButton::clicked, this, &FixedShoutWindow::onSendClicked);
-        connect(shout_input, &QLineEdit::returnPressed, this, &FixedShoutWindow::onSendClicked);
-    }
-
-    void addShout(const QString &sender, const QString &message) {
-        QString escaped_msg = message.toHtmlEscaped();
-        QString html = QString("<b><a href=\"player:%1\" style=\"color:#4488ff;\">%2</a></b>: %3")
-            .arg(sender.toHtmlEscaped(), sender.toHtmlEscaped(), escaped_msg);
-        shout_display->append(html);
-        QTextCursor cursor = shout_display->textCursor();
-        cursor.movePosition(QTextCursor::End);
-        shout_display->setTextCursor(cursor);
-    }
-
-    // Called to bring the window to front and ensure cached shouts are visible
-    void showAndRaise() {
-        show();
-        raise();
-        activateWindow();
-    }
-
+ FixedShoutWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
+     setWindowTitle("IGS Shouts");
+     setMinimumSize(400, 300);
+     QWidget *central = new QWidget;
+     setCentralWidget(central);
+     QVBoxLayout *layout = new QVBoxLayout(central);
+     shout_browser = new QTextBrowser;
+     shout_browser->setOpenLinks(false);
+     shout_browser->setStyleSheet("QTextBrowser { background:#000; color:#00ff00; font-family:monospace; font-size:10pt; }");
+     layout->addWidget(shout_browser);
+     QHBoxLayout *input_layout = new QHBoxLayout;
+     shout_edit = new QLineEdit;
+     shout_edit->setPlaceholderText("Type shout message...");
+     QPushButton *shout_btn = new QPushButton("Shout");
+     input_layout->addWidget(shout_edit);
+     input_layout->addWidget(shout_btn);
+     layout->addLayout(input_layout);
+     connect(shout_btn, &QPushButton::clicked, this, &FixedShoutWindow::onShoutClicked);
+     connect(shout_edit, &QLineEdit::returnPressed, this, &FixedShoutWindow::onShoutClicked);
+ }
+ void addShout(const QString &sender, const QString &message) {
+     QString color = sender.startsWith("*") ? "#aaddff" : "#00ff00";
+     shout_browser->append(QString("<span style='color:%1'><b>!%2!:</b> %3</span>")
+         .arg(color, sender.toHtmlEscaped(), message.toHtmlEscaped()));
+ }
+ void showAndRaise() { show(); raise(); activateWindow(); }
 signals:
-    void shoutRequested(const QString &message);
-    void playerClicked(const QString &name);
-
+ void shoutRequested(const QString &message);
+ void playerClicked(const QString &name);
 private slots:
-    void onSendClicked() {
-        QString text = shout_input->text().trimmed();
-        if (text.isEmpty()) return;
-        emit shoutRequested(text);
-        shout_input->clear();
-    }
-
+ void onShoutClicked() {
+     QString msg = shout_edit->text().trimmed();
+     if (msg.isEmpty()) return;
+     shout_edit->clear();
+     emit shoutRequested(msg);
+ }
 private:
-    QTextBrowser *shout_display;
-    QLineEdit    *shout_input;
-    QPushButton  *send_button;
+ QTextBrowser *shout_browser;
+ QLineEdit    *shout_edit;
 };
 
 class FixedGamesWindow : public QMainWindow {
@@ -2289,33 +2258,17 @@ public:
  layout->setSpacing(10);
  layout->setMargin(10);
  
- // Refresh button with xgospel1-style colors (black on darker gold #edd20d)
  QPushButton *refresh_btn = new QPushButton("Refresh Games");
  refresh_btn->setMinimumWidth(180);
  refresh_btn->setStyleSheet(
- "QPushButton {"
- " background-color: #edd20d;"
- " color: black;"
- " border: 4px outset #f5e030;"
- " border-top-color: #fffacd;"
- " border-left-color: #fffacd;"
- " border-right-color: #b8960a;"
- " border-bottom-color: #b8960a;"
- " padding: 10px 15px;"
- " font-weight: bold;"
- " font-size: 13px;"
- "}"
- "QPushButton:pressed {"
- " border: 4px inset #d4b909;"
- " border-top-color: #b8960a;"
- " border-left-color: #b8960a;"
- " border-right-color: #fffacd;"
- " border-bottom-color: #fffacd;"
- " background-color: #d4b909;"
- "}"
- "QPushButton:hover {"
- " background-color: #f5e030;"
- "}"
+ "QPushButton { background-color: #EDD20D; color: black; border: 4px outset #f5e030;"
+ " border-top-color: #fffacd; border-left-color: #fffacd;"
+ " border-right-color: #b8960a; border-bottom-color: #b8960a;"
+ " padding: 10px 15px; font-weight: bold; font-size: 13px; }"
+ "QPushButton:pressed { background-color: #c8a800; border: 4px inset #c8a800;"
+ " border-top-color: #b8960a; border-left-color: #b8960a;"
+ " border-right-color: #fffacd; border-bottom-color: #fffacd; }"
+ "QPushButton:hover { background-color: #f5e030; }"
  );
  connect(refresh_btn, &QPushButton::clicked, this, &FixedGamesWindow::refreshRequested);
  layout->addWidget(refresh_btn);
@@ -2662,6 +2615,12 @@ public:
  
  stats_button = new QPushButton("Stats");
  stats_button->setMaximumWidth(60);
+ stats_button->setStyleSheet(
+ "QPushButton { background-color: #EDD20D; color: black; border: 2px outset #f5e030;"
+ " font-weight: bold; }"
+ "QPushButton:hover { background-color: #f5e030; }"
+ "QPushButton:pressed { background-color: #c8a800; border: 2px inset #c8a800; }"
+ );
  suggest_button = new QPushButton("Suggest");
  suggest_button->setMaximumWidth(70);
  
@@ -3441,7 +3400,14 @@ public:
  // Feature 33b: Add "Stats" button to open local player's stats dialog
  QPushButton *stats_btn = new QPushButton("Stats");
  stats_btn->setStyleSheet(
- "QPushButton { " " background-color: #edd20d; " " color: black; " " border: 2px outset #f5e030; " " padding: 8px 16px; " " font-weight: bold; " "}" "QPushButton:pressed { " " background-color: #d4b909; " " border: 2px inset #d4b909; " "}"
+ "QPushButton { background-color: #EDD20D; color: black; border: 4px outset #f5e030;"
+ " border-top-color: #fffacd; border-left-color: #fffacd;"
+ " border-right-color: #b8960a; border-bottom-color: #b8960a;"
+ " padding: 8px 16px; font-weight: bold; }"
+ "QPushButton:hover { background-color: #f5e030; }"
+ "QPushButton:pressed { background-color: #c8a800; border: 4px inset #c8a800;"
+ " border-top-color: #b8960a; border-left-color: #b8960a;"
+ " border-right-color: #fffacd; border-bottom-color: #fffacd; }"
  );
  stats_btn->setToolTip("Open your player stats dialog");
  connect(stats_btn, &QPushButton::clicked, this, [this]() {
@@ -4140,8 +4106,7 @@ private slots:
      players_window->upsertPlayerRank(stats_player_name, stats_rank);
      // Refresh the bot board if this rank arrived for the current bot opponent
      if (bot_mode_active && bot_game_id != -1 &&
-         stats_player_name.compare(bot_opponent, Qt::CaseInsensitive) == 0 &&
-         engine_board) {
+         stats_player_name.compare(bot_opponent, Qt::CaseInsensitive) == 0) {
          bool is_white_opp = (bot_color == BLACK_STONE);
          if (docked_pane_mode) {
              if (GameSlot *bslot = findSlot(bot_game_id)) {
@@ -4154,8 +4119,10 @@ private slots:
                  }
              }
          }
-         if (is_white_opp) engine_board->setWhiteRank(stats_rank);
-         else              engine_board->setBlackRank(stats_rank);
+         if (engine_board) {
+             if (is_white_opp) engine_board->setWhiteRank(stats_rank);
+             else              engine_board->setBlackRank(stats_rank);
+         }
      }
  }
 
@@ -5815,6 +5782,9 @@ private slots:
                          slot->server_move_count++;
                          applyMoveToSlotBoard(slot, move);
                          updateHoverPixmapForSlot(slot);
+                         // Auto-switch to playing/bot slot when a live move arrives
+                         if (slot->is_playing && current_game_context != active_slot_game_id)
+                             switchActiveGame(current_game_context);
                          dock_move_handled = true;
                      }
                      break;
@@ -7891,8 +7861,8 @@ private slots:
  if (!this->suppress_server_console) output_console->append(">>> DEBUG: Scheduling refreshPlayers in 2000ms");
  QTimer::singleShot(2000, this, [this]() {
  refreshPlayers();
- // Minimize after a brief delay to ensure rendering
- QTimer::singleShot(500, players_window, &FixedPlayersWindow::showMinimized);
+ if (settings->getAutoMinimizeOnLogin())
+     QTimer::singleShot(500, players_window, &FixedPlayersWindow::showMinimized);
  });
  }
 
@@ -7931,7 +7901,8 @@ private slots:
  // Only auto-show if user has enabled it in preferences
  if (settings->getAutoLaunchShoutWindow()) {
      shout_window->show();
-     QTimer::singleShot(2500, shout_window, &FixedShoutWindow::showMinimized);
+     if (settings->getAutoMinimizeOnLogin())
+         QTimer::singleShot(2500, shout_window, &FixedShoutWindow::showMinimized);
  }
 
  // Execute 'games' command to populate the games window after windows are created
@@ -7939,8 +7910,8 @@ private slots:
  // Schedule the games command after a short delay to ensure everything is initialized
  QTimer::singleShot(500, this, [this]() {
  sendCommandString("games");
- // After sending games command, minimize the window after data has time to arrive
- QTimer::singleShot(2000, games_window, &FixedGamesWindow::showMinimized);
+ if (settings->getAutoMinimizeOnLogin())
+     QTimer::singleShot(2000, games_window, &FixedGamesWindow::showMinimized);
  // After window is minimized, send games command again with 1 second delay
  QTimer::singleShot(3000, this, [this]() {
  sendCommandString("games");
@@ -8629,11 +8600,14 @@ private slots:
      GameSelectionDock *dock = shared_board_window->getGameSelectionDock();
      if (dock) dock->addGame(game_id, black, black_rank, white, white_rank);
 
-     // Display this game if it's the first (or re-first after all slots closed).
-     // Also re-show the board window in case it was hidden by closeBoardWindow.
+     // Always switch to the newly observed game immediately.
+     // If no slot was active yet, loadSlot directly; otherwise switchActiveGame
+     // saves the old slot state and loads the new one.
      if (active_slot_game_id == -1) {
          shared_board_window->loadSlot(slot);
          active_slot_game_id = game_id;
+     } else {
+         switchActiveGame(game_id);
      }
      if (!shared_board_window->isVisible())
          shared_board_window->show();

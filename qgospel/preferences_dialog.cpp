@@ -243,6 +243,10 @@ void PreferencesDialog::setupUI(EngineManager *engine_manager) {
     m_auto_launch_shout_check->setChecked(settings->getAutoLaunchShoutWindow());
     shout_form->addRow("", m_auto_launch_shout_check);
 
+    m_auto_minimize_on_login_check = new QCheckBox("Auto-minimize Games/Players windows on login");
+    m_auto_minimize_on_login_check->setChecked(settings->getAutoMinimizeOnLogin());
+    shout_form->addRow("", m_auto_minimize_on_login_check);
+
     QLabel *shout_help = new QLabel(
         "When enabled, the Shout window opens minimized automatically on login.  "
         "Shout messages are always cached from login regardless of this setting — "
@@ -637,6 +641,7 @@ void PreferencesDialog::onApply() {
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
     settings->setAutoLaunchShoutWindow(m_auto_launch_shout_check->isChecked());
+    settings->setAutoMinimizeOnLogin(m_auto_minimize_on_login_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
     settings->setUseDockedGamePane(m_docked_game_pane_check->isChecked());
     settings->setHoverBoardSize(m_hover_board_size_spin->value());
@@ -680,6 +685,7 @@ void PreferencesDialog::onOk() {
     settings->setPlayersWindowRefreshInterval(m_players_refresh_spin->value());
     settings->setUseFocusColors(m_use_focus_colors_check->isChecked());
     settings->setAutoLaunchShoutWindow(m_auto_launch_shout_check->isChecked());
+    settings->setAutoMinimizeOnLogin(m_auto_minimize_on_login_check->isChecked());
     settings->setScoringMethod(m_scoring_method_combo->currentData().toString());
 
     // Save engine profiles

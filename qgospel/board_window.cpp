@@ -1206,7 +1206,16 @@ void BoardWindow::setupUI() {
  // Save Game button (q5Go style - green)
  save_button = new QPushButton("Save Game");
  save_button->setStyleSheet(
- "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #27ae60, stop:1 #229954);" " " " border: 2px outset #52be80;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2ecc71, stop:1 #27ae60);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #229954, stop:1 #27ae60);" " border: 2px inset #52be80;" "}"
+ "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #6dce94; border-left-color: #6dce94;"
+ " border-right-color: #1e8449; border-bottom-color: #1e8449;"
+ " padding: 6px; font-weight: bold; }"
+ "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
+ "QPushButton:pressed { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #229954,stop:1 #27ae60);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #1e8449; border-left-color: #1e8449;"
+ " border-right-color: #6dce94; border-bottom-color: #6dce94; }"
  );
  connect(save_button, &QPushButton::clicked, this, &BoardWindow::saveGame);
  info_layout->addWidget(save_button);
@@ -1214,7 +1223,16 @@ void BoardWindow::setupUI() {
  // Edit/Analyze button (q5Go style 3D - opens SGF in separate board window)
  edit_button = new QPushButton("Edit Game");
  edit_button->setStyleSheet(
- "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5dade2, stop:1 #2980b9);" " " " border: 2px outset #85c1e9;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #73c2ec, stop:1 #3498db);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2980b9, stop:1 #5dade2);" " border: 2px inset #5dade2;" "}"
+ "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #5dade2,stop:1 #2980b9);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #a9d0f5; border-left-color: #a9d0f5;"
+ " border-right-color: #1a6c9a; border-bottom-color: #1a6c9a;"
+ " padding: 6px; font-weight: bold; }"
+ "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #73c2ec,stop:1 #3498db); }"
+ "QPushButton:pressed { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2980b9,stop:1 #5dade2);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #1a6c9a; border-left-color: #1a6c9a;"
+ " border-right-color: #a9d0f5; border-bottom-color: #a9d0f5; }"
  );
  connect(edit_button, &QPushButton::clicked, this, &BoardWindow::editGame);
  info_layout->addWidget(edit_button);
@@ -1222,11 +1240,14 @@ void BoardWindow::setupUI() {
  // Refresh Board button — sends "moves N" to re-sync board from server history
  refresh_board_button = new QPushButton("Refresh Board");
  refresh_board_button->setStyleSheet(
-     "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f0c000, stop:1 #c09000);"
-     " border: 2px outset #f8d840; border-radius: 4px; padding: 6px; font-weight: bold; color: black; }"
-     "QPushButton:hover { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8d840, stop:1 #d4a800); }"
-     "QPushButton:pressed { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c09000, stop:1 #f0c000);"
-     " border: 2px inset #f0c000; }"
+     "QPushButton { background-color: #EDD20D; color: black; border: 4px outset #f5e030;"
+     " border-top-color: #fffacd; border-left-color: #fffacd;"
+     " border-right-color: #b8960a; border-bottom-color: #b8960a;"
+     " padding: 6px; font-weight: bold; }"
+     "QPushButton:hover { background-color: #f5e030; }"
+     "QPushButton:pressed { background-color: #c8a800; border: 4px inset #c8a800;"
+     " border-top-color: #b8960a; border-left-color: #b8960a;"
+     " border-right-color: #fffacd; border-bottom-color: #fffacd; }"
  );
  connect(refresh_board_button, &QPushButton::clicked, this, [this]() {
      emit refreshRequested(observed_game_id);
@@ -1302,7 +1323,16 @@ void BoardWindow::setupUI() {
  // q5Go style 3D button with gradient
  close_button = new QPushButton("Close Board");
  close_button->setStyleSheet(
- "QPushButton {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef5350, stop:1 #c62828);" " " " border: 2px outset #e57373;" " border-radius: 4px;" " padding: 6px;" " font-weight: bold;" "}" "QPushButton:hover {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f44336, stop:1 #d32f2f);" "}" "QPushButton:pressed {" " background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c62828, stop:1 #ef5350);" " border: 2px inset #ef5350;" "}"
+ "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ef5350,stop:1 #c62828);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #f1948a; border-left-color: #f1948a;"
+ " border-right-color: #922b21; border-bottom-color: #922b21;"
+ " padding: 6px; font-weight: bold; }"
+ "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f44336,stop:1 #d32f2f); }"
+ "QPushButton:pressed { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #c62828,stop:1 #ef5350);"
+ " border-style: solid; border-width: 4px;"
+ " border-top-color: #922b21; border-left-color: #922b21;"
+ " border-right-color: #f1948a; border-bottom-color: #f1948a; }"
  );
  connect(close_button, &QPushButton::clicked, this, &BoardWindow::closeBoard);
  info_layout->addWidget(close_button);
@@ -1759,10 +1789,15 @@ void BoardWindow::setupEditUI() {
     update_button->setToolTip("Refresh board to current live game position");
     update_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #5dade2,stop:1 #2980b9);"
-        " border: 2px outset #85c1e9; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #a9d0f5; border-left-color: #a9d0f5;"
+        " border-right-color: #1a6c9a; border-bottom-color: #1a6c9a;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #73c2ec,stop:1 #3498db); }"
-        "QPushButton:pressed { border: 2px inset #5dade2; }"
-        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #1a6c9a; border-left-color: #1a6c9a;"
+        " border-right-color: #a9d0f5; border-bottom-color: #a9d0f5; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
     );
     connect(update_button, &QPushButton::clicked, this, &BoardWindow::onUpdateClicked);
     right_layout->addWidget(update_button);
@@ -1771,10 +1806,15 @@ void BoardWindow::setupEditUI() {
     pass_button->setToolTip("Insert a pass move");
     pass_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
-        " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #6dce94; border-left-color: #6dce94;"
+        " border-right-color: #1e8449; border-bottom-color: #1e8449;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
-        "QPushButton:pressed { border: 2px inset #52be80; }"
-        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #1e8449; border-left-color: #1e8449;"
+        " border-right-color: #6dce94; border-bottom-color: #6dce94; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
     );
     connect(pass_button, &QPushButton::clicked, this, &BoardWindow::onPassClicked);
     right_layout->addWidget(pass_button);
@@ -1783,10 +1823,15 @@ void BoardWindow::setupEditUI() {
     score_button->setToolTip("Estimate territory score (completed games)");
     score_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #d68910);"
-        " border: 2px outset #f8c471; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #fbd97e; border-left-color: #fbd97e;"
+        " border-right-color: #9a6010; border-bottom-color: #9a6010;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f5b041,stop:1 #f39c12); }"
-        "QPushButton:pressed { border: 2px inset #f39c12; }"
-        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #9a6010; border-left-color: #9a6010;"
+        " border-right-color: #fbd97e; border-bottom-color: #fbd97e; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
     );
     score_button->setEnabled(true);
     connect(score_button, &QPushButton::clicked, this, &BoardWindow::onScoreClicked);
@@ -1796,10 +1841,15 @@ void BoardWindow::setupEditUI() {
     edit_position_button->setToolTip("Enter free-placement edit mode");
     edit_position_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #8e44ad,stop:1 #6c3483);"
-        " border: 2px outset #bb8fce; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #c9a8d9; border-left-color: #c9a8d9;"
+        " border-right-color: #4a235a; border-bottom-color: #4a235a;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #9b59b6,stop:1 #8e44ad); }"
-        "QPushButton:pressed { border: 2px inset #8e44ad; }"
-        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #4a235a; border-left-color: #4a235a;"
+        " border-right-color: #c9a8d9; border-bottom-color: #c9a8d9; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
     );
     connect(edit_position_button, &QPushButton::clicked, this, &BoardWindow::onEditPositionClicked);
     right_layout->addWidget(edit_position_button);
@@ -1809,9 +1859,14 @@ void BoardWindow::setupEditUI() {
     cancel_edit_button->setToolTip("Discard changes and return to view mode");
     cancel_edit_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ef5350,stop:1 #c62828);"
-        " border: 2px outset #e57373; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #f1948a; border-left-color: #f1948a;"
+        " border-right-color: #922b21; border-bottom-color: #922b21;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f44336,stop:1 #d32f2f); }"
-        "QPushButton:pressed { border: 2px inset #ef5350; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #922b21; border-left-color: #922b21;"
+        " border-right-color: #f1948a; border-bottom-color: #f1948a; }"
     );
     cancel_edit_button->setVisible(false);
     connect(cancel_edit_button, &QPushButton::clicked, this, &BoardWindow::onCancelEditClicked);
@@ -1821,9 +1876,14 @@ void BoardWindow::setupEditUI() {
     append_button->setToolTip("Commit edited position as new SGF node after current move");
     append_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
-        " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #6dce94; border-left-color: #6dce94;"
+        " border-right-color: #1e8449; border-bottom-color: #1e8449;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
-        "QPushButton:pressed { border: 2px inset #52be80; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #1e8449; border-left-color: #1e8449;"
+        " border-right-color: #6dce94; border-bottom-color: #6dce94; }"
     );
     append_button->setVisible(false);
     connect(append_button, &QPushButton::clicked, this, &BoardWindow::onAppendClicked);
@@ -1833,10 +1893,15 @@ void BoardWindow::setupEditUI() {
     undo_edit_button->setToolTip("Remove last placed stone and step back");
     undo_edit_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #d68910);"
-        " border: 2px outset #f8c471; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #fbd97e; border-left-color: #fbd97e;"
+        " border-right-color: #9a6010; border-bottom-color: #9a6010;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f5b041,stop:1 #f39c12); }"
-        "QPushButton:pressed { border: 2px inset #f39c12; }"
-        "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #9a6010; border-left-color: #9a6010;"
+        " border-right-color: #fbd97e; border-bottom-color: #fbd97e; }"
+        "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
     );
     undo_edit_button->setVisible(false);
     connect(undo_edit_button, &QPushButton::clicked, this, &BoardWindow::onUndoEditClicked);
@@ -1846,9 +1911,14 @@ void BoardWindow::setupEditUI() {
     close_button = new QPushButton("Close Editor");
     close_button->setStyleSheet(
         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ef5350,stop:1 #c62828);"
-        " border: 2px outset #e57373; border-radius: 4px; padding: 6px; font-weight: bold; }"
+        " border-style: solid; border-width: 4px;"
+        " border-top-color: #f1948a; border-left-color: #f1948a;"
+        " border-right-color: #922b21; border-bottom-color: #922b21;"
+        " padding: 6px; font-weight: bold; }"
         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f44336,stop:1 #d32f2f); }"
-        "QPushButton:pressed { border: 2px inset #ef5350; }"
+        "QPushButton:pressed { border-style: solid; border-width: 4px;"
+        " border-top-color: #922b21; border-left-color: #922b21;"
+        " border-right-color: #f1948a; border-bottom-color: #f1948a; }"
     );
     connect(close_button, &QPushButton::clicked, this, &BoardWindow::closeBoard);
     right_layout->addWidget(close_button);

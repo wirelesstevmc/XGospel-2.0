@@ -10,6 +10,126 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### We should probably make a comment in the code that illustrates the existing (correct) mapping/encoding
 ### Here is the document that Claude created: IGS_CMD22_TERRITORY_ENCODING.md
 
+## 2026-08-24 (v290): Button border refinement — square corners, correct highlight colors
+
+### 56 — Save Game, Edit Game, Close Board and all Edit Game board buttons upgraded to 4px border
+
+All buttons in the board window info panel (Save Game, Edit Game, Refresh Board, Close Board)
+and the Edit Game editor panel (Edit Position, Cancel Edit, Append, Undo, Close Editor) now use
+the heavy xgospel1-style 4px border with per-side highlight/shadow colors matching each button's
+own color family. Previously all used 2px outset borders. Update, Pass and Score in the Edit
+board were also missing 4px treatment and are now included.
+
+### 57 — Console Stats button upgraded to 4px border
+
+The Stats button in the main console command bar upgraded from `2px outset` to `4px` with
+`border-top/left: #fffacd` and `border-right/bottom: #b8960a`, matching the Refresh
+Players/Games style.
+
+### Iteration — Square corners + correct per-side highlight colors on all 4px buttons
+
+Two issues fixed after initial v289 attempt:
+
+**Square corners:** Qt's `border-radius: 4px` was removed from all 4px-border buttons so corners
+are square, matching the xgospel1 Xaw3d button appearance.
+
+**Highlight colors:** Qt's `outset`/`inset` border keywords silently override explicit
+`border-top-color`/`border-left-color` values with its own white-highlight calculation, ignoring
+the specified hex colors. Fixed by switching all 4px buttons to `border-style: solid; border-width: 4px`
+with fully explicit per-side colors. This gives full control: top/left uses a lighter shade of
+each button's own color, right/bottom uses the darker shadow shade — exactly replicating the
+Xaw3d 3D-bevel motif in Qt5.
+
+Color families used:
+- Green (Save Game, Pass, Append): highlight `#6dce94` / shadow `#1e8449`
+- Blue (Edit Game, Update): highlight `#a9d0f5` / shadow `#1a6c9a`
+- Red (Close Board, Cancel Edit, Close Editor): highlight `#f1948a` / shadow `#922b21`
+- Purple (Edit Position): highlight `#c9a8d9` / shadow `#4a235a`
+- Orange (Score, Undo): highlight `#fbd97e` / shadow `#9a6010`
+
+---
+
+## 2026-08-22 (v288): Button color correction + dock rank fix
+
+### 51a — Refresh/Stats button background corrected to #EDD20D (authentic xgospel1 gold)
+
+`#FFD700` (X11 named "gold") was replaced with `#EDD20D` (the actual xgospel1 background color
+confirmed via `xrdb -query` → 16-bit `#ecfc d1d9 0d01` → high bytes `EC D1 0D`). Applied via
+`replace_all` to all four button stylesheets in xgospel2_fixed.cpp (Refresh Players, Refresh
+Games, MatchDialog Stats, command-bar Stats). Hover color updated from `#ffe340` → `#f5e030`
+to match the existing Players/Games hover.
+
+### 51b — Refresh Board button upgraded to 4px outset border style (board_window.cpp)
+
+Previously used 2px outset with no per-side highlight colors. Now matches the heavy xgospel1
+style used on Refresh Players/Games: `4px outset #f5e030` with `border-top/left: #fffacd`
+(highlight) and `border-right/bottom: #b8960a` (shadow), pressed state with inset reversal.
+
+### Bug fix — Slot button shows "?" for opponent rank in back-to-back bot games
+
+**Symptom:** Game #440 (woodnstone vs chentom) dock button showed `?` for chentom's rank
+despite stats arriving shortly after game start. Previous game (#223, same opponent) showed
+correctly.
+
+**Root cause:** The stats rank update block in the `9 Rank:` handler was gated on
+`engine_board != null`. In normal docked bot games (non-Eve mode) `engine_board` is always
+null, so `bslot->black_rank = stats_rank` was set but `dock2->updateGameRanks()` was never
+called — the dock button remained at `?`. The `?` appeared specifically on the third match
+request because chentom's rank had dropped from the player cache between games.
+
+**Fix:** Moved the `engine_board` null check inward to guard only the
+`setWhiteRank`/`setBlackRank` calls. The slot rank update and `dock2->updateGameRanks()` call
+are now unconditional (still gated on `bot_mode_active && bot_game_id != -1 &&
+stats_player_name == bot_opponent`).
+
+---
+
+## 2026-08-21 (v287): UI enhancements — button colors, dock width, minimize pref, dialog placement, active slot behavior
+
+### 51 — Unified gold (#FFD700) button color across all Refresh and Stats buttons
+
+Refresh Players, Refresh Games (xgospel2_fixed.cpp), Refresh Board (board_window.cpp), and both
+Stats buttons (MatchDialog and main command bar) now all use flat `#FFD700` with consistent
+hover (`#ffe340`) and pressed (`#c8a800`) states. Previously Refresh Board used a gradient
+(`#f0c000→#c09000`) and the MatchDialog Stats button had no stylesheet at all.
+
+### 52 — Game selection dock minimum width raised to 250px; hard resize() removed
+
+`GameSelectionDock` constructor (game_selection_dock.cpp): removed `resize(220, height())` and
+raised `setMinimumWidth` from 160 to 250. Longer account names no longer truncate when the
+vertical scrollbar appears. Since `BoardWindow` already calls `saveState()`/`restoreState()`,
+any user-dragged dock width persists across sessions automatically.
+
+### 53 — Auto-minimize Games/Players/Shout windows on login now configurable
+
+New setting `auto_minimize_on_login` (default: true — preserves existing behavior). Added
+`getAutoMinimizeOnLogin()`/`setAutoMinimizeOnLogin()` to settings.h. Added checkbox
+"Auto-minimize Games/Players windows on login" in Preferences → Application Settings
+(preferences_dialog.h/.cpp). The three `showMinimized` timers in `autoLaunchWindowsMinimized()`
+are each gated on `settings->getAutoMinimizeOnLogin()`.
+
+### 54 — Player stats dialogs open on rightmost screen (second monitor)
+
+Added static helper `positionOnRightScreen(QWidget*)` (xgospel2_fixed.cpp, above
+`FixedPlayersWindow`). Uses `QGuiApplication::screens().last()` to target the rightmost screen;
+falls back to primary screen if only one exists. Called before `dialog->show()` at both
+`PlayerStatsDialog` creation sites (context-menu/double-click path ~line 1635 and
+stats-command-response path ~line 1767). Added `#include <QtGui/QGuiApplication>` and
+`#include <QtGui/QScreen>`.
+
+### 55 — Active slot switches immediately on new observe; playing/bot slot auto-focuses on live move
+
+**Observe click:** In `observeGame()`, the `if (active_slot_game_id == -1)` block now has an
+`else` branch that calls `switchActiveGame(game_id)` when another slot is already active.
+Previously a new observation was added to the dock but the board display did not switch to it.
+
+**Playing/bot move:** In the docked move handler's inactive-slot `LIVE` case, after applying a
+live move to a playing slot that is not the active slot, `switchActiveGame(current_game_context)`
+is called immediately. This brings the bot/playing slot into focus whenever the opponent plays.
+History-replay moves (REPLAYING state) do not trigger the switch — only true live moves do.
+
+---
+
 ## 2026-08-09 (v286): Revert v285 coordinate/encoding changes — repeat of v270 mistake
 
 ### Revert — Restore v266/v275-consistent QPair(row, col) convention throughout

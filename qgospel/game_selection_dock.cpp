@@ -26,9 +26,7 @@ GameSelectionDock::GameSelectionDock(QWidget *parent)
 
     setWidget(m_scroll_area);
 
-    // Default width hint — matches the button design (~220px)
-    setMinimumWidth(160);
-    resize(220, height());
+    setMinimumWidth(250);
 }
 
 void GameSelectionDock::addGame(int game_id,

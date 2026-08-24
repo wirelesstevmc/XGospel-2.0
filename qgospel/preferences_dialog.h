@@ -64,6 +64,7 @@ private:
     QSpinBox *m_players_refresh_spin;
     QCheckBox *m_use_focus_colors_check;
     QCheckBox *m_auto_launch_shout_check;
+    QCheckBox *m_auto_minimize_on_login_check;
     QComboBox *m_scoring_method_combo;
 
     // Game Pane tab

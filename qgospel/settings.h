@@ -119,6 +119,9 @@ public:
     bool getAutoLaunchShoutWindow() const { return readBoolEntry("auto_launch_shout_window", false); }
     void setAutoLaunchShoutWindow(bool value) { writeBoolEntry("auto_launch_shout_window", value); }
 
+    bool getAutoMinimizeOnLogin() const { return readBoolEntry("auto_minimize_on_login", true); }
+    void setAutoMinimizeOnLogin(bool value) { writeBoolEntry("auto_minimize_on_login", value); }
+
     // Global UI font scale factor (1.0 = default; future font-scale feature)
     double getUiFontScale() const;
     void setUiFontScale(double scale);
