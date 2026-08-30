@@ -10,6 +10,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### We should probably make a comment in the code that illustrates the existing (correct) mapping/encoding
 ### Here is the document that Claude created: IGS_CMD22_TERRITORY_ENCODING.md
 
+## 2026-08-30 (v293): Tabbed Shout/Messages/Rooms window + Send button 4px border
+
+### 58 — Tabbed Shout window consolidation
+
+`FixedShoutWindow` expanded from a single shout view into a three-tab `QTabWidget` titled
+"IGS Shouts / Messages / Rooms":
+
+- **Shouts tab**: unchanged green-on-black shout browser. Input row (QLineEdit + Shout button)
+  pinned below the tab widget, active only when Shouts tab is selected.
+- **Messages tab**: amber-on-black (`#ffdd88`) browser receives `!!*Pandanet*!!` server
+  announcements that previously cluttered the main console. Badge shows unread count when
+  not on this tab.
+- **Rooms tab**: `QListWidget` showing open IGS rooms as `"NN: NAME"` entries.
+  - **Refresh** button sends `room` to re-fetch the room list.
+  - **Join Room** button (or double-click) sends `join NN` for the selected room.
+  - **Leave Room** button (red, disabled until inside a non-Main room) sends `join 0`.
+  - Status label shows current room name.
+  - On join or leave: players and games lists are immediately cleared and re-requested
+    with a 500 ms delay, so both reflect the room-filtered server context.
+  - Room list populated from `9 ROOM NN: NAME;FLAGS;...` lines; private rooms (`FLAGS=X`)
+    excluded. Parser correctly handles `9 ROOMLIST` / `9 ROOM` with the `"9 "` prefix intact.
+  - `room` command sent at login to pre-populate the room list.
+
+Unread badge on Shouts and Messages tabs clears when that tab is activated.
+Window geometry persisted via `settings->saveWindowGeometry("shout")` / `loadWindowGeometry`.
+  Geometry is saved both in the shout window's own `closeEvent` and in the console window's
+  `closeEvent` (which always fires on app quit), ensuring position and size survive across
+  sessions even when the shout window is still open at exit time.
+
+### 59 — Console Send button 4px green border
+
+The Send button on the main console command bar had a corrupt/truncated stylesheet
+(`background-` truncated, `border: none`). Replaced with the standard v290 green 4px
+solid border convention matching the Pass/Shout button family: gradient green background,
+white bold text, `#a9f5c0`/`#1a5c34` highlight/shadow colors.
+
+---
+
+## 2026-08-28 (v292): Dock rank `?` fix — stats Defaults sweeps all live game slots
+
+### Root cause
+
+When IGS reuses a game ID for a back-to-back bot game, the periodic `refreshPlayers()` timer
+may be mid-run (players model cleared) at the moment the new game slot is created. This causes
+`findPlayerRank(opponent)` at slot creation to return `"?"`.
+
+The existing fix in the `9 Defaults` handler only updated the dock for the current bot opponent
+(guarded by `bot_mode_active && bot_game_id != -1 && stats_player_name == bot_opponent`).
+While correct, it missed any edge case where the stats response arrived before `bot_game_id`
+was updated, or where the player appeared in an observed (non-bot) slot.
+
+### Fix
+
+The `9 Defaults` dock update now sweeps **all live game slots** (not just the bot game) and
+updates any slot where the stats player appears as black or white. This is consistent with the
+existing userlist-complete rank refresh loop. The bot engine board rank update (which requires
+`is_white_opp` direction) is preserved as a separate path.
+
+---
+
 ## 2026-08-24 (v290): Button border refinement — square corners, correct highlight colors
 
 ### 56 — Save Game, Edit Game, Close Board and all Edit Game board buttons upgraded to 4px border

@@ -1257,7 +1257,15 @@ void BoardWindow::setupUI() {
  // Resign button (shown when playing, replaces Close button)
  resign_button = new QPushButton("Resign");
  resign_button->setStyleSheet(
- "QPushButton {" " background-" " " " border: none;" " padding: 8px;" " font-weight: bold;" "}" "QPushButton:pressed {" " background-" "}"
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #e74c3c,stop:1 #c0392b);"
+     " border-style: solid; border-width: 4px;"
+     " border-top-color: #f1948a; border-left-color: #f1948a;"
+     " border-right-color: #922b21; border-bottom-color: #922b21;"
+     " padding: 6px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f1564a,stop:1 #e74c3c); }"
+     "QPushButton:pressed { border-style: solid; border-width: 4px;"
+     " border-top-color: #922b21; border-left-color: #922b21;"
+     " border-right-color: #f1948a; border-bottom-color: #f1948a; }"
  );
  connect(resign_button, &QPushButton::clicked, this, &BoardWindow::resignGame);
  resign_button->setVisible(false); // Hidden by default, shown when playing
@@ -1268,9 +1276,14 @@ void BoardWindow::setupUI() {
  done_button->setToolTip("Accept the current score and end the game");
  done_button->setStyleSheet(
      "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #e67e22,stop:1 #ca6f1e);"
-     " border: 2px outset #f0a85a; border-radius: 4px; padding: 6px; font-weight: bold; color: white; }"
+     " border-style: solid; border-width: 4px;"
+     " border-top-color: #fbd97e; border-left-color: #fbd97e;"
+     " border-right-color: #9a6010; border-bottom-color: #9a6010;"
+     " padding: 6px; font-weight: bold; color: white; }"
      "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f39c12,stop:1 #e67e22); }"
-     "QPushButton:pressed { border: 2px inset #f0a85a; }"
+     "QPushButton:pressed { border-style: solid; border-width: 4px;"
+     " border-top-color: #9a6010; border-left-color: #9a6010;"
+     " border-right-color: #fbd97e; border-bottom-color: #fbd97e; }"
  );
  connect(done_button, &QPushButton::clicked, this, [this]() {
      emit doneRequested(observed_game_id);
@@ -1282,10 +1295,15 @@ void BoardWindow::setupUI() {
  pass_button = new QPushButton("Pass");
  pass_button->setStyleSheet(
      "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #27ae60,stop:1 #229954);"
-     " border: 2px outset #52be80; border-radius: 4px; padding: 6px; font-weight: bold; }"
+     " border-style: solid; border-width: 4px;"
+     " border-top-color: #6dce94; border-left-color: #6dce94;"
+     " border-right-color: #1e8449; border-bottom-color: #1e8449;"
+     " padding: 6px; font-weight: bold; }"
      "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #2ecc71,stop:1 #27ae60); }"
-     "QPushButton:pressed { border: 2px inset #52be80; }"
-     "QPushButton:disabled { background: #555; color: #999; border: 2px outset #666; }"
+     "QPushButton:pressed { border-style: solid; border-width: 4px;"
+     " border-top-color: #1e8449; border-left-color: #1e8449;"
+     " border-right-color: #6dce94; border-bottom-color: #6dce94; }"
+     "QPushButton:disabled { background: #555; color: #999; border: 4px solid #666; }"
  );
  connect(pass_button, &QPushButton::clicked, this, &BoardWindow::onPassClicked);
  pass_button->setVisible(false);

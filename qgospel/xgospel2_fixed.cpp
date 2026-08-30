@@ -10,6 +10,9 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QTreeView>
+#include <QtWidgets/QTreeWidget>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QTextBrowser>
@@ -64,8 +67,8 @@
 #include "score_engine.h"
 
 // Version information - update these with each release
-const QString XGOSPEL_VERSION = "v290";
-const QString XGOSPEL_BUILD_DATE = "2026-08-24";
+const QString XGOSPEL_VERSION = "v293";
+const QString XGOSPEL_BUILD_DATE = "2026-08-30";
 
 class FixedRankSortProxyModel : public QSortFilterProxyModel {
 public:
@@ -2148,34 +2151,205 @@ class FixedShoutWindow : public QMainWindow {
  Q_OBJECT
 public:
  FixedShoutWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
-     setWindowTitle("IGS Shouts");
-     setMinimumSize(400, 300);
+     setWindowTitle("IGS Shouts / Messages / Rooms");
+     setMinimumSize(450, 340);
      QWidget *central = new QWidget;
      setCentralWidget(central);
      QVBoxLayout *layout = new QVBoxLayout(central);
+     layout->setContentsMargins(4, 4, 4, 4);
+     layout->setSpacing(4);
+
+     // --- Tab widget ---
+     m_tabs = new QTabWidget;
+
+     // Tab 0: Shouts
      shout_browser = new QTextBrowser;
      shout_browser->setOpenLinks(false);
-     shout_browser->setStyleSheet("QTextBrowser { background:#000; color:#00ff00; font-family:monospace; font-size:10pt; }");
-     layout->addWidget(shout_browser);
+     shout_browser->setStyleSheet(
+         "QTextBrowser { background:#000; color:#00ff00; font-family:monospace; font-size:10pt; }");
+     m_tabs->addTab(shout_browser, "Shouts");
+
+     // Tab 1: Messages (server/Pandanet announcements)
+     msg_browser = new QTextBrowser;
+     msg_browser->setOpenLinks(false);
+     msg_browser->setStyleSheet(
+         "QTextBrowser { background:#000; color:#ffdd88; font-family:monospace; font-size:10pt; }");
+     m_tabs->addTab(msg_browser, "Messages");
+
+     // Tab 2: Rooms
+     QWidget *rooms_widget = new QWidget;
+     QVBoxLayout *rooms_layout = new QVBoxLayout(rooms_widget);
+     rooms_layout->setContentsMargins(2, 2, 2, 2);
+     rooms_layout->setSpacing(3);
+     // Room list — QListWidget, one entry per open room: "NN: ROOM NAME"
+     // Populated from "9 ROOM NN: NAME;FLAGS;..." lines after sending "room" to IGS.
+     // Rooms with flag field == "X" are private and are not shown.
+     // Double-click or Join button sends "join NN" to IGS.
+     room_list = new QListWidget;
+     room_list->setAlternatingRowColors(true);
+     room_list->setStyleSheet(
+         "QListWidget { background:#111; color:#ccddff; font-family:monospace; font-size:10pt; }"
+         "QListWidget::item:selected { background:#1a4a8a; color:white; }"
+         "QListWidget::item:alternate { background:#1a1a1a; }");
+     connect(room_list, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *item) {
+         emitJoinForItem(item);
+     });
+
+     QString blue_btn_ss =
+         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #5dade2,stop:1 #2e86c1);"
+         " border-style: solid; border-width: 4px;"
+         " border-top-color: #a9d0f5; border-left-color: #a9d0f5;"
+         " border-right-color: #1a6c9a; border-bottom-color: #1a6c9a;"
+         " padding: 4px 10px; font-weight: bold; color: white; }"
+         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #7ec8f0,stop:1 #3a9fd4); }"
+         "QPushButton:pressed { border-top-color: #1a6c9a; border-left-color: #1a6c9a;"
+         " border-right-color: #a9d0f5; border-bottom-color: #a9d0f5; }";
+     QString red_btn_ss =
+         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #e74c3c,stop:1 #c0392b);"
+         " border-style: solid; border-width: 4px;"
+         " border-top-color: #f1948a; border-left-color: #f1948a;"
+         " border-right-color: #922b21; border-bottom-color: #922b21;"
+         " padding: 4px 10px; font-weight: bold; color: white; }"
+         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #f1948a,stop:1 #e74c3c); }"
+         "QPushButton:pressed { border-top-color: #922b21; border-left-color: #922b21;"
+         " border-right-color: #f1948a; border-bottom-color: #f1948a; }";
+
+     QPushButton *refresh_rooms_btn = new QPushButton("Refresh");
+     refresh_rooms_btn->setStyleSheet(blue_btn_ss);
+     refresh_rooms_btn->setToolTip("Send 'room' to IGS to refresh the room list");
+     connect(refresh_rooms_btn, &QPushButton::clicked, this, &FixedShoutWindow::roomlistRequested);
+
+     QPushButton *join_room_btn = new QPushButton("Join Room");
+     join_room_btn->setStyleSheet(blue_btn_ss);
+     join_room_btn->setToolTip("Join the selected room (double-click also works)");
+     connect(join_room_btn, &QPushButton::clicked, this, [this]() {
+         emitJoinForItem(room_list->currentItem());
+     });
+
+     leave_room_btn = new QPushButton("Leave Room");
+     leave_room_btn->setStyleSheet(red_btn_ss);
+     leave_room_btn->setToolTip("Leave current room — sends 'join 0' to return to main server");
+     leave_room_btn->setEnabled(false);
+     connect(leave_room_btn, &QPushButton::clicked, this, &FixedShoutWindow::leaveRoomRequested);
+
+     QHBoxLayout *rooms_btn_layout = new QHBoxLayout;
+     rooms_btn_layout->setSpacing(4);
+     rooms_btn_layout->addWidget(refresh_rooms_btn);
+     rooms_btn_layout->addWidget(join_room_btn);
+     rooms_btn_layout->addStretch();
+     rooms_btn_layout->addWidget(leave_room_btn);
+
+     room_status_label = new QLabel("Current room: Main");
+     room_status_label->setStyleSheet("QLabel { color: #aaaaaa; font-style: italic; font-size: 9pt; }");
+
+     rooms_layout->addWidget(room_list);
+     rooms_layout->addWidget(room_status_label);
+     rooms_layout->addLayout(rooms_btn_layout);
+     m_tabs->addTab(rooms_widget, "Rooms");
+
+     // Switch between tabs — enable input only on Shouts tab
+     connect(m_tabs, &QTabWidget::currentChanged, this, [this](int idx) {
+         bool on_shouts = (idx == 0);
+         shout_edit->setEnabled(on_shouts);
+         shout_btn->setEnabled(on_shouts);
+         // Clear unread badge on the tab that was just activated
+         if (idx == 1) m_tabs->setTabText(1, "Messages");
+         if (idx == 2) m_tabs->setTabText(2, "Rooms");
+     });
+
+     layout->addWidget(m_tabs);
+
+     // --- Input row (pinned below tabs, shouts only) ---
      QHBoxLayout *input_layout = new QHBoxLayout;
+     input_layout->setSpacing(4);
      shout_edit = new QLineEdit;
      shout_edit->setPlaceholderText("Type shout message...");
-     QPushButton *shout_btn = new QPushButton("Shout");
+     shout_btn = new QPushButton("Shout");
+     shout_btn->setStyleSheet(
+         "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #6dce94,stop:1 #1e8449);"
+         " border-style: solid; border-width: 4px;"
+         " border-top-color: #a9f5c0; border-left-color: #a9f5c0;"
+         " border-right-color: #1a5c34; border-bottom-color: #1a5c34;"
+         " padding: 4px 12px; font-weight: bold; color: white; }"
+         "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #88e0a8,stop:1 #27a85e); }"
+         "QPushButton:pressed { border-top-color: #1a5c34; border-left-color: #1a5c34;"
+         " border-right-color: #a9f5c0; border-bottom-color: #a9f5c0; }");
      input_layout->addWidget(shout_edit);
      input_layout->addWidget(shout_btn);
      layout->addLayout(input_layout);
+
      connect(shout_btn, &QPushButton::clicked, this, &FixedShoutWindow::onShoutClicked);
      connect(shout_edit, &QLineEdit::returnPressed, this, &FixedShoutWindow::onShoutClicked);
+
+     // Restore saved geometry (defaults to a larger size than the minimumSize)
+     setGeometry(settings->loadWindowGeometry("shout", QRect(300, 150, 560, 480)));
  }
+
+ void closeEvent(QCloseEvent *event) override {
+     settings->saveWindowGeometry("shout", geometry());
+     settings->save();
+     QMainWindow::closeEvent(event);
+ }
+
  void addShout(const QString &sender, const QString &message) {
      QString color = sender.startsWith("*") ? "#aaddff" : "#00ff00";
      shout_browser->append(QString("<span style='color:%1'><b>!%2!:</b> %3</span>")
          .arg(color, sender.toHtmlEscaped(), message.toHtmlEscaped()));
+     // Badge the Shouts tab if it's not currently active
+     if (m_tabs->currentIndex() != 0) {
+         ++m_unread_shouts;
+         m_tabs->setTabText(0, QString("Shouts (%1)").arg(m_unread_shouts));
+     } else {
+         m_unread_shouts = 0;
+     }
  }
+
+ void addMessage(const QString &text) {
+     msg_browser->append(QString("<span style='color:#ffdd88'>%1</span>")
+         .arg(text.toHtmlEscaped()));
+     // Badge the Messages tab if it's not currently active
+     if (m_tabs->currentIndex() != 1) {
+         ++m_unread_msgs;
+         m_tabs->setTabText(1, QString("Messages (%1)").arg(m_unread_msgs));
+     } else {
+         m_unread_msgs = 0;
+     }
+ }
+
+ // Called for each "9 ROOM NN: NAME;FLAGS;..." line received.
+ // Skips private rooms (flag field == "X"). Clears list on first call after refresh.
+ void addRoom(const QString &entry, bool is_private) {
+     if (m_rooms_fresh) { room_list->clear(); m_rooms_fresh = false; }
+     if (is_private) return;
+     // entry is "NN: ROOM NAME" — avoid duplicates by room number prefix
+     QString num = entry.section(':', 0, 0).trimmed();
+     for (int i = 0; i < room_list->count(); ++i)
+         if (room_list->item(i)->text().section(':', 0, 0).trimmed() == num) return;
+     room_list->addItem(entry);
+     if (m_tabs->currentIndex() != 2)
+         m_tabs->setTabText(2, QString("Rooms (%1)").arg(room_list->count()));
+ }
+
+ void prepareRoomRefresh() { m_rooms_fresh = true; }
+
  void showAndRaise() { show(); raise(); activateWindow(); }
+ void showOnMessages() { show(); raise(); activateWindow(); m_tabs->setCurrentIndex(1); }
+
+ void setCurrentRoom(const QString &room_name) {
+     m_current_room = room_name;
+     bool in_room = (room_name.compare("Main", Qt::CaseInsensitive) != 0 &&
+                     room_name != "0");
+     room_status_label->setText(QString("Current room: %1").arg(in_room ? room_name : "Main"));
+     leave_room_btn->setEnabled(in_room);
+ }
+
 signals:
  void shoutRequested(const QString &message);
  void playerClicked(const QString &name);
+ void roomlistRequested();
+ void joinRoomRequested(const QString &room_number, const QString &room_name);
+ void leaveRoomRequested();
+
 private slots:
  void onShoutClicked() {
      QString msg = shout_edit->text().trimmed();
@@ -2183,9 +2357,26 @@ private slots:
      shout_edit->clear();
      emit shoutRequested(msg);
  }
+ void emitJoinForItem(QListWidgetItem *item) {
+     if (!item) return;
+     // Extract room number: "NN: ROOM NAME" → "NN"
+     QString num = item->text().section(':', 0, 0).trimmed();
+     if (!num.isEmpty()) emit joinRoomRequested(num, item->text().section(':', 1).trimmed());
+ }
+
 private:
- QTextBrowser *shout_browser;
- QLineEdit    *shout_edit;
+ QTabWidget   *m_tabs            = nullptr;
+ QTextBrowser *shout_browser     = nullptr;
+ QTextBrowser *msg_browser       = nullptr;
+ QListWidget  *room_list         = nullptr;
+ QLabel       *room_status_label = nullptr;
+ QPushButton  *leave_room_btn    = nullptr;
+ QLineEdit    *shout_edit        = nullptr;
+ QPushButton  *shout_btn         = nullptr;
+ int           m_unread_shouts   = 0;
+ int           m_unread_msgs     = 0;
+ QString       m_current_room    = "Main";
+ bool          m_rooms_fresh     = true;
 };
 
 class FixedGamesWindow : public QMainWindow {
@@ -3063,6 +3254,9 @@ private:
  bool pending_manual_observe;
  int pending_observe_game_id;
 
+ // Roomlist parsing state
+ bool waiting_for_roomlist = false;
+
  // Set when IGS confirms "X has restored/restarted your game" — next "9 Observing game N"
  // for matching players should reassign the adjourned slot to the new game ID.
  QString pending_resume_player;
@@ -3276,6 +3470,10 @@ public:
  void closeEvent(QCloseEvent *event) override {
  // Save console window geometry before closing (xgospel1 style)
  settings->saveWindowGeometry("console", geometry());
+ // Shout window may still be open when the app quits — save its geometry here
+ // so it persists even if its own closeEvent never fires.
+ if (shout_window && shout_window->isVisible())
+     settings->saveWindowGeometry("shout", shout_window->geometry());
  settings->save();
  QMainWindow::closeEvent(event);
  }
@@ -3392,7 +3590,14 @@ public:
  
  QPushButton *send_btn = new QPushButton("Send");
  send_btn->setStyleSheet(
- "QPushButton { " " background- " " " " border: none; " " padding: 8px 16px; " " font-weight: bold; " "}" "QPushButton:pressed { " " background- " "}"
+     "QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #6dce94,stop:1 #1e8449);"
+     " border-style: solid; border-width: 4px;"
+     " border-top-color: #a9f5c0; border-left-color: #a9f5c0;"
+     " border-right-color: #1a5c34; border-bottom-color: #1a5c34;"
+     " padding: 6px 16px; font-weight: bold; color: white; }"
+     "QPushButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #88e0a8,stop:1 #27a85e); }"
+     "QPushButton:pressed { border-top-color: #1a5c34; border-left-color: #1a5c34;"
+     " border-right-color: #a9f5c0; border-bottom-color: #a9f5c0; }"
  );
  connect(send_btn, &QPushButton::clicked, this, &FixedXGospelWindow::sendCommand);
  command_layout->addWidget(send_btn);
@@ -3447,7 +3652,7 @@ public:
  QAction *games_action = windows_menu->addAction("Show Games");
  connect(games_action, &QAction::triggered, this, &FixedXGospelWindow::showGamesWindow);
 
- QAction *shouts_action = windows_menu->addAction("Show Shouts");
+ QAction *shouts_action = windows_menu->addAction("Show Shouts / Messages / Rooms");
  connect(shouts_action, &QAction::triggered, this, [this]() {
      if (!shout_window) return;
      shout_window->showAndRaise();
@@ -4104,21 +4309,25 @@ private slots:
 
  if (players_window && !stats_player_name.isEmpty() && !stats_rank.isEmpty()) {
      players_window->upsertPlayerRank(stats_player_name, stats_rank);
-     // Refresh the bot board if this rank arrived for the current bot opponent
+     // Refresh any dock slot that has this player — covers both bot games and observed games.
+     // The bot-specific engine_board rank update is done separately below.
+     if (docked_pane_mode && shared_board_window) {
+         if (GameSelectionDock *dock2 = shared_board_window->getGameSelectionDock()) {
+             for (GameSlot *s : game_slots) {
+                 if (s->game_finished) continue;
+                 bool is_black = s->black_player.compare(stats_player_name, Qt::CaseInsensitive) == 0;
+                 bool is_white = s->white_player.compare(stats_player_name, Qt::CaseInsensitive) == 0;
+                 if (!is_black && !is_white) continue;
+                 if (is_black) s->black_rank = stats_rank;
+                 if (is_white) s->white_rank = stats_rank;
+                 dock2->updateGameRanks(s->game_id, s->black_rank, s->white_rank);
+             }
+         }
+     }
+     // Bot engine board rank update
      if (bot_mode_active && bot_game_id != -1 &&
          stats_player_name.compare(bot_opponent, Qt::CaseInsensitive) == 0) {
          bool is_white_opp = (bot_color == BLACK_STONE);
-         if (docked_pane_mode) {
-             if (GameSlot *bslot = findSlot(bot_game_id)) {
-                 if (is_white_opp) bslot->white_rank = stats_rank;
-                 else              bslot->black_rank = stats_rank;
-                 // Refresh the dock button now that we have the real rank
-                 if (shared_board_window) {
-                     if (GameSelectionDock *dock2 = shared_board_window->getGameSelectionDock())
-                         dock2->updateGameRanks(bot_game_id, bslot->black_rank, bslot->white_rank);
-                 }
-             }
-         }
          if (engine_board) {
              if (is_white_opp) engine_board->setWhiteRank(stats_rank);
              else              engine_board->setBlackRank(stats_rank);
@@ -4670,17 +4879,23 @@ private slots:
 	bool is_stats_data = line.startsWith("9 ");
 	bool is_prompt_data = line.startsWith("1 ") || line == "2" || line.startsWith("2 ");  // IGS command 1/2: server prompts/status
 
+	// Pandanet server announcements go to the Messages tab, not the console
+	bool is_pandanet = line.contains("!!*Pandanet*!!");
+	if (is_pandanet && shout_window) {
+	    shout_window->addMessage(line);
+	}
+
 	// Check if this is an important message that should never be suppressed
 	bool is_important = line.startsWith("ayt") ||  // Keep-alive heartbeat
-	                    line.contains("!!*Pandanet*!!") ||  // Server announcements
 	                    line.contains("Handicap and komi");  // Important game status messages
 
-	bool suppress_this_line = !is_important &&
-	                          ((is_games_data && suppress_games_console) ||
-	                           (is_moves_data && suppress_moves_console) ||
-	                           (is_players_data && suppress_server_console) ||
-	                           (is_stats_data && suppress_server_console) ||
-	                           (is_prompt_data && suppress_server_console));
+	bool suppress_this_line = is_pandanet ||
+	                          (!is_important &&
+	                           ((is_games_data && suppress_games_console) ||
+	                            (is_moves_data && suppress_moves_console) ||
+	                            (is_players_data && suppress_server_console) ||
+	                            (is_stats_data && suppress_server_console) ||
+	                            (is_prompt_data && suppress_server_console)));
 
 	if (!suppress_this_line) {
 		output_console->append("< " + line);
@@ -4756,6 +4971,10 @@ private slots:
  }
  if (!this->suppress_server_console) output_console->append(">>> SENT: toggle newrating (enable numerical rating data)");
  if (!this->suppress_server_console) output_console->append(">>> READY! You can now use Windows > Show Players / Show Games");
+
+ // Fetch room list at login so Rooms tab is populated without user action
+ socket->write("room\n");
+ if (shout_window) shout_window->prepareRoomRefresh();
  });
  }
  
@@ -7597,6 +7816,23 @@ private slots:
  untrackFinishedGame(game_id);
  }
  }
+ // Parse IGS room list response.
+ // Server sends "9 ROOMLIST" header, then one "9 ROOM NN: NAME;FLAGS;..." per room.
+ // Rooms with FLAGS field == "X" are private and are excluded from display.
+ if (line == "9 ROOMLIST") {
+     waiting_for_roomlist = true;
+     if (shout_window) shout_window->prepareRoomRefresh();
+ }
+ if (waiting_for_roomlist && line.startsWith("9 ROOM ")) {
+     // Format: "9 ROOM NN: NAME;FLAGS;..."
+     QString body  = line.mid(7).trimmed();               // "NN: NAME;FLAGS;..."
+     QString entry = body.section(';', 0, 0).trimmed();   // "NN: NAME"
+     QString flags = body.section(';', 1, 1).trimmed();   // "FLAGS"
+     bool is_private = (flags == "X");
+     if (!entry.isEmpty() && shout_window)
+         shout_window->addRoom(entry, is_private);
+ }
+
  // Parse IGS Command 20 — server-assigned counting score.
  // Format: "20 white_player (W:O): 95.5 to black_player (B:#): 116.0"
  if (line.startsWith("20 ")) {
@@ -7896,6 +8132,47 @@ private slots:
      });
      connect(shout_window, &FixedShoutWindow::playerClicked, this, [this](const QString &name) {
          if (players_window) players_window->openStatsDialogForPlayer(name);
+     });
+     connect(shout_window, &FixedShoutWindow::roomlistRequested, this, [this]() {
+         shout_window->prepareRoomRefresh();
+         socket->write("room\n");
+         socket->flush();
+         output_console->append("[IGS] >>> room (refresh room list)");
+     });
+     connect(shout_window, &FixedShoutWindow::joinRoomRequested,
+             this, [this](const QString &room_number, const QString &room_name) {
+         socket->write(QString("join %1\n").arg(room_number).toUtf8());
+         socket->flush();
+         output_console->append(QString("[IGS] >>> join %1 (%2)").arg(room_number, room_name));
+         shout_window->setCurrentRoom(room_name);
+         // Clear immediately — room games list may be empty so the deferred-clear
+         // logic (which waits for the first game line) would never fire.
+         if (games_window) games_window->clearGames();
+         // Server filters userlist and games to room context — must re-request both
+         QTimer::singleShot(500, this, [this]() {
+             refreshPlayers();
+             socket->write("games\n");
+             socket->flush();
+             waiting_for_games = true;
+             game_count = 0;
+             output_console->append(">>> SENT: games (room context refresh)");
+         });
+     });
+     connect(shout_window, &FixedShoutWindow::leaveRoomRequested, this, [this]() {
+         socket->write("join 0\n");
+         socket->flush();
+         output_console->append("[IGS] >>> join 0 (leave room)");
+         shout_window->setCurrentRoom("0");
+         // Clear immediately before re-requesting full server-wide list
+         if (games_window) games_window->clearGames();
+         QTimer::singleShot(500, this, [this]() {
+             refreshPlayers();
+             socket->write("games\n");
+             socket->flush();
+             waiting_for_games = true;
+             game_count = 0;
+             output_console->append(">>> SENT: games (main room context restore)");
+         });
      });
  }
  // Only auto-show if user has enabled it in preferences
@@ -10730,7 +11007,7 @@ int main(int argc, char *argv[]) {
  // VERSION BANNER - confirms correct binary is running
  qDebug() << "==========================================================================";
  qDebug() << ">>> XGOSPEL2 VERSION:" << XGOSPEL_VERSION << XGOSPEL_BUILD_DATE;
- qDebug() << ">>> - Fix: dead stone markers survive CMD22 board replacement (color cache)";
+ qDebug() << ">>> - Tabbed shout window (Shouts/Messages/Rooms) + Send button 4px green border";
  qDebug() << "==========================================================================";
 
  // Initialize global settings
